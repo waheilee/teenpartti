@@ -1,0 +1,376 @@
+{extend name="common/base" /}
+{block name="title"}所有玩家{/block}
+{block name="css"}{/block}
+{block name="content"}
+<style>
+	.layui-badge {
+		height: 24px !important;
+		line-height: 24px !important;
+		font-size: 16px !important;
+	}
+	.layui-card3{
+		height: 170px !important;
+	}
+	.layui-card4{
+		height: 200px !important;
+	}
+	.layui-card5{
+		height: 280px !important;
+	}
+	.layuiadmin-card-list p.layuiadmin-normal-font{
+		font-size: 14px !important;
+	}
+	li{
+		padding-bottom:14px;
+	}
+</style>
+<div class="layui-form-item layui-form-pane">
+	<div class="layui-fluid">
+		<div class="layui-inline">
+			<label class="layui-form-label">{:lang('时间')}</label>
+			<div class="layui-input-inline">
+				<input type="text" class="layui-input" name="start_date" id="start_date" placeholder="yyyy-MM-dd" value="{:date('Y-m-d')}">
+			</div>
+			<!-- <div class="layui-form-mid">-</div>
+            <div class="layui-input-inline">
+                <input type="text" class="layui-input" name="end_date" id="end_date" placeholder="yyyy-MM-dd">
+            </div> -->
+		</div>
+		<div class="layui-inline">
+			<button class="layui-btn" data-type="reload" id="reload">{:lang('搜索')}</button>
+		</div>
+	</div>
+
+		<div class="layui-row layui-col-space10">
+			<div class="layui-col-md2 ">
+				<div class="layui-col-md12">
+				<table class="layui-table" lay-skin="row">
+					<tbody>
+					<tr>
+						<td><span class="layui-badge layui-bg-blue ">{:lang('线上充值')}：{$data['pay']['totalpay'] ?? 0}</span> </td>
+					</tr>
+					{if(!empty($data['recharge']))}
+					{foreach $data['recharge'] as $k => $v}
+					<tr>
+						<td>{$v['ChannelName']}：{:lang('总数')}：{$v['Totalmoney']/1000}；{:lang('总人数')}：{$v['TotalUser']}</td>
+					</tr>
+					{/foreach}
+					{/if}
+
+					</tbody>
+				</table>
+				</div>
+				<div class="layui-col-md12">
+					<div class="layui-card layui-card3">
+						<div class="layui-card-header">
+							<span class="layui-badge layui-bg-blue ">{:lang('成功提现')}：</span>
+							<span class="layuiadmin-badge"></span>
+						</div>
+						<div class="layui-card-body layuiadmin-card-list">
+							<p class="layuiadmin-normal-font"  style="color: #009688">{:lang('申请出款')}：{$data['out']['apply_payout'] ?? 0}</p>
+							<!-- <p class="layuiadmin-normal-font"  style="color: #009688">{:lang('手续费')}：{$data['out'][''] ?? 0}</p> -->
+							<p class="layuiadmin-normal-font"  style="color: #009688">{:lang('实际出款')}：{$data['out']['totalpayout'] ?? 0}&nbsp;{:lang('人数')}：{$data['out']['totalpayoutnum'] ?? 0}</p>
+							<p class="layuiadmin-normal-font"  style="color: #009688">{:lang('实际存提差')}：{$data['pay']['totalpay']-$data['out']['totalpayout']}
+								&nbsp;{:lang('人数')}：{$data['out']['apply_payout_num'] ?? 0}
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="layui-col-md8 layui-col-space5">
+				<div class="layui-col-md3">
+					<table class="layui-table" lay-skin="row">
+						<tbody>
+						<tr>
+							<td><span class="layui-badge layui-bg-blue ">{:lang('充值合计')}：</span></td>
+						</tr>
+						<tr>
+							<td>{:lang('充值总数')}：{$data['pay']['totalpay']+$data['pay']['manual_recharge']}</td>
+						</tr>
+						<tr>
+							<td>{:lang('充值人数')}：{$data['pay']['totaluserpaynum'] ?? 0}</td>
+						</tr>
+						<tr>
+							<td>{:lang('新增充值总数')}：{$data['pay']['newuserpay'] ?? 0}</td>
+						</tr>
+
+						<tr>
+							<td>{:lang('新增充值人数')}：{$data['pay']['newuserpaynum'] ?? 0}</td>
+						</tr>
+
+						<tr>
+							<td>{:lang('邮件赠送')}：{$data['system']['TotalMailCoin'] ?? 0}</td>
+						</tr>
+
+						<tr>
+							<td>{:lang('邮件人数')}：{$data['system']['TotalMailNum'] ?? 0}</td>
+						</tr>
+
+						<tr>
+							<td>{:lang('GM上分')}：{$data['system']['TotalGMPoint'] ?? 0}</td>
+						</tr>
+
+						<tr>
+							<td>{:lang('GM人数')}：{$data['system']['TotalGMNum'] ?? 0}</td>
+						</tr>
+
+						</tbody>
+					</table>
+				</div>
+
+				<div class="layui-col-md3">
+					<table class="layui-table" lay-skin="row">
+						<tbody>
+						<tr>
+							<td><span class="layui-badge layui-bg-blue ">{:lang('系统统计')}：</span></td>
+						</tr>
+
+						<tr>
+							<td>{:lang('充退差')}：{$data['system']['totalyk'] ?? 0}</td>
+						</tr>
+
+						<tr>
+							<td>{:lang('税收')}：{$data['system']['totaltax'] ?? 0}</td>
+						</tr>
+
+
+						<tr>
+							<td>{:lang('打码量')}：{$data['system']['totalwage'] ?? 0}</td>
+						</tr>
+
+						<tr>
+							<td>{:lang('游戏输赢')}：{$data['system']['totalwin'] - $data['system']['totaltax']}</td>
+						</tr>
+
+						<tr>
+							<td>{:lang('总流水')}：{$data['system']['totalwater'] ?? 0}</td>
+						</tr>
+
+						</tbody>
+					</table>
+				</div>
+
+				<div class="layui-col-md3">
+					<table class="layui-table" lay-skin="row">
+						<tbody>
+						<tr>
+							<td><span class="layui-badge layui-bg-blue ">{:lang('其他游戏统计')}：</span></td>
+						</tr>
+						<tr>
+							<td>{:lang('捕鱼流水')}：{$data['system']['TotalGameFish'] ?? 0}</td>
+						</tr>
+
+						<tr>
+							<td>{:lang('crash流水')}：{$data['system']['TotalGameCrah'] ?? 0}</td>
+						</tr>
+
+						<tr>
+							<td>{:lang('mine流水')}：{$data['system']['TotalGameMine'] ?? 0}</td>
+						</tr>
+
+						<tr>
+							<td>{:lang('老虎机流水')}：{$data['system']['TotalTigerSlotsRuning'] ?? 0}</td>
+						</tr>
+
+						<tr>
+							<td>{:lang('老虎机盈亏')}：{$data['system']['TotalTigerSlotsWin'] ?? 0}</td>
+						</tr>
+
+						<tr>
+							<td>{:lang('老虎机RTP')}：{$data['system']['TigerGameRate'] ?? 0}%</td>
+						</tr>
+						</tbody>
+					</table>
+				</div>
+
+
+				<div class="layui-col-md3">
+					<table class="layui-table" lay-skin="row">
+						<tbody>
+						<tr>
+							<td><span class="layui-badge layui-bg-blue ">{:lang('代理统计')}：</span></td>
+						</tr>
+						<tr>
+							<td>{:lang('代理税收返利')}：{$data['cj'][65]['ReceiveAmt']}</td>
+						</tr>
+
+						<tr>
+							<td>{:lang('代理邀请奖励')}：{$data['cj'][66]['ReceiveAmt']}</td>
+						</tr>
+
+						<tr>
+							<td>{:lang('代理邀请奖励')}：{$data['cj'][69]['ReceiveAmt']}</td>
+						</tr>
+						</tbody>
+					</table>
+				</div>
+
+
+				<div class="layui-col-md12">
+					<div class="layui-card layui-card5">
+						<div class="layui-card-header">
+							<span class="layui-badge layui-bg-blue ">{:lang('总人数')}({:lang('当前在线')}：{$data['online']})</span>
+							<span class="layuiadmin-badge"></span>
+						</div>
+						<div class="layui-card-body layuiadmin-card-list">
+							<div style="width: 16%;display: inline-block;">
+								<p class="layuiadmin-normal-font"  style="color: #009688">{:lang('正常用户')}：{$data['user']['normaluser']['total'] ?? 0}</p>
+								<ul>
+									<li>{:lang('未知端')}：{$data['user']['normaluser']['other'] ?? 0}</li>
+									<li>{:lang('安卓端')}：{$data['user']['normaluser']['android'] ?? 0}</li>
+									<li>{:lang('IOS端')}：{$data['user']['normaluser']['iosnum'] ?? 0}</li>
+									<!-- <li>{:lang('电脑端')}：0</li> -->
+								</ul>
+							</div>
+							<div style="width: 16%;display: inline-block;">
+								<p class="layuiadmin-normal-font"  style="color: #009688">{:lang('禁用用户')}：{$data['user']['abondonuser']['total'] ?? 0}</p>
+								<ul>
+									<li>{:lang('未知端')}：{$data['user']['abondonuser']['other'] ?? 0}</li>
+									<li>{:lang('安卓端')}：{$data['user']['abondonuser']['android'] ?? 0}</li>
+									<li>{:lang('IOS端')}：{$data['user']['abondonuser']['iosnum'] ?? 0}</li>
+									<!-- <li>{:lang('电脑端')}：0</li> -->
+								</ul>
+							</div>
+							<div style="width: 16%;display: inline-block;">
+								<p class="layuiadmin-normal-font"  style="color: #009688">{:lang('全民推广')}：{$data['user']['agentuser']['total'] ?? 0}</p>
+								<ul>
+									<li>{:lang('未知端')}：{$data['user']['agentuser']['other'] ?? 0}</li>
+									<li>{:lang('安卓端')}：{$data['user']['agentuser']['android'] ?? 0}</li>
+									<li>{:lang('IOS端')}：{$data['user']['agentuser']['iosnum'] ?? 0}</li>
+									<!-- <li>{:lang('电脑端')}：0</li> -->
+								</ul>
+							</div>
+							<div style="width: 16%;display: inline-block;">
+								<p class="layuiadmin-normal-font"  style="color: #009688">{:lang('日注册')}：{$data['user']['reg_total'] ?? 0}</p>
+								<ul>
+									<li>{:lang('未知端')}：{$data['user']['reg_other'] ?? 0}</li>
+									<li>{:lang('安卓端')}：{$data['user']['reg_android'] ?? 0}</li>
+									<li>{:lang('IOS端')}：{$data['user']['reg_ios'] ?? 0}</li>
+									<!-- <li>{:lang('电脑端')}：0</li> -->
+								</ul>
+							</div>
+							<div style="width: 32%;display: inline-block;">
+								<p class="layuiadmin-normal-font"  style="color: #009688;">{:lang('日活跃')}：{$data['user']['activenum'] ?? 0}</p>
+								<p class="layuiadmin-normal-font"  style="color: #009688;">{:lang('注册充值金额')}：{$data['pay']['reg_chargemoney'] ?? 0}</p>
+								<p class="layuiadmin-normal-font"  style="color: #009688">{:lang('注册充值人数')}：{$data['pay']['reg_chargenum'] ?? 0}</p>
+								<p class="layuiadmin-normal-font"  style="color: #009688">{:lang('当日首充总金额')}：{$data['pay']['first_chargemoney'] ?? 0}</p>
+								<p class="layuiadmin-normal-font"  style="color: #009688">{:lang('当日首充总人数')}：{$data['pay']['first_chargenum'] ?? 0}</p>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+			<div class="layui-col-md2">
+				<table class="layui-table" lay-skin="row">
+					<tbody>
+					<tr>
+						<td><span class="layui-badge layui-bg-blue ">{:lang('系统赠送统计')}：</span></td>
+					</tr>
+					<tr>
+						<td>{:lang('注册彩金')}：{$data['cj'][11]['ReceiveAmt']?? 0} &nbsp;{:lang('总人数')}：{$data['cj'][11]['ReceiveTimes']?? 0}</td>
+					</tr>
+
+					<tr>
+						<td>{:lang('绑定彩金')}：{$data['cj'][54]['ReceiveAmt']?? 0} &nbsp;{:lang('总人数')}：{$data['cj'][54]['ReceiveTimes']?? 0}</td>
+					</tr>
+
+					<tr>
+						<td>{:lang('批量送彩金')}：{$data['cj'][72]['ReceiveAmt']?? 0}&nbsp;{:lang('总人数')}：{$data['cj'][72]['ReceiveTimes']?? 0}</td>
+					</tr>
+
+					<tr>
+						<td>{:lang('vip周领取')}：{$data['activity'][101]['ReceiveAmt'] ?? 0}&nbsp;{:lang('总人数')}：{$data['activity'][101]['ReceiveTimes']?? 0}</td>
+					</tr>
+
+					<tr>
+						<td>{:lang('vip月领取')}：{$data['activity'][102]['ReceiveAmt'] ?? 0}&nbsp;{:lang('总人数')}：{$data['activity'][102]['ReceiveTimes']?? 0}</td>
+					</tr>
+
+					<tr>
+						<td>{:lang('周卡领取')}：{$data['activity'][67]['ReceiveAmt'] ?? 0}&nbsp;{:lang('总人数')}：{$data['activity'][67]['ReceiveTimes']?? 0}</td>
+					</tr>
+					<tr>
+						<td>{:lang('月卡领取')}：{$data['activity'][68]['ReceiveAmt'] ?? 0}&nbsp;{:lang('总人数')}：{$data['activity'][68]['ReceiveTimes']?? 0}</td>
+					</tr>
+
+					<tr>
+						<td>{:lang('签到领取')}：{$data['activity'][15]['ReceiveAmt'] ?? 0}&nbsp;{:lang('总人数')}：{$data['activity'][15]['ReceiveTimes']?? 0}</td>
+					</tr>
+
+
+					<tr>
+						<td>{:lang('VIP特权领取-升级')}：{$data['activity'][61]['ReceiveAmt'] ?? 0}&nbsp;{:lang('总人数')}：{$data['activity'][61]['ReceiveTimes']?? 0}</td>
+					</tr>
+
+					<tr>
+						<td>{:lang('手机绑定领取')}：{$data['activity'][54]['ReceiveAmt'] ?? 0}&nbsp;{:lang('总人数')}：{$data['activity'][54]['ReceiveTimes']?? 0}</td>
+					</tr>
+
+					<tr>
+						<td>{:lang('快捷充值')}：{$data['pay']['paygift'] ?? 0}</td>
+					</tr>
+
+
+
+					<tr>
+						<td>{:lang('转盘赠送')}：{$data['activity'][30]['ReceiveAmt'] ?? 0}&nbsp;{:lang('总人数')}：{$data['activity'][30]['ReceiveTimes']?? 0}</td>
+					</tr>
+
+					<tr>
+						<td>{:lang('礼品卡赠送')}：{$data['activity'][77]['ReceiveAmt'] ?? 0}&nbsp;{:lang('总人数')}：{$data['activity'][77]['ReceiveTimes']?? 0}</td>
+					</tr>
+
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+
+
+</div>
+{/block}
+{block name="script"}
+<script>
+    layui.use(['table','form','laydate'], function(){
+        var table = layui.table;
+        var form  = layui.form;
+        var laydate = layui.laydate;
+        //日期
+        laydate.render({
+            elem: '#start_date'
+        });
+        laydate.render({
+            elem: '#end_date'
+        });
+
+
+        var query = window.location.search.substring(1);
+        var vars = query.split("&");
+        for (var i = 0; i < vars.length; i++) {
+            var pair = vars[i].split("=");
+            if (pair[0] == 'date') {
+                $("#start_date").val(pair[1]);
+            }
+        }
+
+
+        $("#reload").click('on',function(){
+            var date = $("#start_date").val();
+            $.ajax({
+                type:'get',
+                url:"{:url('statistical/totalDaily')}?date="+date+"&action=check",
+                dataType:'json',
+                success: function(res) {
+                    if (res.code === 0) {
+                        window.location.href = "{:url('statistical/totalDaily')}?date="+date;
+                    } else {
+                        layer.msg(res.msg);
+                    }
+                }
+            });
+
+        });
+    });
+</script>
+{/block}

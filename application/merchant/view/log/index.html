@@ -1,0 +1,168 @@
+{extend name="common/base" /}
+
+{block name="title"}金币日志{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang("操作人")}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="username" name="username" lay-verify="number"  placeholder="{:lang('请输入操作人账号')}" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang("操作方法")}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="action" name="action" lay-verify="number"  placeholder="{:lang('请输入操作方法')}" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang("操作内容")}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="content" name="content" lay-verify="number"  placeholder="{:lang('请输入操作内容')}" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang("操作时间")}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="end" id="LAY-component-form-group-date2" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">{:lang("搜索")}</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <div class ="layui-row layui-col-space30">
+
+
+            <div id="alllist" class="layui-col-md12">
+                <table id="proxylist" lay-filter="proxylist"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'id', title: 'ID', minWidth:60}
+                    , {field: 'userid', title: '{:lang("操作人ID")}', minWidth:90}
+                    , {field: 'username', title: '{:lang("操作人账号")}', minWidth:100}
+                    , {field: 'action', title: '{:lang("操作方法")}', minWidth:320}
+                    , {field: 'request', title: '{:lang("操作内容")}', minWidth:300}
+                    , {field: 'response', title: '{:lang("操作结果")}', minWidth:300}
+                    , {field: 'status', title: '{:lang("状态")}', minWidth:60}
+                    , {field: 'logday', title: '{:lang("操作日期")}', minWidth:100}
+                    , {field: 'recordtime', title: '{:lang("操作时间")}',minWidth:200}
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('admin/log/index')}" //数据接口
+                    , page: true //开启分页
+                    , limit:15
+                    , cols: [cols]
+                    ,done : function(res) {
+                        $('#totalmoney').html(res.other)
+                    }
+                });
+            },
+
+            //搜索
+            search: function () {
+                var username = $.trim($('#username').val());
+                var action = $.trim($('#action').val());
+                var start = $.trim($('#start').val());
+                var end = $.trim($('#end').val());
+                var content = $.trim($('#content').val());
+                var strartdate = $.trim($('#LAY-component-form-group-date').val());
+                var enddate = $.trim($('#LAY-component-form-group-date2').val());
+
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'content':content,
+                        'username':username,
+                        'action':action,
+                        'start':strartdate,
+                        'end':enddate
+                    }
+                });
+            },
+
+            //操作事件
+            extraEvent: function () {},
+
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+                laydate.render({
+                    elem: '#LAY-component-form-group-date'
+//                    , format: 'yyyy-MM-dd'
+                    // ,format:'yyyyMMdd'
+                    , max: 1
+                    , lang:'{$datelang ?: "cn"}'
+                    , btns: ['clear', 'confirm']
+                    , type: 'datetime'
+                });
+                laydate.render({
+                    elem: '#LAY-component-form-group-date2'
+//                    , format: 'yyyy-MM-dd'
+                    // ,format:'yyyyMMdd'
+                    , max: 1
+                    , lang:'{$datelang ?: "cn"}'
+                    , btns: ['clear', 'confirm']
+                    , type: 'datetime'
+                });
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

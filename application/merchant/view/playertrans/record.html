@@ -1,0 +1,587 @@
+{extend name="common/base" /}
+
+{block name="title"}向玩家转账{/block}
+{block name="css"}
+<style type="text/css">
+    .layui-table-cell {
+        height: auto;
+    }
+</style>
+{/block}
+{block name="content"}
+
+
+<div class="layui-row layui-col-space20">
+    <div class="layui-col-md3">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('总提现(分)')}</span>
+                <a class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="TotalScore" style="color: #009688">0</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md3">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('总充值(分)')}</span>
+                <a class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="TotalPay" style="color: #009688">0</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md3">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('总税收(分)')}</span>
+                <a class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="TotalTax" style="color: #009688">0</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md3">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('总金币')}</span>
+                <a class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="TotalGold" style="color: #009688">0</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+<div class="layui-row layui-col-space20">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-card-header layuiadmin-card-header-auto">
+                <form class="layui-form" lay-filter="component-form-group">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <div class="layui-input-inline">
+                                <input type="number" id="roleid" name="roleid" autocomplete="off" placeholder="{:lang('玩家ID')}" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <div class="layui-input-inline">
+                                <input type="text" id="tranNO" name="tranNO" placeholder="{:lang('平台订单号')}" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+
+                        <div class="layui-inline">
+                            <label class="layui-form-label" style="width: 33px">{:lang('日期')}</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off" class="layui-input" value="{:date('Y-m-d').' 00:00:00'}">
+                            </div>
+                            <div class="layui-form-mid"> -</div>
+                            <div class="layui-input-inline">
+                                <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date2" name="end" type="text" value="{:date('Y-m-d').' 23:59:59'}">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <div class="layui-input-inline">
+                                <select name="Status" id="Status">
+                                    <option value="-1">=={:lang('订单状态')}==</option>
+                                    <option value="100">{:lang('订单完成')}</option>
+                                    <option value="0">{:lang('待加入工单')}</option>
+                                    <option value="6">{:lang('已加入工单，待审核')}</option>
+                                    <option value="1">{:lang('已审核')}</option>
+                                    <option value="2">{:lang('拒绝并退金币')}</option>
+                                    <option value="3">{:lang('第三方失败')}</option>
+                                    <option value="4">{:lang('第三方处理中')}</option>
+                                    <option value="5">{:lang('处理失败并退金币')}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">{:lang('出款方式')}</label>
+                            <div class="layui-input-inline">
+                                <select name="payWay" id="payWay" name="payWay">
+                                    <option value="" selected>{:lang('全部')}</option>
+                                    {if(config('app_type') == 2)}
+                                    <!-- <option value="1">UPI</option> -->
+                                    <!-- <option value="2">Bank</option> -->
+                                    <option value="2">PIX</option>
+                                    {elseif(config('app_type') == 3)}
+                                    <option value="2">Bank</option>
+                                    {else}
+                                    <option value="1">UPI</option>
+                                    <option value="2">Bank</option>
+                                    <!-- <option value="3">PIX</option> -->
+                                    {/if}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <div class="layui-input-inline">
+                                <select name="payChannel" id="payChannel">
+                                    <option value="-1">=={:lang('支付通道')}==</option>
+                                    {foreach $channeInfo as $k1 => $v1}
+                                    <option value="{$v1['ChannelId']}">{$v1['ChannelName']}</option>
+                                    {/foreach}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="layui-inline">
+                            <div class="layui-input-inline">
+                                <select name="payType" id="payType">
+                                    <option value="0">=={:lang('充值类型')}==</option>
+                                    <option value="1">{:lang('充值玩家')}</option>
+                                    <option value="2">{:lang('未充值玩家')}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+		                    <label class="layui-form-label">{:lang('操作人')}</label>
+		                    <div class="layui-input-inline">
+		                        <select name="condition" id="checkUser" name="checkUser">
+		                            <option value="0" selected>{:lang('全部')}</option>
+		                            {if !empty($checkUser)}
+		                            {foreach $checkUser as $k => $v}
+		                                {if ($v==$adminuser)}<option value="{$v}" selected>{$v}</option>
+		                                {else}<option value="{$v}">{$v}</option>
+		                                {/if}
+		                            {/foreach}
+		                            {/if}
+		                        </select>
+		                    </div>
+		                </div>
+                        <div class="layui-inline">
+                            <div class="layui-input-inline">
+                                <input type="number" id="amount" name="amount" autocomplete="off" placeholder="{:lang('输入金额')}" class="layui-input">
+                            </div>
+                            <div class="layui-form-mid">
+                                -
+                            </div>
+                            <div class="layui-input-inline">
+                                <input type="number" id="max_amount" name="max_amount" autocomplete="off" placeholder="{:lang('输入金额')}" class="layui-input">
+                            </div>
+                        </div>
+
+                        <div class="layui-inline">
+                            <!-- <div class="layui-input-inline"> -->
+                                <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                                <button type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>
+                            <!-- </div> -->
+                        </div>
+                        <div class="layui-inline">
+                            <!-- <div class="layui-input-inline"> -->
+                                <a class="layui-btn" id="output">{:lang('导出记录')}</a>
+                            <!-- </div> -->
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div id="alllist">
+                <table id="proxylist" lay-filter="proxylist"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+
+<script type="text/html" id="desc-bar">
+    <a class="layui-btn layui-btn-xs " lay-event="desc">{:lang('查看备注')}</a>
+    {{#  if(d.status == 4){ }}
+    <a class="layui-btn layui-btn-xs layui-bg-blue" lay-event="query">{:lang('查询处理')}</a>
+    {{#  } }}
+</script>
+<script type="text/html" id="msg-bar">
+    {{#  if((d.status==2 || d.status==6 || d.status == 4) && d.isreturn==0){ }}
+    <a class="layui-btn layui-btn-xs " lay-event="bufa">{:lang('补发')}</a>
+    <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="freeze">{:lang('没收')}</a>
+    <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="handle">{:lang('手动已打款')}</a>
+
+    {{#  } }}
+</script>
+
+<script>
+    url="{:url('playertrans/record')}";
+	layui.config({base: '__layui__/'}).extend({
+		index: 'lib/index' //主入口模块
+
+	}).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
+
+		var main = {
+			renderData: function () {
+				var cols = [ //表头
+                    {
+                        field: 'AccountID', align: 'center', title: "{:lang('玩家ID')}", minWidth: 100, templet: function (d) {
+                            return " <a class=\"layui-bg-green\" lay-event=\"info\">" + d.AccountID + "</a>";
+                        }
+                    },
+					{
+						field: 'iMoney', align: 'center', title: "{:lang('提现金额')}", minWidth: 100, templet: function (d) {
+							return Math.floor(d.iMoney * 100) / 100;
+						}
+					},
+					{field: 'Tax', align: 'center', title: "{:lang('税收')}", minWidth: 100, templet: function (d) { return Math.floor(d.Tax * 100) / 100; }},
+
+					{field: 'totalPay', align: 'center', title: "{:lang('总充值')}", minWidth: 100},
+					{field: 'TotalDS', align: 'center', title: "{:lang('总提现')}", minWidth: 100},
+					{field: 'EamilMoney', align: 'center', title: "{:lang('邮件补偿')}", minWidth: 100},
+					{
+						field: 'status', align: 'center', title: "{:lang('订单状态')}", minWidth: 100, templet: function (d) {
+							switch (Number(d.status)) {
+								case 0:
+									return '<span style="color: blue">'+d.orderType+'</span>';
+								case 1:
+									return '<span style="color:darkviolet">'+d.orderType+'</span>';
+								case 100:
+									return '<span style="color: green">'+d.orderType+'</span>';
+								default:
+									return '<span style="color: red">'+d.orderType+'</span>';
+							}
+						}
+					},
+                    {
+                        field: 'PayWay', align: 'center', title: "{:lang('出款方式')}", minWidth: 100, templet: function (d) {
+                            if (d.PayWay == 1) {
+                                return '<span style="color: #e60000">UPI</span>';
+                            }
+                            else if (d.PayWay == 2) {
+                                return '<span style="color: #e60000">Bank</span>';
+                            }
+                            else if (d.PayWay == 3) {
+                                return '<span style="color: #e60000">PIX</span>';
+                            }
+                        }
+                    },
+                    {field: '', align: 'left', title: "{:lang('账号详情')}", width: 250, templet: function (d) {
+                            if (d.PayWay == 1) {
+                                var html = "{:lang('UPI账号')}：" + d.CardNo;
+                                return html;
+                            }
+                            else if (d.PayWay == 3) {
+                                var html = "{:lang('姓名')}：" + d.RealName + '<br/>';
+                                html += "{:lang('账号')}：" + d.CardNo + '<br/>';
+                                html += "{:lang('开户行')}：" + d.BankName + '<br/>';
+                                html += "{:lang('IFSC码')}：" + d.Province + '<br/>';
+                                return html;
+                            }
+                            else if (d.PayWay == 2) {
+                                var html = "{:lang('手机号')}：+55" + d.RealName + "<br/>";
+                                html += "{:lang('PIX类型')}：CPF<br/>";
+                                html += 'Chave CPF:' + d.CardNo + '<br/>';
+                                html += 'CPF：' + d.Province + '<br/>';
+                                html += 'EMAIL：' + d.City + '<br/>';
+                                return html;
+                            }
+                        }
+                    },
+					{field: 'OrderNo', align: 'center', title: "{:lang('订单号')}", minWidth: 200},
+					{field: 'ChannelName', align: 'center', title: "{:lang('支出通道')}", minWidth: 100},
+					{field: 'checkUser', align: 'center', title: "{:lang('操作人员')}", minWidth: 80},
+					{field: 'AddTime', align: 'center', title: "{:lang('申请时间')}", minWidth: 150,sort:true},
+					{field: 'checkTime', align: 'center', title: "{:lang('审核时间')}", minWidth: 150,sort:true},
+					// {field: 'BankName', align: 'center', title: "{:lang('银行名称')}", minWidth: 150},
+					// {field: 'CardNo', align: 'center', title: "{:lang('银行卡号')}", minWidth: 200},
+					// {
+					// 	field: 'PayWay', title: '支付方式', minWidth: 80, templet: function (d) {
+					// 		if (Number(d.PayWay) == 1) return '支付宝'; else if (Number(d.PayWay) == 2) return '银行';
+					// 	}
+					// },
+					// {
+					// 	field: 'isreturn', title: '返还情况', minWidth: 80, templet: function (d) {
+					// 		var classname = '';
+					// 		if (d.status == 6 || d.status == 2 || d.status == 4) {
+					// 			if (d.isreturn == 0) {
+					// 				classname = '<span style="color: red">未处理</span>';
+					// 			} else if (d.isreturn == 1) {
+					// 				classname = '<span style="color: green">已返还</span>';
+					// 			} else if (d.isreturn == 2) {
+					// 				classname = '<span style="color: orange">没收</span>';
+					// 			} else if (d.isreturn == 3) {
+					// 				classname = '<span style="color: green">手动已打款</span>';
+					// 			}
+					// 		}
+					//
+					// 		return classname;
+					// 	}
+					// },
+
+					{fixed: 'right', title: "{:lang('备注')}", align: 'center', minWidth: 180, toolbar: '#desc-bar'}
+				];
+				table.render({
+					elem: '#proxylist'
+					, url: url //数据接口
+					, page: true //开启分页
+					, limit: 15
+					, where: {Action:'list','classid': -1}
+					, cols: [cols]
+					, done: function (res, curr, count) {
+
+						$('#TotalScore').html(res.other.TotalScore == null ? 0 : res.other.TotalScore);
+						$('#TotalTax').html(res.other.TotalTax == null ? 0 : res.other.TotalTax);
+						$('#TotalGold').html(res.other.TotalGold == null ? 0 : res.other.TotalGold);
+						$('#TotalPay').html(res.other.TotalPay == null ? 0 : res.other.TotalPay);
+
+                        var wrong = $('td[data-field="wrong"]');
+                        for (var i = 0; i < wrong.length; i++) {
+                            if ($(wrong[i]).find('div').html() != '') {
+                                $(wrong[i]).parent().css('color', '#FF5722');
+                            } else {
+
+                            }
+                        }
+                        //表头部分
+                        //动态监听表头高度变化，冻结行跟着改变高度
+                        $(".layui-table-header  tr").resize(function () {
+                            $(".layui-table-header  tr").each(function (index, val) {
+                                $($(".layui-table-fixed .layui-table-header table tr")[index]).height($(val).height());
+                            });
+                        });
+                        //初始化高度，使得冻结行表头高度一致
+                        $(".layui-table-header  tr").each(function (index, val) {
+                            $($(".layui-table-fixed .layui-table-header table tr")[index]).height($(val).height());
+                        });
+
+                        //表体部分
+                        //动态监听表体高度变化，冻结行跟着改变高度
+                        $(".layui-table-body  tr").resize(function () {
+                            $(".layui-table-body  tr").each(function (index, val) {
+                                $($(".layui-table-fixed .layui-table-body table tr")[index]).height($(val).height());
+                            });
+                        });
+                        //初始化高度，使得冻结行表体高度一致
+                        $(".layui-table-body  tr").each(function (index, val) {
+                            $($(".layui-table-fixed .layui-table-body table tr")[index]).height($(val).height());
+                        });
+					}
+				});
+			},
+			//搜索
+			search: function () {
+				//执行重载
+				table.reload('proxylist', {
+					page: {
+						curr: 1 //重新从第 1 页开始
+					},
+					where: {
+						start: $.trim($('#LAY-component-form-group-date').val()),
+						end: $.trim($('#LAY-component-form-group-date2').val()),
+						Status: $('#Status').val(),
+						amount: $('#amount').val(),
+                        max_amount: $.trim($('#max_amount').val()),
+						roleid: $.trim($('#roleid').val()),
+						payType: $.trim($('#payType').val()),
+						classid: $.trim($('#classid').val()),
+						tranNO: $.trim($('#tranNO').val()),
+						payChannel: $.trim($('#payChannel').val()),
+						payWay: $.trim($('#payWay').val()),
+						checkUser:$.trim($('#checkUser').val())
+					}
+				});
+			},
+			//操作事件
+			extraEvent: function () {
+				//编辑
+				table.on('tool(proxylist)', function (obj) {
+
+					var data = obj.data //获得当前行数据
+						, layEvent = obj.event; //获得 lay-event 对应的值
+					tr = obj.tr; //获得当前行 tr 的DOM对象
+
+                    if (layEvent === 'info') {
+                        var url = "{:url('player/playerDetail')}" + '?roleid=' + obj.data.AccountID;
+                        x_admin_show('{:lang(\'玩家详情\')}', url, $(window).width() * 0.7, $(window).height() * 0.6);
+                    }else if(layEvent === 'bufa') {
+						layer.confirm("{:lang('确认补发这条记录？')}", {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
+							$.ajax({
+								type: 'post',
+								url: "{:url('playertrans/bufa')}",
+								data: {
+									'orderno': data.orderno,
+									'roleid': data.roleid
+								},
+								dataType: 'json',
+								success: function (res) {
+									if (res.code === 0) {
+										layer.msg(res.msg, {icon: 1, time: 1000}, function () {
+											$(tr).find("td[data-field=isreturn] div").html('<span style="color: green">{:lang(\'已返还\')}</span>');
+											$(tr).find("a[lay-event=bufa]").parent().html('');
+										});
+									} else {
+										layer.msg(res.msg, {icon: 2});
+									}
+								}
+							});
+						});
+					} else if (layEvent === 'freeze') {
+						x_admin_show('{:lang(\'没收\')}', 'freeze?roleid=' + data.roleid + '&orderid=' + data.OrderNo + '&status=' + data.status + '&checkuser=' + data.checkuser + '&descript=' + data.descript, '', 250);
+					} else if (layEvent === 'handle') {
+						x_admin_show('{:lang(\'手动已打款\')}', 'handle?roleid=' + data.roleid + '&orderid=' + data.OrderNo + '&status=' + data.status + '&checkuser=' + data.checkuser + '&descript=' + data.descript, '', 250);
+					} else if (layEvent === 'desc') {
+						//查看备注
+						x_admin_show('{:lang(\'备注详情\')}', 'descript.html?orderno=' + obj.data.OrderNo, $(window).width() * 0.7, 380);
+					}else if(layEvent === 'query'){
+                        $.ajax({
+                            type: 'post',
+                            url: "{:url('playertrans/setqueryorder')}",
+                            data: {
+                                'orderno': data.OrderNo,
+                                'channelid': data.ChannelId
+                            },
+                            dataType: 'json',
+                            success: function (res) {
+                                if (res.code === 0) {
+                                    layer.msg(res.msg, {icon: 1, time: 1000}, function () {
+                                        table.reload("proxylist", {page: {curr: $(".layui-laypage-em").next().html()}});
+                                        layer.closeAll();
+                                    });
+                                } else {
+                                    layer.msg(res.msg, {icon: 2});
+                                }
+                            }
+                        });
+                    }
+				});
+
+                $(document).off('mousedown','.layui-table-grid-down').
+                on('mousedown','.layui-table-grid-down',function (event) {
+                    table._tableTrCurrr = $(this).closest('td');
+                });
+                $(document).off('click','.layui-table-tips-main [lay-event]').
+                on('click','.layui-table-tips-main [lay-event]',function (event) {
+                    //debugger
+                    var elem = $(this);
+                    var tableTrCurrr =  table._tableTrCurrr;
+                    if(!tableTrCurrr){
+                        return;
+                    }
+                    var layerIndex = elem.closest('.layui-table-tips').attr('times');
+                    console.log(layerIndex);
+                    layer.close(layerIndex);
+                    table._tableTrCurrr.find('[lay-event="' + elem.attr('lay-event') +'"]').click();
+                });
+
+                table.on('sort(proxylist)', function (obj) {
+                    var roleid = $.trim($('#roleid').val());
+                    var start = $.trim($('#LAY-component-form-group-date').val());
+                    var end = $.trim($('#LAY-component-form-group-date2').val());
+                    var payChannel = $.trim($('#payChannel').val());
+                    var payWay = $.trim($('#payWay').val());
+                    //执行重载
+                    table.reload('proxylist', {
+                        initSort: obj,
+                        page: {
+                            curr: 1 //重新从第 1 页开始
+                        },
+                        where: {
+                            'orderby': obj.field,
+                            'ordertype': obj.type,
+                            'roleid': roleid,//AccountID
+                            'start': start, //AddTime
+                            'end': end,
+                            'payChannel': payChannel,//支付方式
+                            'payWay': payWay,
+                            'checkUser':$.trim($('#checkUser').val())
+                        }
+                    });
+
+                });
+			},
+			init: function () {
+				form.render(null, 'component-form-group');
+				laydate.render({
+					elem: '#LAY-component-form-group-date'
+					, format: 'yyyy-MM-dd'
+					, max: 1
+					, lang:'{$datelang ?: "cn"}'
+					, btns: ['clear', 'confirm']
+					, type: 'datetime'
+					// , value: new Date()
+				});
+				laydate.render({
+					elem: '#LAY-component-form-group-date2'
+					, format: 'yyyy-MM-dd'
+					, max: 1
+					, lang:'{$datelang ?: "cn"}'
+					, btns: ['clear', 'confirm']
+					, type: 'datetime'
+					// , value: new Date()
+				});
+				main.extraEvent();
+				main.renderData();
+				$('#search').on('click', function (e) {
+					e.preventDefault();
+					main.search();
+				});
+			}
+		};
+
+		main.init();
+	});
+
+    $('#output').click(function () {
+	    where = {
+		    start: $.trim($('#LAY-component-form-group-date').val()),
+		    end: $.trim($('#LAY-component-form-group-date2').val()),
+		    Status: $('#Status').val(),
+		    amount: $('#amount').val(),
+            max_amount: $.trim($('#max_amount').val()),
+		    roleid: $.trim($('#roleid').val()),
+		    payType: $.trim($('#payType').val()),
+		    classid: $.trim($('#classid').val()),
+		    tranNO: $.trim($('#tranNO').val()),
+		    payChannel: $.trim($('#payChannel').val()),
+		    payWay: $.trim($('#payWay').val()),
+		    checkUser:$.trim($('#checkUser').val()),
+		    limit: 10000000,
+		    Action: 'exec',
+	    }
+
+	    download();
+
+	    function download() {
+		    var params = Object.keys(where).map(function (key) {
+			    return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+		    }).join("&");
+		    url = url + "?" + params;
+		    $.ajax({
+			    type: 'POST',
+			    dataType: 'json',
+			    async: true,
+			    url: url, // 生成文件，保存在服务器
+			    success: function (data) {
+				    var result = data;
+				    console.info(data);
+				    switch (result["code"]) {
+					    case 0:
+						    parent.parent.open(url + "&exec=1&outall=true");
+						    break;
+					    case 1:
+						    layer.msg(result["message"]);
+						    break;
+					    case 2:
+						    layer.confirm(result['message'], {
+							    btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
+						    }, function () {
+							    parent.parent.open(url + "&exec=1&outall=true");
+							    layer.msg('', {icon: 6, time: 1000}, function () {
+								    window.location.reload();
+							    });
+						    });
+				    }
+			    },
+			    error: function (XMLHttpRequest, textStatus, e) {
+				    console.log("oilDetection.js  method exportOilDetection" + e);
+			    }
+		    });
+	    }
+    });
+</script>
+
+{/block}

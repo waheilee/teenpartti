@@ -1,0 +1,54 @@
+{extend name="common/base" /}
+
+{block name="title"}编辑游戏配置{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+
+<form class="layui-form" action="" method="post" id="addProxy" >
+
+    <div class="layui-form-item layui-form-text" >
+        <div class="layui-input-block">
+            <textarea  class="layui-textarea" style="height: 300px" id="url" name='url'  placeholder="落地页" autocomplete="off">{$url}</textarea>
+        </div>
+    </div>
+
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var layer = layui.layer
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

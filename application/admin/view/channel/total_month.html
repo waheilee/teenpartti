@@ -1,0 +1,345 @@
+{extend name="common/base" /}
+{block name="title"}所有玩家{/block}
+{block name="css"}{/block}
+{block name="content"}
+<style>
+    .layui-badge { 
+    	height: 24px !important;
+    	line-height: 24px !important;
+    	font-size: 16px !important;
+   	}
+   	.layui-card3{
+   		height: 170px !important;
+   	}
+   	.layui-card4{
+   		height: 200px !important;
+   	}
+   	.layui-card5{
+   		height: 240px !important;
+   	}
+   	.layuiadmin-card-list p.layuiadmin-normal-font{
+   		font-size: 14px !important;
+   	}
+   	li{
+   		padding-bottom:14px;
+   	}
+</style>
+<div class="layui-form-item layui-form-pane">
+	<div class="layui-fluid">
+		<div class="layui-inline">
+                    <label class="layui-form-label">{:lang('渠道ID')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="ProxyId" autocomplete="off" class="layui-input" id='ProxyId' value="{$ChannelID ?: ''}">
+                    </div>
+                </div>
+        <div class="layui-inline">
+            <label class="layui-form-label">{:lang('代理ID')}</label>
+            <div class="layui-input-inline">
+                <input type="text" name="RoleID" autocomplete="off" class="layui-input" id='RoleID' value="{$RoleID ?: ''}">
+            </div>
+        </div>
+    <div class="layui-inline">
+          <label class="layui-form-label">{:lang('时间')}</label>
+          <div class="layui-input-inline">
+              <input type="text" class="layui-input" name="start_date" id="start_date" placeholder="yyyy-MM-dd" value="{:date('Y-m')}">
+          </div>
+          <!-- <div class="layui-form-mid">-</div>
+          <div class="layui-input-inline">
+              <input type="text" class="layui-input" name="end_date" id="end_date" placeholder="yyyy-MM-dd">
+          </div> -->
+      </div>
+    <div class="layui-inline">
+          <button class="layui-btn" data-type="reload" id="reload">{:lang('搜索')}</button>
+     </div>
+    </div>
+	  <div class="layui-fluid">
+	  	<div class="layui-row layui-col-space20">
+		  	<div class="layui-col-md3">
+		      	<div class="layui-card layui-card5">
+		            <div class="layui-card-header">
+		                <span class="layui-badge layui-bg-blue ">{:lang('系统')}：</span>
+		                <span class="layuiadmin-badge"></span>
+		            </div>
+		            <div class="layui-card-body layuiadmin-card-list">
+		                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('充退差')}：{$data['system']['totalyk'] ?? 0}</p>
+		                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('税收')}：{$data['system']['totaltax'] ?? 0}</p>
+		                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('打码量')}：{$data['system']['totalwage'] ?? 0}</p>
+		                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('游戏输赢')}：{$data['system']['totalwin'] - $data['system']['totaltax']}</p>
+		                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('总流水')}：{$data['system']['totalwater'] ?? 0}</p>
+		            </div>
+		        </div>
+		    </div>
+		    <div class="layui-col-md2">
+		      	<div class="layui-card layui-card5">
+		            <div class="layui-card-header">
+		                <span class="layui-badge layui-bg-blue ">{:lang('彩金统计')}：</span>
+		                <span class="layuiadmin-badge"></span>
+		            </div>
+		            <div class="layui-card-body layuiadmin-card-list">
+		                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('注册彩金')}：{$data['cj'][11]}</p>
+		                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('绑定彩金')}：{$data['cj'][54]}</p>
+		                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('批量送彩金')}：{$data['cj'][72]}</p>
+
+		            </div>
+		        </div>
+		    </div>
+		    <!-- <div class="layui-col-md2">
+		      	<div class="layui-card layui-card5">
+		            <div class="layui-card-header">
+		                <span class="layui-badge layui-bg-blue ">{:lang('代理统计')}：</span>
+		                <span class="layuiadmin-badge"></span>
+		            </div>
+		            <div class="layui-card-body layuiadmin-card-list">
+						<p class="layuiadmin-normal-font"  style="color: #009688">{:lang('代理税收返利')}：{$data['cj'][65]}</p>
+						<p class="layuiadmin-normal-font"  style="color: #009688">{:lang('代理邀请奖励')}：{$data['cj'][66]}</p>
+						<p class="layuiadmin-normal-font"  style="color: #009688">{:lang('代理额外奖励')}：{$data['cj'][69]}</p>
+		            </div>
+		        </div>
+		    </div> -->
+		    <div class="layui-col-md2">
+				<div class="layui-card layui-card5">
+					<div class="layui-card-header">
+						<span class="layui-badge layui-bg-blue ">{:lang('线上充值')}：{$data['pay']['totalpay'] ?? 0}</span>
+						<span class="layuiadmin-badge"></span>
+					</div>
+					<div class="layui-card-body layuiadmin-card-list">
+						{if(!empty($data['recharge']))}
+						{foreach $data['recharge'] as $k => $v}
+						<p class="layuiadmin-normal-font"  style="color: #009688">{$v['ChannelName']}：{:lang('总数')}：{$v['Totalmoney']/1000}；{:lang('总人数')}：{$v['TotalUser']}</p>
+						{/foreach}
+						{/if}
+						<!-- p class="layuiadmin-normal-font"  style="color: #009688">{:lang('银行卡')}：0</p -->
+                        <p class="layuiadmin-normal-font"  style="color: #009688">{:lang('人工充值')}：{$data['pay']['manual_recharge'] ?? 0}</p>
+                        <!--p class="layuiadmin-normal-font"  style="color: #009688">{:lang('支付宝')}：0</p> -->
+						<p class="layuiadmin-normal-font"  style="color: #009688">&nbsp;</p>
+						<p class="layuiadmin-normal-font"  style="color: #009688">&nbsp;</p>
+					</div>
+				</div>
+			</div>
+
+		    <!-- <div class="layui-col-md2">
+		      	<div class="layui-card layui-card5">
+		            <div class="layui-card-header">
+		                <span class="layui-badge layui-bg-blue ">{:lang('线下充值')}：</span>
+		                <span class="layuiadmin-badge"></span>
+		            </div>
+		            <div class="layui-card-body layuiadmin-card-list">
+		                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('人工充值')}：{$data['pay']['manual_recharge'] ?? 0}</p>
+		                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('派送彩金')}：0</p>
+		            </div>
+		        </div>
+		    </div> -->
+		     
+		    <div class="layui-col-md3">
+		      	<div class="layui-card layui-card5">
+		            <div class="layui-card-header">
+		                <span class="layui-badge layui-bg-blue ">{:lang('充值合计')}：</span>
+		                <span class="layuiadmin-badge"></span>
+		            </div>
+		            <div class="layui-card-body layuiadmin-card-list">
+		                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('充值总数')}：{$data['pay']['totalpay']+$data['pay']['manual_recharge']}</p>
+		                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('充值人数')}：{$data['pay']['totaluserpaynum'] ?? 0}</p>
+		                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('新增充值总数')}：{$data['pay']['newuserpay'] ?? 0}</p>
+		                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('新增充值人数')}：{$data['pay']['newuserpaynum'] ?? 0}</p>
+		                <p class="layuiadmin-normal-font"  style="color: #009688">{:lang('邮件赠送')}：{$data['system']['TotalMailCoin'] ?? 0}</p>
+		            </div>
+		        </div>
+		    </div>
+		    <div class="layui-col-md3">
+		      	<div class="layui-card layui-card3">
+		            <div class="layui-card-header">
+		                <span class="layui-badge layui-bg-blue ">{:lang('成功提现')}：</span>
+		                <span class="layuiadmin-badge"></span>
+		            </div>
+		            <div class="layui-card-body layuiadmin-card-list">
+		                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('申请出款')}：{$data['out']['apply_payout'] ?? 0}</p>
+		                <!-- <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('手续费')}：{$data['out'][''] ?? 0}</p> -->
+		                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('实际出款')}：{$data['out']['totalpayout'] ?? 0}</p>
+		                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('实际存提差')}：{$data['pay']['totalpay']-$data['out']['totalpayout']}</p>
+		            </div>
+		        </div>
+		    </div>
+		    <!-- <div class="layui-col-md3">
+		      	<div class="layui-card layui-card4">
+		            <div class="layui-card-header">
+		                <span class="layui-badge layui-bg-blue ">{:lang('当前用户')}：</span>
+		                <span class="layuiadmin-badge"></span>
+		            </div>
+		            <div class="layui-card-body layuiadmin-card-list">
+
+		                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('当前在线')}：{$data['online']}</p>
+		                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('PC在线')}：{$data['online']}</p>
+		                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('安卓在线')}：{$data['online']}</p>
+		                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('IOS在线')}：{$data['online']}</p>
+		            </div>
+		        </div>
+		    </div>
+		    <div class="layui-col-md3">
+		      	<div class="layui-card layui-card4">
+		            <div class="layui-card-header">
+		                <span class="layui-badge layui-bg-blue ">{:lang('余额快照')}：</span>
+		                <span class="layuiadmin-badge"></span>
+		            </div>
+		            <div class="layui-card-body layuiadmin-card-list">
+		                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('携带金币')}：{$data['user']['user_balance'] ?? 0}</p>
+		                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('合计')}：{$data['user']['user_balance'] ?? 0}</p>
+		            </div>
+		        </div>
+		    </div> -->
+		    <div class="layui-col-md3">
+		      	<div class="layui-card layui-card3">
+		            <div class="layui-card-header">
+		                <span class="layui-badge layui-bg-blue ">{:lang('充值赠送')}：</span>
+		                <span class="layuiadmin-badge"></span>
+		            </div>
+		            <div class="layui-card-body layuiadmin-card-list">
+		                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('快捷充值')}：{$data['pay']['paygift'] ?? 0}</p>
+		                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('线下充值')}：0</p>
+		                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('合计')}：{$data['pay']['paygift'] ?? 0}</p>
+		            </div>
+		        </div>
+		    </div>
+			
+		    <div class="layui-col-md8">
+		      	<div class="layui-card layui-card5">
+		            <div class="layui-card-header">
+		                <span class="layui-badge layui-bg-blue ">{:lang('总人数')}：</span>
+		                <span class="layuiadmin-badge"></span>
+		            </div>
+		            <div class="layui-card-body layuiadmin-card-list">
+		            	<div style="width: 16%;display: inline-block;">
+			                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('正常用户')}：{$data['user']['normaluserjson_total'] ?? 0}</p>
+			                	<ul>
+			                		<li>{:lang('未知端')}：{$data['user']['normaluserjson_other'] ?? 0}</li>
+			                		<li>{:lang('安卓端')}：{$data['user']['normaluserjson_android'] ?? 0}</li>
+			                		<li>{:lang('IOS端')}：{$data['user']['normaluserjson_iosnum'] ?? 0}</li>
+			                		<!-- <li>{:lang('电脑端')}：0</li> -->
+			                	</ul>
+		            	</div>
+		            	<div style="width: 16%;display: inline-block;">
+			                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('禁用用户')}：{$data['user']['abondonuser_total'] ?? 0}</p>
+			                	<ul>
+			                		<li>{:lang('未知端')}：{$data['user']['abondonuser_other'] ?? 0}</li>
+			                		<li>{:lang('安卓端')}：{$data['user']['abondonuser_android'] ?? 0}</li>
+			                		<li>{:lang('IOS端')}：{$data['user']['abondonuser_iosnum'] ?? 0}</li>
+			                		<!-- <li>{:lang('电脑端')}：0</li> -->
+			                	</ul>
+		            	</div>
+		            	<!-- <div style="width: 16%;display: inline-block;">
+			                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('官方下载')}：</p>
+			                	<ul>
+			                		<li>{:lang('未知端')}：0</li>
+			                		<li>{:lang('安卓端')}：0</li>
+			                		<li>{:lang('IOS端')}：0</li>
+			                		<li>{:lang('电脑端')}：0</li>
+			                	</ul>
+		            	</div> -->
+		            	<div style="width: 16%;display: inline-block;">
+			                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('全民推广')}：{$data['user']['agentuserjson_total'] ?? 0}</p>
+			                	<ul>
+			                		<li>{:lang('未知端')}：{$data['user']['agentuserjson_other'] ?? 0}</li>
+			                		<li>{:lang('安卓端')}：{$data['user']['agentuserjson_android'] ?? 0}</li>
+			                		<li>{:lang('IOS端')}：{$data['user']['agentuserjson_iosnum'] ?? 0}</li>
+			                		<!-- <li>{:lang('电脑端')}：0</li> -->
+			                	</ul>
+		            	</div>
+		            	<div style="width: 16%;display: inline-block;">
+			                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('日注册')}：{$data['user']['reg_total'] ?? 0}</p>
+			                	<ul>
+			                		<li>{:lang('未知端')}：{$data['user']['reg_other'] ?? 0}</li>
+			                		<li>{:lang('安卓端')}：{$data['user']['reg_android'] ?? 0}</li>
+			                		<li>{:lang('IOS端')}：{$data['user']['reg_ios'] ?? 0}</li>
+			                		<!-- <li>{:lang('电脑端')}：0</li> -->
+			                	</ul>
+		            	</div>
+		            	<div style="width: 32%;display: inline-block;">
+		            		<p class="layuiadmin-normal-font" id="" style="color: #009688;">{:lang('月活跃')}：{$data['user']['activenum'] ?? 0}</p>
+			                <p class="layuiadmin-normal-font" id="" style="color: #009688;">{:lang('注册充值金额')}：{$data['pay']['reg_chargemoney'] ?? 0}</p>
+			                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('注册充值人数')}：{$data['pay']['reg_chargenum'] ?? 0}</p>
+			                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('首充总金额')}：{$data['pay']['first_chargemoney'] ?? 0}</p>
+			                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('首充总人数')}：{$data['pay']['first_chargenum'] ?? 0}</p>
+		            	</div>
+		            </div>
+		        </div>
+		    </div>
+		    <div class="layui-col-md4">
+		      	<div class="layui-card layui-card5">
+		            <div class="layui-card-header">
+		                <span class="layui-badge layui-bg-blue ">{:lang('活动')}：</span>
+		                <span class="layuiadmin-badge"></span>
+		            </div>
+		            <div class="layui-card-body layuiadmin-card-list">
+		            	<div style="width: 50%;display: inline-block;">
+		            		<p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('手机绑定领取')}：{$data['activity'][54] ?? 0}</p>
+			                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('签到领取')}：{$data['activity'][15] ?? 0}</p>
+			                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('VIP特权领取-升级')}：{$data['activity'][61] ?? 0}</p>
+			                <!-- <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('vip周领取')}：0</p> -->
+			                <!-- <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('税收返利')}：0</p> -->
+			                
+		            	</div>
+		                <div style="width: 48%;display: inline-block;">
+		            		<p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('vip周领取')}：{$data['activity'][101] ?? 0}</p>
+			                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('vip月领取')}：{$data['activity'][102] ?? 0}</p>
+			                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('周卡领取')}：{$data['activity'][67] ?? 0}</p>
+			                <p class="layuiadmin-normal-font" id="" style="color: #009688">{:lang('月卡领取')}：{$data['activity'][68] ?? 0}</p>
+			                
+		            	</div>
+		                
+		            </div>
+		        </div>
+		    </div>
+	  	</div>
+	  </div>
+  </div>
+{/block}
+{block name="script"}
+<script>
+	layui.use(['table','form','laydate'], function(){
+		  var table = layui.table;
+		  var form  = layui.form;
+		  var laydate = layui.laydate;
+			//日期
+		  laydate.render({
+		    elem: '#start_date',
+		    type:'month'
+		  });
+		  laydate.render({
+		    elem: '#end_date'
+  		});
+
+		  // $("#reload").click('on',function(){
+		  // 		var date = $("#start_date").val();
+		  // 	 window.location.href = "{:url('statistical/totalMonth')}?date="+date;
+		  // });
+
+		  var query = window.location.search.substring(1);
+            var vars = query.split("&");
+            for (var i = 0; i < vars.length; i++) {
+                var pair = vars[i].split("=");
+                if (pair[0] == 'date') {
+                 	$("#start_date").val(pair[1]);
+                }
+            }
+		  
+
+		  $("#reload").click('on',function(){
+		  		var date = $("#start_date").val();
+		  		var ProxyId = $("#ProxyId").val();
+		  		var RoleID = $("#RoleID").val();
+		  		 $.ajax({
+                    type:'get',
+                    url:"{:url('channel/totalMonth')}?date="+date+"&ProxyId="+ProxyId+"&action=check&RoleID="+RoleID,
+                    dataType:'json',
+                    success: function(res) {     
+                        if (res.code === 0) {
+                            window.location.href = "{:url('channel/totalMonth')}?date="+date+"&ProxyId="+ProxyId+"&RoleID="+RoleID;
+                        } else {
+                            layer.msg(res.msg);
+                        }
+                    }
+                });
+		  	 
+		  });
+	});
+</script>
+{/block}

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Admin管理后台</title>
+<link rel="stylesheet" type="text/css" href="__css__/style.css" tppabs="css/style.css" />
+
+<!--<meta name="description" content="lotusadmin">-->
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<style>
+body{
+	height:100%;
+	background:#16a085;
+	overflow:hidden;
+}
+input[type="checkbox"] + label::before {
+ content: "\a0";  /*不换行空格*/
+ display: inline-block;
+ vertical-align: .2em;
+ width: 1.3em;
+ height: 1.3em;
+ margin-right: .2em;
+ border-radius: .2em;
+ background-color: silver;
+ text-indent: .20em;
+ line-height: 1.3em;  /*行高不加单位，子元素将继承数字乘以自身字体尺寸而非父元素行高*/
+}
+input[type="checkbox"]:checked + label::before {
+ content: "\2713";
+ background-color: yellowgreen;
+}
+input[type="checkbox"]:focus + label::before {
+ box-shadow: 0 0 .1em .1em #58a;
+}
+canvas{
+	z-index:-1;
+	position:absolute;
+}
+</style>
+<script src="__js__/jquery.min.js"></script>
+<script src="__module__/layer/layer.js"></script>
+<script src="__js__/verificationNumbers.js" tppabs="js/verificationNumbers.js"></script>
+<script src="__js__/Particleground.js" tppabs="js/Particleground.js"></script>
+
+</head>
+<body>
+<?php
+	    $username = 	session('username');
+		if(!empty($username )){  ?>
+		<script type="text/javascript">
+				window.location.href="{:url('admin/index/index')}";
+		</script>
+<?php  } ?>
+<dl class="admin_login">
+ <dt style="color:white">
+  <h1>Admin管理后台</h1>
+ </dt>
+ <dd class="user_icon">
+  <input type="text" name="username" id='username'  value="" placeholder="账号" class="login_txtbx"/>
+ </dd>
+ <dd class="pwd_icon">
+  <input type="password" name="password"  id="password" value=""  placeholder="密码" class="login_txtbx"/>
+ </dd>
+ <dd class="mobile_icon">
+  <input type="text" name="mobile"  id="mobile" value=""  placeholder="手机号" class="login_txtbx"/>
+ </dd>
+ <dd class="val_icon">
+  <div class="checkcode">
+    <input type="text" name="code"  id="J_codetext" placeholder="验证码" maxlength="4" class="login_txtbx">
+    <canvas class="J_codeimg" id="myCanvas" onclick="createCode()">对不起，您的浏览器不支持canvas，请下载最新版浏览器!</canvas>
+  </div>
+  <input type="button" value="更换验证码" class="ver_btn" onClick="validate();">
+ </dd>
+
+<dd >
+ <div style="margin-top: 10px">
+  <input type="checkbox" id="remember"  name="remember"  title="记住密码" hidden >
+  <label for="remember">记住一周</label>
+ </div>
+
+</dd>
+
+
+
+
+ <dd>
+  <button id="bs" onclick="login()" type="button"  value="立即登陆" class="submit_btn"/>立即登陆</button>
+ </dd>
+</dl>
+</body>
+<script>
+$(document).ready(function() {
+  //粒子背景特效
+//  $('body').particleground({
+//    dotColor: '#5cbdaa',
+//    lineColor: '#5cbdaa'
+//  });
+  //验证码
+  createCode();
+  //测试提交，对接程序删除即可
+   $(".submit_btn").click(function(){
+	});
+});
+
+
+function login(){
+	var username  = $('#username').val();
+	var password  = $('#password').val();
+	var mobile  = $('#mobile').val();
+	var code_  = $('#J_codetext').val();
+
+	var remember = [];
+    $('input[name="remember"]:checked').each(function(){
+        remember.push($(this).val());
+    });
+    var sr = 0;
+    if (remember[0] === 'on') {
+        sr = 1;
+    }
+    console.log(sr);
+	if (username == '' || password=='') {
+        layer.msg('账号密码不能为空', {offset:'t'}  );
+        return;
+    }
+    if (mobile == '') {
+        layer.msg('手机号不能为空', {offset:'t'}  );
+        return;
+    }
+    if(code_==''||code_==null){
+        layer.msg('验证码不能为空', {offset:'t'}  );
+        return;
+    }
+    var vali = validate();
+    if (!vali) {
+        layer.msg('验证码错误，请重新输入',{});
+        createCode();
+        return false;
+    }
+
+//	$.ajax({
+//	url: 'login',
+//	type: 'post',
+//	dataType: 'json',
+//		data:{
+//			username: username,
+//			password:password,
+//			mobile:mobile,
+//            remember:sr
+//			},
+//	})
+//	.done(function(data){
+//		console.log(data);
+//		if(data.code==0){
+//			layer.msg(data.msg,{});
+//		}else{
+//			layer.msg(data.msg,{icon:1,offset:'t'},function(){
+//				location.href = "index/index";
+//			});
+//
+//		}
+//	})
+    $.ajax({
+        type:'post',
+        url:'login',
+        data:{
+			username: username,
+			password:password,
+			mobile:mobile,
+            remember:sr
+        },
+        dataType:'json',
+        success: function(res) {
+            if (res.code === 0) {
+                layer.msg('登录成功',{icon:1,time:1000}, function () {
+                    window.location.href="{:url('admin/index/index')}";
+                });
+            } else if (res.code === 1) {
+                window.location.href="{:url('admin/index/index')}";
+            } else if (res.code === 2) {
+                window.location.href="{:url('admin/index/index')}";
+            }else if (res.code === 3) {
+                layer.msg(res.msg,{icon:2,time:1000}, function () {
+
+                });
+
+            }
+        }
+    });
+}
+document.onkeydown = function(e){ 
+    var ev = document.all ? window.event : e;
+    if(ev.keyCode==13) {
+          login();
+     }
+}
+
+</script>
+</html>

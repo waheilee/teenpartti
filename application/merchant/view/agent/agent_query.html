@@ -1,0 +1,137 @@
+{extend name="common/base" /}
+{block name="title"}关系列表{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('代理ID')}</label>
+                    <div class="layui-input-inline"><input autocomplete="off" class="layui-input" id="roleid" lay-verify="number" name="roleid" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('邀请码')}</label>
+                    <div class="layui-input-inline"><input autocomplete="off" class="layui-input" id="invite_code" lay-verify="text" name="invite_code" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <a class="layui-btn" data-type="reload" id="search">{:lang('搜索')}</a>
+                    <a class="layui-btn layui-btn-danger" id="output">{:lang('导出记录')}</a>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+    
+</div>
+
+{/block}
+{block name="script"}
+
+<script>
+    url = "{:url('agent/agentQuery')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var table = layui.table;
+        var form  = layui.form;
+        var $ = layui.$;
+        var element  = layui.element;
+          table.render({
+            elem: '#proxylist'
+            ,height: 'full-180'
+            ,url: url+'?action=list'//数据接口
+            ,limit:20
+            ,page: true //开启分页
+            ,id:'proxylist'
+            ,autoSort:false
+            ,cols: [[ //表头
+                {field:'RegisterTime', title: "{:lang('注册时间')}",align:'center', minWidth: 150},
+                {field:'RoleID', title: "{:lang('代理ID')}",align:'center', minWidth: 100},
+                 {field:'InviteCode', title: "{:lang('邀请码')}",align:'center', minWidth: 80},
+                {field:'Mobile', title: "{:lang('电话号码')}",align:'center', minWidth: 100},
+                {field:'Lv1PersonCount', title: "{:lang('一级代理')}",align:'center', minWidth: 100},
+                {field:'Lv2PersonCount', title: "{:lang('二级代理')}",align:'center', minWidth: 100},
+                {field:'Lv3PersonCount', title: "{:lang('三级代理')}",align:'center', minWidth: 100},
+                {field:'yesIncome', title: "{:lang('昨日佣金')}",align:'center', minWidth: 100},
+                {field:'ReceivedIncome', title: "{:lang('已领取佣金')}",align:'center', minWidth: 100},
+                {field:'unIncome', title: "{:lang('未领取佣金')}",align:'center', minWidth: 100},
+                {field:'TotalIncome', title: "{:lang('历史佣金')}",align:'center', minWidth: 100},
+                // {title:'操作', toolbar: '#toolbar'}
+            ]]
+            ,done: function (res) {
+                tzTbale();
+            }
+          });
+          // 搜索 
+          $("#search").on('click', function(){
+             table.reload('proxylist', {
+              page:{
+                  curr:1 
+              },
+              where: {
+                  roleid: $('#roleid').val(),
+                  invite_code:$('#invite_code').val(),
+              }
+            })
+          });
+
+          $('#output').click(function () {
+            where = {
+                roleid: $('#roleid').val(),
+                invite_code:$('#invite_code').val(),
+                action: 'output',
+            }
+
+            download();
+
+            function download() {
+                var params = Object.keys(where).map(function (key) {
+                    return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+                }).join("&");
+                url = url + "?" + params;
+                $.ajax({
+                    type: 'POST',
+                    dataType: 'json',
+                    async: true,
+                    url: url, // 生成文件，保存在服务器
+                    success: function (data) {
+                        var result = data;
+                        console.info(data);
+                        switch (result["code"]) {
+                            case 0:
+                                parent.parent.open(url + "&exec=1&outall=true");
+                                break;
+                            case 1:
+                                layer.msg(result["message"]);
+                                break;
+                            case 2:
+                                layer.confirm(result['message'], {
+                                    btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
+                                }, function () {
+                                    parent.parent.open(url + "&exec=1&outall=true");
+                                    layer.msg('', {icon: 6, time: 1000}, function () {
+                                        window.location.reload();
+                                    });
+                                });
+                        }
+                    },
+                    error: function (XMLHttpRequest, textStatus, e) {
+                        console.log("oilDetection.js  method exportOilDetection" + e);
+                    }
+                });
+            }
+        });
+    });
+</script>
+{/block}

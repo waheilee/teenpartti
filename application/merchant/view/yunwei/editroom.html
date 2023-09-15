@@ -1,0 +1,506 @@
+{extend name="common/base" /}
+
+{block name="title"}新增超级玩家{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('yunwei/addroom')}" method="post" id="addProxy" >
+    <div class="layui-tab layui-tab-brief" lay-filter="docDemoTabBrief">
+        <ul class="layui-tab-title">
+            <li class="layui-this">房间基本信息</li>
+            <li>房间属性</li>
+            <li>房间规则</li>
+            <li>底分规则</li>
+            <li>布局规则</li>
+        </ul>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show" >
+                <div class="layui-form-item">
+                    <label class="layui-form-label" style="width: 130px">游戏种类</label>
+                    <div class="layui-input-inline">
+                        <select name="kindid" id="KindID" lay-filter="KindID">
+                            {foreach $kindlist as $k1 => $v1}
+                            <option value="{$v1.KindID}">{$v1.KindName}({$v1.KindID})</option>
+                            {/foreach}
+                        </select>
+                    </div>
+
+                    <label class="layui-form-label" style="width: 130px">房间名称：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="RoomName" value="{$roomdata.RoomName}" name='RoomName' lay-verify="required"  placeholder="房间名称" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label" style="width: 130px">桌子数量：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="MaxTableCount" name='MaxTableCount' value="{$roomdata.MaxTableCount}" lay-verify="required|number"  placeholder="桌子数量" autocomplete="off" class="layui-input">
+                        <input type="text" id="RoomType" name='RoomType' value="2" style="display: none" autocomplete="off" class="layui-input">
+                        <input type="text" id="RoomID" name='RoomID' value="{$roomdata.roomid}" style="display: none" autocomplete="off" class="layui-input">
+                    </div>
+
+                    <label class="layui-form-label" style="width: 130px">房间最大人数：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="MaxPlayerCount" name='MaxPlayerCount' value="{$roomdata.MaxPlayerCount}" lay-verify="required|number"  placeholder="房间最大人数" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div style="display: none">
+                        <label class="layui-form-label" style="width: 130px">房间服务器：</label>
+                        <div class="layui-input-inline">
+                            <select name="ServerID" id="ServerID">
+                                {foreach $serverlist as $k => $v}
+                                <option value="{$v.ServerID}" {if $roomdata.ServerID==$v.ServerID} selected {/if}>{$v.ServerIP}</option>
+                                {/foreach}
+                            </select>
+                        </div>
+                    </div>
+
+
+                    <label class="layui-form-label" style="width: 130px">彩蛋税率：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="LuckyEggTaxRate" name='LuckyEggTaxRate' lay-verify="required|number" value="{$roomdata.LuckyEggTaxRate}" placeholder="彩蛋税率" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label" style="width: 130px">房间设置：</label>
+                    <div class="layui-input-block">
+                        <input type="checkbox" name="PCheating" id="PCheating" value="16" title="防作弊" {if $roomdata.isCheat == 1} checked {/if}>
+                        <input type="checkbox" name="HundredRoom" id="HundredRoom" value="64" title="百人房间" {if $roomdata.isHundred == 1} checked {/if}>
+                        <input type="checkbox" id="expRoom" name="expRoom" value="8" lay-filter="exproom" title="体验房" {if $roomdata.isExp == 1} checked {/if}>
+                    </div>
+                </div>
+                <div class="layui-form-item" id="exproommoney" style="display: none">
+                    <label class="layui-form-label">体验金额：</label>
+                    <div class="layui-input-block">
+                        <input type="text" id="ExpMoney" name='ExpMoney' value="{$roomdata.ExpMoney}" lay-verify="required|number"  placeholder="体验金额" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">房间提示(多条用|分开)：</label>
+                    <div class="layui-input-block">
+                        <textarea name="EnterPrompt" id="EnterPrompt" placeholder="请输入内容" class="layui-textarea">{$roomdata.EnterPrompt}</textarea>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">规则提示：</label>
+                    <div class="layui-input-block">
+                        <textarea name="RulePrompt" id="RulePrompt" placeholder="请输入内容" class="layui-textarea">{$roomdata.RulePrompt}</textarea>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="layui-tab-item">
+                <div class="layui-form-item">
+                    <label class="layui-form-label" style="width: 130px">允许旁观：</label>
+                    <div class="layui-input-inline">
+                        <select name="AllowLook" id="AllowLook">
+                            <option value="1" {if $roomdata.AllowLook == 1} selected {/if}>是</option>
+                            <option value="0" {if $roomdata.AllowLook == 0} selected {/if}>否</option>
+                        </select>
+                    </div>
+
+                    <label class="layui-form-label" style="width: 130px">等待开始游戏：</label>
+                    <div class="layui-input-inline">
+                        <select name="StartMode" id="StartMode" lay-filter="StartMode">
+                            <option value="0" {if $roomdata.StartMode == 0} selected {/if}>由时间控制开始</option>
+                            <option value="1" {if $roomdata.StartMode == 1} selected {/if}>所有玩家准备好后开始</option>
+                            <option value="2" {if $roomdata.StartMode == 2} selected {/if}>部分玩家准备好后开始</option>
+                            <option value="3" {if $roomdata.StartMode == 3} selected {/if}>由游戏程序控制开始</option>
+                        </select>
+                    </div>
+                </div>
+
+
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label" style="width: 130px">游戏开始后允许坐下：</label>
+                    <div class="layui-input-inline">
+                        <select name="CanJoinWhenPlaying" id="CanJoinWhenPlaying">
+                            <option value="1" {if $roomdata.CanJoinWhenPlaying == 1} selected {/if}>是</option>
+                            <option value="0" {if $roomdata.CanJoinWhenPlaying == 0} selected {/if}>否</option>
+                        </select>
+                    </div>
+
+                    <label class="layui-form-label"  style="width: 130px">自动启动客户端：</label>
+                    <div class="layui-input-inline">
+                        <select name="AutoRun" id="AutoRun">
+                            <option value="1" {if $roomdata.AutoRun == 0} selected {/if}>是</option>
+                            <option value="0" {if $roomdata.AutoRun == 0} selected {/if}>否</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label"  style="width: 130px">单桌最大旁观数：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="MaxLookUser" name='MaxLookUser' lay-verify="required|number" value="{$roomdata.MaxLookUser}"  autocomplete="off" class="layui-input">
+                    </div>
+                    <div id="startmode2" style="display: none">
+                        <label class="layui-form-label" style="width: 130px;">至少几组准备好后开始游戏：</label>
+                        <div class="layui-input-inline">
+                            <input type="text" id="StartForMinUser" name='StartForMinUser' lay-verify="number" value="{$roomdata.StartForMinUser}"  autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label" style="width: 130px">自动起立(坐下时长)：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="MaxSitTime" name='MaxSitTime' lay-verify="required|number" value="{$roomdata.MaxSitTime}" autocomplete="off" class="layui-input">
+                    </div>
+
+                    <label class="layui-form-label" style="width: 130px">自动起立(举手时长)：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="MaxStartTime" name='MaxStartTime' lay-verify="required|number" value="{$roomdata.MaxStartTime}"  autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label" style="width: 130px">自动踢出(进入房间时长)：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="MaxFreeTime" name='MaxFreeTime' lay-verify="required|number" value="{$roomdata.MaxFreeTime}"  autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label" style="width: 130px">最大中奖金币：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="SysMaxLoseMoneyPerRound" name='SysMaxLoseMoneyPerRound' lay-verify="required|number" value="{$roomdata.SysMaxLoseMoneyPerRound/1000}" autocomplete="off" class="layui-input">
+                    </div>
+
+                    <label class="layui-form-label" style="width: 130px">限红：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="MaxBetMoneyPerRound" name='MaxBetMoneyPerRound' lay-verify="required|number" value="{$roomdata.MaxBetMoneyPerRound/1000}"  autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item"  id="checkStorageProtectRate">
+                    <label class="layui-form-label" style="width: 130px">房间库存保护比例：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="StorageProtectRate" name='StorageProtectRate' lay-verify="required|number" value="{$roomdata.StorageProtectRate}"  autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label" style="width: 130px">房间权限：</label>
+                    <div class="layui-input-inline">
+                        <input type="checkbox" value="1" name="SetFlag" id="SetFlag" class="SetFlag" title="房间禁止设置" {if $roomdata.SetFlag == 1} checked {/if}>
+                    </div>
+                    <label class="layui-form-label" style="width: 130px">机器人权限：</label>
+                    <div class="layui-input-inline">
+                        <input type="checkbox" value="1" name="RobotJoinWhenPlaying" id="RobotJoinWhenPlaying" class="RobotJoinWhenPlaying" title="允许游戏中加入" {if $roomdata.RobotJoinWhenPlaying == 1} checked {/if}>
+                    </div>
+                </div>
+                <div class="layui-form-item" style="display: none" id="extradata">
+                    <label class="layui-form-label"  id="extradatalabel" style="width: auto">庄家最大连庄数|满足条件最大连庄数|上庄条件|玩家最大下注额|蓝钻贵族最大下注额（5|10|1000|1000|2000）万：</label>
+                    <div class="layui-input-block">
+                        <input type="text" id="CustomField" name='CustomField' lay-verify="{$roomdata.CustomField}" value="" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-tab-item">
+                <div class="layui-form-item">
+                    <label class="layui-form-label" style="width: 130px">进入房间最小财富：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="RoomWealthMin" name='RoomWealthMin' lay-verify="required|number" value="{$roomdata.RoomWealthMin}" placeholder="进入房间最小财富" autocomplete="off" class="layui-input">
+                    </div>
+
+                    <label class="layui-form-label" style="width: 130px">游戏最大财富：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="RoomNumMax1" name="RoomNumMax1" lay-verify="required|number" value="{$roomdata.RoomNumMax1}" placeholder="游戏最大财富" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label" style="width: 130px">坐下游戏最小财富：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="TableWealthMin" name='TableWealthMin' lay-verify="required|number" value="{$roomdata.TableWealthMin}" placeholder="坐下游戏最小财富" autocomplete="off" class="layui-input">
+                    </div>
+
+                    <label class="layui-form-label" style="width: 130px">游戏弹起财富：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="RoomNumMax2" name="RoomNumMax2" lay-verify="required|number" value="{$roomdata.RoomNumMax2}" placeholder="游戏弹起财富" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-tab-item">
+                <div class="layui-form-item">
+                    <label class="layui-form-label" style="width: 130px;">底分类型</label>
+                    <div class="layui-input-inline">
+                        <select name="CellScoreType" id="CellScoreType"  lay-filter="CellScoreType">
+                            <option value="0" {if $roomdata.CellScoreType == 0} selected {/if}>程序自动计算</option>
+                            <option value="1" {if $roomdata.CellScoreType == 1} selected {/if}>房间对局分</option>
+                            <option value="2" {if $roomdata.CellScoreType == 2} selected {/if}>玩家对局分</option>
+                        </select>
+                    </div>
+                    <div id="CellScore2" style="display: none">
+                        <label class="layui-form-label" style="width: 130px;">房间对局底分：</label>
+                        <div class="layui-input-inline">
+                            <input type="text" id="CellScore" name='CellScore' lay-verify="number" value="{$roomdata.CellScore}"  autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-tab-item">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">桌子类型</label>
+                    <div class="layui-input-block">
+                    <select name="TableSchemeId" id="TableSchemeId">
+                        {foreach $tablelist as $k => $v}
+                        <option value="{$v.tableschemeid}" {if $roomdata.TableSchemeId == $v.tableschemeid} selected {/if}>{$v.schemename}</option>
+                        {/foreach}
+                    </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 30%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >修改</a>
+            <a class="layui-btn layui-btn-primary layui-btn-radius" id="cancel" >取消</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+	    base: '__layui__/' //静态资源所在路径
+    }).extend({
+	    index: 'lib/index' //主入口模块
+
+    }).use(['table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+	    var layer = layui.layer
+		    , $ = layui.$
+		    , form = layui.form
+		    , element = layui.element;
+	    form.render();
+	    element.render();
+
+	    var main = {
+		    bindEvent: function () {
+			    form.on('submit(addit)', function (data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                });
+
+                //监听体验房点击事件
+               form.on('checkbox(exproom)', function (data) {
+                   var checked = data.elem.checked;
+                   if (checked == true) {
+                       $('#exproommoney').show();
+                   } else {
+                       $('#exproommoney').hide();
+                   }
+               });
+                //监听等待开始游戏点击事件
+                form.on('select(StartMode)', function (data) {
+                    var value = data.value;
+                    if (value == 2) {
+                        $('#startmode2').show();
+                    } else {
+                        $('#startmode2').hide();
+                    }
+                });
+                //监听游戏对局
+                form.on('select(CellScoreType)', function (data) {
+                    var value = data.value;
+                    if (value == 1) {
+                        $('#CellScore2').show();
+                    } else {
+                        $('#CellScore2').hide();
+                    }
+                });
+                //监听游戏点击事件
+                form.on('select(KindID)', function (data) {
+                    var value = data.value;
+                    $('#extradata').hide();
+                    main.getKindInfo(value);
+                    main.checkBuyu(value);
+                });
+            },
+
+            //体验房判断
+            setExp(checked) {
+                if (checked == 'checked') {
+                    $('#exproommoney').show();
+                } else {
+                    $('#exproommoney').hide();
+                }
+            },
+
+            //等待开始游戏判断
+            setStartMode() {
+                var startmode = $('#StartMode').val();
+                if (startmode == 2) {
+                    $('#startmode2').show();
+                }
+            },
+            //低分类型判断
+            setCellscore() {
+                var cellscore = $('#CellScoreType').val();
+                if (cellscore == 1) {
+                    $('#CellScore2').show();
+                }
+            },
+
+            //获取游戏信息
+            getKindInfo : function (kindid) {
+                $.ajax({
+                    type:'post',
+                    url:"{:url('yunwei/getKindInfo')}",
+                    data:{
+                        'kindid' : kindid,
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            if (res.data != '') {
+                                $('#extradatalabel').html(res.data);
+                                $('#extradata').show();
+                            } else {
+                                $('#extradata').hide();
+                            }
+                        }
+                    }
+                });
+            },
+
+            //捕鱼房间判断 隐藏库存保护比例
+            checkBuyu(kindid) {
+                if (kindid==1200) {
+                    $('#checkStorageProtectRate').hide();
+                } else {
+                    $('#checkStorageProtectRate').show();
+                }
+            },
+
+            //添加
+            submitForm : function(data) {
+                var RoomID=$('#RoomID').val();
+                var KindID=$('#KindID').val();
+                /*房间类型*/
+                var RoomType=$('#RoomType').val();
+                var PCheating = $('input[id="PCheating"]:checked').val();
+                var HundredRoom = $('input[id="HundredRoom"]:checked').val();
+                var expRoom = $('input[id="expRoom"]:checked').val();
+                if(!isNaN(PCheating)) RoomType = parseInt(RoomType)+parseInt(PCheating);
+                if(!isNaN(expRoom)) RoomType = parseInt(RoomType)+parseInt(expRoom);
+                if(!isNaN(HundredRoom)) RoomType = parseInt(RoomType)+parseInt(HundredRoom);
+                var LuckyEggTaxRate = $('#LuckyEggTaxRate').val();
+                var ExpMoney=$('#ExpMoney').val();
+                var ServerID=$('#ServerID').val();
+                var RoomName=$('#RoomName').val();
+                var MaxTableCount=$('#MaxTableCount').val();
+                var MaxPlayerCount=$('#MaxPlayerCount').val();
+                var EnterPrompt=$('#EnterPrompt').val();
+                var RulePrompt=$('#RulePrompt').val();
+
+
+                var AllowLook=$('#AllowLook').val();
+                var StartMode=$('#StartMode').val();
+                var StartForMinUser=$('#StartForMinUser').val();
+                var CanJoinWhenPlaying=$('#CanJoinWhenPlaying').val();
+                var MaxLookUser=$('#MaxLookUser').val();
+                var AutoRun=$('#AutoRun').val();
+                var MaxSitTime=$('#MaxSitTime').val();
+                var MaxStartTime=$('#MaxStartTime').val();
+                var MaxFreeTime=$('#MaxFreeTime').val();
+                var SetFlag = $('input[id="SetFlag"]:checked').val();
+                if (isNaN(SetFlag)) {
+                    SetFlag = 0;
+                }
+                //if($('.SetFlag').attr('checked')) SetFlag += parseInt($(this).val());
+                var RobotJoinWhenPlaying =$('input[id="RobotJoinWhenPlaying"]:checked').val();
+                if (isNaN(RobotJoinWhenPlaying)) {
+                    RobotJoinWhenPlaying = 0;
+                }
+                //if($('.RobotJoinWhenPlaying').attr('checked')) RobotJoinWhenPlaying += parseInt($(this).val());
+                var CustomField=$('#CustomField').val();
+                var RoomWealthMin=$('#RoomWealthMin').val();
+                var RoomNumMax1=$('#RoomNumMax1').val();
+                var TableWealthMin=$('#TableWealthMin').val();
+                var RoomNumMax2=$('#RoomNumMax2').val();
+
+                var CellScoreType=$('#CellScoreType').val();
+                var CellScore=$('#CellScore').val();
+                var TableSchemeId=$('#TableSchemeId').val();
+
+                var SysMaxLoseMoneyPerRound=$('#SysMaxLoseMoneyPerRound').val();
+                var MaxBetMoneyPerRound=$('#MaxBetMoneyPerRound').val();
+                var StorageProtectRate=$('#StorageProtectRate').val();
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'RoomID' : RoomID,
+                        'KindID' : KindID,
+                        'RoomType' : RoomType,
+                        'LuckyEggTaxRate' : LuckyEggTaxRate,
+                        'ExpMoney' : ExpMoney,
+                        'ServerID' : ServerID,
+                        'RoomName' : RoomName,
+                        'MaxTableCount' : MaxTableCount,
+                        'MaxPlayerCount' : MaxPlayerCount,
+                        'EnterPrompt' : EnterPrompt,
+                        'RulePrompt' : RulePrompt,
+                        'AllowLook' : AllowLook,
+                        'StartMode' : StartMode,
+                        'StartForMinUser' : StartForMinUser,
+                        'CanJoinWhenPlaying' : CanJoinWhenPlaying,
+                        'MaxLookUser' : MaxLookUser,
+                        'AutoRun' : AutoRun,
+                        'MaxSitTime' : MaxSitTime,
+                        'SetFlag' : SetFlag,
+                        'CustomField' : CustomField,
+                        'RoomWealthMin' : RoomWealthMin,
+                        'RoomNumMax1' : RoomNumMax1,
+                        'RobotJoinWhenPlaying' : RobotJoinWhenPlaying,
+                        'CellScore' : CellScore,
+                        'CellScoreType' : CellScoreType,
+                        'RoomNumMax2' : RoomNumMax2,
+                        'TableWealthMin' : TableWealthMin,
+                        'TableSchemeId' : TableSchemeId,
+                        'SysMaxLoseMoneyPerRound' : SysMaxLoseMoneyPerRound,
+                        'MaxBetMoneyPerRound' : MaxBetMoneyPerRound,
+                        'StorageProtectRate' : StorageProtectRate,
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg('操作成功',{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+                            layer.msg('操作失败', {icon:2});
+                        }
+                    }
+                });
+            },
+
+            init : function () {
+                main.bindEvent();
+                //初始化获取游戏种类信息
+                main.getKindInfo($('#KindID').val());
+                //是否体验房
+                main.setExp($('#expRoom').attr('checked'));
+                //等待开始游戏
+                main.setStartMode();
+                //低分判断
+                main.setCellscore();
+                //初始化捕鱼房间判断
+                main.checkBuyu($('#KindID').val());
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

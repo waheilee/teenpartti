@@ -1,0 +1,212 @@
+index.html{extend name="common/base" /}
+
+{block name="title"}充值汇总{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<!-- <div class="layui-row layui-col-space20">
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('总充值')}</div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="total1">0</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('总提现')}</div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="total2">0</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('总流水')}</div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="total3">0</p>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('总税收')}</div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="total4">0</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('玩家输赢')}</div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="total5">0</p>
+            </div>
+        </div>
+    </div>
+
+</div> -->
+
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+            	 <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('玩家ID')}：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="RoleId" name="RoleId" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                {if(config('is_portrait') == 1)}
+                <div class="layui-input-inline">
+                        <input type="text" id="OperatorId" name="OperatorId" placeholder="{:lang('渠道ID')}" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                {/if}
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('开始时间')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="date" id="LAY-component-form-group-date" autocomplete="off" class="layui-input" value="{:date('Y-m-d 00:00:00')}">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('结束时间')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="date" id="LAY-component-form-group-date2" autocomplete="off" class="layui-input" value="{:date('Y-m-d 23:59:59')}">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                        <button type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <div class="layui-row layui-col-space15">
+            <div id="alllist" class="layui-col-md12">
+                <table id="proxylist" lay-filter="proxylist"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+
+<script>
+
+	url = "{:url('player/gameDailyReport')}";
+	layui.config({base: '__layui__/'}).extend({index: 'lib/index'}).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
+		var cols = [ //表头
+			{field: 'RoleId', align: 'center', title: "{:lang('玩家ID')}", minWidth: 110}
+            ,{field: 'proxyId', align: 'center', title: "{if(config('is_portrait')==1)}{:lang('推广ID')}{else/}{:lang('渠道ID')}{/if}", minWidth: 110}
+			,{field: 'AddTime', align: 'center', title: "{:lang('日期')}", minWidth: 110}
+			, {field: 'RoomName', align: 'center', title: "{:lang('房间')}", minWidth: 200}
+			, {field: 'GameRoundRunning', align: 'center', title: "{:lang('流水')}", minWidth: 200, sort: true,templet: function (d) {return d.GameRoundRunning/ bl }}
+            , {field: '', align: 'center', title: "{:lang('税收')}", minWidth: 200,templet: function (d) {return d.Tax/ bl }}
+			, {field: 'TotalWin', align: 'center', title: "{:lang('游戏盈亏')}", minWidth: 200, sort: true, templet: function (d) {return d.TotalWin/bl}}
+		];
+        var is_portrait = "{:config('is_portrait')}";
+        if (is_portrait == 1) {
+            cols.splice(1,0,{field: 'OperatorId', align: 'center', title: "{:lang('渠道ID')}", width: 150})
+        }
+		var main = {
+			renderData: function () {
+				table.render({
+					elem: '#proxylist', url: url, page: true, cols: [cols],autoSort:false,
+					where: {'status': -1, Action: 'list'},
+					limit: 15, done: function (res) {
+						data = res.other;
+						$('#total1').html(data.TotalPay);
+						$('#total2').html(data.TotalPayOut/ bl);
+						$('#total3').html(data.TotalWater/ bl);
+						$('#total4').html(data.Tax/ bl);
+                        $('#total5').html(data.TotalWin/ bl);
+					}
+				});
+			},
+			//搜索
+			search: function () {
+				table.reload('proxylist', { //执行重载
+					page: {curr: 1},
+					where: {
+						roleid: $.trim($('#RoleId').val()),
+						start: $.trim($('#LAY-component-form-group-date').val()),
+                        end: $.trim($('#LAY-component-form-group-date2').val()),
+                        OperatorId: $.trim($('#OperatorId').val()),
+					}
+				});
+			},
+            //操作事件
+            extraEvent: function () {
+                //排序
+                table.on('sort(proxylist)', function (obj) {
+                    //执行重载
+                    table.reload('proxylist', {
+                        initSort: obj,
+                        page: {
+                            curr: 1 //重新从第 1 页开始
+                        },
+                        where: {
+                            roleid: $.trim($('#RoleId').val()),
+                            start: $.trim($('#LAY-component-form-group-date').val()),
+                            end: $.trim($('#LAY-component-form-group-date2').val()),
+                            OperatorId: $.trim($('#OperatorId').val()),
+                            ordertype: obj.type,
+                            orderfield: obj.field
+                        }
+                    });
+
+                });
+            },
+			init: function () {
+				main.renderData();
+                main.extraEvent();
+				laydate.render(
+				    {
+                        elem: '#LAY-component-form-group-date',
+                        format: 'yyyy-MM-dd HH:mm:ss',
+                        max: 1,
+                        lang:'{$datelang ?: "cn"}',
+                        btns: ['clear', 'confirm'],
+                        type:'datetime'
+
+				    });
+				laydate.render(
+				    {
+                        elem: '#LAY-component-form-group-date2',
+                        format: 'yyyy-MM-dd HH:mm:ss',
+                        max: 1,
+                        lang:'{$datelang ?: "cn"}',
+                        btns: ['clear', 'confirm'],
+                        type:'datetime'
+				    }
+                    );
+				$('#search').on('click', function (e) {
+					e.preventDefault();
+					main.search();
+				});
+			}
+		};
+
+		main.init();
+	});
+
+</script>
+{/block}

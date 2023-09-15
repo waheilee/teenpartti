@@ -1,0 +1,399 @@
+{extend name="common/base" /}
+
+{block name="title"}每日运营商报表{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('日期')}</label>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="end" id="LAY-component-form-group-date2" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('渠道ID')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" class="layui-input" name="channelid" id="channelid" placeholder="渠道ID"
+                               value="">
+                    </div>
+                    <!-- <div class="layui-form-mid">-</div>
+                    <div class="layui-input-inline">
+                        <input type="text" class="layui-input" name="end_date" id="end_date" placeholder="yyyy-MM-dd">
+                    </div> -->
+                </div>
+
+                <div class="layui-inline">
+                    <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                    <button type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>
+                    <a class="layui-btn" id="output">{:lang('导出记录')}</a>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script type="text/html" id="formatScaling">
+
+</script>
+<script>
+    var bl = "{$bl}" ? Number("{$bl}") : 1000;
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'Date', title: "{:lang('日期')}",fixed:'true', minWidth: 120, align: 'center'}
+                    , {field: 'OperatorId', title: "{:lang('渠道')}",fixed:'true', minWidth: 100, align: 'center'}
+                    , {field: 'OperatorName', title: "{:lang('渠道名称')}",fixed:'true', minWidth: 100, align: 'center'}
+                    , {
+                        field: 'TotalRecharge',
+                        title: "{:lang('充值')}",
+                        minWidth: 100,
+                        align: 'center',
+                        templet: function (d) {
+                            return formatDecimal(d.TotalRecharge / bl, 0);
+                        }
+                    }
+                    , {
+                        field: '',
+                        title: "{:lang('提现')}",
+                        minWidth: 100,
+                        align: 'center',
+                        templet: function (d) {
+                            return formatDecimal(d.TotalWithDraw / bl, 0);
+                        }
+                    }
+                    , {
+                        field: '', title: "{:lang('充值费')}", minWidth: 100, align: 'center', templet: function (d) {
+                            return formatDecimal(d.chargefee / bl, 0);
+                        }
+                    }
+                    , {
+                        field: '', title: "{:lang('提现费')}", minWidth: 120, align: 'center', templet: function (d) {
+                            return formatDecimal(d.withdrawfee / bl, 0);
+                        }
+                    }
+                    , {
+                        field: '', title: "{:lang('毛利')}", minWidth: 120, align: 'center', templet: function (d) {
+                            return formatDecimal(d.recharge_profit / bl, 0);
+                        }
+                    }
+                    , {
+                        field: '', title: "{:lang('投注')}", minWidth: 120, align: 'center', templet: function (d) {
+                            return formatDecimal(d.TotalDayConsume / bl, 0);
+                        }
+                    }
+                    , {
+                        field: '',
+                        title: "{:lang('中奖')}",
+                        minWidth: 120,
+                        align: 'center',
+                        templet: function (d) {
+                            return formatDecimal(d.GameCoinProduct / bl, 0);
+                        }
+                    }
+                    , {
+                        field: '',
+                        title: "{:lang('游戏RTP%')}",
+                        minWidth: 100,
+                        align: 'center',
+                        templet: function (d) {
+                            return d.GameRTP;
+                        }
+                    }
+                    , {
+                        field: '',
+                        title: "{:lang('流水佣金')}",
+                        minWidth: 120,
+                        align: 'center',
+                        templet: function (d) {
+                            return formatDecimal(d.RunningBonus / bl, 0);
+                        }
+                    }
+                    , {
+                        field: '',
+                        title: "{:lang('占充值%')}",
+                        minWidth: 130,
+                        align: 'center',
+                        templet: function (d) {
+                            return d.running_charge_rate;
+                        }
+                    }
+                    , {
+                        field: '',
+                        title: "{:lang('占流水%')}",
+                        minWidth: 100,
+                        align: 'center',
+                        templet: function (d) {
+                            return d.running_bet_rate;
+                        }
+                    }
+                    , {
+                        field: '',
+                        title: "{:lang('邀请奖励')}",
+                        minWidth: 120,
+                        align: 'center',
+                        templet: function (d) {
+                            return formatDecimal(d.InviteBonus / bl, 0);
+                        }
+                    }
+                    , {
+                        field: '',
+                        title: "{:lang('占充值%')}",
+                        minWidth: 100,
+                        align: 'center',
+                        templet: function (d) {
+                            return d.invitebonus_charge_rate;
+                        }
+                    }
+                    , {
+                        field: '',
+                        title: "{:lang('首充返上')}",
+                        minWidth: 120,
+                        align: 'center',
+                        templet: function (d) {
+                            return formatDecimal(d.FirstChargeBonus / bl, 0);
+                        }
+                    }
+                    , {
+                        field: 'first_charge_amount',
+                        title: "{:lang('占充值%')}",
+                        minWidth: 100,
+                        align: 'center',
+                        templet: function (d) {
+                            return d.firstchargebonus_charge_rate;
+                        }
+                    }
+                    , {
+                        field: '',
+                        title: "{:lang('代理佣金')}",
+                        minWidth: 120,
+                        align: 'center',
+                        templet: function (d) {
+                            return formatDecimal(d.agent_bonus / bl, 0);
+                        }
+                    }
+                    , {
+                        field: '',
+                        title: "{:lang('占充值%')}",
+                        minWidth: 100,
+                        align: 'center',
+                        templet: function (d) {
+                            return d.agentbonus_charge_rate;
+                        }
+                    }
+                    , {
+                        field: '',
+                        title: "{:lang('首充赠送')}",
+                        minWidth: 120,
+                        align: 'center',
+                        templet: function (d) {
+                            return formatDecimal(d.first_charge_bonus / bl, 0);
+                        }
+                    }
+                    , {
+                        field: 'sigle_charge_bonus',
+                        title: "{:lang('单笔赠送')}",
+                        minWidth: 120,
+                        align: 'center',
+                        templet: function (d) {
+                            return formatDecimal(d.sigle_charge_bonus / bl, 0);
+                        }
+                    }
+                    , {
+                        field: 'sigle_dailycharge_bonus',
+                        title: "{:lang('日充赠送')}",
+                        minWidth: 120,
+                        align: 'center',
+                        templet: function (d) {
+                            return formatDecimal(d.sigle_dailycharge_bonus / bl, 0);
+                        }
+                    }
+                    , {
+                        field: '',
+                        title: "{:lang('充值赠送')}",
+                        minWidth: 120,
+                        align: 'center',
+                        templet: function (d) {
+                            return formatDecimal(d.recharge_coin / bl, 0);
+                        }
+                    }
+                    , {
+                        field: 'first_charge_amount',
+                        title: "{:lang('占充值%')}",
+                        minWidth: 120,
+                        align: 'center',
+                        templet: function (d) {
+                            return d.chargebonus_charge_rate;
+                        }
+                    }
+                    , {
+                        field: '',
+                        title: "{:lang('每日签到')}",
+                        minWidth: 120,
+                        align: 'center',
+                        templet: function (d) {
+                            return formatDecimal(d.daily_sign / bl, 0);
+                        }
+                    }
+                    , {
+                        field: '',
+                        title: "{:lang('周签到')}",
+                        minWidth: 120,
+                        align: 'center',
+                        templet: function (d) {
+                            return formatDecimal(d.weekly_sign / bl, 0);
+                        }
+                    }
+                    , {
+                        field: '',
+                        title: "{:lang('月签到')}",
+                        minWidth: 100,
+                        align: 'center',
+                        templet: function (d) {
+                            return formatDecimal(d.monthly_sign / bl, 0);
+                        }
+                    }
+                    , {
+                        field: '',
+                        title: "{:lang('VIP升级')}",
+                        minWidth: 120,
+                        align: 'center',
+                        templet: function (d) {
+                            return formatDecimal(d.vip_upgrade / bl, 0);
+                        }
+                    }
+                    , {
+                        field: '',
+                        title: "{:lang('VIP充值返利')}",
+                        minWidth: 120,
+                        align: 'center',
+                        templet: function (d) {
+                            return formatDecimal(d.recharge_bonus / bl, 0);
+                        }
+                    }
+                    , {
+                        field: '',
+                        title: "{:lang('流水返利')}",
+                        minWidth: 120,
+                        align: 'center',
+                        templet: function (d) {
+                            return formatDecimal(d.running_bonus / bl, 0);
+                        }
+                    }
+                    , {
+                        field: '',
+                        title: "{:lang('vip奖励')}",
+                        minWidth: 120,
+                        align: 'center',
+                        templet: function (d) {
+                            return formatDecimal(d.vip_bouns_sum / bl, 0);
+                        }
+                    }
+                    , {
+                        field: '',
+                        title: "{:lang('占充值%')}",
+                        minWidth: 100,
+                        align: 'center',
+                        templet: function (d) {
+                            return d.vip_bouns_sum_rate;
+                        }
+                    }
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('Statistical/operatorDailyData')}" //数据接口
+                    , where:{'exec': 'list','action':'list'}
+                    , page: true //开启分页
+                    , limit: 15
+                    , cols: [cols]
+                });
+            },
+
+            //搜索
+            search: function () {
+                var strartdate = $.trim($('#LAY-component-form-group-date').val());
+                var enddate = $.trim($('#LAY-component-form-group-date2').val());
+                var channelid = $.trim($('#channelid').val());
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'exec': 'list',
+                        'start': strartdate,
+                        'end': enddate,
+                        'channelid':channelid
+                    }
+                });
+            },
+
+            init: function () {
+                main.renderData();
+                laydate.render({
+                    elem: '#LAY-component-form-group-date'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , lang: '{$datelang ?: "cn"}'
+                    , btns: ['clear', 'confirm']
+                });
+                laydate.render({
+                    elem: '#LAY-component-form-group-date2'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , lang: '{$datelang ?: "cn"}'
+                    , btns: ['clear', 'confirm']
+                });
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+    $('#output').click(function () {
+        var start = $.trim($('#LAY-component-form-group-date').val());
+        var end = $.trim($('#LAY-component-form-group-date2').val());
+        var channelid = $.trim($('#channelid').val());
+        var url = "{:url('Statistical/operatorDailyData')}?action=list&limit=10000000&exec=output&start=" + start + '&end=' + end+'&channelid='+channelid;
+        location.href = url;
+    });
+</script>
+{/block}

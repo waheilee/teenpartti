@@ -1,0 +1,509 @@
+{extend name="common/base" /}
+
+{block name="title"}游戏日志{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<style>.layui-form-label {
+    width: auto;
+    text-align: center
+}
+.layui-anim{
+        max-height: 500px !important;
+    }</style>
+<div class="layui-row layui-col-space20">
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('总投注')}</span>
+                <a class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="GameRoundRunning" style="color: #009688">0</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('总中奖')}</span>
+                <a class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="AwardMoney" style="color: #009688">0</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue "> {:lang('未中奖')}</span>
+                <a class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="UnAwardMoney" style="color: #009688">0</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue "> {:lang('总税收')}</span>
+                <a class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="TotalTax" style="color: #009688">0</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue "> {:lang('总输赢')}</span>
+                <a class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="TotalWin" style="color: #009688">0</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+<div class="layui-card" style="margin-top: 10px;">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('玩家ID')}</label>
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="roleid" value="{$roleid}" lay-verify="number" name="roleid"
+                               type="text">
+                    </div>
+                    <!--                    <div class="layui-inline">-->
+                    <!--                        <label class="layui-form-label">玩家账号</label>-->
+                    <!--                        <div class="layui-input-inline">-->
+                    <!--                            <input autocomplete="off" class="layui-input" id="mobile" name="mobile" placeholder="玩家账号"-->
+                    <!--                                   type="text">-->
+                    <!--                        </div>-->
+                    <!--                    </div>-->
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('日期')}</label>
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date" name="start"
+                               type="text">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date2" name="end"
+                               type="text" value="">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('房间')}</label>
+                    <div class="layui-input-inline">
+                        <select name="roomid" id="roomid"  lay-search>
+                            <option value="0">{:lang('所有')}</option>
+                            <!-- foreach循环 -->
+                            {foreach name="selectData" item="vo"}
+                            <option value="{$vo.RoomID}">{$vo.RoomName}</option>
+                            {/foreach}
+                            <!-- for循环 -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('游戏结果')}</label>
+                    <div class="layui-input-inline">
+                        <select name="result" id="result">
+                            <option value="-1">{:lang('所有')}</option>
+                            <option value="0">{:lang('赢')}</option>
+                            <option value="1">{:lang('输')}</option>
+                            <option value="2">{:lang('和')}</option>
+                            <option value="3">{:lang('逃')}</option>
+                            <option value="5">{:lang('下注')}</option>
+                            <!--                            <option value="4">扫雷发红包</option>-->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <!-- <div class="layui-input-inline"> -->
+                        <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                        <a class="layui-btn" id="output">{:lang('导出记录')}</a>
+                    <!-- </div> -->
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+
+<script type="text/html" id="msg-bar">
+
+    {{#  if(!(RegExp(/红包扫雷/).test(d.roomname) || RegExp(/李逵劈鱼/).test(d.roomname) || RegExp(/水果拉霸/).test(d.roomname))){ }}
+    <a class="layui-btn layui-btn-xs " lay-event="benju">{:lang('查看结果')}</a>
+    {{#  } }}
+    <!--<a class="layui-btn layui-btn-xs" lay-event="tongchang">同场数据</a>-->
+
+
+</script>
+<script>
+	url = "{:url('player/gamelog2')}";
+	layui.config({base: '__layui__/'}).extend({
+		index: 'lib/index'
+	}).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$,
+			form = layui.form;
+		//初始赋值
+		var date = new Date();
+		var nowYear = date.getFullYear();
+		var month = ("0" + (date.getMonth() + 1)).slice(-2);
+		var day = ("0" + date.getDate()).slice(-2);
+		var today = nowYear + "-" + (month) + "-" + (day);
+
+		// laydate.render({elem: '#LAY-component-form-group-date', lang:'{$datelang ?: "cn"}',isInitValue: true});
+		// laydate.render({elem: '#LAY-component-form-group-date2',  lang:'{$datelang ?: "cn"}',isInitValue: true});
+		var strartdate = $.trim($('#LAY-component-form-group-date').val());
+		var enddate = $.trim($('#LAY-component-form-group-date2').val());
+		var main = {
+			renderData: function () {
+				var cols = [ //表头
+					{field: 'RoleID', align: 'center', title: '{:lang('玩家ID')}', minWidth: 100, templet: function (d) {
+                            return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.RoleID + "</a>";
+                        }
+                    },
+					// {field: 'AccountName', title: '账号名称', minWidth: 120},
+					{field: 'RoomID', align: 'center', title: "{:lang('房间ID')}", minWidth: 100}, //                    ,{field: 'kindname', title: '游戏种类', minWidth: 120}
+					{field: 'RoomName', align: 'center', title: "{:lang('房间名')}", minWidth: 150},
+					{
+						field: 'ChangeType', align: 'center', title: "{:lang('输赢')}", minWidth: 150, templet: function (d) {
+							switch (Number(d.ChangeType)) {
+								case  0:
+									return "{:lang('赢')}";
+								case  1:
+									return "{:lang('输')}";
+								case  2:
+									return "{:lang('和')}";
+								case  3:
+									return "{:lang('逃')}";
+								case  4:
+									return "{:lang('扫雷发红包')}";
+                                case  5:
+                                    return "{:lang('下注')}";
+								case  6:
+									return "{:lang('免费道具')}";
+								default :
+									return Number(d.ChangeType);
+							}
+						}
+					},
+					{
+						field: 'FreeGame', align: 'center', title: "{:lang('免费游戏')}", align: "center", minWidth: 100, templet: function (d) {
+							if (d.FreeGame == '是') return '<span style="color:#FF5722"> ' + "{:lang('是')}" + '</span>';
+							return '<span style="color:#009688"> ' + "{:lang('否')}" + '</span>';
+						}
+					},
+					{field: 'GameRoundRunning', align: 'center', title: "{:lang('下注金额')}", minWidth: 120},
+					{
+						field: 'Money', align: 'center', title: "{:lang('输赢金币')}", minWidth: 220, sort: 'true', templet: function (d) {
+							return d.Money > 0 ? '<span style="color:#FF5722">' + d.Money + '</span>' : '<span style="color:#009688">' + d.Money + '</span>';
+						}
+					},
+					{field: 'AwardMoney', align: 'center', title: "{:lang('中奖金额')}", minWidth: 180, sort: 'true'},
+					{field: 'PreMoney', align: 'center', title: "{:lang('上局金币')}", minWidth: 200},
+					{field: 'LastMoney', align: 'center', title: "{:lang('当前金币')}", minWidth: 150},
+					{field: 'Tax', align: 'center', title: "{:lang('税收')}", minWidth: 150},
+					{field: 'AddTime', align: 'center', title: "{:lang('时间')}", minWidth: 180},
+					{fixed: 'right', align: 'center', title: "{:lang('操作')}", align: 'center', minWidth: 150, toolbar: '#msg-bar'}];
+				table.render({
+					elem: '#proxylist', url: url,
+					page: true,
+					autoSort: false,
+					limit: 15,
+					where: {
+						Action: 'list',
+						// roleid: $.trim($('#roleid').val()),
+						// winlost: $.trim($('#result').val()),
+						// strartdate: strartdate,
+						// enddate: enddate,
+
+					}, cols: [cols], done: function (res, curr, count) {
+                        $('#GameRoundRunning').html(res.other.GameRoundRunning);
+                        $('#AwardMoney').html(res.other.AwardMoney);
+                        $('#UnAwardMoney').html(res.other.UnAwardMoney);
+                        $('#TotalWin').html(res.other.TotalWin);
+                        $('#TotalTax').html(res.other.TotalTax);
+						tzTbale()
+					}
+				});
+			},
+
+			//搜索
+			search: function () {
+				//执行重载
+				table.reload('proxylist', {
+					page: {curr: 1}, where: {
+						roleid: $.trim($('#roleid').val()),
+						roomid: $.trim($('#roomid').val()),
+						strartdate: $.trim($('#LAY-component-form-group-date').val()),
+						enddate: $.trim($('#LAY-component-form-group-date2').val()),
+						winlost: $.trim($('#result').val())
+					}
+				});
+			},
+
+			//操作事件
+			extraEvent: function () {
+				//编辑
+				table.on('tool(proxylist)', function (obj) {
+					var data = obj.data //获得当前行数据
+						, layEvent = obj.event; //获得 lay-event 对应的值
+					tr = obj.tr; //获得当前行 tr 的DOM对象
+					if (layEvent === 'tongchang') {
+						window.location.href = 'coPlayer.html?roomid=' + $('#roomid').val();
+						var roomid = $("#tt").val();
+
+					} else if (layEvent === 'benju') { //删除
+
+						var roomname = data.RoomName;
+						var roomid =data.RoomID;
+						console.log(roomname);
+						var brnn = RegExp(/百人/);
+						var doudizhu = RegExp(/斗地主/);
+						var bcbm = RegExp(/奔驰宝马/);
+						var mpqz = RegExp(/明牌抢庄/);
+						var bjl = RegExp(/百家乐/);
+						var dzpk = RegExp(/德州扑克/);
+						var pj = RegExp(/牌九/);
+						var hlsb = RegExp(/欢乐骰宝/);
+						var lhd = RegExp(/龙虎斗/);
+						var mj = RegExp(/二人麻将/);
+						var zjh = RegExp(/炸金花/);
+						var jdnn = RegExp(/抢庄牛牛/);
+						var fqzs = RegExp(/飞禽走兽/);
+						var hhdz = RegExp(/红黑大战/);
+
+						var newGameKin = [2500, 2600, 2700, 2800, 2900, 3000, 3100, 3200, 3300, 3400, 3500,3600,3800,20200,20300]
+                        var bairenGameId =[3700,20000,20100];
+                        tb = data.AddTime.replace(/-/g, '').substr(0, 8);
+						if (newGameKin.includes(Number(data.KindID))) {
+
+							var url = "{:url('UserPackageManage/DiskRecord')}?UniqueId=" + data.SerialNumber + "&date=" + tb + "&UserID=" + data.RoleID + "&RoomID=" + data.RoomID;
+							x_admin_show(data.RoomName + "{:lang('详情')}", url, 1200, 700);
+							return;
+						}
+						else if(bairenGameId.includes(Number(data.KindID))){
+                            var url = "{:url('room/detailbairen')}?UniqueId=" + data.SerialNumber + "&date=" + tb + "&UserID=" + data.RoleID + "&RoomID=" + data.RoomID;
+                            x_admin_show(data.RoomName + "{:lang('详情')}", url, 1200, 700);
+                            return;
+                        }
+
+
+						if (data.RoomID >= 4000 && data.RoomID<20000) {
+							var url = 'detailtiger.html?uniqueid=' + data.SerialNumber + '&roomid=' + data.RoomID + '&userid=' + data.RoleID + '&roomname=' + data.RoomName + '&date=' + data.AddTime;
+							x_admin_show(data.RoomName + "{:lang('详情')}", url, 750, 600);
+							return;
+						} else if (data.RoomID == 3901) {
+							var url = 'detailbibei.html?uniqueid=' + data.SerialNumber + '&roomid=' + data.RoomID + '&userid=' + data.RoleID + '&roomname=' + data.RoomName + '&date=' + data.AddTime;
+							x_admin_show(data.RoomName + "{:lang('详情')}", url, 750, 600);
+							return;
+						}
+						if (brnn.exec(roomname)) {
+							console.log('baire');
+//                            var url = 'detailBcbm.html?uniqueid='+data.serialnumber+'&roomid='+data.roomid;
+//                            var url = 'lookPartnerCardBrnn.html?roomid='+data.nRoomId;
+							var url = 'detailBrnn2.html?uniqueid=' + data.SerialNumber + '&roomid=' + data.RoomID+'&addtime='+tb;
+							x_admin_show("{:lang('查看伙牌')}", url, $(window).width() * 0.7, 550);
+						} else if (pj.exec(roomname)) {
+							var url = 'detailBrnn2.html?uniqueid=' + data.SerialNumber + '&roomid=' + data.RoomID+'&addtime='+tb;
+							x_admin_show("{:lang('查看伙牌')}", url, $(window).width() * 0.7, 430);
+
+						} else if (doudizhu.exec(roomname)) {
+							var url = 'detail.html?uniqueid=' + data.SerialNumber + '&roomid=' + data.RoomID+'&addtime='+tb;
+							x_admin_show("{:lang('查看伙牌')}", url, $(window).width() * 0.7, 550);
+						} else if (Number(data.KindID) == 2100) {
+//                            var url = 'lookPartnerCardBcbm.html?roomid='+data.nRoomId;
+							var url = 'detailBcbm2.html?uniqueid=' + data.SerialNumber + '&roomid=' + data.RoomID+'&addtime='+tb;
+							x_admin_show("{:lang('查看伙牌')}", url, $(window).width() * 0.7, 430);
+
+						} else if (bjl.exec(roomname)) {
+//                            var url = 'lookPartnerCardBjl.html?roomid='+data.nRoomId;
+							var url = 'detailBjl2.html?uniqueid=' + data.SerialNumber + '&roomid=' + data.RoomID+'&addtime='+tb;
+							x_admin_show("{:lang('查看伙牌')}", url, $(window).width() * 0.7, 430);
+
+						} else if (dzpk.exec(roomname)) {
+//                            var url = 'lookPartnerCardDzpk.html?roomid='+data.nRoomId;
+							var url = 'detailDzpk2.html?uniqueid=' + data.SerialNumber + '&roomid=' + data.RoomID+'&addtime='+tb;
+							x_admin_show("{:lang('查看伙牌')}", url, $(window).width() * 0.7, 430);
+
+						}  else if (hlsb.exec(roomname)) {
+//                            var url = 'lookPartnerCardHlsb.html?roomid='+data.nRoomId;
+							var url = 'detailHlsb2.html?uniqueid=' + data.SerialNumber + '&roomid=' + data.RoomID+'&addtime='+tb;
+							x_admin_show("{:lang('查看伙牌')}", url, $(window).width() * 0.7, 430);
+
+						} else if (Number(data.KindID)==1100) {
+//                            var url = 'lookPartnerCardLonghudou.html?roomid='+data.nRoomId;
+							var url = 'detailLonghudou2.html?uniqueid=' + data.SerialNumber + '&roomid=' + data.RoomID+'&addtime='+tb;
+							x_admin_show("{:lang('查看伙牌')}", url, $(window).width() * 0.7, 600);
+
+						} else if (mj.exec(roomname)) {
+//                            var url = 'lookPartnerCardMj.html?roomid='+data.nRoomId;
+							var url = 'detailMj.html?uniqueid=' + data.SerialNumber + '&roomid=' + data.RoomID+'&addtime='+tb;
+							x_admin_show("{:lang('查看伙牌')}", url, $(window).width() * 0.7, 430);
+
+						} else if (jdnn.exec(roomname)) {
+//                            var url = 'lookPartnerCardMpqz.html?roomid='+data.nRoomId;
+							var url = 'detailMpqz2.html?uniqueid=' + data.SerialNumber + '&roomid=' + data.RoomID+'&addtime='+tb;
+							x_admin_show("{:lang('查看伙牌')}", url, $(window).width() * 0.7, 430);
+
+						} else if (mpqz.exec(roomname)) {
+//                            var url = 'lookPartnerCardMpqz.html?roomid='+data.nRoomId;
+							var url = 'detailMpqz2.html?uniqueid=' + data.SerialNumber + '&roomid=' + data.RoomID+'&addtime='+tb;
+							x_admin_show("{:lang('查看伙牌')}", url, $(window).width() * 0.7, 430);
+
+						} else if (fqzs.exec(roomname)) {
+//                            var url = 'lookPartnerCardBcbm.html?roomid='+data.nRoomId;
+							var url = 'detail_fqzs.html?uniqueid=' + data.SerialNumber + '&roomid=' + data.RoomID+'&addtime='+tb;
+							x_admin_show("{:lang('查看伙牌')}", url, $(window).width() * 0.7, 430);
+
+						} else if (hhdz.exec(roomname)) {
+//                            var url = 'lookPartnerCardLonghudou.html?roomid='+data.nRoomId;
+							var url = 'detailHlsb2.html?uniqueid=' + data.SerialNumber + '&roomid=' + data.RoomID+'&addtime='+tb;
+							x_admin_show("{:lang('查看伙牌')}", url, $(window).width() * 0.7, 430);
+
+						} else if (zjh.exec(roomname)) {
+//                            var url = 'lookPartnerCardZjh.html?roomid='+data.nRoomId;
+							var url = 'detailZjh2.html?uniqueid=' + data.SerialNumber + '&roomid=' + data.RoomID+'&addtime='+tb;
+							x_admin_show("{:lang('查看伙牌')}", url, $(window).width() * 0.7, 430);
+
+						} else { layer.msg('{:lang("暂无数据")}', {icon: 5});}
+					} else  if (layEvent === 'detail') {
+                        var url = '/player/playerDetail?roleid=' + data.RoleID;
+                        x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.6);
+                    }
+				});
+				//排序
+				table.on('sort(proxylist)', function (obj) {
+					// console.log(obj.field); //当前排序的字段名
+					// console.log(obj.type); //当前排序类型：desc（降序）、asc（升序）、null（空对象，默认排序）
+					// console.log(this); //当前排序的 th 对象
+					//执行重载
+					table.reload('proxylist', {
+						initSort: obj, page: {curr: 1},
+						where: {'orderfield': obj.field, 'ordertype': obj.type,}
+					});
+
+				});
+			},
+
+			init: function () {
+				main.renderData();
+				main.extraEvent();
+				laydate.render({
+					elem: '#LAY-component-form-group-date'
+					, format: 'yyyy-MM-dd HH:mm:ss'
+					// , max: 1
+					, lang:'{$datelang ?: "cn"}'
+					, btns: ['clear', 'confirm']
+					, type: 'datetime'
+					// , value: new Date()
+				});
+				laydate.render({
+					elem: '#LAY-component-form-group-date2'
+					, format: 'yyyy-MM-dd HH:mm:ss'
+					// , max: 1
+					, lang:'{$datelang ?: "cn"}'
+					, btns: ['clear', 'confirm']
+					, type: 'datetime'
+                    , ready: function (date) {
+                        $(".layui-laydate-footer [lay-type='datetime'].laydate-btns-time").click();
+                        // 如果是datetime的范围选择，改变开始时间默认值
+                        $(".laydate-main-list-0 .layui-laydate-content li ol li:last-child").click();
+                        // 改变结束时间默认值
+                        $(".laydate-main-list-1 .layui-laydate-content li ol li:last-child").click();
+                        // 如果不是范围选择，只是日期时间选择
+                        $(".laydate-main-list-0 .layui-laydate-content li ol li:last-child").click();
+
+                        $(".layui-laydate-footer [lay-type='date'].laydate-btns-time").click();
+                    }
+					// , value: new Date()
+				});
+				$('#search').on('click', function (e) {
+					e.preventDefault();
+					main.search();
+				});
+			}
+		};
+
+		main.init();
+	});
+
+
+	$('#output').click(function () {
+		where = {
+			roleid: $.trim($('#roleid').val()),
+			roomid: $.trim($('#roomid').val()),
+			strartdate: $.trim($('#LAY-component-form-group-date').val()),
+			enddate: $.trim($('#LAY-component-form-group-date2').val()),
+			winlost: $.trim($('#result').val()),
+			limit: 10000000,
+			Action: 'exec',
+		}
+
+		download();
+
+		function download() {
+			var params = Object.keys(where).map(function (key) {
+				return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+			}).join("&");
+			url = url + "?" + params;
+			$.ajax({
+				type: 'POST',
+				dataType: 'json',
+				async: true,
+				url: url, // 生成文件，保存在服务器
+				success: function (data) {
+					var result = data;
+					// console.info(data);
+					switch (result["code"]) {
+						case 0:
+							parent.parent.open(url + "&exec=1&outall=true");
+							break;
+						case 1:
+							layer.msg(result["message"]);
+							break;
+						case 2:
+							layer.confirm(result['message'], {
+								btn: ["{:lang('是')}", "{:lang('否')}"] //按钮
+							}, function () {
+								parent.parent.open(url + "&exec=1&outall=true");
+								layer.msg('', {icon: 6, time: 1000}, function () {
+									window.location.reload();
+								});
+							});
+					}
+				},
+				error: function (XMLHttpRequest, textStatus, e) {
+					console.log("oilDetection.js  method exportOilDetection" + e);
+				}
+			});
+		}
+	});
+
+</script>
+{/block}

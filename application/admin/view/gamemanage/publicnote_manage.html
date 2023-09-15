@@ -1,0 +1,140 @@
+{extend name="common/base" /}
+
+{block name="title"}{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-card">
+    <div class="layui-card-body">
+        <a class="layui-btn" onclick="x_admin_show('{:lang("添加公告弹窗")}',' PublicnoteManage?Action=add', 700,600)" style="margin-bottom: 10px;">
+            <i class="layui-icon layui-icon-add-circle"></i>
+        </a>
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script id="msg-bar" type="text/html">
+    {{# if(d.Status==0){ }}
+    <a class="layui-btn layui-btn-xs" lay-event="send">{:lang("审核")}</a>
+    {{# }}}
+    <a class="layui-btn layui-btn-xs layui-bg-red" lay-event="del">{:lang("删除")}</a>
+    <a class="layui-btn layui-btn-xs layui-bg-blue" lay-event="edit">{:lang("编辑")}</a>
+</script>
+<script>
+	layui.config({
+		base: '__layui__/' //静态资源所在路径
+	}).extend({
+		index: 'lib/index' //主入口模块
+
+	}).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
+		url = "{:url('Gamemanage/PublicnoteManage')}"
+		var main = {
+			renderData: function () {
+				var cols = [ //表头
+					{field: 'MsgID', align: 'center', title: 'ID', width: 50},
+					{field: 'MsgTitle', title: '{:lang("标题")}', minWidth: 50},
+					{field: 'MsgContent', title: '{:lang("邮件文本")}', minWidth: 200},
+					{field: '', title: '{:lang("开始时间")}', minWidth: 150, templet: function (d) { return d.StartTime.substr(0, 19); }},
+					{field: '', title: '{:lang("结束时间")}', minWidth: 150, templet: function (d) { return d.EndTime.substr(0, 19); }},
+					{field: '', title: '{:lang("推送时间")}', minWidth: 150, templet: function (d) { return d.PushMsgTime.substr(0, 19); }},
+					{field: 'ClientIdentify', title: '{:lang("客户端标识")}', minWidth: 50},
+					{field: 'status', title: '{:lang("状态")}', minWidth: 100},
+					{field: 'CountryCode', align: 'center', title: '{:lang("国家代码")}', width: 130},
+					{fixed: 'right', title: '{:lang("操作")}', align: 'center', minWidth: 200, toolbar: '#msg-bar'},
+
+				];
+				table.render({
+					elem: '#proxylist',
+					url: url,
+					where: {Action: 'list'},
+					page: true, cols: [cols],
+					done: function (d) {
+						tzTbale()
+					}
+				});
+			},
+
+			//搜索
+			search: function () {
+//                var roleid = $.trim($('#bankname').html());
+				var roleid = $.trim($('#bankname option:selected').text());
+				if (roleid == '{:lang("请选择渠道")}') {
+					roleid = '';
+				}
+
+				//执行重载
+				table.reload('proxylist', {page: {curr: 1}, where: {}});
+			},
+
+
+			//操作事件
+			extraEvent: function () {
+				//编辑&&删除
+				table.on('tool(proxylist)', function (obj) {
+					var data = obj.data //获得当前行数据
+						, layEvent = obj.event; //获得 lay-event 对应的值
+
+					if (layEvent === 'send') {
+						layer.confirm("{:lang('确认要发送这条记录吗？')}", {btn: ['{:lang("确认")}', '{:lang("取消")}']}, function () {
+							$.ajax({
+								type: 'post',
+								url: url,
+								data: {Action: 'send', ID: data.MsgID},
+								dataType: 'json',
+								success: function (res) {
+									if (res.code === 1) {
+										layer.msg(res.msg, {icon: 6, time: 1000}, function () {
+											window.location.reload();
+										});
+									} else {
+										layer.msg(res.msg, {icon: 5});
+									}
+								}
+							});
+						});
+
+					}
+					if (layEvent === 'del') {
+						layer.confirm("{:lang('确认要删除这条记录吗？')}", {btn: ['{:lang("确认")}', '{:lang("取消")}']}, function () {
+							$.ajax({
+								type: 'post',
+								url: url,
+								data: {Action: 'del', ID: data.MsgID},
+								dataType: 'json',
+								success: function (res) {
+									if (res.code === 1) {
+										layer.msg(res.msg, {icon: 6, time: 1000}, function () {
+											window.location.reload();
+										});
+									} else {
+										layer.msg(res.msg, {icon: 5});
+									}
+								}
+							});
+						});
+
+					}
+					if (layEvent === 'edit') {
+						x_admin_show('{:lang("添加公告弹窗")}', ' PublicnoteManage?Action=edit&ID=' + data.MsgID, 700, 600)
+					}
+				});
+			},
+			init: function () {
+				main.renderData();
+				main.extraEvent();
+				$('#search').on('click', function (e) {
+					e.preventDefault();
+					main.search();
+				});
+			}
+		};
+
+		main.init();
+	});
+</script>
+{/block}

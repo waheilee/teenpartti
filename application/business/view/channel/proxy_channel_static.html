@@ -1,0 +1,148 @@
+{extend name="common/base" /}
+{block name="title"}{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-form-item">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('时间')}：</label>
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="start_date" name="start_date" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" data-type="reload" id="search">{:lang('搜索')}</a>
+                        <!--<a class="layui-btn layui-btn-danger" id="output">{:lang('导出记录')}</a>-->
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-fluid">
+
+        <table class="layui-table">
+            <colgroup>
+                <col width="500">
+                <col>
+            </colgroup>
+            <tbody>
+            <tr>
+                <td>{:lang('总充值')}：</td>
+                <td id="total_recharge">{$data['total_recharge']}</td>
+            </tr>
+            <tr>
+                <td>{:lang('总提现')}：</td>
+                <td id="totalpayout">{$data['totalpayout']}</td>
+            </tr>
+
+            <tr>
+                <td>{:lang('充值手续费')}：</td>
+                <td id="recharge_fee">{$data['recharge_fee']}</td>
+            </tr>
+
+            <tr>
+                <td>{:lang('提现手续费')}：</td>
+                <td id="payout_fee">{$data['payout_fee']}</td>
+            </tr>
+            <tr>
+                <td>{:lang('API费用')}：</td>
+                <td id="TotalAPICost">{$data['TotalAPICost']}</td>
+            </tr>
+            <tr>
+                <td>{:lang('总利润')}：</td>
+                <td id="totalprofit">{$data['totalprofit']}</td>
+            </tr>
+            <tr>
+                <td>{:lang('汇率计算')}：</td>
+                <td>
+                    <div class="layui-form-item">
+                        <label class=""><span id="calprofit">{$data['totalprofit']}</span> &nbsp;&nbsp;/&nbsp;&nbsp;</label>
+                        <div class="layui-inline">
+                            <input type="number" id="rate" name='rate' placeholder="{:lang('请输入汇率')}"
+                                   style="width: 150px;"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+                        <label class="layui-inline">&nbsp;&nbsp; =&nbsp;&nbsp;<b id="retdata"></b> </label>
+                        <div class="layui-inline">
+                            <!-- <div class="layui-input-inline"> -->
+                            <a class="layui-btn" id="calculate" data-type="reload">{:lang('重新计算')}</a>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>{:lang('备注')}：</td>
+                <td id="totalprofit1">{:lang('总利润')}={:lang('总充值')}-{:lang('总提现')}-{:lang('充值手续费')}-{:lang('提现手续费')}-{:lang('API费用')}</td>
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+</div>
+{/block}
+{block name="script"}
+<script>
+    layui.use(['table', 'form', 'laydate'], function () {
+        var table = layui.table;
+        var form = layui.form;
+        var laydate = layui.laydate;
+        //日期
+
+        laydate.render({
+            elem: '#start_date',
+            type: 'month',
+            value: '{$thismonth}'
+        });
+
+        $("#calculate").click('on', function () {
+            var totalprofit = $('#calprofit').html();
+            var rate = $('#rate').val();
+            if (rate != '') {
+                totalprofit = totalprofit / parseFloat(rate);
+                $('#retdata').html(totalprofit.toFixed(2));
+            }
+        });
+
+        $("#search").click('on', function () {
+            var date = $("#start_date").val();
+            $.ajax({
+                type:'get',
+                url:"{:url('channel/proxyChannelStatic')}?RoleID={$proxychannelId}&date="+date+"&action=check",
+                dataType:'json',
+                success: function(res) {
+                    if(res['code']==0){
+                        var data = res['data'];
+                        $('#total_recharge').html(data['total_recharge']);
+                        $('#recharge_fee').html(data['recharge_fee']);
+                        $('#totalpayout').html(data['totalpayout']);
+                        $('#payout_fee').html(data['payout_fee']);
+                        $('#TotalAPICost').html(data['TotalAPICost']);
+                        $('#totalprofit').html(data['totalprofit']);
+                        $('#calprofit').html(data['totalprofit']);
+                        $('#retdata').html('');
+                    }
+                    else {
+                        layer.msg(res.msg, {icon: 5});
+                    }
+
+                }
+            });
+        });
+
+
+        // $("#querylist").click('on', function () {
+        //     var date = $("#start_date").val();
+        //     console.log(date);
+        //     var url ="{:url('statistical/dailyProfit')}?date="+date;
+        //     x_admin_show("{:lang('查看盈利详情')}",url,1300,700);
+
+        // });
+
+    });
+</script>
+{/block}

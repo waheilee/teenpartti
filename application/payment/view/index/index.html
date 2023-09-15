@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+    <title>BestPay</title>
+    <link href="__static__/css/app.css" rel="stylesheet">
+    <style type="text/css">html {
+        -ms-text-size-adjust: 100%;
+        -webkit-text-size-adjust: 100%
+    }
+
+    * {
+        margin: 0;
+        padding: 0
+    }
+
+    a img {
+        border: 0
+    }
+
+    a {
+        text-decoration: none;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0)
+    }
+
+    ::-webkit-input-placeholder {
+        font-family: -apple-system-font, Helvetica Neue, sans-serif
+    }
+
+    a {
+        -webkit-touch-callout: none
+    }
+
+    body {
+        line-height: 1.6;
+        font-family: -apple-system-font, Helvetica Neue, sans-serif
+    }
+
+    .weui-loadmore_line {
+        border-top: 1px solid #e5e5e5;
+        margin-top: 2.4em
+    }
+
+    .weui-loadmore_line .weui-loadmore__tips {
+        position: relative;
+        top: -.9em;
+        padding: 0 .55em;
+        background-color: #fbf9fe;
+        color: #999
+    }
+
+    .weui-btn {
+        background: -webkit-linear-gradient(left, #22a639, #4bcd63);
+        background: linear-gradient(90deg, #22a639, #4bcd63);
+        border-radius: 20px
+    }
+
+    .weui-btn_disabled {
+        opacity: .3
+    }
+
+    ::-webkit-input-placeholder {
+        color: #ccc
+    }
+
+    :-moz-placeholder, ::-moz-placeholder {
+        color: #ccc
+    }
+
+    :-ms-input-placeholder {
+        color: #ccc
+    }
+
+    body {
+        background-color: #fbf9fe
+    }
+
+    @media only screen and (min-width: 769px) {
+        body {
+            width: 480px !important;
+            margin: 0 auto
+        }
+    }
+    </style>
+    <style type="text/css">body, html {
+        height: 100%;
+        width: 100%;
+        overflow-x: hidden
+    }
+
+    .circular-shape {
+        border-radius: 50%
+    }
+
+    .block {
+        display: block
+    }
+
+    .rmargin-5px {
+        margin-right: 5px
+    }
+
+    .rmargin-10px {
+        margin-right: 10px
+    }
+
+    .rmargin-20px {
+        margin-right: 20px
+    }
+    </style>
+    <style type="text/css">.default-color {
+        color: #999
+    }
+
+    .warning-color {
+        color: #f93
+    }
+
+    .success-color {
+        color: #0c0
+    }
+
+    .danger-color {
+        color: #c33
+    }
+
+    .info-color {
+        color: #69f
+    }
+
+    .font-red {
+        color: #ff5e54
+    }
+
+    .font-green {
+        color: #3ab157
+    }
+
+    .font-grey {
+        color: #b3b3b3
+    }
+
+    .copy-right {
+        text-align: center;
+        font-size: 12px;
+        color: #ccc;
+        width: 100%;
+        position: absolute;
+        bottom: 5px;
+        z-index: -999
+    }
+    </style>
+</head>
+<body>
+<div id="app" style="height: 100%;">
+    <div class="user-center" style="height: 100%;">
+        <div class="weui-tab">
+            <div id="vux_view_box_body" class="weui-tab__panel vux-fix-safari-overflow-scrolling"
+                 style="padding-bottom: 0px;">
+                <div><!---->
+                    <div class="weui-cells vux-no-group-title" style="margin-top: 0px;">
+                        <div class="grad"
+                             style="width: 100%; text-align: center; padding-top: 30px; padding-bottom: 30%;"><span
+                                style="color: rgb(212, 240, 217); vertical-align: middle; display: block;">账户余额（金币)</span>
+                            <div style="width: 49%; float: left; color: rgb(212, 240, 217);">
+                                <div style="color: rgb(255, 255, 255); font-size: 2rem;">0</div>
+                                <div>可用金币</div>
+                            </div>
+                            <hr style="width: 2px; height: 50px; float: left; border: none; background-color: rgb(212, 240, 217); margin-top: 20px;">
+                            <div style="width: 49%; float: right; color: rgb(212, 240, 217);">
+                                <div style="color: rgb(255, 255, 255); font-size: 2rem;">0</div>
+                                <div>冻结金币</div>
+                            </div>
+                        </div>
+
+                        <div class="weui-cell">
+                            <div class="weui-cell__hd">
+                                <img width="30" style="display: block; margin-right: 15px;"
+                                     src="__static__/images/member.png" lazy="loaded">
+                            </div>
+                            <div class="vux-cell-bd vux-cell-primary">
+                                <p>
+                                    <label class="vux-label">会员ID</label>
+                                </p>
+                                <span class="vux-label-desc"></span>
+                            </div>
+                            <div class="weui-cell__ft">472126</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="weui-grids">
+                    <a href="{:url('agent/recharge')}" class="weui-grid" style="width: 25%;">
+                        <div class="weui-grid__icon"><img src="__static__/images/chongzhi.png"></div>
+                        <p class="weui-grid__label"><span>充值入口</span></p>
+                    </a>
+                    <a href="../agent/record.html" class="weui-grid" style="width: 25%;">
+                        <div class="weui-grid__icon"><img src="__static__/images/jilu.jpg"></div>
+                        <p class="weui-grid__label"><span>充值记录</span></p>
+                    </a>
+                    <a href="javascript:;" class="weui-grid" style="width: 25%;"><div class="weui-grid__icon"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAnCAYAAABNJBuZAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMTM4IDc5LjE1OTgyNCwgMjAxNi8wOS8xNC0wMTowOTowMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTcgKFdpbmRvd3MpIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjY2RjlBQTMwQUQ4QzExRTc5QTFDREQ3RDg5Q0U4MDdGIiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjY2RjlBQTMxQUQ4QzExRTc5QTFDREQ3RDg5Q0U4MDdGIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6NjZGOUFBMkVBRDhDMTFFNzlBMUNERDdEODlDRTgwN0YiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6NjZGOUFBMkZBRDhDMTFFNzlBMUNERDdEODlDRTgwN0YiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz5qd7QjAAACQ0lEQVR42mL8ssSQjYGBoRuIY4BYiGFwg9dAPAeIa4H4L3f0ObgECxB3AXEew9AAokBcCWVXIUswAXEsw9AD6egCTGjJ6S0QGwIx4yDFMCCEzSPIABRdF4ZgDIHzCDJYjcT+P4jcyUhIARPDMAHoMRIKxLOIDYWBBl+XGuGMkTYgNhiKMYLuEWEgPg/NH4MRM6Dl4XdAPBGI2ViGeNYQhFbm34dLZk8dLh4RGjbF76hHqAh2AnEKECuBSh9y22EDWWpdAeIsID48lGPkABBbInlCBIgbgPgSEP8gp44ZiBi5BcQBQPwFyvcD4oVALEDNthY9ACg/fISyw4B4GRAzU7vRSGuwByk5gZpDM5E9wcQrx8BqmMfALGEO5v99cZLh9/lJDP8+Pxp0HlmJxM5BTk5MfAoMHO4LGRjZeBGOk3ViYBY3ZfixM57h36cHgyqz70diByJLsBrkoHgC3qMCioHkBlup9RiJrYEsAUtO2ACzpMWg8wj7cKnZpZHYN5AlQBkbF/j7/MSg84gNEnsDssTvC1MY/v/6jKEBJAaSG2weCUNiTwbiDzAOqFQClU5/Hu9j+P/7KxiD2MSUWOBC4csSQ3oP+9gh1SUgjy2nRoAORFsLNAjND2WvAuIg5JgZSh5RA+L1QMwN5W8EYlUgbgXiy0D8ixxDByJpITfjE4H4zFDvWOkA8Skg3grESUCsQEmTaaCHg0C9Oy8oHu2zDzuPvBsG/ngH8sjiYeCROaDMXgbNdKC5RMEh5oH30IioBQgwACA5r8GUjgGuAAAAAElFTkSuQmCC"></div> <p class="weui-grid__label"><span>提现入口</span></p> </a>
+                    <a href="javascript:;" class="weui-grid" style="width: 25%;"><div class="weui-grid__icon"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMTM4IDc5LjE1OTgyNCwgMjAxNi8wOS8xNC0wMTowOTowMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTcgKFdpbmRvd3MpIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjc4NkIzNkYxQUQ4QzExRTc5OTM0RjRFMEJGRTM2MUQ2IiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjc4NkIzNkYyQUQ4QzExRTc5OTM0RjRFMEJGRTM2MUQ2Ij4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6Nzg2QjM2RUZBRDhDMTFFNzk5MzRGNEUwQkZFMzYxRDYiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6Nzg2QjM2RjBBRDhDMTFFNzk5MzRGNEUwQkZFMzYxRDYiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz5UuYqcAAABH0lEQVR42uyaMQrCMBSGGyndzdhzeBw7SVc3xQquFXRyd+shPITeI5N1FFziC6RFSmyLFZvG/4efQpPC+/peXwIpk1J6hdbbi7oE5D15SuaeXbqRM/KC/EiTSTngGybvyHPPTo11bHfy6nVgZJgcefYrrt4wgfABgPA2IFWdyCGZ9eRQx1CrNiAzsujx7QsdQ2cQYUEpiW+ADEIAAQhA6uV/8Iz8UWwMpfVvpcWQEYCga6G00LWQEZQWuhZKC10LpQUQgADEXrEkPTet3La029q4VEbUUduBfH2z/ZCW2BRXrmMP1IJo81Fbk8qjOJWRyIFPJFYg3AEQjvYLEIAABCAA6QqSO8CRK5DMAZCj2jQu9ZY40puwIan4EW3zFGAAmaJLdUcQNQ4AAAAASUVORK5CYII="></div> <p class="weui-grid__label"><span>提现明细</span></p> </a>
+                    <a href="../agent/bankcard.html" class="weui-grid" style="width: 25%;">
+                        <div class="weui-grid__icon"><img src="__static__/images/bankcard.png"></div>
+                        <p class="weui-grid__label"><span>银行卡</span></p>
+                    </a>
+                    <a href="../agent/security.html" class="weui-grid" style="width: 25%;">
+                        <div class="weui-grid__icon"><img src="__static__/images/anquan.png"></div>
+                        <p class="weui-grid__label"><span>安全</span></p>
+                    </a>
+                    <a href="javascript:alert('套用livechat.com');" class="weui-grid" style="width: 25%;">
+                        <div class="weui-grid__icon"><img src="__static__/images/kefu.jpg"></div>
+                        <p class="weui-grid__label"><span>在线客服</span></p>
+                    </a>
+                </div>
+                <div class="user-center-button-list">
+                    <div class="weui-cells vux-no-group-title">
+                        <a href="javascript:alert('切换语言');" class="weui-cell"
+                           style="color: rgb(0, 0, 0); display: block;">
+                            <div class="weui-cell vux-tap-active weui-cell_access" style="padding: 0px;">
+                                <div class="weui-cell__hd">
+                                    <img width="30" style="display: block; margin-right: 15px;"
+                                         src="__static__/images/setting.jpg" lazy="loaded">
+                                </div>
+                                <div class="vux-cell-bd vux-cell-primary">
+                                    <p><label class="vux-label">中文 / English / ภาษาไทย</label></p>
+                                    <span class="vux-label-desc"></span>
+                                </div>
+                                <div class="weui-cell__ft">  <!----></div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <br>
+                <br>
+                <p class="copy-right">© CF</p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="vux-alert">
+    <div class="vux-x-dialog">
+        <div class="weui-mask" style="display: none;"></div>
+        <div class="weui-dialog" style="display: none;">
+            <div class="weui-dialog__hd"><strong class="weui-dialog__title"></strong></div>
+            <div class="weui-dialog__bd">
+                <div></div>
+            </div>
+            <div class="weui-dialog__ft">
+                <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_primary">确定</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="vux-confirm">
+    <div class="vux-x-dialog">
+        <div class="weui-mask" style="display: none;"></div>
+        <div class="weui-dialog" style="display: none;"><!---->
+            <div class="weui-dialog__bd">
+                <div></div>
+            </div>
+            <div class="weui-dialog__ft">
+                <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_default">取消</a>
+                <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_primary">确定</a>
+            </div>
+        </div>
+    </div>
+</div>
+<a data-cancel-text="取消" data-confirm-text="确定" href="javascript:"
+   class="vux-datetime weui-cell weui-cell_access vux-datetime-style-inject" id="vux-datetime-4suol"
+   style="display: none;">
+    <div><p class=""></p> <!----></div>
+    <div class="weui-cell__ft vux-cell-primary vux-datetime-value"><!----> <!----> <i
+            class="vux-input-icon weui-icon weui_icon_warn weui-icon-warn" style="display: none;"></i></div>
+</a>
+<div class="weui-loading_toast vux-loading vux-loading-no-text" style="display: none;">
+    <div class="weui-mask_transparent"></div>
+    <div class="weui-toast"><i class="weui-loading weui-icon_toast"></i> <!----></div>
+</div>
+<div class="vux-toast">
+    <div class="weui-mask_transparent" style="display: none;"></div>
+    <div class="weui-toast weui-toast_success" style="width: 7.6em; display: none;"><i
+            class="weui-icon-success-no-circle weui-icon_toast"></i>
+        <p class="weui-toast__content"></p></div>
+</div>
+</body>
+</html>

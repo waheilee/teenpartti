@@ -1,0 +1,318 @@
+{extend name="common/base" /}
+
+{block name="title"}游戏日志{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">渠道ID</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="channelid" name="channelid" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">渠道名</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="channelname" name="channelname" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">日期</label>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="end" id="LAY-component-form-group-date2" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+
+
+
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">搜索</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+
+<script type="text/html" id="msg-bar">
+    <a class="layui-btn layui-btn-xs " lay-event="benju">本房间/本局</a>
+    <!--<a class="layui-btn layui-btn-xs" lay-event="tongchang">同场数据</a>-->
+
+
+</script>
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+
+        var main = {
+            renderData : function() {
+                var cols = [ //表头
+
+                    {field: 'date', title: '日期', minWidth:100}
+                    ,{field: 'channelid', title: '渠道ID', minWidth:100}
+                    ,{field: 'channelname', title: '渠道', minWidth:100}
+                    , {field: 'pv', title: '访问量', minWidth:120}
+                    , {field: 'uv', title: '独立访客量', minWidth:120}
+                    , {field: 'ip', title: '独立访问IP量', minWidth:120}
+                    , {field: 'arppu', title: 'ARPPU', minWidth:120}
+                    , {field: 'lastdaykeep', title: '次日留存率(%)', minWidth:150, sort: true}
+                    , {field: 'regnew', title: '新增用户', minWidth:120, sort: true}
+                    , {field: 'bindphonenew', title: '新增绑定手机用户', minWidth:160, sort: true}
+                    , {field: 'bindrate', title: '新增绑定手机用户比率(%)', minWidth:220, sort: true}
+
+                    , {field: 'activenew', title: '新增活跃用户数', minWidth:160, sort: true}
+                    , {field: 'activerate', title: '新增活跃用户数比例(%)', minWidth:210, sort: true}
+                    , {field: 'activekeep', title: '新增活跃用户数次留(%)', minWidth:190}
+                    , {field: 'activeplayer', title: '活跃用户', minWidth:120, sort: true}
+
+                    , {field: 'paynew', title: '新增充值用户', minWidth:150, sort: true}
+
+                    , {field: 'payuser', title: '充值用户', minWidth:120, sort: true}
+                    , {field: 'payrate', title: '充值率(%)', minWidth:120}
+
+                    , {field: 'paytotalnew', title: '新增充值金额', minWidth:140, sort: true}
+                    , {field: 'paytotal', title: '总充值金额', minWidth:140, sort: true}
+                    , {field: 'officalcharge', title: '官方充值', minWidth:120, sort: true}
+
+                    , {field: 'agentcharge', title: '代理充值', minWidth:120, sort: true}
+                    , {field: 'totalout', title: '提现金额', minWidth:120, sort: true}
+                    , {field: 'totalin', title: '充值盈亏', minWidth:120}
+                    , {field: 'profitrate', title: '提现充值比(%)', minWidth:160}
+                    , {field: 'totaltax', title: '系统税收', minWidth:120, sort: true}
+                    , {field: 'exchangeperson', title: '新增兑换人数', minWidth:140}
+                    , {field: 'exchangemoney', title: '新增兑换金额', minWidth:140}
+
+
+
+
+
+//                    ,{fixed: 'right', title:'操作', align:'center', minWidth:250, toolbar: '#msg-bar'}
+
+                ];
+
+                var d = new Date();
+                var curr_date = d.getDate();
+                var curr_month = d.getMonth() + 1;
+                var curr_year = d.getFullYear();
+                String(curr_month).length < 2 ? (curr_month = "0" + curr_month): curr_month;
+                String(curr_date).length < 2 ? (curr_date = "0" + curr_date): curr_date;
+                var yyyyMMdd = curr_year + "" + curr_month +""+ curr_date;
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('channel/channelDayStatic')}" //数据接口
+                    , page: true //开启分页
+                    , limit:15
+                    , where:{
+                        'startdate': yyyyMMdd,
+                        'enddate' : yyyyMMdd
+                    }
+                    , sort: true
+                    , cols: [cols]
+                    , done: function(res) {
+                        var orderby = res.other.orderby,
+                            asc = res.other.asc;
+                        if (orderby !== 0) {
+
+                            var fieldval = '', typeval = 'asc';
+                            if (asc === 1) {
+                                typeval = 'desc';
+                            }
+                            if (orderby === 'lastdaykeep') {
+                                fieldval = 'lastdaykeep';
+                            } else if (orderby === 'regnew') {
+                                fieldval = 'regnew';
+                            } else if (orderby === 'bindphonenew') {
+                                fieldval = 'bindphonenew';
+                            } else if (orderby === 'activenew') {
+                                fieldval = 'activenew';
+                            } else if (orderby === 'activerate') {
+                                fieldval = 'activerate';
+                            } else if (orderby === 'activekeep') {
+                                fieldval = 'activekeep';
+                            }
+                            else if (orderby === 'activeplayer') {
+                                fieldval = 'activeplayer';
+                            } else if (orderby === 'paynew') {
+                                fieldval = 'paynew';
+                            } else if (orderby === 'payuser') {
+                                fieldval = 'payuser';
+                            } else if (orderby === 'paytotal') {
+                                fieldval = 'paytotal';
+                            } else if (orderby === 'officalcharge') {
+                                fieldval = 'officalcharge';
+                            } else if (orderby === 'agentcharge') {
+                                fieldval = 'agentcharge';
+                            } else if (orderby === 'totalout') {
+                                fieldval = 'totalout';
+                            } else if (orderby === 'totaltax') {
+                                fieldval = 'totaltax';
+                            } else if (orderby === 'bindrate') {
+                                fieldval = 'bindrate';
+                            } else if (orderby === 'paytotalnew') {
+                                fieldval = 'paytotalnew';
+                            }
+                            $('th[data-field='+fieldval+']').find('span.layui-table-sort').attr('lay-sort', typeval);
+                            
+                        }
+                        tzTbale();
+                    }
+                });
+            },
+
+
+            //搜索
+            search : function() {
+                var startdate = $.trim($('#LAY-component-form-group-date').val());
+                var enddate = $.trim($('#LAY-component-form-group-date2').val());
+                var channelid = $.trim($('#channelid').val());
+                var channelname = $.trim($('#channelname').val());
+
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'startdate':startdate,
+                        'enddate':enddate,
+                        'channelid':channelid,
+                        'channelname':channelname,
+                    }
+                });
+            },
+
+
+            //操作事件
+            extraEvent : function () {
+                //排序
+                table.on('sort(proxylist)', function(obj) {
+                    var field = obj.field;
+                    var type  = obj.type;
+                    var fieldval = 0, typeval = 0;
+                    if (type === 'desc') {
+                        typeval = 1;
+                    }
+                    if (field === 'lastdaykeep') {
+                        fieldval = 'lastdaykeep';
+                    } else if (field === 'regnew') {
+                        fieldval = 'regnew';
+                    } else if (field === 'bindphonenew') {
+                        fieldval = 'bindphonenew';
+                    } else if (field === 'activenew') {
+                        fieldval = 'activenew';
+                    } else if (field === 'activerate') {
+                        fieldval = 'activerate';
+                    } else if (field === 'activekeep') {
+                        fieldval = 'activekeep';
+                    }
+                    else if (field === 'activeplayer') {
+                        fieldval = 'activeplayer';
+                    } else if (field === 'paynew') {
+                        fieldval = 'paynew';
+                    } else if (field === 'payuser') {
+                        fieldval = 'payuser';
+                    } else if (field === 'paytotal') {
+                        fieldval = 'paytotal';
+                    } else if (field === 'officalcharge') {
+                        fieldval = 'officalcharge';
+                    } else if (field === 'agentcharge') {
+                        fieldval = 'agentcharge';
+                    }
+                    else if (field === 'totalout') {
+                        fieldval = 'totalout';
+                    }else if (field === 'totaltax') {
+                        fieldval = 'totaltax';
+                    }else if (field === 'bindrate') {
+                        fieldval = 'bindrate';
+                    }else if (field === 'paytotalnew') {
+                        fieldval = 'paytotalnew';
+                    }
+
+
+                    var startdate = $.trim($('#LAY-component-form-group-date').val());
+                    var enddate = $.trim($('#LAY-component-form-group-date2').val());
+                    var channelid = $.trim($('#channelid').val());
+                    var channelname = $.trim($('#channelname').val());
+
+                    //执行重载
+                    table.reload('proxylist', {
+                        page: {
+                            curr: 1 //重新从第 1 页开始
+                        },
+                        where: {
+                            'asc':typeval,
+                            'orderby':fieldval,
+                            'startdate':startdate,
+                            'enddate':enddate,
+                            'channelid':channelid,
+                            'channelname':channelname,
+                        }
+                    });
+
+                });
+            },
+
+
+            init: function () {
+
+                main.extraEvent();
+                laydate.render({
+                    elem: '#LAY-component-form-group-date'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , btns: ['clear', 'confirm']
+                    , value: new Date()
+                });
+                laydate.render({
+                    elem: '#LAY-component-form-group-date2'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , btns: ['clear', 'confirm']
+                    , value: new Date()
+                });
+                main.renderData();
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

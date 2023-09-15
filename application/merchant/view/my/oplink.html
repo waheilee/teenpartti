@@ -1,0 +1,43 @@
+{extend name="common/base" /}
+
+{block name="title"}渠道链接{/block}
+{block name="css"}{/block}
+{block name="content"}
+<table class="layui-table">
+  <colgroup>
+    <col width="100">
+    <col width="300">
+    <col width="100">
+    <col>
+  </colgroup>
+  <!-- <thead>
+    <tr>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr> 
+  </thead> -->
+  <tbody>
+    <tr>
+      <td>{:lang('渠道链接')}:</td>
+      <td>{$link}</td>
+      <td><a class="font-primary layui-btn" onclick="copy('{$link}')" data-clipboard-text="">{:lang('复制')}</a></td>
+    </tr>
+  </tbody>
+</table>
+{/block}
+{block name="script"}
+<script type="text/javascript">
+    function copy(value) {
+        var oInput = document.createElement('input');
+        oInput.value = value;
+        document.body.appendChild(oInput);
+        oInput.select(); // 选择对象
+        document.execCommand("Copy"); // 执行浏览器复制命令
+        oInput.className = 'oInput';
+        oInput.style.display='none';
+        layer.msg('{:lang("复制成功")}');
+    }
+</script>
+
+{/block}

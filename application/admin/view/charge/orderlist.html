@@ -1,0 +1,224 @@
+index.html{extend name="common/base" /}
+
+{block name="title"}充值汇总{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-row layui-col-space20">
+    <div class="layui-col-md6">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                总订单量
+                <span class="layui-badge layui-bg-blue layuiadmin-badge">总订单量</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="ordernum">0</p>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="layui-col-md6">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <!--逃汇总-->
+                订单总金额
+                <span class="layui-badge layui-bg-blue layuiadmin-badge">支付总金额</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="paysum">0</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input type="text" id="roleid" name="roleid" autocomplete="off" placeholder="玩家ID" class="layui-input">
+                    </div>
+                </div>
+				
+				<div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input type="text" id="mobile" name="mobile" autocomplete="off" placeholder="玩家账号" class="layui-input">
+                    </div>
+                </div>
+				
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input type="text" id="transactionid" name="transactionid" placeholder="第三方订单号" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">日期</label>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="end" id="LAY-component-form-group-date2" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">支付通道</label>
+                    <div class="layui-input-inline">
+                        <select name="platformtype" id="platformtype">
+                            <option value="-1">全部</option>
+                            <option value="0">Google Pay</option>
+                            <option value="1">APP Store</option>
+                        </select>
+                    </div>
+                </div>
+				
+				<div class="layui-inline">
+                    <label class="layui-form-label">充值类型</label>
+                    <div class="layui-input-inline">
+                        <select name="cdytype" id="cdytype">
+                            <option value="-1">全部</option>
+                            <option value="0">商城</option>
+                            <option value="1">储蓄罐</option>
+							<option value="2">特惠充值</option>
+                        </select>
+                    </div>
+                </div>
+				
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input type="text" id="amount" name="amount" autocomplete="off" placeholder="输入金额" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">搜索</a>
+                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <div class="layui-row layui-col-space15">
+            <div id="alllist" class="layui-col-md12">
+                <table id="proxylist" lay-filter="proxylist"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'Id', title: '序号', minWidth: 80}					
+                    , {field: 'AccountID', title: '玩家ID', minWidth: 120}
+					, {field: 'AccountName', title: '玩家设备ID', minWidth: 120}
+					, {field: 'TransactionNo', title: '第三方单号', minWidth: 180}
+                    , {field: 'CdyType', title: '充值类型', minWidth: 120}
+                    , {field: 'RealMoney', title: '充值金额', minWidth: 120}
+                    , {field: 'VirtualGold', title: '到账金币', minWidth: 120}
+                    , {field: 'PlatformType', title: '通道类型', minWidth: 120}
+                    , {field: 'AddTime', title: '充值时间', minWidth: 200}
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('charge/orderlist')}" //数据接口
+                    , page: true //开启分页
+                    , cols: [cols]
+                    , where: {'status':-1}
+                    , limit: 10
+                    , done: function (res) {$(".layui-table-main tr").each(function (index, val) {
+                            $($(".layui-table-fixed-l .layui-table-body tbody tr")[index]).height($(val).height());
+                            $($(".layui-table-fixed-r .layui-table-body tbody tr")[index]).height($(val).height());
+                        });
+                        $('#paysum').html(res.other.paysum);
+                        $('#ordernum').html(res.other.ordernum);
+                    }
+                });
+            },
+
+            //搜索
+            search: function () {
+                var roleid = $.trim($('#roleid').val());
+                var start = $.trim($('#LAY-component-form-group-date').val());
+                var end = $.trim($('#LAY-component-form-group-date2').val());
+                var transactionid = $.trim($('#transactionid').val());
+                var platformtype = $.trim($('#platformtype').val());
+				var cdytype = $.trim($('#cdytype').val());
+                var amount = $.trim($('#amount').val());
+				var mobile = $.trim($('#mobile').val());
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'roleid': roleid,
+						'mobile': mobile,
+                        'strartdate': start,
+                        'enddate': end,
+                        'transactionid': transactionid,
+                        'platformtype': platformtype,
+						'cdytype': cdytype,
+                        'amount': amount
+                    }
+                });
+            },
+
+            init: function () {
+                main.renderData();
+                laydate.render({
+                    elem: '#LAY-component-form-group-date'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , btns: ['clear', 'confirm']
+                });
+                laydate.render({
+                    elem: '#LAY-component-form-group-date2'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , btns: ['clear', 'confirm']
+                });
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

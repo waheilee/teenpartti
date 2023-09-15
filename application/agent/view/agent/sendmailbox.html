@@ -1,0 +1,158 @@
+{extend name="common/base" /}
+{block name="title"}添加邮件发送{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+<form class="layui-form" action="{:url('agent/sendmailbox')}" method="post" id="addmailbox" >
+    <div class="layui-form-item">
+        <label class="layui-form-label">选择玩家：</label>
+        <div class="layui-input-block">
+            <input type="text" id="rolelist" name='rolelist' value="全部" lay-verify="required"  placeholder="" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">邮件标题：</label>
+        <div class="layui-input-block">
+            <input type="text" id="mailtitle" name='mailtitle'  lay-verify="required" placeholder="请输入邮件标题" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">邮件文本：</label>
+        <div class="layui-input-block">
+            <textarea name="mailtxt" id="mailtxt" placeholder="请输入"  lay-verify="content" class="layui-textarea"></textarea>
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">发送类型：</label>
+        <div class="layui-input-block">
+            <input type="radio" name="sendtype" value="0" title="即时发送" checked="" lay-filter="sendtype">
+            <input type="radio" name="sendtype" value="1" title="定时发送" lay-filter="sendtype">
+        </div>
+    </div>
+
+    <div class="layui-form-item" style="display: none" id="showsend">
+        <label class="layui-form-label">定时发送时间：</label>
+        <div class="layui-input-block">
+            <input type="text" id="sendtime" name='sendtime'  placeholder="" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+
+
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >发送</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" lay-submit="" lay-filter="cancel" id="cancel" >重置</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element','layedit', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,layedit = layui.layedit
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                var
+                    rolelist = $.trim(data.field.rolelist),
+                    mailtitle = $.trim(data.field.mailtitle),
+                    mailtxt = $.trim(data.field.mailtxt),
+                    sendtime = $.trim(data.field.sendtime),
+                    sendtype = $.trim(data.field.sendtype);
+
+                if(sendtype==1){
+                    if(sendtime==''){
+                        layer.msg('请输入发送时间', {icon:2});
+                        return;
+                    }
+                }
+
+
+                $.ajax({
+                    type:'post',
+//                    type:'get',
+                    url:data.form.action,
+                    data:{
+                        'rolelist' : rolelist,
+                        'title':mailtitle,
+                        'mailtxt' : mailtxt,
+                        'sendtime' : sendtime,
+                        'sendtype' : sendtype
+                    },
+                    dataType:'json',
+                    beforeSend: function (){
+                        this.layerIndex = layer.load(0,{ shade: [0.5, '#666c7f']});
+                    },
+                    complete: function () {
+                        layer.close(this.layerIndex);
+                    },
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:2000}, function () {
+                                    location.reload();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    document.getElementById("addmailbox").reset();
+                })
+            },
+
+            init : function () {
+                laydate.render({
+                    elem: '#sendtime'
+                    ,type: 'datetime'
+                    ,format:'yyyy-MM-dd HH:mm:ss'
+                    ,btns: ['clear', 'confirm']
+                });
+                main.bindEvent();
+            }
+        };
+
+        form.on('radio(sendtype)', function(data){
+            if(data.value==1){
+                $("#showsend").show();
+            }
+            else{
+                $("#showsend").hide();
+            }
+        });
+
+        $(document).on('click','#searchrole',function(){
+            x_admin_show('','#',600,600);
+        });
+        main.init();
+    });
+</script>
+{/block}

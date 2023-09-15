@@ -1,0 +1,272 @@
+{extend name="common/base" /}
+{block name="title"}防刷配置{/block}
+{block name="css"}{/block}
+{block name="content"}
+<script id="msg-bar" type="text/html">
+    <a class='layui-btn layui-btn-sm layui-btn-normal' lay-event='detail'>{:lang('编辑')}</a>
+</script>
+<div class="layui-card">
+
+    <div class="layui-tab layui-tab-brief" lay-filter="test">
+        <ul class="layui-tab-title">
+            <li class="layui-this" lay-id="1">{:lang('开关')}</li>
+            <li class="" lay-id="2">{:lang('配置')}</li>
+            <!--            <li class="" lay-id="3">客户端配置</li>-->
+        </ul>
+        <div class="layui-tab-content" id="TabItem" style="background-color: #f2f2f2"></div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script>
+	var tabitem = 3, html = ""; //页签数量
+	layui.use(['jquery'], function () {
+		var $ = layui.jquery;
+		for (var i = 0; i <= tabitem; i++) {
+			if (i == 0)
+				html += "<div class='layui-tab-item layui-show'><table id='Table" + i + "'lay-filter='Table" + i + "'></table> </div>";
+			else
+				html += "<div class='layui-tab-item'><table id='Table" + i + "'lay-filter='Table" + i + "'></table> </div>";
+		}
+		$().ready(function () {
+			$("#TabItem").html(html);
+			// $("#Table1").click();
+		});
+	});
+</script>
+<script>
+
+	url = "{:url('game_cfg/GameAntiBrushConfig')}";
+	var cols = [
+		{field: 'KindName', align: "center", title: "{:lang('房间名')}", minWidth: 100},
+		{field: 'KindId', align: "center", title: 'KindId', minWidth: 100},
+		{
+			field: 'AllowBuyFreeProp', width: 300, title: "{:lang('购买免费游戏')}", align: "center", templet: function (d) {
+				index = 5;
+				field = d[Object.keys(d)[index]];
+				if (field == 1) return "<input type='checkbox' ctrlField='" + this.field + "' ctrlID = '" + d.KindId + "' lay-filter='Disable' lay-skin='switch' lay-text='{:lang('开|关')}' checked>"
+				return "<input type='checkbox' ctrlField='" + this.field + "' ctrlID = '" + d.KindId + "'  lay-filter='Disable' lay-skin='switch' lay-text='{:lang('开|关')}'>"
+
+			}
+		},
+		{
+			field: 'OpenAntiBomb', minWidth: 200, title: "{:lang('防刷防爆')}", align: "center", templet: function (d) {
+				index = 6;
+				field = d[Object.keys(d)[index]];
+				if (field == 1) return "<input type='checkbox' ctrlField='" + this.field + "' ctrlID = '" + d.KindId + "' lay-filter='Disable' lay-skin='switch' lay-text='{:lang('开')}|{:lang('关')}' checked>"
+				return "<input type='checkbox' ctrlField='" + this.field + "' ctrlID = '" + d.KindId + "'  lay-filter='Disable' lay-skin='switch' lay-text='{:lang('开')}|{:lang('关')}'>"
+
+			}
+		},
+		// {field: 'Switch', width: 110, title: '禁/启用', align: "center", templet: function (d) {
+		// return "<a class='layui-btn layui-btn-sm layui-btn-normal' lay-event='edit'>编辑</a>"
+		// 	}},
+		// {fixed: 'right', title: '操作', align: 'center', minWidth: 100, toolbar: '#msg-bar'}
+	];
+	var cols1 = [
+		{field: 'KindName', align: "center", title: "{:lang('房间名')}", minWidth: 100},
+		{field: 'KindId', align: "center", title: 'KindId', minWidth: 100},
+		{field: 'AntiBombMaxMultiply', align: "center", title: "{:lang('未充值玩家防刷')}", minWidth: 250},
+		{field: 'AntiBombSysMaxLostMultiply', align: "center", title: "{:lang('系统防爆')}", minWidth: 200},
+		{
+			field: 'Switch', width: 150, title: "{:lang('操作')}", align: "center", templet: function (d) {
+				return "<a class='layui-btn layui-btn-sm layui-btn-normal' lay-event='edit'>{:lang('编辑')}</a>"
+			}
+		},
+		// {fixed: 'right', title: '操作', align: 'center', minWidth: 100, toolbar: '#msg-bar'}
+	];
+	layui.config({base: '__layui__/'}).extend({index: 'lib/index'}).use(['table', 'layer', 'element', 'laydate', 'form', 'jquery', 'util'], function () {
+		// ID=table0
+		//每个页签的独立变量 增加页签的时候 手动增加
+		var tb0 = 'Table0', tb1 = 'Table1', tb2 = 'Table2', tb3 = 'Table3';
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, util = layui.util, table = layui.table, $ = layui.$, form = layui.form;
+		//增加页签  闭包增加 TabxxxxEvn
+		//闭包   表格 排序 编辑
+		Wheres = [
+			{Action: 'list',},
+			{Action: 'list', AllowBuyFreeProp: 1, OpenAntiBomb: 1},
+			{Action: 'list',},
+		]
+		Tabs = {
+			tab0Evn: function () {
+				table.render({
+					elem: '#' + tb0,
+					where: Wheres[0],
+					url: url,
+					page: true, cols: [cols], autoSort: false,done: function (res) {
+                        tzTbale();
+                    }
+				});
+			},
+			tab1Evn: function () {
+				table.render({
+					elem: '#' + tb1,
+					where: Wheres[1],
+					url: url,
+					page: true, cols: [cols1], autoSort: false,done: function (res) {
+                        tzTbale();
+                    }
+				});
+			},
+			tab2Evn: function () {
+				table.render({
+					elem: '#' + tb2,
+					where: Wheres[2],
+					url: url,
+					page: true, cols: [cols], autoSort: false,done: function (res) {
+                        tzTbale();
+                    }
+				});
+			},
+			tab3Evn: function () {
+				// table.render({
+				//     elem: '#' + tb3,
+				//     where: Wheres[3],
+				//     url: "{:url('game_cfg/functionSwitch')}",
+				//     page: true, cols: [cols], autoSort: false,
+				// });
+			},
+		};
+		TBinit = {
+			searchEvn: function () {
+				var roleid = $.trim($('#roleid').val());
+				table.reload('Table1', {page: {curr: 1},});
+			},
+			sortEvn: function () {
+				table.on('sort(' + tb0 + ')', function (obj) {
+					table.reload(tb4, {
+						initSort: obj,
+						page: {curr: 1},
+						where: {
+							orderfield: obj.field //排序字段
+							, ordertype: obj.type //排序方式
+						}
+					});
+				});
+				table.on('sort(' + tb1 + ')', function (obj) {
+					table.reload(tb1, {
+						initSort: obj,
+						page: {curr: 1},
+						where: {
+							orderfield: obj.field //排序字段
+							, ordertype: obj.type //排序方式
+						}
+					});
+				});
+				table.on('sort(' + tb2 + ')', function (obj) {
+					table.reload(tb2, {
+						initSort: obj,
+						page: {curr: 1},
+						where: {
+							orderfield: obj.field //排序字段
+							, ordertype: obj.type //排序方式
+						}
+					});
+				});
+				table.on('sort(' + tb3 + ')', function (obj) {
+					table.reload(tb3, {
+						initSort: obj,
+						page: {curr: 1},
+						where: {
+							orderfield: obj.field //排序字段
+							, ordertype: obj.type //排序方式
+						}
+					});
+				});
+
+
+			},
+			editEvn: function () {
+				table.on('tool(' + tb0 + ')', function (obj) {
+					if (obj.event === 'edit') {
+						var url = "{:url('game_cfg/FunctionItemEdit')}?ID=" + obj.data.CfgType + "&Value=" + obj.data.CfgValue + "&Msg=" + obj.data.Description;
+						x_admin_show('{:lang("编辑配置")}', url, $(window).width() * 0.5, $(window).height() * 0.35);
+					}
+				});
+				table.on('tool(' + tb1 + ')', function (obj) {
+					if (obj.event === 'edit') {
+						var url = "{:url('game_cfg/GameAntiBrushConfig')}?KindID=" + obj.data.KindId
+                            + "&AntiBombMaxMultiply=" + obj.data.AntiBombMaxMultiply
+                            + "&AntiBombSysMaxLostMultiply=" + obj.data.AntiBombSysMaxLostMultiply
+							+ "&Action=editView";
+						edit(url);
+						// x_admin_show('编辑配置', url, $(window).width() * 0.4, $(window).height() * 0.35);
+					}
+				});
+				table.on('tool(' + tb2 + ')', function (obj) {
+					if (obj.event === 'edit') {
+						// var url = "{:url('game_cfg/FunctionItemEdit')}?ID=" + obj.data.CfgType + "&Value=" + obj.data.CfgValue + "&Msg=" + obj.data.Description;
+						// x_admin_show('编辑配置', url, $(window).width() * 0.4, $(window).height() * 0.35);
+					}
+				});
+				table.on('tool(' + tb3 + ')', function (obj) {
+					if (obj.event === 'edit') {
+						// var url = "{:url('game_cfg/FunctionItemEdit')}?ID=" + obj.data.CfgType + "&Value=" + obj.data.CfgValue + "&Msg=" + obj.data.Description;
+						// x_admin_show('编辑配置', url, $(window).width() * 0.4, $(window).height() * 0.35);
+					}
+				});
+
+			},
+			//页签 切换事件
+			TabEvn: function () {
+				element.on('tab(test)', function (data) {
+					switch (data.index) {
+						case 0:
+							return Tabs.tab0Evn();
+						case 1:
+							return Tabs.tab1Evn();
+						case 2:
+							return Tabs.tab2Evn();
+						case 3:
+							return Tabs.tab3Evn();
+					}
+				});
+			},
+			SwitchEvn: function () {
+				form.on('switch(Disable)', function (data) {
+					var ID = data.elem.attributes['ctrlID'].nodeValue;
+					var field = data.elem.attributes['ctrlField'].nodeValue;
+					var swtype = data.elem.checked;
+					var type = 0;
+					if (swtype) type = 1;
+					else type = 0;
+					// layer.msg(data);
+					//设置开关
+					$.ajax({
+						url: url,
+						type: 'post',
+						data: {Action: 'switch', field: field, ID: ID, type: type},
+						success: function (res) {
+							if (res.code === 1) {
+								layer.msg('{:lang("修改成功")}', {icon: 6});
+							} else {
+								layer.msg('{:lang("修改失败")}', {icon: 5});
+							}
+							form.render();
+						}
+					})
+
+				});
+
+			},
+			init: function () {
+				Tabs.tab0Evn();
+				this.sortEvn();
+				this.editEvn();
+				this.TabEvn();
+				this.SwitchEvn();
+				$('#search').on('click', function (e) {
+					e.preventDefault();
+					this.searchEvn();
+				});
+			}
+		}
+		function edit(url){
+			openBarWinParent('{:lang("编辑配置")}', 500,300,url,function (){
+				TBinit.searchEvn();
+			},['{:lang("保存")}', '{:lang("取消")}']);
+		}
+		TBinit.init();
+	});
+</script>
+{/block}

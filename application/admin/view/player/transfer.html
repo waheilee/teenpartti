@@ -1,0 +1,220 @@
+{extend name="common/base" /}
+
+{block name="title"}向玩家转账{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<!--<div class="layui-card">-->
+    <!--<div class="layui-card-header">-->
+        <!--总金额-->
+        <!--<span class="layui-badge layui-bg-blue layuiadmin-badge">总</span>-->
+    <!--</div>-->
+    <!--<div class="layui-card-body layuiadmin-card-list">-->
+        <!--<p class="layuiadmin-big-font" style="color:#009688" id="totalmoney">0</p>-->
+
+    <!--</div>-->
+<!--</div>-->
+<!--<div class="layui-row layui-col-space20">-->
+    <!--<div class="layui-col-md12">-->
+        <!--<div class="layui-card">-->
+            <!--<div class="layui-card-body">-->
+                <!--<fieldset class="layui-elem-field">-->
+                    <!--<legend>操作总金额</legend>-->
+                    <!--<div class="layui-field-box">-->
+                        <!--<div class="layadmin-backlog" lay-anim="" lay-indicator="inside" lay-arrow="none" style="width: 100%; height: auto;">-->
+                            <!--<ul class="layui-row layui-col-space10 layui-this">-->
+                                <!--<li class="layui-col-xs12">-->
+                                    <!--<a href="javascript:;" class="layadmin-backlog-body">-->
+                                        <!--<h3></h3>-->
+                                        <!--<p>-->
+                                            <!--<cite id="totalmoney">0</cite></p>-->
+                                    <!--</a>-->
+                                <!--</li>-->
+                            <!--</ul>-->
+                        <!--</div>-->
+                    <!--</div>-->
+                <!--</fieldset>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
+<!--</div>-->
+
+
+<div class="layui-card" >
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">玩家ID</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="roleid" name="roleid" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">玩家账号</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="mobile" name="mobile" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">起止日期</label>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off" class="layui-input">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="end" id="LAY-component-form-group-date2" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <!--<div class="layui-inline">-->
+                    <!--<label class="layui-form-label">转账类型</label>-->
+                    <!--<div class="layui-input-inline">-->
+                        <!--<select name="condition" id="classid" name="classid">-->
+                            <!--<option value="-1" selected>全部</option>-->
+                            <!--<option value="1">测试专用赠送</option>-->
+                            <!--<option value="2">充值手工补发</option>-->
+                            <!--<option value="3">转给超级玩家</option>-->
+                        <!--</select>-->
+                    <!--</div>-->
+                <!--</div>-->
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">搜索</a>
+                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <button style="margin-bottom: 10px;" class="layui-btn" onclick="x_admin_show('向玩家转账','addTransfer', '', 450)">
+            <i class="layui-icon layui-icon-add-circle"></i>
+        </button>
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+        var main = {
+            renderData : function() {
+                var cols = [ //表头
+
+                    {field: 'addtime', title: '操作时间', minWidth:120}
+                    ,{field: 'roleid', title: '玩家ID', minWidth:120}
+                    ,{field: 'accountname', title: '玩家账号', minWidth:120}
+                    , {field: 'classid', title: '转账类型', minWidth:120, templet : function(d) {
+                        var classname = '';
+                        if (d.classid == 1) {
+                            classname = '测试专用赠送';
+                        } else if (d.classid == 2) {
+                            classname = '充值手工补发';
+                        } else if (d.classid == 3) {
+                            classname = '上下分';
+                        } else {
+                            classname = '其他';
+                        }
+                        return classname;
+                    }}
+                    , {field: 'totalmoney', title: '金额', minWidth:150}
+
+//                    , {field: 'totalmoney', title: '金额', minWidth: 120, templet: function (d) {
+//                        if (d.totalmoney < 0) {
+//                            return "<span style='color: green'>-"+d.totalmoney+"</span>";
+//                        } else {
+//                            return "<span style='color: red'>+"+d.totalmoney+"</span>";
+//                        }
+//                    }}
+
+//                    , {field: 'proxyincome', title: '支出账户', width:150}
+                    , {field: 'uid', title: '操作人ID', minWidth:80}
+                    , {field: 'adduser', title: '操作人', minWidth:150}
+                    , {field: 'descript', title: '备注', minWidth:200}
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('player/transfer')}" //数据接口
+                    , page: true //开启分页
+                    , limit:15
+                    , cols: [cols]
+                    ,done : function(res) {
+                        $('#totalmoney').html(res.other)
+                    }
+                });
+            },
+
+
+            //搜索
+            search : function() {
+                var roleid = $.trim($('#roleid').val());
+                var classid = $.trim($('#classid').val());
+                var start = $.trim($('#LAY-component-form-group-date').val());
+                var end = $.trim($('#LAY-component-form-group-date2').val());
+                var mobile = $.trim($('#mobile').val());
+
+
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'roleid':roleid,
+                        'classid':classid,
+                        'start':start,
+                        'end':end,
+                        'mobile':mobile
+                    }
+                });
+            },
+
+
+            init : function() {
+                form.render(null, 'component-form-group');
+                laydate.render({
+                    elem: '#LAY-component-form-group-date'
+                    ,format:'yyyy-MM-dd'
+                    ,max:0
+                    ,btns: ['clear', 'confirm']
+                });
+                laydate.render({
+                    elem: '#LAY-component-form-group-date2'
+                    ,format:'yyyy-MM-dd'
+                    ,max:0
+                    ,btns: ['clear', 'confirm']
+                });
+                main.renderData();
+                $('#search').on('click', function(e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

@@ -1,0 +1,259 @@
+{extend name="common/base" /}
+
+{block name="title"}{/block}
+{block name="css"}
+<style type="text/css">
+    .layui-table-cell{
+        text-align:center;
+        height:auto;
+        white-space:normal;
+    }
+
+</style>
+{/block}
+{block name="content"}
+<div class="layui-card-header layuiadmin-card-header-auto">
+    <form class="layui-form" lay-filter="component-form-group">
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">{:lang('图片类型')}</label>
+                <div class="layui-input-inline">
+                    <select name="stype" id="stype">
+                        <option value="-1">{:lang('所有')}</option>
+                        <option value="0">{:lang('Notice')}</option>
+                        <option value="1">{:lang('通道引导')}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-inline">
+                <label class="layui-form-label">{:lang('活动状态')}</label>
+                <div class="layui-input-inline">
+                    <select name="status" id="status">
+                        <option value="-1">{:lang('所有')}</option>
+                        <option value="0">{:lang('关闭')}</option>
+                        <option value="1">{:lang('开启')}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-inline">
+                <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                <button type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="layui-card">
+    <div class="layui-card-body">
+        <a style="margin-bottom: 10px;" class="layui-btn" onclick="x_admin_show('{:lang(\'添加广告图\')}','addadvcfg.html', 700,550)">
+            <i class="layui-icon layui-icon-add-circle"></i>
+        </a>
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script type="text/html" id="msg-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="edit"><i class="layui-icon layui-icon-edit"></i></a>
+    <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete"><i
+            class="layui-icon layui-icon-delete"></i></a>
+    <!--<a class="layui-btn layui-btn-xs" lay-event="open"><i class="layui-icon layui-icon-set-fill"></i></a>-->
+
+</script>
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+
+        function getWhere() {
+
+            var status = $('#status').val();
+            var stype = $('#stype').val();
+            return {
+                'status': status,
+                'type' : stype
+            };
+        }
+
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'ID', title: '#',style:"height: 100px;", minWidth: 50}
+                    , {field: 'AdvTitle', title: "{:lang('按钮名称')}",style:"height: 100px;",  minWidth: 100}
+                    , {field: 'AdvUrl', title: "{:lang('图片地址')}",style:"height: 100px;",  minWidth: 200}
+                    ,{
+                        field: 'AdvUrl', title: '#', style:"height: 100px;",minWidth: 300, templet: function (d) {
+                            return '<img src="' + d.AdvUrl + '"  />';
+                        }
+                    }
+                    ,{
+                        field: 'type', title: "{:lang('上传类型')}", style:"height: 100px;",minWidth: 300, templet: function (d) {
+                            if(d.type==1){
+                                return  '{:lang("通道指导")}'
+                            }
+                            else{
+                                return '{:lang("Notice")}'
+                            }
+                        }
+                    }
+                    , {field: 'SortId', title: "{:lang('排序')}", style:"height: 100px;", minWidth: 100}
+                    , {
+                        field: 'Nullity', title: "{:lang('状态')}", style:"height: 100px;", minWidth: 100, templet: function (d) {
+                            var myid = d.ID;
+                            if (d.Nullity == 0) {
+                                return '<a class="myopen" myid="' + myid + '" style="margin-left: 10px" lay-event="setstatus"><input type="checkbox" name="open" lay-filter="setstatus" lay-skin="switch" checked lay-text="{:lang(\'开启|关闭\')}"></a>';
+                            } else {
+                                return '<a class="myopen" myid="' + myid + '" style="margin-left: 10px" lay-event="setstatus"><input type="checkbox"  name="open" lay-filter="setstatus" lay-skin="switch"  lay-text="{:lang(\'开启|关闭\')}"></a>';
+                            }
+                        }
+                    }
+                    , {field: 'AdvShareUrl', title: "{:lang('视频地址')}", style:"height: 100px;", minWidth: 200}
+                    , {fixed: 'right', title: "{:lang('操作')}",style:"height: 100px;",  align: 'center', minWidth: 150, toolbar: '#msg-bar'}
+
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('activity/advcfglist')}" //数据接口
+                    , where: getWhere()
+                    , page: true //开启分页
+                    , cols: [cols]
+                    , done: function (res, curr, count) {
+                        //表头部分
+                        //动态监听表头高度变化，冻结行跟着改变高度
+                        $(".layui-table-header  tr").resize(function () {
+                            $(".layui-table-header  tr").each(function (index, val) {
+                                $($(".layui-table-fixed .layui-table-header table tr")[index]).height($(val).height());
+                            });
+                        });
+                        //初始化高度，使得冻结行表头高度一致
+                        $(".layui-table-header  tr").each(function (index, val) {
+                            $($(".layui-table-fixed .layui-table-header table tr")[index]).height($(val).height());
+                        });
+
+                        //表体部分
+                        //动态监听表体高度变化，冻结行跟着改变高度
+                        $(".layui-table-body  tr").resize(function () {
+                            $(".layui-table-body  tr").each(function (index, val) {
+                                $($(".layui-table-fixed .layui-table-body table tr")[index]).height($(val).height());
+                            });
+                        });
+                        //初始化高度，使得冻结行表体高度一致
+                        $(".layui-table-body  tr").each(function (index, val) {
+                            $($(".layui-table-fixed .layui-table-body table tr")[index]).height($(val).height());
+                        });
+                    }
+                });
+            },
+
+            //搜索
+            search: function () {
+                var roleid = $.trim($('#bankname option:selected').text());
+                if (roleid == '请选择渠道') {
+                    roleid = '';
+                }
+
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: getWhere()
+                });
+            },
+
+
+            //操作事件
+            extraEvent: function () {
+                //编辑&&删除
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+                    if (layEvent === 'edit') {
+                        var id = data.ID
+                            , type = data.type
+                        x_admin_show("{:lang('编辑活动信息')}", 'addadvcfg?id=' + id, 700, 550);
+                    }
+                    else if (layEvent === 'delete') {
+                        layer.confirm("{:lang('确认删除这条记录？')}", {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
+                            $.ajax({
+                                type: 'post',
+                                url: "{:url('activity/deladvcfg')}",
+                                data: {
+                                    'id': data.ID
+                                },
+                                dataType: 'json',
+                                success: function (res) {
+                                    if (res.code === 0) {
+                                        layer.msg(res.msg, {icon: 6, time: 1000}, function () {
+                                            window.location.reload();
+                                        });
+                                    } else {
+                                        layer.msg(res.msg, {icon: 5});
+                                    }
+                                }
+                            });
+                        });
+                    }
+                });
+
+                form.on('switch(setstatus)', function (data) {
+                    var selected = data.elem.checked === true ? 1 : 0; //开关是否开启，true或者false
+                    var id = $(data.elem).parent().attr('myid');
+                    //设置开关
+                    $.ajax({
+                        url: "{:url('activity/setadvcfglist')}",
+                        type: 'post',
+                        data: {
+                            'id': id,
+                            'status': selected
+                        },
+                        success: function (res) {
+                            if (res.code === 0) {
+                                layer.msg(res.msg, {icon: 6});
+                            } else {
+                                layer.msg(res.msg, {icon: 5});
+                                if (selected == 0) {
+                                    //重新添加checked要用prop
+                                    $(data.elem).prop('checked', 'true');
+                                    $(data.elem).next().addClass('layui-form-onswitch');
+                                    $(data.elem).next().find('em').html("{:lang('开启')}");
+                                } else {
+                                    $(data.elem).removeAttr('checked');
+                                    $(data.elem).next().removeClass('layui-form-onswitch');
+                                    $(data.elem).next().find('em').html("{:lang('关闭')}");
+                                }
+                            }
+                        }
+                    });
+                });
+
+
+            },
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

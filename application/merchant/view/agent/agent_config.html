@@ -1,0 +1,372 @@
+{extend name="common/base" /}
+{block name="title"}代理配置{/block}
+{block name="css"}{/block}
+{block name="content"}
+<script id="msg-bar" type="text/html">
+    <a class='layui-btn layui-btn-sm layui-btn-normal' lay-event='edit'>{:lang('编辑')}</a>
+</script>
+<div class="layui-card">
+    <div class="layui-tab layui-tab-brief" lay-filter="test">
+        <ul class="layui-tab-title">
+            <li class="layui-this" lay-id="1">{:lang('开关')}</li>
+            <li class="" lay-id="2">{:lang('配置')}</li>
+            <!-- <li class="" lay-id="3">{:lang('代理推荐奖励配置')}</li>
+            <li class="" lay-id="4">{:lang('代理流水业绩返利配置')}</li> -->
+            <li class="" lay-id="3">{:lang('层级返利配置')}</li>
+            <li class="" lay-id="4">{:lang('代理额外奖励')}</li>
+            <li class="" lay-id="5">{:lang('代理有效邀请奖励配置')}</li>
+            <!--            <li class="" lay-id="6">连胜防刷</li>-->
+        </ul>
+        <div class="layui-tab-content" id="TabItem" style="background-color: #f2f2f2">
+            <!-- 开关配置-->
+            <div class='layui-tab-item layui-show'>
+                <table id='Table0' lay-filter='Table0'></table>
+            </div>
+            <!-- GameCfg 相关配置 -->
+            <div class='layui-tab-item'>
+                <table id='Table1' lay-filter='Table1'></table>
+            </div>
+
+            <div class='layui-tab-item'>
+                <!-- <a style="margin-bottom: 10px;" class="layui-btn" onclick="add(1)"> <i class="layui-icon layui-icon-add-circle"></i> </a> -->
+                <table id='Table2' lay-filter='Table2'></table>
+            </div>
+            <!--代理流水业绩返利配置-->
+            <div class='layui-tab-item'>
+                <!--                <a style="margin-bottom: 10px;" class="layui-btn" onclick="add(2)"> <i class="layui-icon layui-icon-add-circle"></i> </a>-->
+                <table id='Table3' lay-filter='Table3'></table>
+            </div>
+            <!--代理有效邀请奖励配置-->
+            <div class='layui-tab-item'>
+                <!-- <a style="margin-bottom: 10px;" class="layui-btn" onclick="add(2)"> <i class="layui-icon layui-icon-add-circle"></i> </a> -->
+                <table id='Table4' lay-filter='Table4'></table>
+            </div>
+            <div class='layui-tab-item'>
+                <table id='Table5' lay-filter='Table5'></table>
+            </div>
+
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+
+<script>
+	bl = 1000;
+	var cols = [
+			{field: 'CfgType', align: "center", title: 'CfgType', sort: true, minWidth: 200},
+			{field: 'CfgValue', align: "center", title: 'CfgValue', sort: true, minWidth: 200},
+			{field: 'Description', align: "center", title: "{:lang('功能描述')}", sort: true, minWidth: 200},
+			{field: 'keyValue', align: "center", title: 'keyValue', sort: true, minWidth: 200},
+			{
+				field: 'Switch', width: 180, title: "{:lang('禁/启用')}", align: "center", templet: function (d) {
+                    if (d.Switch == 1) {
+                        if (d.CfgValue == 1)
+                            return "<input type='checkbox' ctrlID = '" + d.CfgType + "' lay-filter='Disable' lay-skin='switch' lay-text='{:lang('开')}|{:lang('关')}' checked>"
+                        else
+                            return "<input type='checkbox' ctrlID = '" + d.CfgType + "'  lay-filter='Disable' lay-skin='switch' lay-text='{:lang('开')}|{:lang('关')}'>"
+					} else
+						return "<a class='layui-btn layui-btn-sm layui-btn-normal' lay-event='edit'>{:lang('编辑')}</a>"
+
+				}
+			},
+			// {fixed: 'right', title: '操作', align: 'center', minWidth: 100, toolbar: '#msg-bar'}
+		],
+		// 代理推荐奖励配置
+		// cols2 = [
+		// 	{field: 'ID', align: "center", title: '#', minWidth: 80},
+		// 	{field: 'InviteCount', align: "center", title: "{:lang('邀请数量')}", minWidth: 150},
+		// 	{field: 'MinRecharge', align: "center", title: "{:lang('最小充值')}", minWidth: 150},
+		// 	{field: 'MinWater', align: "center", title: "{:lang('最小流水')}", minWidth: 150},
+		// 	{field: 'ContinuesDay', align: "center", title: "{:lang('连续天数')}", minWidth: 150},
+		// 	{field: '', align: "center", title: "{:lang('奖励金额')}", minWidth: 200, templet: function (d) { return formatDecimal(d.AwardMoney / bl, 0); }},
+		// 	{field: 'Describe', align: "center", title: 'Describe', minWidth: 150},
+		// 	{fixed: 'right', title: "{:lang('操作')}", align: 'center', minWidth: 100, toolbar: '#msg-bar'}
+		// ];
+		// 层级返利配置
+		cols2 = [
+            {field: 'Id', align: "center", title: '#', minWidth: 80},
+            {field: 'ConfigName', align: "center", title: "{:lang('配置名称')}", minWidth: 150},
+            {field: 'UserLevel', align: "center", title: "{:lang('代理等级')}", minWidth: 150},
+            {field: 'RebateType', align: "center", title: "{:lang('返利类型')}", minWidth: 150, templet: function (d) { 
+                // if (d.RebateType == 1) {
+                    return "{:lang('税收返利')}";
+                // }
+            }},
+            {field: 'Rate', align: "center", title: "{:lang('返利比例')}", minWidth: 150, templet: function (d) { return d.Rate + '%' }},
+            {field: 'update_date', align: "center", title: "{:lang('修改时间')}", minWidth: 150},
+            {field: 'opt_user', align: "center", title: "{:lang('操作人')}", minWidth: 150},
+            {fixed: 'right', title: "{:lang('操作')}", align: 'center', minWidth: 100, toolbar: '#msg-bar'}
+        ];
+
+	// //代理流水业绩返利配置
+	// cols3 = [
+	// 	{field: 'ID', align: "center", title: 'ID', sort: true, minWidth: 80},
+	// 	{field: 'LevelDesc', align: "center", title: "{:lang('等级描述')}", sort: true, minWidth: 120},
+	// 	{field: '', align: "center", title: "{:lang('最小流水业绩')}", sort: true, minWidth: 300, templet: function (d) { return formatDecimal(d.MinWater / bl, 0); }},
+	// 	{field: '', align: "center", title: "{:lang('最大流水业绩')}", sort: true, minWidth: 300, templet: function (d) { return formatDecimal(d.MaxWater / bl, 0); }},
+	// 	{field: 'ReturnPercent', align: "center", title: "{:lang('返利比例(万分比)')}", sort: true, minWidth: 300},
+	// 	{fixed: '', title: "{:lang('操作')}", align: 'center', minWidth: 100, toolbar: '#msg-bar'}
+	// ];
+	// 代理额外奖励
+	cols3 = [
+		{field: 'Id', align: "center", title: '#', minWidth: 80},
+        {field: 'BonusFrom', align: "center", title: "{:lang('最大周奖励')}", minWidth: 200, templet: function (d) { return formatDecimal(d.BonusFrom / 1000, 0); }},
+        {field: 'BonusTo', align: "center", title: "{:lang('最小周奖励')}", minWidth: 200, templet: function (d) { return formatDecimal(d.BonusTo / 1000, 0); }},
+        {field: 'ExtraBonus', align: "center", title: "{:lang('额外周奖励')}", minWidth: 200, templet: function (d) { return formatDecimal(d.ExtraBonus / 1000, 0); }},
+	];
+	//代理有效邀请奖励配置
+	cols4 = [
+		{field: 'ID', align: "center", title: 'ID', sort: true, minWidth: 100},
+		{field: 'InviteCount', align: "center", title: "{:lang('邀请有效人数')}", sort: true, minWidth: 300},
+		{field: '', align: "center", title: "{:lang('奖励')}", sort: true, minWidth: 300, templet: function (d) { return formatDecimal(d.AwardMoney / 1000, 0); }},
+		{fixed: '', title: "{:lang('操作')}", align: 'center', minWidth: 100, toolbar: '#msg-bar'}
+	];
+	cols5 = [
+		{field: 'ID', align: "center", title: 'ID', sort: true, minWidth: 100},
+		{field: 'ContinusWins', align: "center", title: "{:lang('连胜次数')}", sort: true, minWidth: 120},
+		{field: 'MatchRobotRate', align: "center", title: "{:lang('机器人概率')}", sort: true, minWidth: 120},
+		{field: 'RobotRell', align: "center", title: 'RTP', sort: true, minWidth: 100},
+		{
+			field: 'Switch', width: 110, title: "{:lang('禁/启用')}", align: "center", templet: function (d) {
+				if (d.Switch == 1)
+					return "<input type='checkbox' ctrlID = '" + d.ID + "' lay-filter='Disable5' lay-skin='switch' lay-text='{:lang('开')}|{:lang('关')}' checked>";
+				else
+					return "<input type='checkbox' ctrlID = '" + d.ID + "'  " +
+                        "lay-filter='Disable5' lay-skin='switch' lay-text='{:lang('开')}|{:lang('关')}'>";
+			}
+		},
+		{fixed: '', title: "{:lang('操作')}", align: 'center', minWidth: 100, toolbar: '#msg-bar'}
+	];
+
+
+	layui.config({base: '__layui__/'}).extend({index: 'lib/index'}).use(['table', 'layer', 'element', 'laydate', 'form', 'jquery', 'util'], function () {
+		// ID=table0
+		//每个页签的独立变量 增加页签的时候 手动增加
+		var tb = 'Table';
+		var tb0 = tb + '0', tb1 = tb + '1', tb2 = tb + '2', tb3 = tb + '3', tb4 = tb + '4', tb5 = tb + '5';
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, util = layui.util,
+			table = layui.table, $ = layui.$, form = layui.form;
+		//增加页签  闭包增加 TabxxxxEvn
+		//闭包   表格 排序 编辑
+		Wheres = [
+			{Action: 'list', Switch: 1, IDS: '112,160,141'},
+			{Action: 'config'},
+			{Action: 'list', IDS: '113,114,118,119,142,143,144,145'},
+		]
+		Tabs = {
+			// 开关
+			tab0Evn: function () { table.render({elem: '#' + tb0, where: Wheres[0], url: "{:url('game_cfg/functionSwitch')}", page: true, cols: [cols], autoSort: false,done: function (res) {
+                        tzTbale();
+                    }}); },
+			// 配置
+			tab1Evn: function () { table.render({elem: '#' + tb1, where: Wheres[2], url: "{:url('game_cfg/functionSwitch')}", page: true, cols: [cols], autoSort: false,done: function (res) {
+                        tzTbale();
+                    }}); },
+			// 代理推荐奖励配置
+			tab2Evn: function () { table.render({elem: '#' + tb2, where: Wheres[1], url: "{:url('Agent/levelRebatConfig')}?action=list", page: true, cols: [cols2],done: function (res) {
+                        tzTbale();
+                    }}); },
+			//代理流水业绩返利配置
+			tab3Evn: function () { table.render({elem: '#' + tb3, where: Wheres[1], url: "{:url('Agent/extraConfig')}?action=list", page: true, cols: [cols3],done: function (res) {
+                        tzTbale();
+                    }}); },
+			//代理有效邀请奖励配置
+			tab4Evn: function () { table.render({elem: '#' + tb4, where: Wheres[1], url: "{:url('Agent/AgentValidInviteAward')}", page: true, cols: [cols4],done: function (res) {
+                        tzTbale();
+                    }}); },
+			tab5Evn: function () { table.render({elem: '#' + tb5, where: Wheres[1], url: "{:url('PkMatch/PKWinRobotConfig')}", page: true, cols: [cols5],done: function (res) {
+                        tzTbale();
+                    }}); },
+
+
+		};
+		TabReload = {
+			tab0: function () {table.reload(tb0, {page: {curr: 1}});},
+			tab1: function () {table.reload(tb1, {page: {curr: 1}});},
+			tab2: function () {table.reload(tb2, {page: {curr: 1}});},
+			tab3: function () {table.reload(tb3, {page: {curr: 1}});},
+			tab4: function () {table.reload(tb4, {page: {curr: 1}});},
+			tab5: function () {table.reload(tb5, {page: {curr: 1}});}
+		}
+		TBinit = {
+			searchEvn: function () {
+				table.reload(tb1, {page: {curr: 1}});
+			},
+			sortEvn: function () {
+				table.on('sort(' + tb0 + ')', function (obj) {
+					table.reload(tb0, {
+						initSort: obj, page: {curr: 1}, where: {
+							orderfield: obj.field //排序字段
+							, ordertype: obj.type //排序方式
+						}
+					});
+				});
+				table.on('sort(' + tb1 + ')', function (obj) {
+					table.reload(tb1, {
+						initSort: obj, page: {curr: 1}, where: {
+							orderfield: obj.field //排序字段
+							, ordertype: obj.type //排序方式
+						}
+					});
+				});
+
+			},
+			editEvn: function () {
+				table.on('tool(' + tb1 + ')', function (obj) {
+					if (obj.event === 'edit') {
+						var url = "{:url('game_cfg/FunctionItemEdit')}?ID=" + obj.data.CfgType + "&Value=" + obj.data.CfgValue + "&Msg=" + obj.data.Description + "&keyValue=" + obj.data.keyValue;
+						x_admin_show('{:lang(\'编辑配置\')}', url, $(window).width() * 0.4, $(window).height() * 0.35);
+					}
+				});
+				// 代理推荐奖励配置
+				// table.on('tool(' + tb2 + ')', function (obj) {
+				// 	if (obj.event === 'edit') {
+				// 		data = obj.data;
+				// 		var url = "{:url('Agent/AgentWaterReturn')}?Action=editView&ID=" + data.ID
+				// 			+ "&InviteCount=" + data.InviteCount + "&MinRecharge=" + data.MinRecharge
+				// 			+ "&MinWater=" + data.MinWater + "&ContinuesDay=" + data.ContinuesDay
+				// 			+ "&AwardMoney=" + data.AwardMoney / bl + "&Describe=" + data.Describe;
+				// 		edit(url, 500, 500, TabReload.tab2);
+				// 	}
+				// });
+				table.on('tool(' + tb2 + ')', function (obj) {
+					if (obj.event === 'edit') {
+						data = obj.data;
+						var url = "{:url('Agent/levelRebatConfig')}?action=view&Id=" + data.Id;
+						edit(url, 500, 500, TabReload.tab2);
+					}
+				});
+				//代理流水业绩返利配置
+				table.on('tool(' + tb3 + ')', function (obj) {
+					if (obj.event === 'edit') {
+						data = obj.data;
+						var url = "{:url('Agent/AgentInviteAward')}?Action=editView&ID=" + data.ID +
+							"&LevelDesc=" + data.LevelDesc +
+							"&MinWater=" + data.MinWater / bl +
+							"&MaxWater=" + data.MaxWater / bl +
+							"&ReturnPercent=" + data.ReturnPercent
+						;
+						edit(url, 500, 400, TabReload.tab3);
+					}
+				});
+				//代理有效邀请奖励配置
+				table.on('tool(' + tb4 + ')', function (obj) {
+					if (obj.event === 'edit') {
+						data = obj.data;
+						var url = "{:url('Agent/AgentValidInviteAward')}?Action=editView&" + getParamsByJson(data);
+						edit(url, 500, 350, TabReload.tab4);
+					}
+				});
+				table.on('tool(' + tb5 + ')', function (obj) {
+					if (obj.event === 'edit') {
+						data = obj.data;
+						var url = "{:url('PkMatch/PKWinRobotConfig')}?Action=editView&ID=" + getParamsByJson(data);
+						edit(url, 500, 350, TabReload.tab5);
+					}
+				});
+
+			},
+			//页签 切换事件
+			TabEvn: function () {
+				element.on('tab(test)', function (data) {
+					switch (data.index) {
+						case 0:
+							return Tabs.tab0Evn();
+						case 1:
+							return Tabs.tab1Evn();
+						case 2:
+							return Tabs.tab2Evn();
+						case 3:
+							return Tabs.tab3Evn();
+						case 4:
+							return Tabs.tab4Evn();
+						case 5:
+							return Tabs.tab5Evn();
+					}
+				});
+			},
+			SwitchEvn: function () {
+				form.on('switch(Disable)', function (data) {
+					var ID = data.elem.attributes['ctrlID'].nodeValue;
+					var swtype = data.elem.checked;
+					var type = 0;
+					if (swtype) type = 1;
+					else type = 0;
+					$.ajax({
+						url: "{:url('game_cfg/FunctionItemEdit')}",
+						type: 'post',
+						data: {'ID': ID, type: type},
+						success: function (res) {
+							if (res.code === 0) {
+								layer.msg('{:lang("修改成功")}', {icon: 6});
+							} else {
+								layer.msg('{:lang("修改失败")}', {icon: 5});
+							}
+							form.render();
+						}
+					})
+
+				});
+				form.on('switch(Disable5)', function (data) {
+					var ID = data.elem.attributes['ctrlID'].nodeValue;
+					var swtype = data.elem.checked;
+					var type = 0;
+					if (swtype) type = 1;
+					else type = 0;
+					$.ajax({
+						url: "{:url('PkMatch/PKWinRobotConfig')}",
+						type: 'post',
+						data: {Action: 'edit', 'ID': ID, Switch: type},
+						success: function (res) {
+							if (res.code === 1) {
+								layer.msg('{:lang("修改成功")}', {icon: 6});
+							} else {
+								layer.msg('{:lang("修改失败")}', {icon: 5});
+							}
+							form.render();
+						}
+					})
+
+				});
+
+			},
+			init: function () {
+				Tabs.tab0Evn();
+				this.sortEvn();
+				this.editEvn();
+				this.TabEvn();
+				this.SwitchEvn();
+				$('#search').on('click', function (e) {
+					e.preventDefault();
+					this.searchEvn();
+				});
+			}
+		}
+		TBinit.init();
+
+	});
+
+	function edit(url, width, high, callback) {
+		openBarWinParent('{:lang(\'编辑配置\')}', width, high, url, callback, ['{:lang("保存")}', '{:lang("取消")}']);
+	}
+
+	function add(type) {
+		var __callback = '';
+		var width, high;
+		switch (type) {
+			case 1:
+				url = "{:url('Agent/AgentWaterReturn')}?Action=addView&ID=&InviteCount=&MinRecharge=&MinWater=&WinAward=&ContinuesDay=&AwardMoney=&Describe";
+				width = 500, high = 500;
+				__callback = TabReload.tab2;
+				break;
+			case 2:
+				url = "{:url('Agent/AgentValidInviteAward')}?Action=addView";
+				width = 500, high = 280;
+				__callback = TabReload.tab4;
+				break;
+		}
+		openBarWinParent('{:lang(\'编辑配置\')}', width, high, url, __callback, ['{:lang("保存")}', '{:lang("取消")}']);
+	}
+</script>
+{/block}

@@ -1,0 +1,79 @@
+{extend name="common/base" /}
+
+{block name="title"}玩家强推{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<div class="layui-card">
+    <div class="layui-card-body" >
+    <form class="layui-form" action="{:url('player/forceQuit')}" method="post" id="addProxy" >
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">玩家ID：</label>
+            <div class="layui-input-inline">
+                <input type="text" id="roleid" name='roleid' lay-verify="required|number" placeholder="请输入玩家ID" autocomplete="off" class="layui-input">
+            </div>
+            <div class="layui-input-inline">
+                <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >确定</a>
+            </div>
+        </div>
+    </form>
+    </div>
+</div>
+
+
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+
+        var main = {
+            submitForm : function(data) {
+                var roleid = $.trim(data.field.roleid);
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'roleid' : roleid
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg(res.msg, {icon:1});
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

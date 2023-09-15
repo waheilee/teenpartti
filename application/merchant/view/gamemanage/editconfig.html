@@ -1,0 +1,105 @@
+{extend name="common/base" /}
+
+{block name="title"}编辑游戏配置{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('gamemanage/editconfig')}" method="post" id="addProxy" >
+    <div class="layui-form-item">
+        <label class="layui-form-label">ID：</label>
+        <div class="layui-input-block">
+            <input type="text" id="cfgtype" name='cfgtype' value="{$cfgtype}" lay-verify="required"  autocomplete="off" class="layui-input layui-disabled" disabled>
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">值：</label>
+        <div class="layui-input-block">
+            <input type="text" id="cfgvalue" name='cfgvalue' value="{$cfgvalue}" lay-verify="required" placeholder="请输入值" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">描述：</label>
+        <div class="layui-input-block">
+            <input type="text" id="description" name="description" value="{$description}"  placeholder="请输入描述内容" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >修改</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" lay-submit="" lay-filter="cancel" id="cancel" >取消</a>
+        </div>
+    </div>
+
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var layer = layui.layer
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+
+                var cfgtype = $('#cfgtype').val()
+                    ,description = $('#description').val()
+                    ,cfgvalue = $('#cfgvalue').val();
+
+
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'cfgtype' : cfgtype,
+                        'description':description,
+                        'cfgvalue':cfgvalue,
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

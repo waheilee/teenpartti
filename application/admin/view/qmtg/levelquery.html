@@ -1,0 +1,103 @@
+{extend name="common/base" /}
+
+{block name="title"}{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">玩家ID</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="userid" name="userid" placeholder="请输入玩家ID"  autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">直属上下级</label>
+                    <div class="layui-input-inline">
+                        <select name="type" id="type">
+                            <option value="1">直属上级</option>
+                            <option value="2" selected>直属下级</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search_proxy" data-type="reload">搜索</a>
+                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+            var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+                ,table = layui.table
+                ,$ = layui.$
+                ,pattern = new RegExp("^[a-zA-Z][a-zA-Z0-9_]{5,25}")
+            ,form = layui.form;
+
+
+            var init = function() {
+                renderData();
+                $('#search_proxy').on('click', function(e) {
+                    e.preventDefault();
+                    search();
+                });
+            };
+
+            var renderData = function() {
+                var cols = [ //表头
+                    {field: 'roleid', title: '玩家ID', minWidth:130}
+                    , {field: 'rolename', title: '昵称', minWidth:120}
+                    , {field: 'regtime', title: '注册时间', minWidth:160}
+                ];
+                var userid = $.trim($('#userid').val());
+                var type = $.trim($('#type option:selected').val());
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('qmtg/levelquery')}" //数据接口
+                    , page: true //开启分页
+                    , cols: [cols]
+                });
+            };
+
+        //搜索
+        var search = function() {
+            var userid = $.trim($('#userid').val());
+            var type = $.trim($('#type option:selected').val());
+
+            //执行重载
+            table.reload('proxylist', {
+                page: {
+                    curr: 1 //重新从第 1 页开始
+                },
+                where: {
+                    'userid':userid,
+                    'type':type,
+                }
+            });
+        };
+        init();
+    });
+</script>
+{/block}

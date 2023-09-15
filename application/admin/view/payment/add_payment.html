@@ -1,0 +1,121 @@
+{extend name="common/base" /}
+
+{block name="title"}通道金额配置{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('payment/addPayment')}" method="post" id="addProxy" >
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">支付类型：</label>
+        <div class="layui-input-block">
+            <select name="classid" id="classid">
+                {foreach $class as $k1 => $v1}
+                <option value="{$k1}">{$v1}</option>
+                {/foreach}
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">金额：</label>
+        <div class="layui-input-block">
+            <select name="amountid" id="amountid">
+            {foreach $amountchannel as $k2 => $v2}
+                {if condition="$v2.itypeid eq 1"}
+            <option value="{$v2.showid}">{$v2.showname}</option>
+                {/if}
+            {/foreach}
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">支付通道：</label>
+        <div class="layui-input-block">
+            <select name="channelid" id="channelid">
+                {foreach $amountchannel as $k3 => $v3}
+                {if condition="$v3.itypeid eq 0"}
+                <option value="{$v3.showid}">{$v3.showname}</option>
+                {/if}
+                {/foreach}
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >新增</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" lay-submit="" lay-filter="cancel" id="cancel" >取消</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                var channelid = $.trim(data.field.channelid),
+                    classid = $.trim(data.field.classid),
+                    amountid = $.trim(data.field.amountid);
+                if (channelid == '' || classid== '' || amountid == '') {
+                    layer.msg('参数有误', {icon:2});
+                    return false;
+                }
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'channelid' : channelid,
+                        'classid' : classid,
+                        'amountid' : amountid
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

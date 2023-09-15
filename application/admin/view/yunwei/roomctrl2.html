@@ -1,0 +1,189 @@
+{extend name="common/base" /}
+
+{block name="title"}房间配置{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">游戏种类</label>
+                    <div class="layui-input-inline">
+                        <select name="kindid" id="kindid">
+                            <option value="0">所有</option>
+                            {foreach $kindlist as $k => $v}
+                                <option value="{$v.KindID}">{$v.KindName}({$v.KindID})</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">房间名称</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="roomname" name="roomname"  autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">搜索</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <a style="margin-bottom: 10px;" class="layui-btn" onclick="x_admin_show('添加房间','addroom.html',800, 700)">
+            <!--<i class="layui-icon layui-icon-add-circle"></i>-->
+            添加房间
+        </a>
+        <div class ="layui-row layui-col-space30">
+            <div id="alllist" class="layui-col-md12">
+                <table id="proxylist" lay-filter="proxylist"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script type="text/html" id="msg-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="copy">复制</a>
+    <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="edit">修改</a>
+    <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">删除</a>
+    <!--<a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">拉黑</a>-->
+</script>
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'roomid', title: '房间ID', minWidth:80}
+                    ,{field: 'kindname', title: '游戏标识', minWidth: 180}
+                    ,{field: 'roomname', title: '房间名称', minWidth: 150}
+                    , {field: 'roomtype', title: '房间类型', minWidth: 120}
+                    , {field: 'maxtablecount', title: '桌子数', minWidth: 120}
+                    , {field: 'maxplayercount', title: '最大人数', minWidth: 120}
+//                    , {field: 'serverip', title: '链接地址', minWidth: 180}
+                    , {field: 'schemename', title: '房间布局', minWidth: 120}
+                    ,{fixed: 'right', title:'操作', align:'center', minWidth:250, toolbar: '#msg-bar'}
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('yunwei/roomctrl2')}" //数据接口
+                    , page: true //开启分页
+                    , limit:15
+                    , cols: [cols]
+                    , done: function (d) {
+                        tzTbale()
+                    }
+                });
+            },
+
+            //搜索
+            search: function () {
+                var kindid = $.trim($('#kindid').val());
+                var roomname = $.trim($('#roomname').val());
+
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'kindid': kindid,
+                        'roomname': roomname,
+                    }
+                });
+            },
+
+            //操作事件
+            extraEvent: function () {
+                //编辑
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'copy') {
+                        $.ajax({
+                            type: 'post',
+                            url: "{:url('yunwei/geteditroom')}",
+                            data: {
+                                'roomid': data.roomid
+                            },
+                            dataType: 'json',
+                            success: function (res) {
+                                if (res.code === 0) {
+                                    x_admin_show('复制房间','copyroom.html?data='+escape(res.data),800, 700)
+                                }
+                            }
+                        });
+                    } else if (layEvent === 'edit') {
+                        $.ajax({
+                            type: 'post',
+                            url: "{:url('yunwei/geteditroom')}",
+                            data: {
+                                'roomid': data.roomid
+                            },
+                            dataType: 'json',
+                            success: function (res) {
+                                if (res.code === 0) {
+                                    x_admin_show('编辑房间','editroom.html?data='+escape(res.data),800, 700)
+                                }
+                            }
+                        });
+                    }  else if (layEvent === 'delete') {
+                        layer.confirm("{:lang('确认删除这条记录？')}",{btn: ['确认','取消']}, function() {
+                            $.ajax({
+                                type: 'post',
+                                url: "{:url('yunwei/deleteroom')}",
+                                data: {
+                                    'RoomID': data.roomid
+                                },
+                                dataType: 'json',
+                                success: function (res) {
+                                    if (res.code === 0) {
+                                        layer.msg(res.msg, {icon: 6,time:1000}, function() {
+                                            window.location.reload();
+                                        });
+                                    } else {
+                                        layer.msg(res.msg, {icon: 5});
+                                    }
+                                }
+                            });
+                        });
+                    }
+                });
+            },
+
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

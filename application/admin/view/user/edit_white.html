@@ -1,0 +1,101 @@
+{extend name="common/base" /}
+
+{block name="title"}编辑超级玩家{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('user/editWhite')}" method="post" id="addProxy" >
+    <input type="hidden" id="id" name='id' value="{$id}" readonly lay-verify="required|number" placeholder="{:lang('请输入超级玩家ID')}" autocomplete="off" class="layui-input layui-disabled">
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">IP：</label>
+        <div class="layui-input-block">
+            <input type="text" id="ip" name='ip' value="{$ip}" lay-verify="required" placeholder="{:lang('请输入白名单')}" autocomplete="off" class="layui-input">
+
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('备注')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="remark" name="remark" value="{$remark}"  placeholder="{:lang('请输入备注')}" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >{:lang('修改')}</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" id="cancel" >{:lang('取消')}</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var layer = layui.layer
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                var id = $.trim(data.field.id)
+                    ip = $.trim(data.field.ip)
+                    ,remark = $.trim(data.field.remark);
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'id' : id,
+                        'ip' : ip,
+                        'remark' : remark
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res===0) {
+                            layer.msg('{:lang("修改成功")}',{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+
+                            layer.msg('{:lang("修改失败")}',{icon:2,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+//                            x_admin_close();
+                        }
+                    }
+                });
+            },
+
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

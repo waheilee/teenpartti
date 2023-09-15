@@ -1,0 +1,144 @@
+{extend name="common/base" /}
+
+{block name="title"}银行管理{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+
+    </div>
+    <div class="layui-card-body">
+        <a style="margin-bottom: 10px;" class="layui-btn" onclick="x_admin_show('{:lang(\'新增银行\')}','addbank.html', '', 400)">
+            <i class="layui-icon layui-icon-add-circle"></i>
+        </a>
+        <div id="alllist">
+            <table id="proxylist"  lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+
+<script type="text/html" id="msg-bar">
+    <!--    <a class="layui-btn layui-btn-xs" lay-event="edit">{:lang('编辑')}</a>-->
+    <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="del">{:lang('删除')}</a>
+</script>
+
+
+<script>
+
+	params = '';
+	url = "{:url('playertrans/BankManager')}";
+	var cols = [ //表头
+		{field: 'ID', align: 'center', title: 'ID', width: 100},
+		{field: 'BankNo', align: 'center', title: 'BankNo', width: 300, edit: true},
+		{field: 'BankName', align: 'center', title: 'BankName', width: 300, edit: true},
+		{fixed: 'right', align: 'center', title: "{:lang('操作')}", width: 150, toolbar: '#msg-bar'}
+	];
+	layui.config({
+		base: '__layui__/' //静态资源所在路径
+	}).extend({
+		index: 'lib/index', tableEdit: '../../../__js__/tableEdit'
+	}).use(['table', 'tableEdit', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+		var element = layui.element, layer = layui.layer, tableEdit = layui.tableEdit, table = layui.table, $ = layui.$, form = layui.form;
+		var main = {
+
+			renderData: function () {
+				aop = table.render({elem: '#proxylist', url: url, where: {Action: 'list', Type: 0}, page: true, limit: 15, sort: true, cols: [cols]});
+				var aopTable = tableEdit.aopObj(aop.config.cols); //获取一个aop对象
+				aopTable.on('tool(proxylist)', function (obj) {
+					var field = obj.field; //单元格字段
+					var value = obj.value; //修改后的值
+					var data = obj.data; //当前行旧数据
+					var layEvent = obj.event; //当前单元格事件属性值
+					tr = obj.tr; //获得当前行 tr 的DOM对象
+					switch (layEvent) {
+						case 'del':
+							layer.confirm('{:lang(\'确认要删除吗？\')}',{
+					          btn: ['{:lang("确定")}','{:lang("取消")}'] //按钮
+					        },function (index) {
+								if (data.ID > 0) {
+									//捉到所有被选中的，发异步进行删除
+									$.get("BankManager", {ID: data.ID, Action: 'del'}, function (data, textStatus, xhr) {
+										if (data.code == 1) {
+											layer.msg(data.msg, {icon: 1, time: 1000}, function () {
+												obj.del();
+												layer.close(index);
+											});
+										} else {
+											layer.msg(data.msg, {icon: 2, time: 1000});
+										}
+									});
+								} else {
+									obj.del();
+									layer.close(index);
+								}
+
+							});
+							break;
+						case 'CountryCode':
+							var update = {};
+							update[field] = value;
+							obj.update(update);
+							$.ajax({
+								url: url,
+								data: {ID: data.ID, CountryCode: value.value, Action: 'CountryCode'},
+								success: function (d) { }
+							});
+							break;
+					}
+
+				});
+			},
+
+			//添加行数据
+			InsertRow: function () {
+				var tabledata = table.cache["proxylist"]; //获取现有数据
+				tabledata.push({BankNo: "", BankName: "", CountryCode: ""})//添加数据,  字段名对应值.  不要初始值的话 留空即可.
+				table.reload("proxylist", {
+					url: '',
+					data: tabledata,
+				})
+			},
+			//操作事件
+			extraEvent: function () {
+				table.on('edit(proxylist)', function (res) {
+					url = "BankManager?Action=";
+					data = res.data;
+					//控制了 添加还是编辑
+					if (typeof (data.ID) == "undefined") url += "add";
+					else url += "edit";
+					if (data.BankNo.length > 1 && data.BankName.length > 1 && data.CountryCode.length > 1) {
+						$.ajax({
+							url: url,
+							data: {ID: data.ID, BankNo: data.BankNo, BankName: data.BankName, CountryCode: data.CountryCode.toUpperCase()},
+							success: function (d) {
+								if (d.code === 1) {
+									layer.msg(d.msg, {icon: 1, time: 1000}, function () {
+										main.renderData();
+									});
+								}
+							}
+						});
+					}
+
+				})
+
+			},
+
+			init: function () {
+				main.renderData();
+				main.extraEvent();
+				$('#Insert').on('click', function (e) {
+					// e.preventDefault();
+					main.InsertRow();
+				});
+			}
+		};
+
+		main.init();
+	});
+</script>
+{/block}

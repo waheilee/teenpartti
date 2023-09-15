@@ -1,0 +1,267 @@
+{extend name="common/base" /}
+
+{block name="title"}游戏日志{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<style>.layui-form-label {
+    width: auto;
+    text-align: center
+}
+
+.layui-table-cell {
+    font-size: 14px;
+    padding: 0 5px;
+    height: auto;
+    overflow: visible;
+    text-overflow: inherit;
+    white-space: normal;
+    word-break: break-all;
+}
+.layui-anim{
+        max-height: 500px !important;
+    }
+</style>
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('玩家ID')}</label>
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="roleid" value="{$roleid}" lay-verify="number"
+                               name="roleid"
+                               type="text">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('日期')}</label>
+                    <div class="layui-input-inline" style="width: 150px;">
+                        <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date" name="start"
+                               type="text" value="{$start}">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline" style="width: 150px;">
+                        <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date2" name="end"
+                               type="text" value="{$end}">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('房间')}</label>
+                    <div class="layui-input-inline">
+                        <select name="roomid" id="roomid"  lay-search>
+                            <option value="0">{:lang('所有')}</option>
+                            <!-- foreach循环 -->
+                            {foreach name="selectData" item="vo"}
+                            <option value="{$vo.KindID}">{$vo.KindName}({$vo.KindID})</option>
+                            {/foreach}
+                            <!-- for循环 -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('玩家人数')}</label>
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" style="width: 100px;" id="playernum" value="" lay-verify="number" name="playernum" type="number">
+                    </div>
+                </div>
+
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                        <!--<a class="layui-btn" id="output">导出记录</a>-->
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+
+<script type="text/html" id="msg-bar">
+
+    {{#  if(!(RegExp(/红包扫雷/).test(d.roomname) || RegExp(/李逵劈鱼/).test(d.roomname) || RegExp(/水果拉霸/).test(d.roomname))){ }}
+    <a class="layui-btn layui-btn-xs " lay-event="benju">查看结果</a>
+    {{#  } }}
+    <!--<a class="layui-btn layui-btn-xs" lay-event="tongchang">同场数据</a>-->
+
+
+</script>
+<script>
+    url = "{:url('room/gamedetaillist')}";
+    layui.config({base: '__layui__/'}).extend({
+        index: 'lib/index'
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$,
+            form = layui.form;
+        //初始赋值
+        var date = new Date();
+        var nowYear = date.getFullYear();
+        var month = ("0" + (date.getMonth() + 1)).slice(-2);
+        var day = ("0" + date.getDate()).slice(-2);
+
+        var today = nowYear + "-" + (month) + "-" + (day);
+
+        laydate.render({elem: '#LAY-component-form-group-date',type:'datetime', isInitValue: true});
+        laydate.render({elem: '#LAY-component-form-group-date2', type:'datetime', isInitValue: true});
+        var strartdate = $.trim($('#LAY-component-form-group-date').val());
+        var enddate = $.trim($('#LAY-component-form-group-date2').val());
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'UniqueId', align: 'center', title: '{:lang("GameID")}', minWidth: 180},
+                    {field: 'AddTime', align: 'center', title: '{:lang("游戏时间")}', minWidth: 180},
+                    {field: 'RoomName', align: 'center', title: '{:lang("游戏房间")}', minWidth: 180},
+                    {field: 'winlost', align: 'center', title: '{:lang("玩家总输赢")}', minWidth: 150},
+                    {field: 'drawcount', align: 'center', title: '{:lang("真实玩家数")}', minWidth: 100},
+                    {field: 'Tax', align: 'center', title: '{:lang("总局税收")}', minWidth: 120},
+                    {field: 'detail', align: 'left', title: '{:lang("游戏详情")}', minWidth: 900}
+                ];
+                table.render({
+                    elem: '#proxylist', url: url,
+                    page: true,
+                    autoSort: false,
+                    limit: 15,
+                    where: {
+                        Action: 'list',
+                        roleid: $.trim($('#roleid').val()),
+                        roomid: $.trim($('#roomid').val()),
+                        strartdate: strartdate,
+                        enddate: enddate,
+                        playernum:$.trim($('#playernum').val())
+
+                    }, cols: [cols], done: function (res, curr, count) {
+                        // $('#GameRoundRunning').html(res.other.GameRoundRunning);
+                        // $('#AwardMoney').html(res.other.AwardMoney);
+                        // $('#UnAwardMoney').html(res.other.UnAwardMoney);
+                        // $('#TotalWin').html(res.other.TotalWin);
+                    }
+                });
+            },
+
+            //搜索
+            search: function () {
+                //执行重载
+                table.reload('proxylist', {
+                    page: {curr: 1}, where: {
+                        roleid: $.trim($('#roleid').val()),
+                        roomid: $.trim($('#roomid').val()),
+                        strartdate: $.trim($('#LAY-component-form-group-date').val()),
+                        enddate: $.trim($('#LAY-component-form-group-date2').val()),
+                        playernum:$.trim($('#playernum').val())
+                    }
+                });
+            },
+
+            //操作事件
+            extraEvent: function () {
+                //编辑
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data
+                        , layEvent = obj.event;
+                    tr = obj.tr;
+                    if (layEvent === 'tongchang') {
+                        window.location.href = 'coPlayer.html?roomid=' + $('#roomid').val();
+                        var roomid = $("#tt").val();
+
+                    } else if (layEvent === 'benju') {
+                    }
+
+                });
+
+                table.on('sort(proxylist)', function (obj) {
+                    table.reload('proxylist', {
+                        initSort: obj, page: {curr: 1},
+                        where: {'orderfield': obj.field, 'ordertype': obj.type,}
+                    });
+                });
+            },
+
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+                
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+
+
+    $('#output').click(function () {
+        where = {
+            roleid: $.trim($('#roleid').val()),
+            roomid: $.trim($('#roomid').val()),
+            strartdate: $.trim($('#LAY-component-form-group-date').val()),
+            enddate: $.trim($('#LAY-component-form-group-date2').val()),
+            winlost: $.trim($('#result').val()),
+            playernum:$.trim($('#playernum').val()),
+            limit: 10000000,
+            Action: 'exec',
+        }
+
+        download();
+
+        function download() {
+            var params = Object.keys(where).map(function (key) {
+                return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+            }).join("&");
+            url = url + "?" + params;
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                async: true,
+                url: url, // 生成文件，保存在服务器
+                success: function (data) {
+                    var result = data;
+                    // console.info(data);
+                    switch (result["code"]) {
+                        case 0:
+                            parent.parent.open(url + "&exec=1&outall=true");
+                            break;
+                        case 1:
+                            layer.msg(result["message"]);
+                            break;
+                        case 2:
+                            layer.confirm(result['message'], {
+                                btn: ['是', '否'] //按钮
+                            }, function () {
+                                parent.parent.open(url + "&exec=1&outall=true");
+                                layer.msg('', {icon: 6, time: 1000}, function () {
+                                    window.location.reload();
+                                });
+                            });
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, e) {
+                    console.log("oilDetection.js  method exportOilDetection" + e);
+                }
+            });
+        }
+    });
+
+    function userdetail(userid) {
+        var url = '/admin/player/playerDetail?roleid=' + userid;
+        x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.8);
+    }
+
+</script>
+{/block}

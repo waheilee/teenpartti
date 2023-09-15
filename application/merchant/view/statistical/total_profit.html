@@ -1,0 +1,132 @@
+{extend name="common/base" /}
+
+{block name="title"}向玩家转账{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<div class="layui-row layui-col-space30">
+    <div class="layui-col-md12 layui-col-lg12 layui-col-xs12 layui-col-sm12">
+        <div class="layui-card">
+            <div class="layui-card-header layuiadmin-card-header-auto">
+                <form class="layui-form" lay-filter="component-form-group">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">{:lang('日期')}</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="start_date" id="LAY-component-form-group-date" autocomplete="off"
+                                       class="layui-input">
+                            </div>
+                            <div class="layui-form-mid">
+                                -
+                            </div>
+                            <div class="layui-input-inline">
+                                <input type="text" name="end_date" id="LAY-component-form-group-date2" autocomplete="off"
+                                       class="layui-input">
+                            </div>
+
+                        </div>
+
+                        <div class="layui-inline">
+                            <div class="layui-input-inline">
+                                <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+            <div class="layui-card-body">
+                <div id="alllist">
+                    <table id="proxylist" lay-filter="proxylist"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script>
+    url = "{:url('statistical/totalProfit')}?action=list";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery', 'gameonline'], function () {
+        //隐藏轮播
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+
+
+
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'mydate', align: 'center', title: "{:lang('日期')}", minWidth: 200}
+                    , {field: 'totalyk', align: 'center', title: "{:lang('游戏盈亏')}", minWidth: 200}
+                    // , {field: 'totalwage', align: 'center', title: "{:lang('打码')}", minWidth: 200}
+                    , {field: 'totaltax', align: 'center', title: "{:lang('税收')}", minWidth: 200}
+                    , {field: 'totalsystem', align: 'center', title: "{:lang('平台收入')}", minWidth: 200}
+                ];
+                table.render({elem: '#proxylist', url: url, page: true, limit: 15, cols: [cols],where: {Action:'list'}});
+            },
+
+            //搜索
+            search: function () {
+                var strartdate = $.trim($('#LAY-component-form-group-date').val());
+                var enddate = $.trim($('#LAY-component-form-group-date2').val());
+
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'start_date': strartdate,
+                        'end_date': enddate
+                    }
+                });
+            },
+
+            //其他
+            extraEvent: function () {
+                $('.layui-carousel-ind').hide();
+            },
+
+
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+                laydate.render({
+                    elem: '#LAY-component-form-group-date'
+                    , format: 'yyyy-MM-dd'
+                    , max: 0
+                    , lang:'{$datelang ?: "cn"}'
+                    , btns: ['clear', 'confirm']
+                    , value: new Date()
+                });
+                laydate.render({
+                    elem: '#LAY-component-form-group-date2'
+                    , format: 'yyyy-MM-dd'
+                    , max: 0
+                    , lang:'{$datelang ?: "cn"}'
+                    , btns: ['clear', 'confirm']
+                    , value: new Date()
+                });
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+
+    });
+</script>
+{/block}

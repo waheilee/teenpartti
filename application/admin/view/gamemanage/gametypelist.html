@@ -1,0 +1,191 @@
+{extend name="common/base" /}
+
+{block name="title"}游戏开关{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('游戏名称')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="nodename" name="nodename" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                        <button type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <a style="margin-bottom: 10px;" class="layui-btn" onclick="window.history.go(-1);">
+            {:lang('后退')}
+        </a>
+
+        <a style="margin-bottom: 10px;" class="layui-btn layui-bg-blue" id="kindset" onclick="x_admin_show('{:lang(\'三方游戏批量设置\')}', '{:url(\'Gamemanage/thirdMaintain\')}', 600, 300)">{:lang('三方游戏批量设置')}</a>
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'TypeID', title: "{:lang('类型ID')}", width: 100}
+                    , {
+                        field: 'NodeName', title: "{:lang('游戏名称')}", width: 200, templet: function (d) {
+                            return '<a href="gametypelist?parent_id=' + d.TypeID + '">' + d.NodeName + '</a>';
+                        }
+                    }
+                    , {field: 'StatusName', align:"center", title: "{:lang('状态')}", width: 120}
+                    , {field: 'ParentName',align:"center", title: "{:lang('父节点')}", width: 120}
+                    , {
+                        field: 'Nullity',align:"center", title: "{:lang('是否可见')}", width: 120, templet: function (d) {
+                            var myid = d.TypeID;
+                            if (d.Nullity == 1) {
+                                return '<a class="myopen" myid="' + myid + '" style="margin-left: 10px" lay-event="setstatus"><input type="checkbox" name="open" lay-filter="setstatus" lay-skin="switch" checked lay-text="{:lang('开启')}|{:lang('关闭')}"></a>';
+                            } else {
+                                return '<a class="myopen" myid="' + myid + '" style="margin-left: 10px" lay-event="setstatus"><input type="checkbox"  name="open" lay-filter="setstatus" lay-skin="switch"  lay-text="{:lang('开启')}|{:lang('关闭')}"></a>';
+                            }
+                        }
+                    }
+                    , {
+                        field: 'Maintain',align:"center", title: "{:lang('是否维护')}", width: 120, templet: function (d) {
+                            var myid = d.TypeID;
+                            if (d.Maintain == 1) {
+                                return '<a class="myopen" myid="' + myid + '" style="margin-left: 10px" lay-event="setmaintain"><input type="checkbox" name="open" lay-filter="setmaintain" lay-skin="switch" checked lay-text="{:lang('正常')}|{:lang('维护')}"></a>';
+                            } else {
+                                return '<a class="myopen" myid="' + myid + '" style="margin-left: 10px" lay-event="setmaintain"><input type="checkbox"  name="open" lay-filter="setmaintain" lay-skin="switch"  lay-text="{:lang('正常')}|{:lang('维护')}"></a>';
+                            }
+                        }
+                    }
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('Gamemanage/gametypelist')}?parent_id={$pid}" //数据接口
+                    , page: true //开启分页
+                    , cols: [cols]
+                    , done: function (res) {
+                        tzTbale();
+                    }
+                });
+
+                form.on('switch(setstatus)', function (data) {
+                    var selected = data.elem.checked === true ? 0 : 1; //开关是否开启，true或者false
+                    var id = $(data.elem).parent().attr('myid');
+                    //设置开关
+                    $.ajax({
+                        url: "{:url('Gamemanage/setGameTypeStatus')}",
+                        type: 'post',
+                        data: {
+                            'TypeID': id,
+                            'status': selected
+                        },
+                        success: function (res) {
+                            if (res.code === 0) {
+                                layer.msg(res.msg, {icon: 6});
+                            } else {
+                                layer.msg(res.msg, {icon: 5});
+                                if (selected == 0) {
+                                    //重新添加checked要用prop
+                                    $(data.elem).prop('checked', 'true');
+                                    $(data.elem).next().addClass('layui-form-onswitch');
+                                    $(data.elem).next().find('em').html("{:lang('开启')}");
+                                } else {
+                                    $(data.elem).removeAttr('checked');
+                                    $(data.elem).next().removeClass('layui-form-onswitch');
+                                    $(data.elem).next().find('em').html("{:lang('关闭')}");
+                                }
+                            }
+                        }
+                    });
+                });
+                form.on('switch(setmaintain)', function (data) {
+                    var selected = data.elem.checked === true ? 0 : 1; //开关是否开启，true或者false
+                    var id = $(data.elem).parent().attr('myid');
+                    //设置开关
+                    $.ajax({
+                        url: "{:url('Gamemanage/setGameTypeMaintain')}",
+                        type: 'post',
+                        data: {
+                            'TypeID': id,
+                            'status': selected
+                        },
+                        success: function (res) {
+                            if (res.code === 0) {
+                                layer.msg(res.msg, {icon: 6});
+                            } else {
+                                layer.msg(res.msg, {icon: 5});
+                                if (selected == 0) {
+                                    //重新添加checked要用prop
+                                    $(data.elem).prop('checked', 'true');
+                                    $(data.elem).next().addClass('layui-form-onswitch');
+                                    $(data.elem).next().find('em').html("{:lang('开启')}");
+                                } else {
+                                    $(data.elem).removeAttr('checked');
+                                    $(data.elem).next().removeClass('layui-form-onswitch');
+                                    $(data.elem).next().find('em').html("{:lang('关闭')}");
+                                }
+                            }
+                        }
+                    });
+                });
+            },
+
+            //搜索
+            search: function () {
+                var nodename = $.trim($('#nodename').val());
+
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'nodename': nodename
+                    }
+                });
+            },
+
+
+
+            init: function () {
+                main.renderData();
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+        main.init();
+    });
+</script>
+{/block}

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+    <title>BestPay</title>
+    <link href="__static__/css/app.css" rel="stylesheet">
+
+    <style type="text/css">html {
+        -ms-text-size-adjust: 100%;
+        -webkit-text-size-adjust: 100%
+    }
+
+    * {
+        margin: 0;
+        padding: 0
+    }
+
+    a img {
+        border: 0
+    }
+
+    a {
+        text-decoration: none;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0)
+    }
+
+    ::-webkit-input-placeholder {
+        font-family: -apple-system-font, Helvetica Neue, sans-serif
+    }
+
+    a {
+        -webkit-touch-callout: none
+    }
+
+    body {
+        line-height: 1.6;
+        font-family: -apple-system-font, Helvetica Neue, sans-serif
+    }
+
+    .weui-loadmore_line {
+        border-top: 1px solid #e5e5e5;
+        margin-top: 2.4em
+    }
+
+    .weui-loadmore_line .weui-loadmore__tips {
+        position: relative;
+        top: -.9em;
+        padding: 0 .55em;
+        background-color: #fbf9fe;
+        color: #999
+    }
+
+    .weui-btn {
+        background: -webkit-linear-gradient(left, #22a639, #4bcd63);
+        background: linear-gradient(90deg, #22a639, #4bcd63);
+        border-radius: 20px
+    }
+
+    .weui-btn_disabled {
+        opacity: .3
+    }
+
+    ::-webkit-input-placeholder {
+        color: #ccc
+    }
+
+    :-moz-placeholder, ::-moz-placeholder {
+        color: #ccc
+    }
+
+    :-ms-input-placeholder {
+        color: #ccc
+    }
+
+    body {
+        background-color: #fbf9fe
+    }
+
+    @media only screen and (min-width: 769px) {
+        body {
+            width: 480px !important;
+            margin: 0 auto
+        }
+    }
+    </style>
+    <style type="text/css">body, html {
+        height: 100%;
+        width: 100%;
+        overflow-x: hidden
+    }
+
+    .circular-shape {
+        border-radius: 50%
+    }
+
+    .block {
+        display: block
+    }
+
+    .rmargin-5px {
+        margin-right: 5px
+    }
+
+    .rmargin-10px {
+        margin-right: 10px
+    }
+
+    .rmargin-20px {
+        margin-right: 20px
+    }
+    </style>
+    <style type="text/css">.default-color {
+        color: #999
+    }
+
+    .warning-color {
+        color: #f93
+    }
+
+    .success-color {
+        color: #0c0
+    }
+
+    .danger-color {
+        color: #c33
+    }
+
+    .info-color {
+        color: #69f
+    }
+
+    .font-red {
+        color: #ff5e54
+    }
+
+    .font-green {
+        color: #3ab157
+    }
+
+    .font-grey {
+        color: #b3b3b3
+    }
+
+    .copy-right {
+        text-align: center;
+        font-size: 12px;
+        color: #ccc;
+        width: 100%;
+        position: absolute;
+        bottom: 5px;
+        z-index: -999
+    }
+    </style>
+
+    <style type="text/css">img[data-v-b6416234] {
+        width: 100%;
+        height: 100%
+    }
+
+    .container[data-v-b6416234] {
+        position: absolute;
+        top: 4rem;
+        margin: 5%;
+        padding-bottom: .266667rem;
+        width: 90%
+    }
+
+    .grid-label[data-v-b6416234] {
+        display: block;
+        text-align: center;
+        line-height: 100%;
+        vertical-align: middle;
+        color: #666;
+        width: 100%
+    }
+
+    .grid-badge[data-v-b6416234] {
+        text-align: center;
+        line-height: 100%;
+        margin-bottom: 10px;
+        background-color: #000
+    }
+
+    .weui-grids[data-v-b6416234]:before {
+        content: " ";
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        height: 1px;
+        border-top: 1px solid #999;
+        color: #d9d9d9;
+        -webkit-transform-origin: 0 0;
+        transform-origin: 0 0;
+        -webkit-transform: scaleY(.5);
+        transform: scaleY(.5)
+    }
+
+    .weui-grids[data-v-b6416234]:after {
+        content: " ";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1px;
+        bottom: 0;
+        border-left: 1px solid #999;
+        color: #d9d9d9;
+        -webkit-transform-origin: 0 0;
+        transform-origin: 0 0;
+        -webkit-transform: scaleX(.5);
+        transform: scaleX(.5)
+    }
+
+    .weui-grid[data-v-b6416234]:before {
+        content: " ";
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 1px;
+        bottom: 0;
+        border-right: 1px solid #999;
+        color: #d9d9d9;
+        -webkit-transform-origin: 100% 0;
+        transform-origin: 100% 0;
+        -webkit-transform: scaleX(.5);
+        transform: scaleX(.5)
+    }
+
+    .weui-grid[data-v-b6416234]:after {
+        content: " ";
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        height: 1px;
+        border-bottom: 1px solid #999;
+        color: #d9d9d9;
+        -webkit-transform-origin: 0 100%;
+        transform-origin: 0 100%;
+        -webkit-transform: scaleY(.5);
+        transform: scaleY(.5)
+    }
+
+    .vux-badge-dot[data-v-b6416234] {
+        height: auto;
+        padding: 7px
+    }
+    </style>
+    <style type="text/css">.cbox[data-v-46b5f1a7] {
+        text-align: center
+    }
+
+    .keyboard-inner[data-v-46b5f1a7] {
+        padding: 5px 0;
+        width: 100%;
+        height: 38px;
+        font-size: 1.5rem
+    }
+
+    .keyboard-list-box[data-v-46b5f1a7] {
+        background-color: #fff;
+        width: 100%;
+        overflow: scroll;
+        -webkit-overflow-scrolling: touch
+    }
+
+    .no-active[data-v-46b5f1a7] {
+        background-color: #d4d8db
+    }
+
+    .arrow-down[data-v-46b5f1a7] {
+        padding: 5px 0;
+        width: 100%;
+        height: 20px;
+        font-size: 1.5rem
+    }
+    </style>
+</head>
+<body>
+<div id="app" style="height: 100%;">
+    <div class="card" style="height: 100%;">
+        <div data-v-9145b8a4="" class="card-list" style="height: 100%;">
+            <div data-v-9145b8a4="" class="weui-tab">
+                <div data-v-9145b8a4="" class="vux-header"
+                     style="width: 100%; position: absolute; left: 0px; top: 0px; z-index: 100;">
+                    <div class="vux-header-left">
+                        <a class="vux-header-back"></a>
+                        <div class="left-arrow" onclick="javascript:history.back();"></div>
+                    </div>
+                    <h1 class="vux-header-title">
+                        银行卡
+                    </h1> <!---->
+                    <div class="vux-header-right">
+                        <!---->
+                        <a data-v-9145b8a4="" href="../agent/add_card.html" class="">
+                            <svg data-v-9145b8a4="" type="plus" xmlns="http://www.w3.org/2000/svg" width="24"
+                                 height="24" viewBox="0 0 512 512" class="vux-x-icon vux-x-icon-plus"
+                                 style="fill: rgb(255, 255, 255);">
+                                <path data-v-9145b8a4="" d="M448 224H288V64h-64v160H64v64h160v160h64V288h160z"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                <div id="vux_view_box_body" class="weui-tab__panel vux-fix-safari-overflow-scrolling"
+                     style="padding-top: 50px; padding-bottom: 0px;">
+                    <div data-v-9145b8a4="" style="margin: 100px 20px;">
+                        <div data-v-9145b8a4="" class="vux-flexbox vux-flex-col">
+                            <div data-v-9145b8a4="" class="vux-flexbox-item" align="center" style="margin-top: 8px;">
+                                <img data-v-9145b8a4="" src="__static__/images/no_result.f4068ee.png"
+                                     style="width: 20%;"></div>
+                            <div data-v-9145b8a4="" class="vux-flexbox-item" align="center" style="margin-top: 8px;">
+                                <span data-v-9145b8a4=""
+                                      style="color: rgb(179, 179, 179); font-size: 14px;">您还没有添加银行卡哦</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p data-v-9145b8a4="" class="copy-right">© BestPay</p></div>
+    </div>
+</div>
+
+<div class="vux-alert" style="display:none;">
+    <div class="vux-x-dialog">
+        <div class="weui-mask" style=""></div>
+        <div class="weui-dialog" style="">
+            <div class="weui-dialog__hd">
+                <strong class="weui-dialog__title">您还没有资金密码</strong></div>
+            <div class="weui-dialog__bd">
+                <div>点击确定前往设置</div>
+            </div>
+            <div class="weui-dialog__ft">
+                <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_primary">确定</a></div>
+        </div>
+    </div>
+</div>
+<div class="vux-confirm">
+    <div class="vux-x-dialog">
+        <div class="weui-mask" style="display: none;"></div>
+        <div class="weui-dialog" style="display: none;">
+            <!---->
+            <div class="weui-dialog__bd">
+                <div></div>
+            </div>
+            <div class="weui-dialog__ft">
+                <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_default">取消</a>
+                <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_primary">确定</a></div>
+        </div>
+    </div>
+</div>
+<a data-cancel-text="取消" data-confirm-text="确定" href="javascript:"
+   class="vux-datetime weui-cell weui-cell_access vux-datetime-style-inject" id="vux-datetime-u9lt8"
+   style="display: none;">
+    <div>
+        <p class=""></p>
+        <!----></div>
+    <div class="weui-cell__ft vux-cell-primary vux-datetime-value">
+        <!---->
+        <!---->
+        <i class="vux-input-icon weui-icon weui_icon_warn weui-icon-warn" style="display: none;"></i>
+    </div>
+</a>
+<div class="weui-loading_toast vux-loading vux-loading-no-text" style="display: none;">
+    <div class="weui-mask_transparent"></div>
+    <div class="weui-toast">
+        <i class="weui-loading weui-icon_toast"></i>
+        <!----></div>
+</div>
+<div class="vux-toast">
+    <div class="weui-mask_transparent" style="display: none;"></div>
+    <div class="weui-toast weui-toast_success" style="width: 7.6em; display: none;">
+        <i class="weui-icon-success-no-circle weui-icon_toast"></i>
+        <p class="weui-toast__content"></p>
+    </div>
+</div>
+</body>
+
+</html>

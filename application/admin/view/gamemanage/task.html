@@ -1,0 +1,249 @@
+{extend name="common/base" /}
+
+{block name="title"}向玩家转账{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+<div class="layui-card" style="display: none">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">房间ID</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="roleid" name="roleid" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">房间名称</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="roleid2" name="roleid" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">状态</label>
+                    <div class="layui-input-inline">
+                        <select name="condition" id="roleid3" name="roleid3">
+                            <option value="3" selected>全部</option>
+                            <option value="0">下架</option>
+                            <option value="1">上架</option>
+
+
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">搜索</a>
+                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+
+
+    </div>
+    <div class="layui-card-body">
+        <a style="margin-bottom: 10px;" class="layui-btn" onclick="x_admin_show('新增游戏任务配置','addTask.html', '', 450)">
+            <i class="layui-icon layui-icon-add-circle"></i>
+        </a>
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+
+<script type="text/html" id="msg-bar">
+    <!--<a class="layui-btn layui-btn-xs" lay-event="edit"><i class="layui-icon layui-icon-edit"></i></a>-->
+    <a class="layui-btn layui-btn-xs" lay-event="edit">修改</a>
+
+    <!--<a class="layui-btn layui-btn-xs " lay-event="ganme">同意2</a>-->
+    <!--<a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="refuse">上/下架</a>-->
+
+</script>
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+        var main = {
+            renderData : function() {
+                var cols = [ //表头
+
+                    {field: 'roomid', title: '房间ID', minWidth:120}
+                    , {field: 'taskname', title: '房间名称', minWidth:80}
+                    , {field: 'taskreqround', title: '游戏局数', minWidth:80}
+                    , {field: 'taskaward', title: '游戏奖励', minWidth:150}
+
+//                    , {field: 'status', title: '状态', minWidth:120, templet : function(d) {
+//                        var classname = '';
+//                        if (d.status == 0) {
+//                            classname = '下架';
+//                        } else if (d.status == 1) {
+//                            classname = '上架';
+//                        }
+//
+//                        return classname;
+//                    }}
+                    , {field: 'status', title: '状态', minWidth:150, templet: function(d){
+                        //$('#msg-bar a').remove('.myopen');
+                        var myid = d.roomid;
+                        if (d.status == 0) {
+                            //$('#msg-bar').append('<a class="myopen" style="margin-left: 10px" lay-event="open"><input type="checkbox"  name="open" lay-filter="open" lay-skin="switch" checked lay-text="开启|关闭"></a>');
+                            return '<a class="myopen" myid="'+myid+'" style="margin-left: 10px" lay-event="open"><input type="checkbox" name="open" lay-filter="open" lay-skin="switch" lay-text="上架|下架"></a>';
+                        } else {
+                            //$('#msg-bar').append('<a class="myopen" style="margin-left: 10px" lay-event="open"><input type="checkbox" name="open" lay-filter="open" lay-skin="switch" lay-text="开启|关闭"></a>');
+                            return '<a class="myopen" myid="'+myid+'" style="margin-left: 10px" lay-event="open"><input type="checkbox"  name="open" lay-filter="open" lay-skin="switch" checked lay-text="上架|下架"></a>';
+                        }
+                    }}
+                    ,{fixed: 'right', title:'操作', align:'center', minWidth:200, toolbar: '#msg-bar'}
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+                     , url: "{:url('gamemanage/task')}" //数据接口
+                    , page: true //开启分页
+                    , limit:15
+                    , cols: [cols]
+                    ,done: function(res, curr, count){
+
+                        console.log(res.other.alltotal);
+                        $('#total').html(res.other.alltotal);
+                        tzTbale()
+
+                    }
+                });
+            },
+
+
+            //搜索
+            search : function() {
+                var roleid = $.trim($('#roleid').val());
+                var roleid2 = $.trim($('#roleid2').val());
+//                var start = $.trim($('#LAY-component-form-group-date').val());
+//                var end = $.trim($('#LAY-component-form-group-date2').val());
+                var roleid3 = $.trim($('#roleid3').val());
+
+
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'roleid':roleid,
+                        'roleid2':roleid2,
+                        'roleid3':roleid3,
+
+
+                    }
+                });
+            },
+            //操作事件
+            extraEvent : function () {
+                //编辑&&删除
+                table.on('tool(proxylist)', function(obj) {
+                    var data = obj.data //获得当前行数据
+                        ,layEvent = obj.event; //获得 lay-event 对应的值
+                    if (layEvent === 'edit') {
+                        var roomid = data.roomid
+                            ,taskreqround = data.taskreqround
+                            ,taskaward = data.taskaward? data.taskaward : ''
+                            ,taskname= data.taskname ? data.taskname : ''
+                            ,status= data.taskname ? data.status : ''
+                        x_admin_show('编辑游戏任务', 'editTask?roomid='+roomid+'&taskreqround='+taskreqround+'&taskaward='+taskaward+'&taskname='+taskname+'&status='+status, '', 300);
+                    } else if (layEvent === 'delete') {
+                        layer.confirm("{:lang('确认删除这条记录？')}",{btn: ['确认','取消']}, function() {
+                            $.ajax({
+                                type: 'post',
+                                url: "{:url('gamemanage/deleteWeixin')}",
+                                data: {
+                                    'id': data.id
+                                },
+                                dataType: 'json',
+                                success: function (res) {
+                                    if (res.code === 0) {
+                                        layer.msg(res.msg, {icon: 6,time:1000}, function() {
+                                            window.location.reload();
+                                        });
+                                    } else {
+                                        layer.msg(res.msg, {icon: 5});
+                                    }
+                                }
+                            });
+                        });
+                    }
+                });
+
+                //上下架
+                form.on('switch(open)', function(data){
+
+                    var selected = data.elem.checked === true ? 1 : 0; //开关是否开启，true或者false
+                    var id = $(data.elem).parent().attr('myid');
+
+                    //设置开关
+                    $.ajax({
+                        url: "{:url('gamemanage/setTaskStatus')}",
+                        type: 'post',
+                        data: {
+                            'id': id,
+                            'status': selected
+                        },
+                        success: function (res) {
+                            if (res.code === 0) {
+                                layer.msg(res.msg,{icon: 6});
+                                window.location.reload();
+                            } else {
+                                layer.msg(res.msg, {icon: 5});
+                                if (selected == 0) {
+                                    //重新添加checked要用prop
+                                    $(data.elem).prop('checked','true');
+                                    $(data.elem).next().addClass('layui-form-onswitch');
+                                    $(data.elem).next().find('em').html('开启');
+                                } else {
+                                    $(data.elem).removeAttr('checked');
+                                    $(data.elem).next().removeClass('layui-form-onswitch');
+                                    $(data.elem).next().find('em').html('关闭');
+                                }
+                            }
+                        }
+
+                    })
+
+                });
+
+
+            },
+
+
+            init : function() {
+                main.renderData();
+                main.extraEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

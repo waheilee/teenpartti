@@ -1,0 +1,133 @@
+{extend name="common/base" /}
+
+{block name="title"}充值汇总{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">玩家ID</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="roleid" name="roleid" lay-verify="required|number" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">日期</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="start" id="LAY-component-form-group-date" lay-verify="required|number" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">搜索</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <fieldset class="layui-elem-field">
+            <legend>当日汇总数据</legend>
+            <div class="layui-field-box">
+                当日下级产生税收：<span id="tax" class="layuiadmin-big-font" style="color:#009688">0.00</span><br>
+                佣金：<span id="money" class="layuiadmin-big-font" style="color:#009688">0.00</span>
+            </div>
+        </fieldset>
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+            var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+                ,table = layui.table
+                ,$ = layui.$
+            ,form = layui.form;
+
+            var main = {
+                 renderData : function() {
+                    var cols = [ //表头
+
+                        {field: 'roleid', title: '玩家账号', minWidth:100}
+                        ,{field: 'totaltax', title: '税收', minWidth:120}
+                        , {field: 'changemoney', title: '佣金', minWidth:120}
+                        , {field: 'fromuser', title: '下级玩家', minWidth:120}
+                        , {field: 'level', title: '团队级别', minWidth:120}
+                        , {field: 'realrate', title: '分成比例(%)', minWidth:120}
+                        , {field: 'day', title: '日期', minWidth:120}
+                        , {field: 'createtime', title: '时间', minWidth:120}
+                    ];
+
+                    table.render({
+                        elem: '#proxylist'
+                        , url: "{:url('qmtg/index')}" //数据接口
+                        , page: true //开启分页
+                        , cols: [cols]
+                        ,done : function(res) {
+                            var money = res.other.changemoney;
+                            var tax = res.other.tax;
+                            $('#money').html(money);
+                            $('#tax').html(tax);
+                        }
+                    });
+                },
+
+                //搜索
+                search : function() {
+                    var roleid = $.trim($('#roleid').val());
+                    var start  = $.trim($('#LAY-component-form-group-date').val());
+                    if (roleid =='' || start == '') {
+                        layer.msg('请输入玩家id和时间进行查询', {icon: 2});
+                        return;
+                    }
+
+                    //执行重载
+                    table.reload('proxylist', {
+                        page: {
+                            curr: 1 //重新从第 1 页开始
+                        },
+                        where: {
+                            'roleid':roleid,
+                            'start':start
+                        }
+                    });
+                },
+
+                 init : function() {
+                    main.renderData();
+                     laydate.render({
+                         elem: '#LAY-component-form-group-date'
+                         , format: 'yyyyMMdd'
+                         , max: 0
+                         , value: new Date(new Date().getTime())
+                         , btns: ['clear', 'confirm']
+                     });
+                    $('#search').on('click', function(e) {
+                        e.preventDefault();
+                        main.search();
+                    });
+                }
+            };
+
+            main.init();
+    });
+</script>
+{/block}

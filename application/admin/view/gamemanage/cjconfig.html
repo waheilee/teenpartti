@@ -1,0 +1,123 @@
+{extend name="common/base" /}
+
+{block name="title"}向玩家转账{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <label class="layui-form-label">游戏类型</label>
+                <div class="layui-input-inline">
+                    <select name="kindid" id="kindid">
+                        <option value="0">所有</option>
+                        {foreach $kindlist as $k2 => $v2}
+                        <option value="{$v2.KindID}">{$v2.KindName}({$v2.KindID})</option>
+                        {/foreach}
+                    </select>
+                </div>
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">搜索</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script type="text/html" id="msg-bar">
+    <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="edit">修改</a>
+</script>
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'GameKind', title: '类型ID', minWidth: 200}
+                    , {field: 'KindName', title: '游戏名称', minWidth: 200}
+                    , {field: 'RunningTransferRatio', title: '转换比率(%)', minWidth: 200}
+                    , {fixed: 'right', title: '操作', align: 'center', minWidth: 400, toolbar: '#msg-bar'}
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('gamemanage/cjconfig')}" //数据接口
+                    , page: true //开启分页
+                    , limit: 15
+                    , cols: [cols]
+                    , done: function (res) {
+                        $(".layui-table-main tr").each(function (index, val) {
+                            $($(".layui-table-fixed-l .layui-table-body tbody tr")[index]).height($(val).height());
+                            $($(".layui-table-fixed-r .layui-table-body tbody tr")[index]).height($(val).height());
+                        });
+                        tzTbale();
+                    }
+                });
+            },
+
+
+            //搜索
+            search: function () {
+                var kindid = $.trim($('#kindid').val());
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'kindid': kindid
+                    }
+                });
+            },
+
+            extraEvent: function () {
+                //编辑&&删除
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+                    if (layEvent === 'edit') {
+                        var id = data.id
+                        x_admin_show('设置转换比例', 'editcjrate?kindid='+data.GameKind+"&rate="+data.RunningTransferRatio+"&name="+ encodeURI( data.KindName),500,250);
+                    }
+                });
+            },
+
+            bindEvent: function () {
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            },
+
+            init: function () {
+                this.renderData();
+                this.extraEvent();
+                this.bindEvent();
+            }
+        };
+        main.init();
+    });
+</script>
+{/block}

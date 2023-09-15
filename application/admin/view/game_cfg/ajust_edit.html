@@ -1,0 +1,107 @@
+{extend name="common/base" /}
+
+{block name="title"}编辑转发地址{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('gameCfg/ajustEdit')}" method="post" id="addProxy" >
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('渠道ID')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="channel_id" name='channel_id'  value="{if(!empty($info))}{$info.channel_id}{/if}" lay-verify="required" placeholder="{:lang('请输入渠道ID')}" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('firstopen')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="aj_first_open" name='aj_first_open'  value="{if(!empty($info))}{$info.aj_first_open}{/if}" lay-verify="required" placeholder="{:lang('请输入转发url')}" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('firstrecharge')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="aj_first_recharge" name='aj_first_recharge'  value="{if(!empty($info))}{$info.aj_first_recharge}{/if}" lay-verify="required" placeholder="{:lang('请输入转发url')}" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('recharge')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="aj_recharge" name='aj_recharge'  value="{if(!empty($info))}{$info.aj_recharge}{/if}" lay-verify="required" placeholder="{:lang('请输入转发url')}" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('register')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="aj_register" name='aj_register'  value="{if(!empty($info))}{$info.aj_register}{/if}" lay-verify="required" placeholder="{:lang('请输入register')}" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >{:lang('保存')}</a>
+            <a class="layui-btn layui-btn-primary layui-btn-radius" id="cancel" >{:lang('取消')}</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var layer = layui.layer
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:data.field,
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

@@ -1,0 +1,111 @@
+{extend name="common/base" /}
+
+{block name="title"}转账{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('Playertrans/editPayRiskConfig')}" method="post">
+    <input type="hidden" name="id" id="id" value="{$data['Id'] ?? ''}" />
+
+<!-- 
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('状态')}：</label>
+        <div class="layui-input-block">
+          <input type="radio" name="Status" value="0" title="禁用" {php} if($data['Status']==0){echo 'checked';} {/php}>
+          <input type="radio" name="Status" value="1" title="启用" {php} if($data['Status']==1){echo 'checked';} {/php}>
+        </div>
+      </div> -->
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('风险系数')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="RiskLevel" name='RiskLevel' placeholder="{:lang('请输入天数')}" autocomplete="off" class="layui-input"  value="{$data['RiskLevel'] ?: 0}">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('天数')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="Days" name='Days' placeholder="{:lang('请输入天数')}" autocomplete="off" class="layui-input"  value="{$data['Days'] ?: 0}">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('盈利数')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="TotalWin" name='TotalWin' placeholder="{:lang('请输入盈利数')}" autocomplete="off" class="layui-input"  value="{$data['TotalWin'] ?: 0}">
+        </div>
+    </div>
+
+    
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >{:lang('保存')}</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" lay-submit="" lay-filter="cancel" id="cancel" >{:lang('取消')}</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery','upload'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,upload = layui.upload
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:data.field,
+                    dataType:'json',
+                    success: function(res) {
+                        var index = parent.layer.getFrameIndex(window.name); /* 先得到当前iframe层的索引 */
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.layui.table.reload('proxylist',{page:{curr:$(".layui-laypage-em").next().html()}});   //主要代码
+                                parent.layer.close(index);
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

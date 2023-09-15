@@ -1,0 +1,84 @@
+{include file="public/head"}
+    <body>
+    <div class="x-body" >
+        
+        <div class="lotus-nav layui-row layui-form-item" >
+            <button class="layui-btn layui-btn-sm" onclick="x_admin_show('{:lang("添加菜单")}','add.html',500,500)"><i class="layui-icon layui-icon-add-circle"></i></button>
+            <span class="x-right" >{:lang("共有数据")}:{:count($auth)} &nbsp;{:lang("条")}<button onclick="javascript:location.reload()" class="layui-btn-default"><i class="icon iconfont">&#xe6aa;</i></button></span>
+        </div>
+     
+    <table class="layui-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>{:lang("权限名称")}</th>
+            <th>{:lang("控制器方法")}</th>
+            <th>{:lang("图标")}</th>
+            <th>{:lang("状态")}</th>
+            <th>{:lang("排序参数(越大越往后)")}</th>
+            <th>{:lang("操作")}</th>
+        </thead>
+        <tbody>
+                          {volist name='auth' id='vo'}
+                            <tr>
+                                <td>{$vo.id}</td>
+                                <td>&nbsp;{$vo.level-1|str_repeat='&nbsp;丨---',###}{$vo.title}</td>
+                                <td>{$vo.name}</td>
+                                <td>
+                                    <i class="layui-icon">
+                                    {php} 
+                                        if(empty($vo['icon'])){
+                                        echo ''; 
+                                    }else{
+                                         echo '&#'.$vo['icon'].';';   
+                                    }   
+                                    {/php}
+                                    </i>   
+                                </td>
+                                <td>{eq name='vo.status' value='1'}{:lang("显示")}{else/}<font color="red">{:lang("隐藏")}</font>{/eq}
+                                </td>
+                                <td>
+                              {$vo.sort}
+                                </td>
+                                <td> <!--<button type="button" class="btn btn-success">添加子菜单</button> <button type="button" class="btn btn-primary">编辑</button> <button type="button" class="btn btn-danger" onClick="delcfm('{:url(\'admin/menu/del\',[\'id\' => $vo[\'id\']])}','{$vo.title}')">删除</button>-->
+                                    <button type="button" onclick="x_admin_show('{:lang("编辑菜单")}',
+                                    'edit.html?id={$vo.id}',500,500)" class="layui-btn layui-btn-xs">{:lang("编辑")}
+                                    </button>
+                                    <button type="button" onClick="deleteAuthRule({$vo.id})" class="layui-btn layui-btn-xs layui-btn-danger">{:lang("删除")}</button>
+                                </td>
+                            </tr>
+                            {/volist}
+        </tbody>
+      </table>
+	      <div class="page">
+	        <div>
+	        
+	        </div>
+	      </div>
+    </div>
+</body>
+{include file="public/foot"}
+<script>
+function deleteAuthRule(id){
+    layer.confirm('{:lang("确认要删除吗？")}',{
+          btn: ['{:lang("确定")}','{:lang("取消")}']
+          ,'title':'{:lang("信息")}'}, function(){
+            $.ajax({
+                url: 'delete',
+                type: 'post',
+                dataType: 'json',
+                data: {id:id},
+            })
+            .done(function(data){
+                console.log(data);
+                if(data.code==0){
+                    layer.msg(data.msg,{icon:5,time:500});
+                }else{
+                    layer.msg(data.msg,{icon:1,time:500},function(){
+                        window.location.reload();
+                    })
+                }
+            })
+        });
+}
+</script>

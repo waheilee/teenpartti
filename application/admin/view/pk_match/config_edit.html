@@ -1,0 +1,140 @@
+{extend name="common/base" /}
+{block name="title"}编辑配置{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<style media="screen" type="text/css">
+    header {
+        color: black;
+    }
+</style>
+<!-- LimitDown	LimitUp	WinRate -->
+<div class="x-body">
+    <form action="" class="layui-form" id='mainForm' method="post">
+        <div class="layui-form-item">
+            <label class="layui-form-label">房间ID</label>
+            <div class="layui-input-block ">
+                <input ID="ID"  autocomplete="off" class="layui-input {$info.Action=='add'?'':'layui-disabled'} " {$info.Action=='add'?'':'disabled'} placeholder="RoomID"  type="text" value="{$info.RoomId}">
+                <input hidden name="RoomID" ID="RoomID" type="text" value="{$info.RoomId}">
+                <input hidden name="Action" type="text" value="{$info.Action}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">报名费</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" lay-verify="" name="JoinFree" placeholder="JoinFree" type="text" value="{$info.JoinFree}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">比赛时间</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" lay-verify="required|number" name="MatchTimes" placeholder="MatchTimes" type="text" value="{$info.MatchTimes}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">加入玩家</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" lay-verify="required|number" name="JoinPlayers" placeholder="JoinPlayers" type="text" value="{$info.JoinPlayers}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">获奖</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" lay-verify="required|number" name="WinAward" placeholder="WinAward" type="text" value="{$info.WinAward}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">ARMT</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" lay-verify="required|number" name="AutoRellMaxTimes" placeholder="AutoRellMaxTimes" type="text" value="{$info.AutoRellMaxTimes}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">初始金币</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" lay-verify="required|number" name="InitGold" placeholder="InitGold" type="text" value="{$info.InitGold}">
+            </div>
+        </div>
+
+    </form>
+</div>
+
+{/block}
+{block name="script"}
+<script type="text/javascript">
+	url = "{:url('PkMatch/PkConfig')}?Action={$info.Action}"
+	var form = layui.form, layer = layui.layer;
+	var _isClickSave = false;
+	var _callback;
+	var _layer_index;
+
+	//监听提交
+	var options = {
+		type: 'post',           //post提交
+		dataType: "json",        //json格式
+		clearForm: false,        //成功提交后，清除所有表单元素的值
+		resetForm: false,        //成功提交后，重置所有表单元素的值
+		success: function (data) {
+			if (data.code == 0) {
+				layer.msg(data.msg, {icon: 1, time: 1000}, function () {
+					x_admin_close();
+					parent.location.reload();
+				});
+			} else {
+				layer.msg(data.msg, {icon: 2, time: 300}, function () {
+					$("#reset").click();
+					x_admin_close();
+					parent.location.reload();
+				});
+			}
+			//服务器端返回处理逻辑
+		},
+		error: function (XmlHttpRequest, textStatus, errorThrown) {
+			layer.msg("{:lang('操作失败:服务器处理失败')}");
+		}
+	};
+
+	function saveData(callback, layer_index, autoClose) {
+		if (_isClickSave) return;
+		_isClickSave = true;
+		_layer_index = layer_index;
+		_callback = callback
+		submit();
+	}
+
+	function submit() {
+		bl=1000;
+		$('#RoomID').val($('#ID').val());
+		var data = getSerializeFormData($("form").serializeArray());
+		console.info(data);
+		$.ajax({
+			type: 'post',
+			url: url,
+			data: {
+				Action: data.Action,
+				RoomId: data.RoomID,
+				JoinFree: data.JoinFree*bl,
+				MatchTimes: data.MatchTimes,
+				JoinPlayers: data.JoinPlayers,
+				WinAward: data.WinAward*bl,
+				AutoRellMaxTimes: data.AutoRellMaxTimes,
+				InitGold: data.InitGold*bl,
+			},
+			dataType: 'json',
+			success: function (res) {
+				if (res.code === 1) {
+					layer.msg(res.msg, {icon: 1, time: 1000}, function () {
+						_callback();
+						parent.layer.close(_layer_index);
+					});
+				} else {
+					layer.msg(res.msg, {icon: 2});
+				}
+			}
+		});
+
+	}
+
+</script>
+{/block}

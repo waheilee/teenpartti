@@ -1,0 +1,207 @@
+{extend name="common/base" /}
+{block name="title"}关系列表{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('渠道ID')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="OperatorId" autocomplete="off" class="layui-input" id='OperatorId'>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('渠道名称')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="OperatorName" autocomplete="off" class="layui-input" id='OperatorName'>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('状态')}</label>
+                    <div class="layui-input-inline">
+                        <select name="status" id="status">
+                            <option value="">{:lang('所有')}</option>
+                            <option value="1">{:lang('待审核')}</option>
+                            <option value="2">{:lang('已通过')}</option>
+                            <option value="3">{:lang('已拒绝')}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('操作人')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="checkuser" autocomplete="off" class="layui-input" id='checkuser'>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('时间')}：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="start_date" id="start_date" autocomplete="off"
+                               class="layui-input" value="">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="end_date" id="end_date" autocomplete="off"
+                               class="layui-input" value="">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <a class="layui-btn" data-type="reload" id="search">{:lang('搜索')}</a>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+     <script type="text/html" id="toolbar">
+         {{#  if(d.Status == 1){ }}
+             <a class="layui-btn layui-btn-xs" lay-event="check">{:lang('审核')}</a>
+         {{#  } }}
+    </script>
+</div>
+<script type="text/html" id="is_default">
+    {{#  if(d.isDefault == 1){ }}
+      <input type="checkbox" checked="" name="is_default" lay-skin="switch" lay-filter="is_default" lay-text="是|否">
+    {{#  } else { }}
+       <input type="checkbox" name="is_default" lay-skin="switch" lay-filter="is_default" lay-text="是|否">
+    {{#  } }}
+  </script>
+{/block}
+{block name="script"}
+
+<script>
+    url = "{:url('admin/merchant/quota')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var table = layui.table;
+        var laydate  = layui.laydate;
+        var form  = layui.form;
+        var $ = layui.$;
+        var element  = layui.element;
+          table.render({
+            elem: '#proxylist'
+            ,height: 'full-180'
+            ,url: url+'?action=list'//数据接口
+            ,limit:20
+            ,page: true //开启分页
+            ,id:'proxylist'
+            ,autoSort:false
+            ,cols: [[ //表头
+                {field: 'OperatorId', title: "{:lang('渠道ID')}", minWidth: 100,  align: 'center', templet: function(d){
+                    return d.OperatorId
+                }},
+               {field: 'OperatorName', title: "{:lang('渠道名称')}", minWidth: 200,  align: 'center', templet: function(d){
+                    return '<a class="font-primary layui-btn  layui-btn-xs  layui-btn-primary" lay-event="toIndex">'+d.OperatorName+'</a>'
+                }},
+                {field: 'ChangeMoney', title: "{:lang('额度')}", minWidth: 200,  align: 'center', templet: function(d){
+                    if (d.ChangeMoney >0) {
+                        return "<span style='color:red'>"+d.ChangeMoney+"</span>"
+                    }
+                    if (d.ChangeMoney <0) {
+                        return "<span style='color:green'>"+d.ChangeMoney+"</span>"
+                    }
+                }},
+                {field: 'AddTime', title: "{:lang('添加时间')}", minWidth: 200,  align: 'center'},
+                {field: 'Status', title: "{:lang('状态')}", minWidth: 200,  align: 'center', templet: function(d){
+                    if (d.Status == 1) {
+                        return "<span style='color:blue'>{:lang('待审核')}</span>"
+                    }
+                    if (d.Status  ==2 ) {
+                        return "<span style='color:red'>{:lang('已通过')}</span>"
+                    }
+                    if (d.Status  ==3 ) {
+                        return "<span style='color:green'>{:lang('已拒绝')}</span>"
+                    }
+                }},
+                {field: 'checkuser', title: "{:lang('操作人')}", minWidth: 200,  align: 'center'},
+                {field: 'CheckTime', title: "{:lang('操作时间')}", minWidth: 200,  align: 'center'},
+                {title:"{:lang('操作')}", toolbar: '#toolbar',minWidth: 120,  align: 'center'}
+            ]]
+          });
+          // 搜索 
+          $("#search").on('click', function(){
+             table.reload('proxylist', {
+              page:{
+                  curr:1 
+              },
+              where: {
+                  OperatorId: $('#OperatorId').val(),
+                  OperatorName: $('#OperatorName').val(),
+                  startdate: $('#start_date').val(),
+                  enddate: $('#end_date').val(),
+                  status: $('#status').val(),
+                  checkuser: $('#checkuser').val(),
+              }
+            })
+          });
+        table.on('tool(proxylist)', function(obj){
+            var data = obj.data;
+            if(obj.event === 'toIndex'){
+                window.open("{:url('/admin/merchant/toIndex')}?OperatorId="+data.OperatorId);
+            }
+            if(obj.event === 'check'){
+              layer.confirm("{:lang('确定审核？')}", {
+                btn: ["{:lang('通过')}", "{:lang('拒绝')}"] //可以无限个按钮
+              }, function(index, layero){
+                 ed(data.Id,2)
+              }, function(index){
+                  ed(data.Id,3)
+              });
+            }
+          });
+        laydate.render({
+          elem: '#start_date',
+          type: 'datetime',
+          max:  1
+        });
+        laydate.render({
+          elem: '#end_date',
+          type: 'datetime',
+          max:  1
+        });
+    });
+
+    function copy(value) {
+        var oInput = document.createElement('input');
+        oInput.value = value;
+        document.body.appendChild(oInput);
+        oInput.select(); // 选择对象
+        document.execCommand("Copy"); // 执行浏览器复制命令
+        oInput.className = 'oInput';
+        oInput.style.display='none';
+        layer.msg("复制成功");
+    }
+    function add(){
+        x_admin_show('{:lang(\'添加渠道\')}', "{:url('/admin/merchant/edit')}", 600, 400);
+    }
+    function ed(id,status){
+      $.ajax({
+        url:'/admin/merchant/ed',
+        type:'POST',
+        data:{id:id,status:status},
+        dataType:'json',
+        success:function(ret){
+          if (ret.code == 0) {
+            layer.msg("{:lang('操作成功')}");
+            $(".layui-laypage-btn")[0].click();
+            setTimeout(function(){layer.closeAll()},1000);
+          } else {
+            layer.msg(ret.msg);
+          }
+        }
+      }); 
+    }
+</script>
+{/block}

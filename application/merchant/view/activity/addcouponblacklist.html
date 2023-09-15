@@ -1,0 +1,123 @@
+{extend name="common/base" /}
+
+{block name="title"}转账{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('activity/addcouponblacklist')}" method="post" id="addProxy" >
+    
+    <div class="layui-form-item">
+        <label class="layui-form-label">黑名单ID：</label>
+        <div class="layui-input-block">
+            <input type="text" id="RoleID" name='RoleID' placeholder="请输入黑名单ID"  class="layui-input">
+        </div>
+    </div>
+
+
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >保存</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" lay-submit="" lay-filter="cancel" id="cancel" >取消</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                var RoleID = $.trim(data.field.RoleID);
+
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'RoleID':RoleID
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        var index = parent.layer.getFrameIndex(window.name); /* 先得到当前iframe层的索引 */
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                //parent.location.reload();
+                                parent.layui.table.reload('proxylist',{page:{curr:$(".layui-laypage-em").next().html()}});   //主要代码
+                                parent.layer.close(index);
+
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                laydate.render({
+                    elem: '#begintime'
+                    ,type: 'datetime'
+                    ,format:'yyyy-MM-dd HH:mm:ss'
+                    ,btns: ['clear', 'confirm']
+                });
+
+                laydate.render({
+                    elem: '#endtime'
+                    ,type: 'datetime'
+                    ,format:'yyyy-MM-dd HH:mm:ss'
+                    ,btns: ['clear', 'confirm']
+                });
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+
+        form.on('select(activityfilter)', function(data){
+            $("#stageid").empty();//清空下拉框的值
+            $.ajax({
+                    url: "{:url('activity/getstagejson')}?id="+data.value,
+                    dataType: 'json',
+                    type: 'post',
+                    success: function (result) {
+                        var data = result.data;
+                        $.each(data, function (index, item) {
+                            $('#stageid').append(new Option(item.name, item.id));// 下拉菜单里添加元素
+                        });
+                    layui.form.render("select");//重新渲染 固定写法
+                }
+            });
+        });
+    });
+
+
+</script>
+{/block}

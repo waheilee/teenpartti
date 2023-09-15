@@ -1,0 +1,130 @@
+{extend name="common/base" /}
+
+{block name="title"}支付渠道管理{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('渠道ID')}：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="username" name="username" placeholder="{:lang('请输入渠道ID搜索')}" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                        <button type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <!-- <button class="layui-btn " onclick="x_admin_show('{:lang(\'添加渠道\')}','ChannelPayManger?Action=add&Type=1','',500)"><i class="layui-icon layui-icon-add-circle"></i>
+        </button> -->
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+
+<script type="text/html" id="msg-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">{:lang('编辑')}</a>
+    <a class="layui-btn layui-btn-xs layui-bg-blue" lay-event="copy">{:lang('复制')}</a>
+</script>
+
+<script>
+	var cols = [ //表头
+
+		// {field: 'Id', title: 'ID', width: 100},
+		{field: 'ChannelId',align: "center", title: "{:lang('渠道ID')}", minWidth: 120},
+		{field: 'ChannelName',align: "center", title: "{:lang('渠道')}", minWidth: 120},
+		{field: 'MinMoney',align: "center", title: "{:lang('最小金额')}", minWidth: 150},
+		{field: 'MaxMoney',align: "center", title: "{:lang('最大金额')}", minWidth: 150},
+		{field: 'SortID',align: "center", title: "{:lang('排序')}", minWidth: 120},
+		{field: 'Status',align: "center", title: "{:lang('状态')}", minWidth: 120, templet: function (d) { return Number(d.Status) == 1 ? "{:lang('开启')}" : "{:lang('关闭')}"; }},
+		{fixed: 'right',align: "center", title: "{:lang('操作')}", align: 'center', minWidth: 120, toolbar: '#msg-bar'}
+	];
+	layui.config({
+		base: '__layui__/' //静态资源所在路径
+	}).extend({
+		index: 'lib/index' //主入口模块
+
+	}).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
+		var main = {
+			renderData: function () {
+				table.render({
+					elem: '#proxylist',
+					url: "{:url('playertrans/ChannelPayManger')}",
+					where: {Action: 'list', Type: 1},
+					page: true, limit: 15, sort: true, cols: [cols],done: function (d) {
+						tzTbale()
+					}
+				});
+			},
+
+			//搜索
+			search: function () {
+				var username = $.trim($('#username').val());
+				//执行重载
+				table.reload('proxylist', {
+					page: {curr: 1},//重新从第 1 页开始
+					where: {'ChannelId': username,}
+				});
+			},
+			//操作事件
+			extraEvent: function () {
+				//编辑
+				table.on('tool(proxylist)', function (obj) {
+					var data = obj.data //获得当前行数据
+						, layEvent = obj.event; //获得 lay-event 对应的值
+					tr = obj.tr; //获得当前行 tr 的DOM对象
+					if (layEvent === 'edit') {
+						x_admin_show('{:lang(\'编辑\')}', 'ChannelPayManger?Action=edit&ID=' + data.Id, 700,600);
+					} else if (layEvent === 'del') {
+						var ID = data.Id;
+						layer.confirm('{:lang(\'确认要删除吗？\')}',{
+					          btn: ['{:lang("确定")}','{:lang("取消")}'] //按钮
+					        }, function (index) {
+							//捉到所有被选中的，发异步进行删除
+							$.get("ChannelPayManger?Action=del", {ID: ID}, function (data, textStatus, xhr) {
+								if (data.code == 1) {
+									layer.msg(data.msg, {icon: 1, time: 1000}, function () {
+										window.location.reload();
+									});
+								} else {
+									layer.msg(data.msg, {icon: 2, time: 1000});
+								}
+							});
+						});
+					}
+                    else if (layEvent === 'copy') {
+                        x_admin_show('{:lang(\'添加\')}', 'ChannelPayManger?Action=copy&ID=' + data.Id, 700,600);
+                    }
+				});
+
+			},
+
+			init: function () {
+				main.renderData();
+				main.extraEvent();
+				$('#search').on('click', function (e) {
+					e.preventDefault();
+					main.search();
+				});
+			}
+		};
+
+		main.init();
+	});
+</script>
+{/block}

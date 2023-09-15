@@ -1,0 +1,141 @@
+{extend name="common/base" /}
+
+{block name="title"}所有玩家{/block}
+{block name="css"}
+<style>
+    .layui-table-cell{
+        height:70px;
+        line-height: 70px;
+    }
+</style>
+{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <button class="layui-btn layui-btn-sm layui-btn-radius"
+            onclick="window.history.back()" style="margin-top: 10px;margin-left: 20px;">返回
+    </button>
+    <div class="layui-card-header">
+        牌局详情
+    </div>
+    <div class="layui-card-body">
+        <input id="roomId" hidden value="{$roomId}">
+        <input id="uniqueid" hidden value="{$uniqueid}">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            renderData : function() {
+                var cols = [ //表头
+
+                    {field: 'uniqueid', title: '牌局ID', minWidth:180}
+                    ,{field: 'player', title: '玩家ID', minWidth: 100}
+                    , {
+                        field: 'card', title: '手牌', minWidth: 180, templet: function (d) {
+                            console.log(d.card);
+                            var res = '';
+                            if(d.card.length>1){
+                                for (var i = 0; i < d.card.length; i++) {
+
+                                    if(i==0 ){
+                                        d.card[0]= d.card[0].replace('[','');
+                                    }
+                                    if(i==d.card.length-1 ){
+                                        d.card[d.card.length-1]= d.card[d.card.length-1].replace(']','');
+                                    }
+                                    res += ' <image src="__static__/majiang/'+d.card[i]+'.png" width="25" height="50">';
+                                }
+
+                                return res;
+                            }else{
+                                res='';
+                                return res;
+                            }
+
+                        }
+                    }
+                    , {
+                        field: 'card', title: '胡牌', minWidth: 240, templet: function (d) {
+                            var res = '';
+                            if(d.tablecard.length>1){
+                                for (var i = 0; i < d.tablecard.length; i++) {
+
+                                    if(i==0 ){
+                                        d.tablecard[0]= d.tablecard[0].replace('[','');
+                                    }
+                                    if(i==d.tablecard.length-1 ){
+                                        d.tablecard[d.tablecard.length-1]= d.tablecard[d.tablecard.length-1].replace(']','');
+                                    }
+                                    res += ' <image src="__static__/majiang/'+d.tablecard[i]+'.png" width="25" height="50">';
+                                }
+
+                                return res;
+                            }else{
+                                res='';
+                                return res;
+                            }
+
+                        }
+                    }
+                    , {
+                        field: 'changetype', title: '输赢情况', minWidth: 80,  templet: function (d) {
+                            var res = '';
+                            if (d.changemoney > 0) {
+                                res = '赢';
+                            } else  {
+                                res = '输';
+                            }
+                            return res;
+                        }
+                    }
+                    , {field: 'coinbefore', title: '游戏前金币', minWidth: 120}
+//                    , {field: 'changemoney', title: '开奖结果', minWidth: 120}
+                    , {field: 'changemoney', title: '本局战绩', minWidth: 120}
+                    , {field: 'coinafter', title: '游戏后金币', minWidth: 120}
+                    , {field: 'addtime', title: '时间', minWidth: 160}
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+
+//                    , url: "{:url('player/all')}" //数据接口
+                    , url: "{:url('room/detailMj')}" //数据接口
+                    , page: true //开启分页
+                    , limit:5
+                    ,where:{'roomid':$('#roomId').val(),'uniqueid':$('#uniqueid').val()}
+                    , cols: [cols]
+                });
+
+            },
+
+            init : function() {
+                main.renderData();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

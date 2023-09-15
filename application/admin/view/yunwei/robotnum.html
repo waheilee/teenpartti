@@ -1,0 +1,244 @@
+{extend name="common/base" /}
+
+{block name="title"}支付通道{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<div class="layui-card" style="display: none">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <h3>游戏配置设置</h3>
+    </div>
+    <div class="layui-card-body" >
+        <form class="layui-form" action="{:url('gamectrl/setProfit')}" method="post" id="addProxy" >
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">设置范围：</label>
+                <div class="layui-input-inline">
+                    <select name="setrange" id="setrange" lay-filter="setrange">
+                        <option value="1">所有服务器</option>
+                        <option value="2">游戏类型</option>
+                        <option value="3">游戏房间</option>
+                    </select>
+                </div>
+
+                <div id="showkindidname" style="display: none;">
+                    <label class="layui-form-label">游戏类型：</label>
+                    <div class="layui-input-inline">
+                        <select name="kindid" id="kindid">
+                            {foreach $kindlist as $k1 => $v1}
+                            <option value="{$v1.kindid}">{$v1.kindname}({$v1.kindid})</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                </div>
+
+
+                <div id="showroomidname" style="display: none;">
+                    <label class="layui-form-label">游戏房间：</label>
+                    <div class="layui-input-inline">
+                        <select name="roomid" id="roomid">
+                            {foreach $roomlist as $k2 => $v2}
+                            <option value="{$v2.roomid}">{$v2.roomname}({$v2.roomid})</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                </div>
+
+                <label class="layui-form-label">盈利千分比：</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="percent" name='percent' lay-verify="required|number" placeholder="请输入盈利千分比" autocomplete="off" class="layui-input">
+                </div>
+
+                <div class="layui-input-inline">
+                    <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >设置</a>
+                    <!--<a  class="layui-btn layui-btn-primary layui-btn-radius" lay-submit="" lay-filter="cancel" id="cancel" >取消</a>-->
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <h3>游戏配置信息</h3>
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <label class="layui-form-label">房间</label>
+                <div class="layui-input-inline">
+                    <select name="roomid" id="roomid2">
+                        <option value="0">所有</option>
+                        {foreach $roomlist as $k2 => $v2}
+                        <option value="{$v2.roomid}">{$v2.roomname}({$v2.roomid})</option>
+                        {/foreach}
+                    </select>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">搜索</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body" >
+        <!--<a style="margin-bottom: 10px;" class="layui-btn" onclick="x_admin_show('新增微信客服','addWeixin.html', '', 500)">-->
+        <!--<i class="layui-icon layui-icon-add-circle"></i>-->
+        <!--</a>-->
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script type="text/html" id="desc-bar">
+    <a class="layui-btn layui-btn-xs " lay-event="desc">机器人数量设置</a>
+</script>
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            renderData : function() {
+                var cols = [ //表头
+                    {field: 'nRoomId', title: '房间ID', minWidth:60}
+                    , {field: 'roomname', title: '房间名称', minWidth:120}
+//                    , {field: 'nProfitPercent', title: '盈利比(单位:千分比)', minWidth:120}
+//                    , {field: 'lTotalRunning', title: '总流水', minWidth:200}
+//                    , {field: 'lTotalProfit', title: '总盈利', minWidth:200}
+//                    , {field: 'nCtrlValue', title: '房间控制值', minWidth:100}
+                    ,{fixed: 'right', title:'备注', align:'center', minWidth:100, toolbar: '#desc-bar'}
+                ];
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('gamectrl/index')}" //数据接口
+//                    , url: "{:url('gamectrl/robotNum')}" //数据接口
+                    , page: true //开启分页
+                    , cols: [cols]
+                });
+            },
+
+            submitForm : function(data) {
+                var setrange = $.trim(data.field.setrange),
+                    percent = $.trim(data.field.percent);
+                var id=0;
+                if (setrange == 1) {
+                    id = 0;
+                } else if (setrange == 2) {
+                    id = $('#kindid').val();
+                } else if (setrange == 3) {
+                    id = $('#roomid').val();
+                }
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'setrange' : setrange,
+                        'id' : id,
+                        'percent' : percent
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg('设置成功',{icon:1,time:1000}, function () {
+                                window.location.reload();
+                            });
+                        } else {
+                            layer.msg('设置失败', {icon:2});
+                        }
+                    }
+                });
+            },
+
+            //搜索
+            search : function() {
+                var roomid = $.trim($('#roomid2').val());
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'roomId':roomid,
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                $('#search').on('click', function(e) {
+                    e.preventDefault();
+                    main.search();
+                });
+//                form.on('submit(addit)', function(data) {
+//                    main.submitForm(data);
+//                    return false;
+//                });
+//
+//                $('#cancel').on('click', function(e) {
+//                    e.preventDefault();
+//                    x_admin_close();
+//                });
+                //监听等待开始游戏点击事件
+//                form.on('select(setrange)', function (data) {
+//                    var value = data.value;
+//                    if (value == 1) {
+//                        $('#showkindidname').hide();
+//                        $('#showroomidname').hide();
+//                    } else if (value==2){
+//                        $('#showroomidname').hide();
+//                        $('#showkindidname').show();
+//                    } else if (value==3){
+//                        $('#showroomidname').show();
+//                        $('#showkindidname').hide();
+//                    } else {
+//                        $('#showkindidname').hide();
+//                        $('#showroomidname').hide();
+//                    }
+//                });
+            },
+
+            //操作事件
+            extraEvent : function () {
+                //编辑
+                table.on('tool(proxylist)', function(obj) {
+                    var data = obj.data //获得当前行数据
+                        ,layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'desc') {
+
+//                            var url = 'lookPartnerCardBrnn.html?roomid='+data.nRoomId;
+                            var url = 'setSocketRoomStorage?roomid='+data.nRoomId;
+
+                            x_admin_show('机器人数量设置', url, $(window).width()*0.7, 430);
+
+
+//                        x_admin_show('备注详情', 'descript.html?orderno='+data.orderno, $(window).width()*0.7, 350);
+                    }
+                });
+
+            },
+
+            init : function() {
+                main.renderData();
+                main.bindEvent();
+                main.extraEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

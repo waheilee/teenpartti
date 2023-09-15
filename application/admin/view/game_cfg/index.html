@@ -1,0 +1,213 @@
+{include file="public/head"}
+<!--<style>-->
+<!--    [contenteditable]:focus{-->
+<!--        outline: none;-->
+<!--        border:1px solid #189f92;-->
+<!--    }-->
+<!--</style>-->
+<body>
+<div class="x-body">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <a style="margin-bottom: 10px;" class="layui-btn" onclick="x_admin_show('添加字典分类配置','/admin/game_cfg/addDirectory.html', '', 260)">
+                <i class="layui-icon layui-icon-add-circle"></i>
+            </a>
+            <div class="layui-tab layui-tab-brief" lay-filter="dev_tab">
+                <ul class="layui-tab-title">
+                    <li class="layui-this">API配置</li>
+                    {volist name="lists" id="vo1"}
+                    {if $vo1.type=='array'}
+                    <li>{$vo1.title}</li>
+                    {/if}
+                    {/volist}
+                </ul>
+                <div class="layui-tab-content">
+                    <div class="layui-tab-item layui-show">
+                        <form class="layui-form" action="editGame" id="mainForm3" method="post">
+                            {volist name="lists" id="vo3"}
+                            {if $vo3.group=='game'}
+                            <div class="layui-form-item">
+                                <label for="" class="layui-form-label">{$vo3.title}</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="{$vo3.name}" id="{$vo3.name}" value="{$vo3.value}" lay-verify="{$vo3.rule}" placeholder="{$vo3.tip}" class="layui-input">
+                                </div>
+                            </div>
+                            {/if}
+                            {/volist}
+                            <div class="layui-form-item">
+                                <div class="layui-input-block">
+                                    <button type="submit" class="layui-btn" lay-submit="" lay-filter="withdraw-apply">修 改</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+
+                    {volist name="lists" id="vo"}
+                    {if $vo.type=='array'}
+                    <div class="layui-tab-item">
+                        <div>
+                            <a style="margin-bottom: 10px;" class="layui-btn layui-btn-sm layui-btn-danger del" myid="{$vo.id}">
+                                <i class="layui-icon layui-icon-delete"></i>
+                            </a>
+                            &nbsp;&nbsp;&nbsp;该配置键名:{$vo.name}
+                            <table class="layui-table dict" id="dict">
+                                <tr><th>键名</th><th>键值</th><th>操作</th></tr>
+                                <?php $count=0;?>
+                                {foreach name="vo.value" item="v" key="k"}
+                                <tr index="{$count}" >
+                                    <td class="" contenteditable="true" name="dirk" index="{$count}">{$k}</td>
+                                    <td class="" contenteditable="true" name="dirv" index="{$count}">{$v}</td>
+                                    <td>
+                                        <button class="layui-btn layui-btn-xs layui-btn-danger delete" onclick='del(this)' index="{$count}"><i class="layui-icon layui-icon-close"></i></button>
+                                    </td>
+                                </tr>
+                                <?php $count++; ?>
+                                {/foreach}
+                            </table>
+                            <a class="layui-btn layui-btn-sm add adddict"><i class="layui-icon layui-icon-add-1"></i></a>
+                        </div>
+                        <div style="margin-top: 10px;text-align: center">
+                            <button type="submit" class="layui-btn sure" thisgroup="{$vo.group}" id="sure">保存修改</button>
+                        </div>
+                    </div>
+                    {/if}
+                    {/volist}
+
+                </div>
+
+            </div>
+
+
+        </div>
+    </div>
+</div>
+</body>
+{include file="public/foot"}
+<script>
+    $(document).ready(function(){
+        var options = {
+            type:'post',           //post提交
+            //url:'http://ask.tongzhuo100.com/server/****.php?='+Math.random(),   //url
+            dataType:"json",        //json格式
+            data:{},    //如果需要提交附加参数，视情况添加
+            clearForm: false,        //成功提交后，清除所有表单元素的值
+            resetForm: false,        //成功提交后，重置所有表单元素的值
+            cache:false,
+            async:false,          //同步返回
+            success:function(data){
+                if(data.code==0){
+                    layer.msg(data.msg);
+                }else{
+                    layer.msg(data.msg,{icon:1,time:500},function(){
+                        //window.location.reload();
+                    });
+                }
+                //服务器端返回处理逻辑
+            },
+            error:function(XmlHttpRequest,textStatus,errorThrown){
+                layer.msg("{:lang('操作失败:服务器处理失败')}");
+            }
+        };
+
+        // bind form using 'ajaxForm'
+        $('#mainForm').ajaxForm(options).submit(function(data){
+            //无逻辑
+        });
+        $('#mainForm2').ajaxForm(options).submit(function(data){
+            //无逻辑
+        });
+        $('#mainForm3').ajaxForm(options).submit(function(data){
+            //无逻辑
+        });
+
+        $('.del').on('click', function(e) {
+            e.preventDefault();
+            var myid = $(this).attr('myid');
+            layer.confirm("确认删除这条配置？",{btn: ['确认','取消']}, function() {
+                $.ajax({
+                    type: 'post',
+                    url: "{:url('gameCfg/delCfg')}",
+                    data: {
+                        'id': myid
+                    },
+                    dataType: 'json',
+                    success: function (res) {
+                        if (res.code === 0) {
+                            layer.msg(res.msg, {icon: 6,time:1000}, function() {
+                                window.location.reload();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon: 5});
+                        }
+                    }
+                });
+            });
+
+        });
+
+        $('.adddict').on('click', function(e) {
+            e.preventDefault();
+            //var last = $('#dict').find("tr:last-child").attr('index');
+            var last = $(this).parent().find("tr:last-child").attr('index');
+            var thisindex = last;
+            if (!isNaN(last)) {
+                thisindex = parseInt(last) + 1;
+            } else {
+                thisindex=0;
+            }
+
+            $(this).parent().find('table').append("<tr index='"+thisindex+"'>" +
+                "<td contenteditable=\"true\" name=\"dirk\"></td>" +
+                "<td contenteditable=\"true\" name=\"dirv\"></td>" +
+                "<td><a class=\"layui-btn layui-btn-xs layui-btn-danger delete\" index=\""+thisindex+"\" onclick='del(this)'><i class=\"layui-icon layui-icon-close\"></i></a></td>" +
+                "</tr>");
+        });
+
+        $('.sure').on('click', function(e) {
+            e.preventDefault();
+            var send = {};
+
+            $(this).parent().parent().find('tr').each(function(i){
+                //去除表头
+                if(i>0){
+                    var key=$(this).find("td[name='dirk']").html();
+                    var value=$(this).find("td[name='dirv']").html();
+                    if (key!="" && value!="" && !send.hasOwnProperty(key)) {
+                        send[key] = value;
+                    }
+                }
+            });
+
+            send = JSON.stringify(send);
+            var thisgroup = $(this).attr('thisgroup');
+            console.log(thisgroup);
+
+            var data = {};
+            data[thisgroup] = send;
+            $.ajax({
+                url: "{:url('admin/gameCfg/editDict')}",
+                type: 'post',
+                data: data,
+                success: function (response) {
+                    if (response.code === 1) {
+                        layer.msg(response.msg,{icon: 1});
+                    }
+                }
+            })
+
+        });
+    });
+
+
+    //删除字典
+    function del(obj) {
+        $(obj).parent().parent().remove();
+    }
+
+    function ObjData(key,value){
+        this.key=key;
+        this.value=value;
+    }
+
+</script>

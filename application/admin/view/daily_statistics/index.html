@@ -1,0 +1,163 @@
+{extend name="common/base" /}
+
+{block name="title"}日况统计概要{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('日期')}</label>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="end" id="LAY-component-form-group-date2" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                    <button type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>
+                    <a class="layui-btn" id="output">{:lang('导出记录')}</a>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script type="text/html" id="formatScaling">
+
+</script>
+<script>
+    var bl = "{$bl}"? Number("{$bl}"):1000;
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+            var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+                ,table = layui.table
+                ,$ = layui.$
+            ,form = layui.form;
+
+            var main = {
+                 renderData : function() {
+                    var cols = [ //表头
+                        {field: 'day', title: "{:lang('日期')}", minWidth:120, align:'center'}
+                        ,{field: 'gold_coins_historical_stock', title: "{:lang('金币历史库存')}", minWidth:100, align:'center',templet: function(d){ 
+                                if(d.gold_coins_historical_stock){
+                                    return formatDecimal(d.gold_coins_historical_stock / bl,0);
+                                } else {
+                                    return '——';
+                                }
+                        }}
+                        , {field: 'platform_rtp', title: "{:lang('平台RTP(%)')}", minWidth:100, align:'center',templet: function(d){ return formatDecimal(d.platform_rtp * 100, 2); }}
+                        , {field: 'game_rtp', title: "{:lang('游戏RTP(%)')}", minWidth:100, align:'center',templet: function(d){ return formatDecimal(d.game_rtp * 100, 2); }}
+                        , {field: 'total_recharge', title: "{:lang('总充值')}", minWidth:100, align:'center',templet: function(d){ return formatDecimal(d.total_recharge / bl,0); }}
+                        , {field: 'total_withdrawal', title: "{:lang('总提现')}", minWidth:100, align:'center',templet: function(d){ return formatDecimal(d.total_withdrawal / bl,0); }}
+                        , {field: 'total_profit', title: "{:lang('充提差')}", minWidth:100, align:'center',templet: function(d){ return formatDecimal(d.total_profit / bl,0); }}
+                        , {field: 'platform_profit_and_loss', title: "{:lang('游戏盈亏')}", minWidth:120, align:'center',templet: function(d){
+                            return formatDecimal(d.platform_profit_and_loss / bl,0);
+                        }}
+                        , {field: 'tax', title: "{:lang('税收')}", minWidth:60, align:'center',templet: function(d){ return formatDecimal(d.tax / bl,0);}}
+                        , {field: 'free_gold_coin_output', title: "{:lang('免费金币')}", minWidth:100, align:'center',templet: function(d){ return formatDecimal(d.free_gold_coin_output / bl,0); }}
+                        , {field: 'game_gold_coin_output', title: "{:lang('游戏中奖')}", minWidth:120, align:'center',templet: function(d){
+                            return formatDecimal((d.game_gold_coin_output) / bl,0);
+                             }}
+                        , {field: 'AgentReward', title: "{:lang('代理佣金')}", minWidth:100, align:'center',templet: function(d){ return formatDecimal(d.AgentReward / bl,0); }}
+                        , {field: 'mail_extra_gift_coins', title: "{:lang('邮件赠送')}", minWidth:100, align:'center',templet: function(d){ return formatDecimal(d.mail_extra_gift_coins / bl,0); }}
+                        , {field: 'DailyActivyAwardCoin', title: "{:lang('充值赠送')}", minWidth:130, align:'center',templet: function(d){ return formatDecimal(d.DailyActivyAwardCoin / bl,0); }}
+                        , {field: 'lottery_bonus', title: "{:lang('转盘赠送')}", minWidth:100, align:'center',templet: function(d){ return formatDecimal(d.lottery_bonus / bl,0); }}
+                        , {field: 'total_gold_consumption', title: "{:lang('总投注')}", minWidth:100, align:'center',templet: function(d){ return formatDecimal(d.total_gold_consumption / bl,0); }}
+                        , {field: 'recharge_num', title: "{:lang('充值人数')}", minWidth:100, align:'center'}
+                        , {field: 'first_charge_num', title: "{:lang('首充人数')}", minWidth:100, align:'center'}
+                        , {field: 'first_charge_amount', title: "{:lang('首充金额')}", minWidth:100, align:'center',templet: function(d){ return formatDecimal(d.first_charge_amount / bl,0); }}
+                        , {field: 'active_users', title: "{:lang('活跃用户')}", minWidth:80, align:'center'}
+                        , {field: 'new_users', title: "{:lang('新增用户')}", minWidth:80, align:'center'}
+                        // , {field: 'average_online_time', title: "{:lang('平均在线时长')}(s)", minWidth:120, align:'center'}
+                        , {field: 'update_time', title: "{:lang('更新时间')}", minWidth:200, align:'center'}
+                    ];
+
+                    table.render({
+                        elem: '#proxylist'
+                        , url: "{:url('DailyStatistics/index')}" //数据接口
+                        , page: true //开启分页
+                        , limit:15
+                        , cols: [cols]
+                    });
+                },
+
+                //搜索
+                search : function() {
+                    var strartdate = $.trim($('#LAY-component-form-group-date').val());
+                    var enddate = $.trim($('#LAY-component-form-group-date2').val());
+
+                    //执行重载
+                    table.reload('proxylist', {
+                        page: {
+                            curr: 1 //重新从第 1 页开始
+                        },
+                        where: {
+                            'start':strartdate,
+                            'end':enddate
+                        }
+                    });
+                },
+
+                 init : function() {
+                    var daily_update = {$daily_update};
+                    if (!daily_update.status) {
+                        layer.msg(daily_update.msg, {icon: 5});
+                    }
+                    main.renderData();
+                    laydate.render({
+                        elem: '#LAY-component-form-group-date'
+                        , format: 'yyyy-MM-dd'
+                        , max: 1
+                        , lang:'{$datelang ?: "cn"}'
+                        , btns: ['clear', 'confirm']
+                    });
+                    laydate.render({
+                        elem: '#LAY-component-form-group-date2'
+                        , format: 'yyyy-MM-dd'
+                        , max: 1
+                        , lang:'{$datelang ?: "cn"}'
+                        , btns: ['clear', 'confirm']
+                    });
+                    $('#search').on('click', function(e) {
+                        e.preventDefault();
+                        main.search();
+                    });
+                }
+            };
+
+            main.init();
+    });
+    $('#output').click(function(){
+        var start = $.trim($('#LAY-component-form-group-date').val());
+        var end = $.trim($('#LAY-component-form-group-date2').val());
+        var url = "{:url('DailyStatistics/exportDailyStatistics')}?start=" + start + '&end='+ end;
+        location.href = url;
+    });
+</script>
+{/block}

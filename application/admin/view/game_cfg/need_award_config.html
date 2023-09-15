@@ -1,0 +1,192 @@
+{extend name="common/base" /}
+{block name="title"}打码量配置{/block}
+{block name="css"}{/block}
+{block name="content"}
+<script id="msg-bar" type="text/html">
+    <a class='layui-btn layui-btn-sm layui-btn-normal' lay-event='detail'>{:lang('编辑')}</a>
+</script>
+<div class="layui-card">
+    <div class="layui-tab layui-tab-brief" lay-filter="test">
+        <ul class="layui-tab-title">
+            <li class="layui-this" lay-id="1">{:lang('开关')}</li>
+            <li class="" lay-id="2">{:lang('配置')}</li>
+        </ul>
+        <div class="layui-tab-content" id="TabItem" style="background-color: #f2f2f2"></div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script>
+    var tabitem = 3, html = ""; //页签数量
+    layui.use(['jquery'], function () {
+        var $ = layui.jquery;
+        for (var i = 0; i <= tabitem; i++) {
+            if (i == 0)
+                html += "<div class='layui-tab-item layui-show'><table id='Table" + i + "'lay-filter='Table" + i + "'></table> </div>";
+            else
+                html += "<div class='layui-tab-item'><table id='Table" + i + "'lay-filter='Table" + i + "'></table> </div>";
+        }
+        $().ready(function () {
+            $("#TabItem").html(html);
+            // $("#Table1").click();
+        });
+    });
+</script>
+<script>
+
+    var cols = [
+        {field: 'CfgType', align: "center", title: 'CfgType', sort: true, width: 200},
+        {field: 'CfgValue', align: "center", title: 'CfgValue', sort: true, width: 200},
+        {field: 'Description', align: "center", title: "{:lang('功能描述')}", sort: true, minWidth: 400,align:'left'},
+        {
+            field: 'Switch', width: 200, title: "{:lang('禁/启用')}", align: "center", templet: function (d) {
+                if (d.Switch == 1) {
+                    if (d.CfgValue == 1)
+                        return "<input type='checkbox' ctrlID = '" + d.CfgType + "' lay-filter='Disable' lay-skin='switch' lay-text='{:lang('开|关')}' checked>"
+                    else
+                        return "<input type='checkbox' ctrlID = '" + d.CfgType + "'  lay-filter='Disable' lay-skin='switch' lay-text='{:lang('开|关')}'>"
+
+                } else
+                    return "<a class='layui-btn layui-btn-sm layui-btn-normal' lay-event='edit'>{:lang('编辑')}</a>"
+
+            }
+        },
+        // {fixed: 'right', title: '操作', align: 'center', minWidth: 100, toolbar: '#msg-bar'}
+    ];
+    layui.config({base: '__layui__/'}).extend({index: 'lib/index'}).use(['table', 'layer', 'element', 'laydate', 'form', 'jquery', 'util'], function () {
+        // ID=table0
+        //每个页签的独立变量 增加页签的时候 手动增加
+        var tb0 = 'Table0', tb1 = 'Table1', tb2 = 'Table2', tb3 = 'Table3'		;
+        var element = layui.element, layer = layui.layer, laydate = layui.laydate, util = layui.util,
+            table = layui.table, $ = layui.$, form = layui.form;
+        //增加页签  闭包增加 TabxxxxEvn
+        //闭包   表格 排序 编辑
+        Wheres = [
+            {Action:'list', Switch: 1, IDS: '135,136,137,138,141,142,143,144,145,146,150,151,152'},
+            {Action:'list',Switch: 0, IDS: '135,136,137,138,141,142,143,144,145,146,150,151,152'},
+            {Action: 'list', Type: 1, Switch: 0},
+        ]
+        Tabs = {
+            tab0Evn: function () {
+                table.render({
+                    elem: '#' + tb0,
+                    where: Wheres[0],
+                    url: "{:url('game_cfg/functionSwitch')}",
+                    page: true, cols: [cols], autoSort: false,done: function (res) {
+                        tzTbale();
+                    }
+                });
+            },
+            tab1Evn: function () {
+                table.render({
+                    elem: '#' + tb1,
+                    where: Wheres[1],
+                    {if(config('is_portrait'))}
+                        url: "{:url('game_cfg/needAwardConfig')}",
+                    {else /}
+                        url: "{:url('game_cfg/functionSwitch')}",
+                    {/if}
+                    page: true, cols: [cols], autoSort: false,done: function (res) {
+                        tzTbale();
+                    }
+                });
+            }
+        };
+        TBinit = {
+            searchEvn: function () {
+                table.reload('Table1', {page: {curr: 1}});
+            },
+            sortEvn: function () {
+                table.on('sort(' + tb0 + ')', function (obj) {
+                    table.reload(tb4, {
+                        initSort: obj,
+                        page: {curr: 1},
+                        where: {
+                            orderfield: obj.field //排序字段
+                            , ordertype: obj.type //排序方式
+                        }
+                    });
+                });
+                table.on('sort(' + tb1 + ')', function (obj) {
+                    table.reload(tb1, {
+                        initSort: obj,
+                        page: {curr: 1},
+                        where: {
+                            orderfield: obj.field //排序字段
+                            , ordertype: obj.type //排序方式
+                        }
+                    });
+                });
+
+            },
+            editEvn: function () {
+                table.on('tool(' + tb1 + ')', function (obj) {
+                    if (obj.event === 'edit') {
+                            {if(config('is_portrait'))}
+                                var url = "{:url('game_cfg/RequireWageEdit')}?ID=" + obj.data.CfgType + "&Value=" + obj.data.CfgValue +'&Rate='+ obj.data.Rate + "&Msg=" + obj.data.Description;
+                            {else/}
+                                var url = "{:url('game_cfg/FunctionItemEdit')}?ID=" + obj.data.CfgType + "&Value=" + obj.data.CfgValue +'&Rate='+ obj.data.Rate + "&Msg=" + obj.data.Description;
+                            {/if}
+
+                        x_admin_show('{:lang(\'配置详情\')}', url, $(window).width() * 0.4, $(window).height() * 0.5);
+                    }
+                });
+            },
+            //页签 切换事件
+            TabEvn: function () {
+                element.on('tab(test)', function (data) {
+                    switch (data.index) {
+                        case 0:
+                            return Tabs.tab0Evn();
+                        case 1:
+                            return Tabs.tab1Evn();
+                        case 2:
+                            return Tabs.tab2Evn();
+                        case 3:
+                            return Tabs.tab3Evn();
+                    }
+                });
+            },
+            SwitchEvn: function () {
+                form.on('switch(Disable)', function (data) {
+                    var ID = data.elem.attributes['ctrlID'].nodeValue;
+                    var swtype = data.elem.checked;
+                    var type = 0;
+                    if (swtype) type = 1;
+                    else type = 0;
+                    // layer.msg(data);
+                    //设置开关
+                    $.ajax({
+                        url: "{:url('FunctionItemEdit')}",
+                        type: 'post',
+                        data: {'ID': ID, type: type},
+                        success: function (res) {
+                            if (res.code === 0) {
+
+                                layer.msg('{:lang(\'修改成功\')}', {icon: 6});
+                            } else {
+                                layer.msg('{:lang(\'修改失败\')}', {icon: 5});
+                            }
+                            form.render();
+                        }
+                    })
+
+                });
+
+            },
+            init: function () {
+                Tabs.tab0Evn();
+                this.sortEvn();
+                this.editEvn();
+                this.TabEvn();
+                this.SwitchEvn();
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    this.searchEvn();
+                });
+            }
+        }
+        TBinit.init();
+    });
+</script>
+{/block}

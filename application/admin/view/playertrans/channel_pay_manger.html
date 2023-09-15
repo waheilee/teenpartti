@@ -1,0 +1,192 @@
+{extend name="common/base" /}
+
+{block name="title"}支付渠道管理{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('通道ID')}：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="username" name="username" placeholder="{:lang('请输入通道ID搜索')}" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('状态')}：</label>
+                    <div class="layui-input-inline">
+                        <select name="status" id="status">
+                            <option value="-1">{:lang('所有')}</option>
+                            <option value="1">{:lang('开启')}</option>
+                            <option value="0">{:lang('关闭')}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('通道分类')}：</label>
+                    <div class="layui-input-inline">
+                        <select name="ChannelType" id="ChannelType">
+                            <option value="-1">{:lang('所有')}</option>
+                            <option value="1">UPI-1</option>
+                            <option value="2">UPI-2</option>
+                            <option value="3">Bank</option>
+                        </select>
+                    </div>
+                </div> -->
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                        <button type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <!--<button class="layui-btn " onclick="x_admin_show('{:lang(\'添加渠道\')}','ChannelPayManger?Action=add&Type=0','',500)"><i class="layui-icon layui-icon-add-circle"></i>-->
+        <!--</button>-->
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+
+<script type="text/html" id="msg-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">{:lang('编辑')}</a>
+    <a class="layui-btn layui-btn-xs layui-bg-blue" lay-event="copy">{:lang('复制')}</a>
+</script>
+
+<script>
+	var cols = [
+		{field: 'ChannelId', align: 'center', title: "{:lang('通道ID')}", minWidth: 120,sort:true},
+		{field: 'ChannelName', align: 'center', title: "{:lang('通道名称')}", minWidth: 120,sort:true},
+        {field: 'ChannelCode', align: 'center', title: "{:lang('通道编码')}", minWidth: 120},
+        // {field: 'ChannelType', align: 'center', title: "{:lang('渠道分类')}", minWidth: 120,
+        //     templet: function (d) {
+        //         if(d.ChannelType==1){
+        //             return 'UPI-1';
+        //         }
+        //         else if(d.ChannelType==2){
+        //             return 'UPI-2';
+        //         }
+        //         else if(d.ChannelType==3){
+        //             return 'Bank';
+        //         }
+        //         else{
+        //             return '-'
+        //         }
+        //     }
+        // },
+        {field: 'VipLevel', align: 'center', title: "{:lang('VIP等级')}", minWidth: 100,sort:true},
+        // {field: 'AwardRate', align: 'center', title: "{:lang('赠送比例')}(%)", minWidth: 150,sort:true},
+        // {field: 'FirstChargeAwardRate', align: 'center', title: "{:lang('首充上级奖励比例')}(%)", minWidth: 150,sort:true},
+        // {field: 'parentAwardRate', align: 'center', title: "{:lang('单笔充值上级返利比例')}(%)", minWidth: 150,sort:true},
+		{field: 'MinMoney', align: 'center', title: "{:lang('最小金额')}", minWidth: 100,sort:true},
+		{field: 'MaxMoney', align: 'center', title: "{:lang('最大金额')}", minWidth: 100,sort:true},
+		{field: 'SortID', align: 'center', title: "{:lang('排序')}", minWidth: 100,sort:true},
+		{field: 'Status', align: 'center', title: "{:lang('状态')}", minWidth: 100, templet: function (d) { return Number(d.Status) == 1 ? "{:lang('开启')}" : "{:lang('关闭')}"; }},
+        // {field: 'NoticeUrl', align: 'center', title: "{:lang('接口地址')}", minWidth: 360},
+		{fixed: 'right', align: 'center', title: "{:lang('操作')}", minWidth: 150, toolbar: '#msg-bar'}
+	];
+	layui.config({
+		base: '__layui__/' //静态资源所在路径
+	}).extend({
+		index: 'lib/index' //主入口模块
+
+	}).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
+		var main = {
+			renderData: function () {
+				table.render({
+					elem: '#proxylist',
+					url: "{:url('playertrans/ChannelPayManger')}",
+					where: {Action: 'list', Type: 0},
+					page: true, limit: 15, sort: true, autoSort: false, cols: [cols],
+                    done:function(res){
+                        tzTbale();
+                    }
+				});
+			},
+
+			//搜索
+			search: function () {
+				var username = $.trim($('#username').val());
+                var status = $.trim($('#status').val());
+                var ChannelType =$.trim($('#ChannelType').val());
+				//执行重载
+				table.reload('proxylist', {
+					page: {curr: 1},//重新从第 1 页开始
+					where: {'ChannelId': username,'status':status,'ChannelType':ChannelType}
+				});
+			},
+			//操作事件
+			extraEvent: function () {
+				//编辑
+				table.on('tool(proxylist)', function (obj) {
+					var data = obj.data //获得当前行数据
+						, layEvent = obj.event; //获得 lay-event 对应的值
+					tr = obj.tr; //获得当前行 tr 的DOM对象
+					if (layEvent === 'edit') {
+						x_admin_show('{:lang(\'编辑\')}', 'ChannelPayManger?Action=edit&ID=' + data.Id, 700,600);
+					} else if (layEvent === 'del') {
+						var ID = data.Id;
+						layer.confirm('{:lang(\'确认要删除吗？\')}', function (index) {
+							//捉到所有被选中的，发异步进行删除
+							$.get("ChannelPayManger?Action=del", {ID: ID}, function (data, textStatus, xhr) {
+								if (data.code == 1) {
+									layer.msg(data.msg, {icon: 1, time: 1000}, function () {
+										window.location.reload();
+									});
+								} else {
+									layer.msg(data.msg, {icon: 2, time: 1000});
+								}
+							});
+						});
+					}
+					else if (layEvent === 'copy') {
+                        x_admin_show('{:lang(\'添加\')}', 'ChannelPayManger?Action=copy&ID=' + data.Id, 700,600);
+                    }
+				});
+
+
+                //排序
+                table.on('sort(proxylist)', function (obj) {
+                    var username = $.trim($('#username').val());
+                    table.reload('proxylist', {
+                        initSort: obj,
+                        page: {
+                            curr: 1 //重新从第 1 页开始
+                        },
+                        where: {
+                            'orderfield': obj.field,
+                            'ordertype': obj.type,
+                            'ChannelId': username
+                        }
+                    });
+
+                });
+
+			},
+
+			init: function () {
+				main.renderData();
+				main.extraEvent();
+				$('#search').on('click', function (e) {
+					e.preventDefault();
+					main.search();
+				});
+			}
+		};
+
+		main.init();
+	});
+</script>
+{/block}

@@ -1,0 +1,44 @@
+{extend name="common/base" /}
+{block name="title"}在线玩家{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-card">
+    <div id="audit-div" class="layui-tab" lay-filter="remainshow">
+        <ul class="layui-tab-title">
+            <li class="layui-this" lay-id="game_online">{:lang("游戏在线")}</li>
+            <li lay-id="hall_online">{:lang("大厅在线")}</li>
+        </ul>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item">
+                <iframe id="openTab" src="" width="100%" height="1200px" frameborder="0"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script>
+    layui.use(['table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var $ = layui.$;
+        var $ax = layui.ax;
+        var admin = layui.admin;
+        var element = layui.element;
+
+        element.on('tab(remainshow)', function(data){
+            var type = this.getAttribute('lay-id');
+            var path = '';
+            if (type === 'game_online'){
+                path = "{:url('player/onlineGame')}";
+                $('#openTab').prop("src",path)
+            } else if (type === 'hall_online'){
+                path = "{:url('player/onlineHall')}";
+                $('#openTab').prop("src",path);
+            }
+        });
+
+        //点击事件:选中首个tab
+        $('#audit-div ul :first-child').click();
+
+    });
+</script>
+{/block}

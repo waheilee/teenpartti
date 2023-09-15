@@ -1,0 +1,144 @@
+{extend name="common/base" /}
+
+{block name="title"}新增支付通道{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('gamemanage/addTask')}" method="post" id="addProxy" >
+
+    <!--<div class="layui-form-item">-->
+        <!--<label class="layui-form-label">房间ID：</label>-->
+        <!--<div class="layui-input-block">-->
+            <!--<input type="text" id="roomid2" name='roomid' lay-verify="required" placeholder="请输入房间ID" autocomplete="off" class="layui-input">-->
+        <!--</div>-->
+    <!--</div>-->
+    <!--<div class="layui-form-item">-->
+        <!--<label class="layui-form-label">房间名称：</label>-->
+        <!--<div class="layui-input-block">-->
+            <!--<input type="text" id="taskname" name='taskname' lay-verify="required" placeholder="请输入房间名称" autocomplete="off" class="layui-input">-->
+        <!--</div>-->
+    <!--</div>-->
+    <div class="layui-form-item">
+        <label class="layui-form-label">房间</label>
+        <div class="layui-input-block">
+            <select name="roomid" id="roomid">
+                <!--<option value="0">所有</option>-->
+                <!-- foreach循环 -->
+                {foreach name="selectData" item="vo"}
+                <option value="{$vo.roomid}">{$vo.RoomName}</option>
+                {/foreach}
+                <!-- for循环 -->
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">游戏局数：</label>
+        <div class="layui-input-block">
+            <input type="text" id="taskreqround" name='taskreqround' lay-verify="required" placeholder="请输入游戏局数" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">游戏奖励：</label>
+        <div class="layui-input-block">
+            <input type="text" id="taskaward" name='taskaward' lay-verify="required" placeholder="请输入游戏奖励" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">状态：</label>
+        <div class="layui-input-block">
+            <select name="condition" id="status" name="status" >
+                <!--<option  selected>请选择状态</option>-->
+                <option value="0" selected>下架</option>
+                <option value="1" >上架</option>
+                <!--<option value="3" >APP在线客服</option>-->
+
+
+            </select>
+        </div>
+    </div>
+
+
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >新增</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" lay-submit="" lay-filter="cancel" id="cancel" >取消</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                var
+                    taskreqround = $.trim(data.field.taskreqround),
+                    taskaward = $.trim(data.field.taskaward),
+//                    taskname = $.trim(data.field.taskname),
+//                    status = $.trim(data.field.status);
+                    roomid=$('#roomid').val();
+               var status=$('#status').val();
+//               var taskname = $('#roomid option:selected').text();
+                $.ajax({
+                    type:'post',
+//                    type:'get',
+                    url:data.form.action,
+                    data:{
+                        'roomid' : roomid,
+                        'taskreqround' : taskreqround,
+                        'taskaward' : taskaward,
+//                        'taskname' : taskname,
+                        'status' : status,
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

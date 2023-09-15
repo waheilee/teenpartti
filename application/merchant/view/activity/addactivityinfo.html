@@ -1,0 +1,192 @@
+{extend name="common/base" /}
+
+{block name="title"}转账{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('activity/addactivityinfo')}" method="post" id="addProxy" >
+
+    <input type="hidden" name="id" id="id" value="{$info.activityid}" />
+    <div class="layui-form-item">
+        <label class="layui-form-label">活动名称：</label>
+        <div class="layui-input-block">
+            <input type="text" id="activityname" name='activityname' value="{$info.activityname}" lay-verify="required" placeholder="请输入活动名称" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">活动类型：</label>
+        <div class="layui-input-block">
+            <select name="activitytype" id="activitytype">
+                {foreach name='activitytype' item='vo' key='key'}
+                <option value="{$key}" {if($info.activitytype==$key)}selected='selected'{/if}>{$key}-{$vo}</option>
+                {/foreach}
+            </select>
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">开始时间：</label>
+        <div class="layui-input-block">
+            <input type="text" id="begintime" value="{$info.begintime}" name='begintime'  placeholder="请输入开始时间"  class="layui-input">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">结束时间：</label>
+        <div class="layui-input-block">
+            <input type="text" id="endtime" name='endtime' value="{$info.endtime}"  placeholder="请输入结束时间"  class="layui-input">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">房间Id：</label>
+        <div class="layui-input-block">
+            <select name="roomid" id="roomid">
+                <option value="0" >不设置房间</option>
+                {foreach $roomlist as $k2 => $v2}
+                <option value="{$v2.roomid}"   {if($info.roomid==$v2.roomid)}selected='selected'{/if}>{$v2.roomname}({$v2.roomid})</option>
+                {/foreach}
+            </select>
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">vip等级：</label>
+        <div class="layui-input-block">
+            <select name="vipawardlevel" id="vipawardlevel">
+                <option value="0" {if($info.vipawardlevel==0)}selected='selected'{/if}>不限制</option>
+                <option value="1" {if($info.vipawardlevel==1)}selected='selected'{/if}>1</option>
+                <option value="2" {if($info.vipawardlevel==2)}selected='selected'{/if}>2</option>
+                <option value="3" {if($info.vipawardlevel==3)}selected='selected'{/if}>3</option>
+                <option value="4" {if($info.vipawardlevel==4)}selected='selected'{/if}>4</option>
+                <option value="5" {if($info.vipawardlevel==5)}selected='selected'{/if}>5</option>
+                <option value="6" {if($info.vipawardlevel==6)}selected='selected'{/if}>6</option>
+                <option value="7" {if($info.vipawardlevel==7)}selected='selected'{/if}>7</option>
+            </select>
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">活动描述：</label>
+        <div class="layui-input-block">
+            <textarea name="activitydesc" id="activitydesc"  placeholder="请输入"  lay-verify="content" class="layui-textarea">{$info.activitydesc}</textarea>
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >保存</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" lay-submit="" lay-filter="cancel" id="cancel" >取消</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                var activityid = $.trim(data.field.id);
+                var activityname = $.trim(data.field.activityname);
+                var activitytype = $.trim(data.field.activitytype);
+                var begintime = $.trim(data.field.begintime);
+                var endtime = $.trim(data.field.endtime);
+                var roomid = $.trim(data.field.roomid);
+                var vipawardlevel = $.trim(data.field.vipawardlevel);
+                var activitydesc = $.trim(data.field.activitydesc);
+
+                if(activityname==''){
+                    layer.alert('请输入活动名称！',{icon:5});
+                    return;
+                }
+
+                if($.trim(begintime)=='' || $.trim(endtime)==''){
+                    layer.alert('请输入活动开始时间和结束时间！',{icon:5});
+                    return;
+                }
+
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'id':activityid,
+                        'activityname' : activityname,
+                        'activitytype' : activitytype,
+                        'begintime' : begintime,
+                        'endtime' : endtime,
+                        'roomid' : roomid,
+                        'vipawardlevel':vipawardlevel,
+                        'activitydesc':activitydesc
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        var index = parent.layer.getFrameIndex(window.name); /* 先得到当前iframe层的索引 */
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.layui.table.reload('proxylist',{page:{curr:$(".layui-laypage-em").next().html()}});   //主要代码
+                                parent.layer.close(index);
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                laydate.render({
+                    elem: '#begintime'
+                    ,type: 'datetime'
+                    ,format:'yyyy-MM-dd HH:mm:ss'
+                    ,btns: ['clear', 'confirm']
+                });
+
+                laydate.render({
+                    elem: '#endtime'
+                    ,type: 'datetime'
+                    ,format:'yyyy-MM-dd HH:mm:ss'
+                    ,btns: ['clear', 'confirm']
+                });
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

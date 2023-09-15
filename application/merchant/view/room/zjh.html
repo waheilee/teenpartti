@@ -1,0 +1,384 @@
+{extend name="common/base" /}
+
+{block name="title"}炸金花{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <div class="layui-card-body">
+        <div class="layui-tab layui-tab-brief" lay-filter="component-tabs-brief" >
+            <ul class="layui-tab-title" id="tabs">
+                {foreach $roomlist as $k => $room}
+                {if $k==0}
+                <li class="layui-this" id="first" lay-id="{$room.roomid}">{$room.roomname}</li>
+                {else /}
+                <li lay-id="{$room.roomid}">{$room.roomname}</li>
+                {/if}
+                {/foreach}
+            </ul>
+
+            <div class="layui-tab-content" style="background-color: #f2f2f2">
+
+                {foreach $roomlist as $k => $room}
+                <div class="layui-tab-item {if $k == 0}layui-show{/if}">
+                    <div class ="layui-row layui-col-space20">
+                        <!--汇总-->
+                        <div class="layui-col-xs12">
+                            <div class="layui-card">
+                                <div class="layui-card-header">数据汇总</div>
+                                <div class="layui-card-body">
+                                    <div class="layadmin-backlog" lay-anim="" lay-indicator="inside" lay-arrow="none" style="width: 100%; height: auto;">
+                                        <div carousel-item="">
+                                            <ul class="layui-row layui-col-space10 layui-this">
+                                                <li class="layui-col-xs3">
+                                                    <a href="javascript:;" class="layadmin-backlog-body">
+                                                        <h3>历史总战绩</h3>
+                                                        <p>
+                                                            <cite id="history{$room.roomid}">0</cite></p>
+                                                    </a>
+                                                </li>
+                                                <li class="layui-col-xs3">
+                                                    <a href="javascript:;" class="layadmin-backlog-body">
+                                                        <h3>当前战绩</h3>
+                                                        <p>
+                                                            <cite id="currentjj{$room.roomid}">0</cite></p>
+                                                    </a>
+                                                </li>
+                                                <li class="layui-col-xs3">
+                                                    <a href="javascript:;" class="layadmin-backlog-body">
+                                                        <h3>在线人数</h3>
+                                                        <p>
+                                                            <cite id="onlinenum{$room.roomid}">0</cite></p>
+                                                    </a>
+                                                </li>
+                                                <li class="layui-col-xs3">
+                                                    <a href="javascript:;" class="layadmin-backlog-body">
+                                                        <h3>当前房间胜率</h3>
+                                                        <p>
+                                                            <cite id="winrate{$room.roomid}">0</cite>%</p>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--库存设置-->
+                        <div class="layui-col-xs12">
+                            <div class="layui-card">
+                                <div class="layui-card-header">
+                                    库存设置
+                                </div>
+                                <div class="layui-card-body">
+                                    <form class="layui-form" lay-filter="component-form-group">
+                                        <div class="layui-form-item">
+
+
+                                            <div class="layui-inline">
+                                                <label class="layui-form-label">当前库存</label>
+                                                <div class="layui-input-inline" >
+                                                    <input type="text" name="current" id="current{$room.roomid}" autocomplete="off" class="layui-input">
+                                                    <input type="text" id="init{$room.roomid}" name="init" value="0" autocomplete="off" class="layui-input" style="display: none">
+                                                    <input type="hidden" id="tt" name="init"  autocomplete="off" class="layui-input" value="{$room.roomid}">
+                                                </div>
+                                            </div>
+                                            <div class="layui-inline">
+                                                <div class="layui-input-inline">
+                                                    <a class="layui-btn save">保存</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--库存阶段控制方案-->
+                        <div class="layui-col-xs12">
+                            <div class="layui-card">
+                                <div class="layui-card-header">
+                                    库存阶段控制 <span style="float: right"><button class="layui-btn layui-btn-sm" onclick="x_admin_show('设置库存','setSocketRoomStorage?roomid={$room.roomid}')">设置库存阶段方案</button></span>
+                                </div>
+                                <div class="layui-card-body">
+                                    <table class="layui-table">
+                                        <tr id="rate{$room.roomid}">
+                                            <td>胜率</td>
+                                        </tr>
+                                        <tr id="storage{$room.roomid}">
+                                            <td>库存</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="layui-col-xs12">
+                            <div class="layui-card">
+                                <div class="layui-card-header">
+                                    房间在线明细
+                                </div>
+                                <div class="layui-card-body">
+                                    <form class="layui-form" lay-filter="component-form-group">
+                                        <div class="layui-form-item">
+                                            <div class="layui-inline">
+                                                <label class="layui-form-label">玩家ID</label>
+                                                <div class="layui-input-inline">
+                                                    <input type="text" id="roleid{$room.roomid}" name="roleid{$room.roomid}" autocomplete="off" class="layui-input">
+                                                </div>
+                                            </div>
+                                            <div class="layui-inline">
+                                                <div class="layui-input-inline">
+                                                    <a class="layui-btn search" myid="{$room.roomid}"  data-type="reload">搜索</a>
+                                                </div>
+                                            </div>
+                                            <div class="layui-inline">
+                                                <div class="layui-input-inline">
+                                                    <a class="layui-btn" id="search" onclick="x_admin_show('设置玩家胜率', '{:url(\'room/setPlayerRate\')}', '', 330)">设置玩家胜率</a>
+                                                </div>
+                                                <div class="layui-input-inline">
+                                                    <a class="layui-btn" id="search22" onclick="x_admin_show('查看伙牌', '{:url(\'room/lookPartnerCardZjh\')}?roomid={$room.roomid}', $(window).width()*0.7, 530)">查看伙牌</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    <div id="alllist">
+                                        <table id="proxylist{$room.roomid}" lay-filter="proxylist"></table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                {/foreach}
+
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script type="text/html" id="msg-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">设置玩家胜率</a>
+</script>
+<script>
+
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        //初始化第一个tab页
+        var init = {
+            init : function () {
+                var roomid = $('#first').attr('lay-id');
+                main.socketData(roomid);
+                main.renderData(roomid);
+                main.roomData(roomid);
+            }
+        };
+
+        //切换tab事件
+        element.on('tab(component-tabs-brief)', function(obj){
+            var roomid = $(this).attr('lay-id');
+            main.socketData(roomid);
+            main.renderData(roomid);
+            main.roomData(roomid);
+
+        });
+        var main = {
+            socketData : function(roomid) {
+                $.ajax({
+                    type:'post',
+                    url:'getSocketRoomData',
+                    data:{
+                        'roomid' : roomid
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            console.log(222);
+                            $('#init'+roomid).val(res.data.nInitStorage);
+                            $('#current'+roomid).val(res.data.nCurrentStorage);
+                            $('#winrate'+roomid).html(res.data.currentwinrate);
+
+                            if (res.data.storage.length > 0) {
+                                var ct1 = ct2 = '';
+                                for (var i=0;i<res.data.storage.length; i++) {
+                                    if (res.data.currentwinrate == res.data.storage[i].rate) {
+                                        ct1 += '<td style="color: red">'+res.data.storage[i].rate+'</td>';
+                                        ct2 += '<td style="color: red">'+res.data.storage[i].storage+'</td>';
+                                    } else {
+                                        ct1 += '<td>'+res.data.storage[i].rate+'</td>';
+                                        ct2 += '<td>'+res.data.storage[i].storage+'</td>';
+                                    }
+                                }
+
+                                $('#rate'+roomid).html('<td>胜率</td>'+ct1);
+                                $('#storage'+roomid).html('<td>库存</td>'+ct2);
+                                table.render();
+                            } else {
+                                $('#rate'+roomid).html('<td>胜率</td><td>未设置</td>');
+                                $('#storage'+roomid).html('<td>库存</td><td>未设置</td>');
+                            }
+
+                        }
+                    }
+                });
+            },
+            roomData : function(roomid) {
+                $.ajax({
+                    type:'post',
+                    url:'roomData',
+                    data:{
+                        'roomid' : roomid
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            $('#history'+roomid).html(res.data.historytotal);
+                            $('#currentjj'+roomid).html(res.data.currenttotal);
+                            $('#onlinenum'+roomid).html(res.data.online);
+
+                        }
+                    }
+                });
+            },
+
+            setRate : function () {
+                //获取当前tab房间
+                var roomid = $('#tabs').find('.layui-this').attr('lay-id');
+                var init = $('#init'+roomid).val();
+                var current = $('#current'+roomid).val();
+                $.ajax({
+                    type:'post',
+                    url:'setSocketRoomRate',
+                    data:{
+                        'roomid' : roomid,
+                        'init' : 0,
+                        'current' : current,
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code == 0) {
+                            layer.msg(res.msg, {icon:1,time:1000}, function () {
+                                main.socketData(roomid);
+                            })
+                        } else {
+                            layer.msg(res.msg, {icon:2,time:1000}, function () {
+                                main.socketData(roomid);
+                            })
+                        }
+                    }
+                });
+            },
+
+            //绑定事件
+            bindEvent : function () {
+                $('.save').on('click', function(e) {
+                    e.preventDefault();
+                    main.setRate();
+                });
+
+                $('.search').on('click', function(e) {
+                    e.preventDefault();
+                    var roomid = $(this).attr('myid');
+                    main.search(roomid);
+                });
+                $('#search2').on('click', function(e) {
+
+                    e.preventDefault();
+//                    var roomid = $(this).attr('myid');
+                    var roomid = $("#tt").val();
+
+//                                        alert(roomid);
+                    var url = 'lookPartnerCardZjh.html?roomid='+roomid;
+
+                    x_admin_show('查看伙牌', url, $(window).width()*0.5, 330);
+                });
+
+            },
+
+            init: function () {
+                main.bindEvent();
+                main.extraEvent();
+            },
+
+            renderData : function(roomid) {
+                var cols = [ //表头
+                    {field: 'id', title: '玩家ID', minWidth:100}
+                    ,{field: 'nickname', title: '昵称', minWidth:120}
+                    , {field: 'balance', title: '银行余额', minWidth:120}
+                    , {field: 'gamebalance', title: '携带余额', minWidth:120}
+                    , {field: 'kindname', title: '游戏房间', minWidth:120}
+                    , {field: 'totalin', title: '总充值', minWidth:120}
+                    , {field: 'totalout', title: '总转出', minWidth:120}
+                    , {field: 'totalget', title: '盈利', minWidth:120}
+                    , {field: 'ctrolratio', title: '个人胜率', minWidth:100}
+                    , {field: 'cotroltime', title: '控制时长', minWidth:100}
+//                    , {field: 'ctrltimeinterval', title: '不控间隔', minWidth:100}
+                    , {field: 'totalwater', title: '总流水', minWidth:120}
+                    , {field: 'huoyue', title: '活跃度', minWidth:150}
+                    , {fixed: 'right', title:'操作', align:'center', minWidth:150, toolbar: '#msg-bar'}
+                ];
+
+                table.render({
+                    elem: '#proxylist'+roomid
+                    , url: "{:url('player/online')}" //数据接口
+
+                    , page: true //开启分页
+                    ,where: {
+                        'roomid':roomid
+                    }
+                    , cols: [cols]
+                });
+            },
+
+            //操作事件
+            extraEvent : function () {
+                //编辑
+                table.on('tool(proxylist)', function(obj) {
+                    var data = obj.data //获得当前行数据
+                        ,layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'edit') {
+                        var url = 'setPlayerRate?roleid='+data.id+'&ratio='+data.ctrolratio+'&time='+data.cotroltime+'&timeinterval='+data.ctrltimeinterval+'&readonly=1';
+
+                        x_admin_show('设置玩家胜率', url, '', 330);
+                    }
+                });
+            },
+
+            //搜索
+            search : function(roomid) {
+                var roleid=$('#roleid'+roomid).val();
+                //执行重载
+                table.reload('proxylist'+roomid, {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'roomid':roomid,
+                        'roleid':roleid,
+                    }
+                });
+            },
+
+
+        };
+
+        init.init();
+        main.init();
+    });
+</script>
+{/block}

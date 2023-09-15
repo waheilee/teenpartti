@@ -1,0 +1,157 @@
+{extend name="common/base" /}
+
+{block name="title"}金币排行{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+
+                <div class="layui-input-inline">
+                    <select id="PackID" name="PackID">
+                        <option value="{$PackIDS}">可用分包</option>
+                        {foreach $PackID as $k1 => $v1}
+                        <option value="{$v1['OperatorId']}">{$v1['PackageName']}</option>
+                        {/foreach}
+                    </select>
+                </div>
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" data-type="reload" id="search">搜索</a>
+                    </div>
+                </div>
+            </div>
+
+
+        </form>
+    </div>
+
+    <div class="layui-card-body">
+        <!--<a style="margin-bottom: 10px;" class="layui-btn" onclick="x_admin_show('新增微信客服','addWeixin.html', '', 500)">-->
+        <!--<i class="layui-icon layui-icon-add-circle"></i>-->
+        <!--</a>-->
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script id="msg-bar" type="text/html">
+    <a class="layui-btn layui-btn-xs" lay-event="edit"><i class="layui-icon layui-icon-edit"></i></a>
+    <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete"><i
+            class="layui-icon layui-icon-delete"></i></a>
+    <!--<a class="layui-btn layui-btn-xs" lay-event="open"><i class="layui-icon layui-icon-set-fill"></i></a>-->
+
+</script>
+<script>
+	layui.config({
+		base: '__layui__/' //静态资源所在路径
+	}).extend({
+		index: 'lib/index' //主入口模块
+	}).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$,
+			form = layui.form;
+		var main = {
+			renderData: function () {
+				var cols = [ //表头
+					{field: 'AccountID', title: '玩家ID', minWidth: 200, sort: true},
+					{field: 'LoginName', title: '昵称', minWidth: 200, sort: true},
+					{
+						field: 'Money',
+						title: '携带金币',
+						minWidth: 200,
+						sort: true,
+						templet: function (d) { return d.Money != 0 ? d.Money : '0.00'; }
+					},
+					{
+						field: 'TotalDeposit',
+						title: '总充值',
+						minWidth: 100,
+						sort: true,
+						templet: function (d) { return d.TotalDeposit != 0 ? d.TotalDeposit : '0.00'; }
+					},
+					{
+						field: 'TotalRollOut',
+						title: '总转出',
+						minWidth: 100,
+						sort: true,
+						templet: function (d) { return d.TotalRollOut != 0 ? d.TotalRollOut : '0.00'; }
+					},
+					{
+						field: 'total',
+						title: '战绩',
+						minWidth: 100,
+						sort: true,
+						templet: function (d) { return d.total != 0 ? d.total : '0.00'; }
+					},
+				];
+
+				table.render({
+					elem: '#proxylist',
+					url: "{:url('UserPackageManage/GoldRecordRank')}",
+					page: true,
+					cols: [cols],
+					autoSort: false,
+					done: function (res) {$(".layui-table-main tr").each(function (index, val) {
+                            $($(".layui-table-fixed-l .layui-table-body tbody tr")[index]).height($(val).height());
+                            $($(".layui-table-fixed-r .layui-table-body tbody tr")[index]).height($(val).height());
+                        });
+					}
+				});
+			},
+
+			//搜索
+			search: function () {
+				//执行重载
+				table.reload('proxylist', {
+					page: {
+						curr: 1 //重新从第 1 页开始
+					},
+					where: {
+						'PackID': $("#PackID").val()
+					}
+				});
+			},
+
+			extraEvent: function () {
+				//排序
+				table.on('sort(proxylist)', function (obj) {
+					//执行重载
+					table.reload('proxylist', {
+						initSort: obj,
+						page: {
+							curr: 1 //重新从第 1 页开始
+						},
+						where: {
+							'orderby': obj.field,
+							'ordertype': obj.type,
+						}
+					});
+
+				});
+
+
+			},
+
+
+			init: function () {
+				main.renderData();
+				main.extraEvent();
+				$('#search').on('click', function (e) {
+					e.preventDefault();
+					main.search();
+				});
+			}
+		};
+
+		main.init();
+	});
+</script>
+{/block}

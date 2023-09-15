@@ -1,0 +1,206 @@
+{extend name="common/base" /}
+
+{block name="title"}编辑超级玩家{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<!--<form class="layui-form" action="{:url('player/editSuper')}" method="post" id="addProxy" >-->
+<!--<form class="layui-form" action="{:url('player/addSuper')}" method="post" id="addProxy">-->
+<form class="layui-form" action="{:url('yunwei/editRobot')}" method="post" id="addProxy">
+
+
+
+    <input type="hidden" name="roomid" id="roomid" value="{$roomid}" lay-verify="required|number" placeholder="请输入赠送比例"
+           autocomplete="off" class="layui-input">
+    <div class="layui-form-item">
+        <label class="layui-form-label"><nobr>最大机器人数：</nobr></label>
+        <div class="layui-input-block">
+            <input type="text" id="maxcount" name="maxcount" value="{$maxcount}" lay-verify="required|number" placeholder="请输入赠送比例"
+                   autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">胜利权值：</label>
+        <div class="layui-input-block">
+            <input type="text" id="robotwinweighted" name="robotwinweighted" value="{$robotwinweighted}" lay-verify="required|number" placeholder="请输入赠送比例" autocomplete="off"
+                   class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label"><nobr>需要赢的钱数：</nobr></label>
+        <div class="layui-input-block">
+            <input type="text" id="robotwinmoney" name="robotwinmoney" value="{$robotwinmoney}" lay-verify="required|number" placeholder="请输入赠送比例" autocomplete="off"
+                   class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label"><nobr>服务的桌子数：</nobr></label>
+        <div class="layui-input-block">
+            <input type="text" id="servicetables" name="servicetables" value="{$servicetables}" lay-verify="required|number" placeholder="请输入赠送比例" autocomplete="off"
+                   class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">附加胜率：</label>
+        <div class="layui-input-block">
+            <input type="text" id="victory" name="victory" value="{$addwinpre}" lay-verify="required|number" placeholder="请输入赠送比例" autocomplete="off"
+                   class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label"><nobr>最小带入分数：</nobr></label>
+        <div class="layui-input-block">
+            <input type="text" id="minnum" name="minnum" value="{$mintakescore}" lay-verify="required|number" placeholder="请输入赠送比例" autocomplete="off"
+                   class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label"><nobr>最大带入分数：</nobr></label>
+        <div class="layui-input-block">
+            <input type="text" id="maxnum" name="maxnum" value="{$maxtakescore}" lay-verify="required|number" placeholder="请输入赠送比例" autocomplete="off"
+                   class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label"><nobr>最小游戏局数：</nobr></label>
+        <div class="layui-input-block">
+            <input type="text" id="mingame" name="mixgame" value="{$minplaydraw}" lay-verify="required|number" placeholder="请输入赠送比例" autocomplete="off"
+                   class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label"><nobr>最大游戏局数：</nobr></label>
+        <div class="layui-input-block">
+            <input type="text" id="maxgame" name="maxgame" value="{$maxplaydraw}" lay-verify="required|number" placeholder="请输入赠送比例" autocomplete="off"
+                   class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label"><nobr>最小游戏时间：</nobr></label>
+        <div class="layui-input-block">
+            <input type="text" id="mintime" name="mintime" value="{$minreposetime}" lay-verify="required|number" placeholder="请输入赠送比例" autocomplete="off"
+                   class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label"><nobr>最大游戏时间：</nobr></label>
+        <div class="layui-input-block">
+            <input type="text" id="maxtime" name="maxtime" value="{$maxreposetime}" lay-verify="required|number" placeholder="请输入赠送比例" autocomplete="off"
+                   class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label" style="position: relative;right: 10px;"><nobr>输钱逃跑百分比：</nobr></label>
+        <div class="layui-input-block">
+            <input type="text" id="lost" name="lost" value="{$minleavepre}" lay-verify="required|number" placeholder="请输入赠送比例" autocomplete="off"
+                   class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label" style="position: relative;right: 10px;"><nobr>赢钱逃跑百分比：</nobr></label>
+        <div class="layui-input-block">
+            <input type="text" id="win" name="win" value="{$maxleavepre}" lay-verify="required|number" placeholder="请输入赠送比例" autocomplete="off"
+                   class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >修改</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" id="cancel" >取消</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var layer = layui.layer
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                var maxcount = $.trim(data.field.maxcount)
+                    ,robotwinweighted = $.trim(data.field.robotwinweighted)
+                    ,robotwinmoney = $.trim(data.field.robotwinmoney)
+                    ,servicetables = $.trim(data.field.servicetables)
+                    ,robotwinweighted = $.trim(data.field.robotwinweighted);
+
+                var roomid = $.trim($('#roomid').val());
+
+                var victory = $.trim($('#victory').val());
+                var minnum = $.trim($('#minnum').val());
+                var maxnum = $.trim($('#maxnum').val());
+                var mingame = $.trim($('#mingame').val());
+                var maxgame = $.trim($('#maxgame').val());
+                var mintime = $.trim($('#mintime').val());
+                var maxtime = $.trim($('#maxtime').val());
+                var win = $.trim($('#win').val());
+                var lost = $.trim($('#lost').val());
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'roomid': roomid,
+                        'robotwinweighted': robotwinweighted,
+                        'servicetables': servicetables,
+                        'robotwinmoney': robotwinmoney,
+                        'robotwinweighted': robotwinweighted,
+                        'maxcount': maxcount,
+
+                        'victory': victory,
+                        'minnum': minnum,
+                        'maxnum': maxnum,
+                        'mingame': mingame,
+                        'maxgame': maxgame,
+                        'mintime': mintime,
+                        'maxtime': maxtime,
+                        'win': win,
+                        'lost': lost,
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

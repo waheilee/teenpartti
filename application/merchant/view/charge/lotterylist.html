@@ -1,0 +1,82 @@
+{extend name="common/base" /}
+
+{block name="title"}抽奖明细列表{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'roleid', title: '玩家ID', minWidth: 100}
+                    , {field: 'scrollvalue', title: '转盘倍率', minWidth: 100}
+                    , {field: 'lotteryaward', title: '奖励', minWidth: 120}
+                    , {field: 'goodaward', title: '转盘分值', minWidth: 100}
+                    , {field: 'costdiamond', title: '消耗钻石', minWidth: 100}
+                    , {field: 'addtime', title: '添加时间', minWidth: 150}
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('charge/lotterylist')}?roleid={$roleid}" //数据接口
+                    , page: true //开启分页
+                    , limit:10
+                    , cols: [cols]
+                });
+            },
+
+            //搜索
+            search: function () {
+                var roleid = $.trim($('#roleid').val());
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'roleid': roleid,
+                        'accountname': accountname
+                    }
+                });
+            },
+
+            init: function () {
+                main.renderData();
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

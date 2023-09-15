@@ -1,0 +1,144 @@
+{extend name="common/base" /}
+
+{block name="title"}充值留存{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('日期')}</label>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="end" id="LAY-component-form-group-date2" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                    <button type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>
+                    <a class="layui-btn" id="output">{:lang('导出记录')}</a>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script type="text/html" id="formatScaling">
+
+</script>
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+            var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+                ,table = layui.table
+                ,$ = layui.$
+            ,form = layui.form;
+
+            var main = {
+                 renderData : function() {
+                    var cols = [ //表头
+                        {field: 'day', title: "{:lang('日期')}", minWidth:120, align:'center'}
+                        ,{field: 'recharge_user_num', title: "{:lang('充值人数')}", minWidth:180, align:'center'}
+                        ,{field: 'one_day_retained', title: "{:lang('次日留存')}", minWidth:150, align:'center',templet: function(d){ if (d.one_day_retained>0){return d.one_day_retained +' / '+ formatDecimal(d.one_day_retained/d.recharge_user_num*100, 2) + '%';} else { return '';} }}
+                        ,{field: 'two_day_retained', title: "{:lang('2日留存')}", minWidth:130, align:'center',templet: function(d){ if (d.two_day_retained>0){return d.two_day_retained +' / '+ formatDecimal(d.two_day_retained/d.recharge_user_num*100, 2) + '%';} else { return '';} }}
+                        ,{field: 'three_day_retained', title: "{:lang('3日留存')}", minWidth:130, align:'center',templet: function(d){ if (d.three_day_retained>0){return d.three_day_retained +' / '+ formatDecimal(d.three_day_retained/d.recharge_user_num*100, 2) + '%';} else { return '';} }}
+                        ,{field: 'four_day_retained', title: "{:lang('4日留存')}", minWidth:130, align:'center',templet: function(d){ if (d.four_day_retained>0){return d.four_day_retained +' / '+ formatDecimal(d.four_day_retained/d.recharge_user_num*100, 2) + '%';} else { return '';} }}
+                        ,{field: 'five_day_retained', title: "{:lang('5日留存')}", minWidth:130, align:'center',templet: function(d){ if (d.five_day_retained>0){return d.five_day_retained +' / '+ formatDecimal(d.five_day_retained/d.recharge_user_num*100, 2) + '%';} else { return '';} }}
+                        ,{field: 'six_day_retained', title: "{:lang('6日留存')}", minWidth:130, align:'center',templet: function(d){ if (d.six_day_retained>0){return d.six_day_retained +' / '+ formatDecimal(d.six_day_retained/d.recharge_user_num*100, 2) + '%';} else { return '';} }}
+                        ,{field: 'seven_day_retained', title: "{:lang('7日留存')}", minWidth:130, align:'center',templet: function(d){ if (d.seven_day_retained>0){return d.seven_day_retained +' / '+ formatDecimal(d.seven_day_retained/d.recharge_user_num*100, 2) + '%';} else { return '';} }}
+                        ,{field: 'fifteen_day_retained', title: "{:lang('15日留存')}", minWidth:135, align:'center',templet: function(d){ if (d.fifteen_day_retained>0){return d.fifteen_day_retained +' / '+ formatDecimal(d.fifteen_day_retained/d.recharge_user_num*100, 2) + '%';} else { return '';} }}
+                        ,{field: 'thirty_day_retained', title: "{:lang('30日留存')}", minWidth:135, align:'center',templet: function(d){ if (d.thirty_day_retained>0){return d.thirty_day_retained +' / '+ formatDecimal(d.thirty_day_retained/d.recharge_user_num*100, 2) + '%';} else { return '';} }}
+                        
+                        , {field: 'update_time', title: "{:lang('更新时间')}", minWidth:180, align:'center',templet: function(d){
+                                return formatDateTime(d.update_time);
+                            }}
+                    ];
+                    
+                    table.render({
+                        elem: '#proxylist'
+                        , url: "{:url('DailyStatistics/RechargeRetained')}" //数据接口
+                        , page: true //开启分页
+                        , limit:10
+                        , cols: [cols]
+                    });
+                },
+
+                //搜索
+                search : function() {
+                    var strartdate = $.trim($('#LAY-component-form-group-date').val());
+                    var enddate = $.trim($('#LAY-component-form-group-date2').val());
+
+                    //执行重载
+                    table.reload('proxylist', {
+                        page: {
+                            curr: 1 //重新从第 1 页开始
+                        },
+                        where: {
+                            'start':strartdate,
+                            'end':enddate
+                        }
+                    });
+                },
+
+                 init : function() {
+                    var daily_update = {$daily_update};
+                    if (!daily_update.status) {
+                        layer.msg(daily_update.msg, {icon: 5});
+                    }
+                    main.renderData();
+                    laydate.render({
+                        elem: '#LAY-component-form-group-date'
+                        , format: 'yyyy-MM-dd'
+                        , max: 1
+                        , lang:'{$datelang ?: "cn"}'
+                        , btns: ['clear', 'confirm']
+                    });
+                    laydate.render({
+                        elem: '#LAY-component-form-group-date2'
+                        , format: 'yyyy-MM-dd'
+                        , max: 1
+                        , lang:'{$datelang ?: "cn"}'
+                        , btns: ['clear', 'confirm']
+                    });
+                    $('#search').on('click', function(e) {
+                        e.preventDefault();
+                        main.search();
+                    });
+                }
+            };
+
+            main.init();
+    });
+    $('#output').click(function(){
+        var start = $.trim($('#LAY-component-form-group-date').val());
+        var end = $.trim($('#LAY-component-form-group-date2').val());
+        var url = "{:url('DailyStatistics/exportRechargeRetained')}?start=" + start + '&end='+ end;
+        location.href = url;
+    });
+</script>
+{/block}

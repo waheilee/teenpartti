@@ -1,0 +1,203 @@
+{extend name="common/base" /}
+
+{block name="title"}支付通道修改{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('payment/editChannel')}" method="post" id="addProxy" >
+    <div class="layui-form-item">
+        <label class="layui-form-label">通道ID：</label>
+        <div class="layui-input-block">
+            <input type="text" id="channelid" name='channelid' value="{$channelid}" lay-verify="required"  autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">通道名称：</label>
+        <div class="layui-input-block">
+            <input type="text" id="channelname" name='channelname' value="{$channelname}" lay-verify="required" placeholder="请输入通道名称" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">支付方式：</label>
+        <div class="layui-input-block" id="payway">
+            <input type="checkbox" name="payway" value="1200" title="支付宝" {if in_array(1200, $classid)} checked {/if}>
+            <input type="checkbox" name="payway" value="1300" title="微信" {if in_array(1300, $classid)} checked {/if}>
+            <input type="checkbox" name="payway" value="1400" title="银联" {if in_array(1400, $classid)} checked {/if}>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">允许新玩家：</label>
+        <div class="layui-input-block" id="newuser">
+            <input type="checkbox" name="newuser" title="允许新玩家"  {if $newuser=='1'} checked {/if}>
+        </div>
+    </div>
+
+    <!--<div class="layui-form-item">-->
+        <!--<label class="layui-form-label">金额区间</label>-->
+        <!--<div class="layui-input-inline" style="width: 100px">-->
+            <!--<input type="number" name="minmoney"  id="minmoney" value="{$minmoney}" autocomplete="off" class="layui-input">-->
+        <!--</div>-->
+        <!--<div class="layui-form-mid">-</div>-->
+        <!--<div class="layui-input-inline" style="width: 100px">-->
+            <!--<input type="number" name="maxmoney"  id="maxmoney" value="{$maxmoney}" autocomplete="off" class="layui-input">-->
+        <!--</div>-->
+    <!--</div>-->
+    <div class="layui-form-item">
+        <label class="layui-form-label">排序：</label>
+        <div class="layui-input-block">
+            <input type="text" id="orderid" name="orderid" value="{$orderid}" placeholder="请输入排序值（越大排越前）" autocomplete="off" class="layui-input">
+
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">固定金额池(逗号分割)：</label>
+        <div class="layui-input-block">
+            <input type="text" id="money" name="money"  value="{$money}" placeholder="请输入金额" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">商户号：</label>
+        <div class="layui-input-block">
+            <input type="text" id="mchid" name="mchid" value="{$mchid}" placeholder="请输入商户号" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">应用ID：</label>
+        <div class="layui-input-block">
+            <input type="text" id="appid" name="appid" value="{$appid}" placeholder="请输入应用ID" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">网关地址：</label>
+        <div class="layui-input-block">
+            <input type="text" id="noticeurl" name="noticeurl" value="{$noticeurl}"  placeholder="请输入网关地址" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <input type="hidden" id="status" name="status" value="{$status}" placeholder="请输入排序值（越大排越前）" autocomplete="off" class="layui-input">
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">备注：</label>
+        <div class="layui-input-block">
+            <textarea class="layui-textarea" id="descript" name="descript">{$descript}</textarea>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >修改</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" lay-submit="" lay-filter="cancel" id="cancel" >取消</a>
+        </div>
+    </div>
+
+</form>
+<input type="text" id="id" name="id" value="{$id}"  autocomplete="off" class="layui-input" style="display: none">
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var layer = layui.layer
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                var channelid = $.trim(data.field.channelid)
+                    ,channelname = $.trim(data.field.channelname)
+                    ,mchid = $.trim(data.field.mchid)
+                    ,id = $('#id').val()
+                    ,appid = $.trim(data.field.appid)
+                    ,orderid = $.trim(data.field.orderid)
+//                    ,minmoney = $.trim(data.field.minmoney)
+//                    ,maxmoney = $.trim(data.field.maxmoney)
+                    ,noticeurl = $.trim(data.field.noticeurl)
+                    ,money = $.trim(data.field.money)
+                    ,status = $.trim(data.field.status)
+                    ,descript = $.trim(data.field.descript);
+
+                var arr = [];
+                $("#payway .layui-form-checkbox").each(function(i){
+                    if ($(this).hasClass('layui-form-checked')) {
+                        arr.push($(this).prev().val())
+                    }
+                });
+                if (arr.length == 0) {
+                    layer.msg('请选择支付方式', {icon:2});
+                    return;
+                }
+
+                var arr2 = 0;
+                $("#newuser .layui-form-checkbox").each(function(i){
+                    if ($(this).hasClass('layui-form-checked')) {
+                        arr2 = 1;
+                    }
+                });
+
+
+
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'channelname' : channelname,
+                        'payway':arr,
+                        'newuser':arr2,
+                        'id':id,
+                        'channelid':channelid,
+                        'orderid':orderid,
+//                        'minmoney':minmoney,
+//                        'maxmoney':maxmoney,
+                        'mchid' : mchid,
+                        'appid' : appid,
+                        'noticeurl' : noticeurl,
+                        'descript' : descript,
+                        'money' : money,
+                        'status' : status,
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

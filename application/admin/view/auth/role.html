@@ -1,0 +1,137 @@
+{include file="public/head"}
+  <style type="text/css">
+      input::-webkit-input-placeholder {
+         color: #aab2bd;
+         font-size: 14px;
+     }
+     input {
+        padding-left: 5px;
+     }
+     .lotus-input{
+        height: 30px;
+     }
+  </style>
+  <body>
+    <div class="x-body">
+       <!--     <div class="layui-form-item">
+              <div class="layui-input-inline">
+                <input type="text" name="title" required  lay-verify="required" placeholder="请输入标题" autocomplete="off" class="layui-input">
+              </div>
+                 <button style="margin-left: 10px;" class="layui-btn" onclick="addRole()"></i>添加角色</button>
+          <button onclick="javascript:location.reload()" class="layui-btn"><i class="icon iconfont">&#xe6aa;</i></button>
+          </div> -->
+        <div   class="layui-row layui-form-item lotus-nav">
+           <div class="layui-input-inline">
+              <input id="role_name" name="role_name"   class="layui-input lotus-input"  placeholder="{:lang('请输入角色名称进行添加')}">
+            </div>
+          <button style="margin-left: 10px;" class="layui-btn layui-btn-sm" onclick="addRole()"><i class="layui-icon layui-icon-add-1"></i></button>
+          <span class="x-right" >{:lang("共有数据")}:{$role->total()}&nbsp;{:lang("条")} <button onclick="javascript:location.reload()" class="layui-btn-default"><i class="icon iconfont">&#xe6aa;</i></button></span>
+        </div>
+
+    <table class="layui-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>{:lang("角色")}</th>
+            <th>{:lang("状态")}</th>
+            <th>{:lang("操作")}</th>
+        </thead>
+        <tbody>
+          {volist name='role' id='vo'}
+          <tr>
+            <td>{$vo.id}</td>
+            <td>{$vo.title}</td> 
+            <td>
+              {eq name='$vo["status"]' value="1"}
+                <span class="layui-badge layui-bg-green">{:lang("启用")}</span>
+              {else/}
+                <span class="layui-badge">{:lang("禁用")}</span>
+              {/eq}
+           </td> 
+            <td>
+                <button class="layui-btn layui-btn-xs" onclick="x_admin_show('{:lang("用户授权")}','updateAuthGroupRule.html?id={$vo.id}',450,700)">{:lang("授权")}</button>
+                <button class="layui-btn layui-btn-xs" onclick="x_admin_show('{:lang("角色编辑")}','editRole.html?id={$vo.id}',500,250)">{:lang("编辑")}</button>
+                <button onclick="delRole(this,{$vo.id})" class="layui-btn layui-btn-xs layui-btn-danger">{:lang("删除")}</button>
+             </td>
+          </tr>
+          {/volist}
+        </tbody>
+      </table>
+        <div class="page">
+          <div>
+            {$role->render()}
+          </div>
+        </div>
+    </div>
+</body>
+{include file="public/foot"}
+<script>
+function addRole(){
+  var role_name = $("#role_name").val();
+  if(role_name.length==0){
+      layer.msg('{:lang("角色名不能为空")}',{icon:2});
+      return false;
+  }
+  if(role_name.length<2){
+      layer.msg('{:lang("角色名过短")}',{icon:2});
+      return false;
+  }
+  $.ajax({
+     url: 'addRole',
+     type: 'post',
+     dataType: 'json',
+     data: {role_name: role_name},
+   })
+   .done(function(data) {
+     console.log(data);
+     if(data.code==1){
+        layer.msg(data.msg,{icon:1,offset:"t",time:500},function(){
+            location.reload();
+        });
+     }else{
+        layer.msg(data.msg,{icon:2});
+     }
+   })
+}
+function delRole(obj,id){
+   layer.confirm('{:lang("确认要删除吗？")}', {btn: ['{:lang("确定")}','{:lang("取消")}'],'title':"{:lang('信息')}"},function(index){
+    $.ajax({
+      url: 'delRole',
+      type: 'post',
+      dataType: 'json',
+      data: {id:id},
+  })
+  .done(function(data){
+      if(data.code==1){
+          layer.msg(data.msg,{icon:1,offset:"t",time:500},function(){
+              location.reload();
+          });
+       }else{
+          layer.msg(data.msg,{icon:2,offset:"t"});
+       }
+    })
+   })
+}
+//修改角色状态
+function doChangeRoleStatus(id,status){
+   console.log(this);
+   layer.confirm('{:lang("确认要更改状态吗？")}',function(index){
+    $.ajax({
+      url: 'doChangeRoleStatus',
+      type: 'post',
+      dataType: 'json',
+      data: {id:id,status:status},
+  })
+  .done(function(data){
+         if(data.code==1){
+          layer.msg(data.msg,{icon:1,offset:"t",time:500},function(){
+              location.reload();
+          });
+       }else{
+          layer.msg(data.msg,{icon:2,offset:"t"});
+       }
+    })
+  })
+}
+
+</script>

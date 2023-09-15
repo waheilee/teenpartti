@@ -1,0 +1,209 @@
+{extend name="common/base" /}
+
+{block name="title"}所有玩家{/block}
+{block name="css"}
+<style>
+    .layui-table-cell{
+        /*height:70px;*/
+        /*line-height: 70px;*/
+    }
+</style>
+{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <!--<button class="layui-btn layui-btn-sm layui-btn-radius"-->
+            <!--onclick="window.history.back()" style="margin-top: 10px;margin-left: 20px;">返回-->
+    <!--</button>-->
+    <div class="layui-card-header">
+        {:lang('伙牌详情')}
+    </div>
+    <div class="layui-card-body">
+        <form class="layui-form" lay-filter="component-form-group" style="display: none">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('玩家ID')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="roleid" name="roleid" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn search" myid="fdsafdf"  data-type="reload" id="search">搜索</a>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+        <div id="roomId" hidden>{$roomId}</div>
+        <div id="uniqueid" hidden>{$uniqueid}</div>
+        <div id="addtime" hidden>{$addtime}</div>
+        <div id="publicdata">
+            <table id="proxylist2" lay-filter="proxylist2">
+                <table class="layui-table">
+                    <colgroup>
+                        <col width="120">
+                    </colgroup>
+                    <thead>
+                    <tr>
+                        <th>{:lang('开奖结果')}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td ><span id="opendata"></span></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </table>
+        </div>
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script type="text/html" id="msg-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="detail">{:lang('详情')}</a>
+    <!--<a class="layui-btn layui-btn-xs " lay-event="ganme">游戏日志</a>-->
+    <!--<a class="layui-btn layui-btn-xs" lay-event="cold">金币日志</a>-->
+    <!--<a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">拉黑</a>-->
+</script>
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            renderData : function() {
+                var cols = [ //表头
+
+                    {field: 'player', title: '{:lang("玩家ID")}', width:120, templet: function (d) {
+                            return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.player + "</a>";
+                        }}
+
+//                    ,{field: 'card', title: '牌型', minWidth: 120}
+//                     , {
+//                         field: 'card', title: '开奖结果', minWidth: 100, templet: function (d) {
+//                             console.log(d.card);
+//                             var res = '';
+//                             if(d.card=='dragon' ){
+//                                 res='龙';
+//                             }else if(d.card=='tiger' ){
+//                                 res='虎';
+//                             }else if(d.card=='red' ){
+//                                 res='红';
+//                             }else if(d.card=='black' ){
+//                                 res='黑';
+//                             }else {
+//                                 res='和';
+//                             }
+//                             return res;
+//                         }
+//                     }
+//                    ,{field: 'roomname', title: '房间名', minWidth: 120}
+//                     , {
+//                         field: 'changetype', title: '{:lang("输赢情况")}', minWidth: 120, templet: function (d) {
+//                             var res = '';
+//                             if (d.changemoney > 0) {
+//                                 res = '{:lang("赢")}';
+//                             } else  {
+//                                 res = '{:lang("输")}';
+//                             }
+//                             return res;
+//                         }
+//                     }
+//                     , {field: 'totalbet', title: '{:lang("玩家下注")}', minWidth: 120}
+                    , {field: 'changemoney', title: '{:lang("本局战绩")}', width: 120}
+                    , {field: 'betdetail', title: '{:lang("下注详情")}', width: 700}
+
+                   // ,{fixed: 'right', title:'操作', align:'center', minWidth:80, toolbar: '#msg-bar'}
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+//                    , url: "{:url('player/all')}" //数据接口
+                    , url: "{:url('room/detailLonghudou')}" //数据接口
+                    , page: true //开启分页
+                    , limit:5
+                    ,where:{'roomid':$('#roomId').html(),'uniqueid':$('#uniqueid').html(),'addtime':$('#addtime').html()}
+                    , cols: [cols]
+                    , done: function (res) {$(".layui-table-main tr").each(function (index, val) {
+                            $($(".layui-table-fixed-l .layui-table-body tbody tr")[index]).height($(val).height());
+                            $($(".layui-table-fixed-r .layui-table-body tbody tr")[index]).height($(val).height());
+                        });
+                        $('#opendata').html(res.other);
+                    }
+                });
+
+            },
+
+
+            //搜索
+            search : function() {
+                var roleid = $.trim($('#uniqueid').val());
+                var roomid = $.trim($('#roomId').html());
+                var addtime =$.trim($('#addtime').html());
+//                var orderby = $.trim($('#orderby').val());
+//                var mobile = $.trim($('#mobile').val());
+//                var asc = $.trim($('#asc').val());
+//                var ipaddr = $.trim($('#ipaddr').val());
+
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'roleid':roleid,
+                        'roomid':roomid,
+                        'addtime':addtime
+                    }
+                });
+            },
+
+            //操作事件
+            extraEvent : function () {
+                //编辑
+                table.on('tool(proxylist)', function(obj) {
+                    var data = obj.data //获得当前行数据
+                        ,layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'detail') {
+                        var url = '/admin/player/playerDetail?roleid=' + data.player;
+                        x_admin_show('{:lang("玩家详情")}', url, $(window).width() * 0.95, $(window).height() * 0.95);
+                    }
+
+                });
+            },
+
+            init : function() {
+                main.renderData();
+
+                main.extraEvent();
+
+                $('#search').on('click', function(e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

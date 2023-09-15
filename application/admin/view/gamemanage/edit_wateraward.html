@@ -1,0 +1,99 @@
+{extend name="common/base" /}
+
+{block name="title"}支付通道修改{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('gamemanage/edit_wateraward')}" method="post" id="addProxy" >
+    <input class="layui-input" id="ID" lay-verify="required" name='ID' type="hidden" value="{$ID}">
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('最小流水金额')}：</label>
+        <div class="layui-input-block">
+            <input autocomplete="off" class="layui-input " id="MinRunning" lay-verify="required" name='MinRunning' placeholder="{:lang('最小流水金额')}" type="text" value="{$MinRunning}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('最大流水金额')}：</label>
+        <div class="layui-input-block">
+            <input autocomplete="off" class="layui-input" id="MaxRunning" lay-verify="required" name='MaxRunning' placeholder="{:lang('最大流水金额')}" type="text" value="{$MaxRunning}">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('返水比例')}(%)：</label>
+        <div class="layui-input-block">
+            <input autocomplete="off" class="layui-input" id="ReturnPercent" lay-verify="required" name='ReturnPercent' placeholder="{:lang('返水比例')}(%)" type="text"
+                   value="{$ReturnPercent}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >{:lang('修改')}</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" lay-submit="" lay-filter="cancel" id="cancel" >{:lang('取消')}</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var layer = layui.layer
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data: {
+                        'ReturnPercent': $.trim(data.field.ReturnPercent),
+                        'MinRunning': $.trim(data.field.MinRunning),
+                        'MaxRunning': $.trim(data.field.MaxRunning),
+                        'ID': $.trim(data.field.ID),
+
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

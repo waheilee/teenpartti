@@ -1,0 +1,109 @@
+<!--{extend name="common/base" /}-->
+
+<!--{block name="title"}{/block}-->
+<!--{block name="content"}-->
+{extend name="common/base" /}
+
+{block name="title"}新增支付通道{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form">
+            <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">游戏公告</label>
+                <div class="layui-input-block">
+                            <textarea name="desc"  placeholder="请输入内容" class="layui-textarea"
+                                      id="desc">{$notice}</textarea>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">语言：</label>
+                <div class="layui-input-inline" >
+                    <select name="languange" id="languange" lay-filter="languange" >
+                        <option value="1" selected="selected">中文</option>
+                        <option value="2">英文</option>
+                        <option value="3">泰文</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-filter="formDemo" id="save">保存</button>
+                    <!--<button type="reset" class="layui-btn layui-btn-primary">重置</button>-->
+                </div>
+            </div>
+        </form>
+        <div id="result" style="color: red;display: none">更新成功!</div>
+    </div>
+</div>
+{/block}
+
+
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+        $('#save').click(function (e) {
+            e.preventDefault();
+            var desc = $('#desc').val();
+            var classid = $.trim($('#languange option:selected').val());
+            $.ajax({
+                type: 'post',
+                url: "{:url('gamemanage/notice')}",
+                data: {
+                    'desc': desc,
+                    'classid':classid,
+                },
+                dataType: 'json',
+                success: function (res) {
+                    if (res.code === 0) {
+                        console.log(res);
+                        $('#desc').html(res.data);
+//                        $('#desc').val(res.data);
+
+                        $('#result').css('display', 'block');
+                    } else {
+                        layer.msg(res.msg, {icon: 2});
+                    }
+                }
+            });
+        });
+
+        form.on("select(languange)",function(data) {
+            $.ajax({
+                type: 'post',
+                url: "{:url('gamemanage/ajaxnotice')}",
+                data: {
+                    'classid': data.value
+                },
+                dataType: 'json',
+                success: function (res) {
+                    if (res.code === 0) {
+                        $('#desc').html(res.data);
+                    } else {
+                        layer.msg(res.msg, {icon: 2});
+                    }
+                }
+            });
+        });
+
+
+});
+</script>
+{/block}
+
+

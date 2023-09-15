@@ -1,0 +1,125 @@
+{extend name="common/base" /}
+
+{block name="title"}添加商品{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('charge/addgoods')}" method="post" id="addProxy" >
+    <input type="hidden" id="id" name="id" value="{$info.id}" />
+    <div class="layui-form-item">
+        <label class="layui-form-label">商品编号：</label>
+        <div class="layui-input-block">
+            <input type="text" id="commodityname" name='commodityname' lay-verify="required" placeholder="请输入商品编码"
+               value="{$info.commodityname}"  {if $info.id>0}readonly='readonly'{/if}  autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">商品类型：</label>
+        <div class="layui-input-block">
+            <select name="cdytype" id="cdytype">
+                <option value="-1" >请选择商品类型</option>
+                {foreach $goods as $k1 => $v1}
+                <option value="{$k1}" {if $info.cdytype==$k1}selected="selected"{/if}>{$v1}</option>
+                {/foreach}
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">价格：</label>
+        <div class="layui-input-block">
+            <input type="text" id="realmoney" name='realmoney' lay-verify="required|number"
+                   value="{$info.realmoney}" placeholder="请输入商品价格" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >新增</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" lay-submit="" lay-filter="cancel" id="cancel" >取消</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                var commodityname = $.trim(data.field.commodityname),
+                    realmoney = $.trim(data.field.realmoney),
+                    cdytype = $.trim(data.field.cdytype),
+                    id = $.trim(data.field.id);
+
+
+                if (commodityname == '' ||  cdytype == '') {
+                    layer.msg('参数有误', {icon:2});
+                    return false;
+                }
+
+                if(parseFloat(realmoney)==0){
+                    layer.msg('价格不能为0', {icon:2});
+                    return false;
+                }
+
+
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'id' : id,
+                        'commodityname' : commodityname,
+                        'realmoney' : realmoney,
+                        'cdytype' : cdytype
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

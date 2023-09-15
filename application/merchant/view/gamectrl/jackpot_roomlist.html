@@ -1,0 +1,66 @@
+{extend name="common/base" /}
+{block name="title"}{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-tab" lay-filter="test">
+
+    <div class="layui-tab-content">
+        <!--        彩金分配-->
+        <div class="layui-tab-item layui-show">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <table id="Table0" lay-filter="Table0"></table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+
+
+<script>
+	var tb0 = 'Table0', tb1 = 'Table1', tb2 = 'Table2', tb3 = 'Table3', tb4 = 'Table4';
+	layui.config({base: '__layui__/'}).extend({
+		index: 'lib/index'
+	}).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
+		url = "{:url('gamectrl/JackpotRoomlist')}"
+        ID='{$ID}';
+		var cols0 = [ //表头
+			{field: 'KindName', align: 'center', title: '房间名', width: 200},
+		];
+		Wheres = [
+			{Action: 'list', ID:ID },
+		]
+		Tabs = {
+			//彩金分配
+			tab0Evn: function () {
+				table.render({
+					elem: '#' + tb0,
+					where: Wheres[0],
+					url: url,
+					page: true, cols: [cols0], autoSort: false,
+				});
+			},
+		};
+		TabReload = {
+			tab0: function () {table.reload(tb0, {page: {curr: 1}});},
+
+		}
+		var main = {
+			renderData: function () { Tabs.tab0Evn(); },
+			init: function () {
+				this.renderData();
+			}
+		};
+		main.init();
+	});
+
+</script>
+{/block}

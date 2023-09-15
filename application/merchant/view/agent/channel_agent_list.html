@@ -1,0 +1,185 @@
+{extend name="common/base" /}
+{block name="title"}团队列表{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">代理ID</label>
+                    <div class="layui-input-inline"><input autocomplete="off" class="layui-input" id="RoleID" lay-verify="number" name="RoleID" type="text">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" data-type="reload" id="search">搜索</a>
+                        <!--                        <a class="layui-btn" id="output">导出记录</a>-->
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <a style="margin-bottom: 10px;" class="layui-btn" onclick="x_admin_show('新增代理','addchanneluser.html', 500,600)">
+            <i class="layui-icon layui-icon-add-circle"></i>
+        </a>
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+
+<script id="msg-bar" type="text/html">
+    <input type="button" class="layui-btn layui-btn-xs" lay-event="edit" value="修改密码">
+    <input type="button" class="layui-btn layui-btn-xs" lay-event="login" value="登录代理">
+</script>
+<script>
+
+    url = "{:url('agent/channelAgentList')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'RoleID', title: '代理ID', width: 120, align: 'center',templet:function (d) {
+                           return d.RoleID;
+                        }},
+                    {field: 'AccountName', title: '账号名', width: 100, align: 'center'},
+                    {field: 'NickName', title: '昵称', width: 100, align: 'center'},
+                    {field: 'InviteCode', title: '邀请码', width: 100, align: 'center'},
+                    {field: 'shareurl', title: '代理链接', width: 350, align: 'center'},
+                    {field: 'CorpType', title: '合作模式', width: 120, align: 'center',templet:function (d) {
+                            return '分成模式';
+                        }},
+                    {field: 'Descript', title: '备注', width: 180, align: 'center'},
+                    {field: 'AddTime', title: '添加时间', width: 180, align: 'center'},
+                    {
+                        field: 'Status', title: '状态', minwidth: 120, templet: function (d) {
+                            var myid = d.RoleID;
+                            if (d.Status == 0) {
+                                return '<a class="myopen" myid="' + myid + '" style="margin-left: 10px" lay-event="setstatus"><input type="checkbox" name="open" lay-filter="setstatus" lay-skin="switch" checked lay-text="开启|关闭"></a>';
+                            } else {
+                                return '<a class="myopen" myid="' + myid + '" style="margin-left: 10px" lay-event="setstatus"><input type="checkbox"  name="open" lay-filter="setstatus" lay-skin="switch"  lay-text="开启|关闭"></a>';
+                            }
+                        }
+                    },
+                    {field: 'loginurl', title: '', width: 180, align: 'center',hide:true},
+                    {fixed: 'right', align: "center", title: '操作', align: 'center', width: 200, toolbar: '#msg-bar'},
+                ];
+                table.render({
+                    elem: '#proxylist', url: url, where: {
+                    }, page: true, limit: 15, cols: [cols], sort: true, autoSort: false,
+                    done: function (res, curr, count) {
+                        tzTbale();
+                    }
+                });
+            },
+
+            //搜索
+            search: function () {
+                //执行重载
+                table.reload('proxylist', {
+                    page: {curr: 1},
+                    where: {
+                        RoleID: $.trim($('#RoleID').val())
+                    },
+                    done: function (res, curr, count) {
+
+                    }
+                });
+            },
+
+            //操作事件
+            extraEvent: function () {
+
+                //排序
+                table.on('sort(proxylist)', function (obj) {
+                    //执行重载
+                    table.reload('proxylist', {
+                        initSort: obj,
+                        page: {curr: 1},
+                        where: {
+                            RoleID: $.trim($('#RoleID').val()),
+                            orderytpe: obj.type,
+                            orderby: obj.field,
+                        }
+                    });
+
+                });
+                //编辑&&删除
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data, layEvent = obj.event;
+                    if (layEvent === 'edit') {
+                        url = "{:url('agent/editchanneluser')}" + "?roleid=" +data.RoleID;
+                        x_admin_show('修改密码',url, 500,600)
+                    }
+                    else if(layEvent=='login'){
+                        window.open(data.loginurl,'登录代理',true);
+                    }
+                });
+
+                form.on('switch(setstatus)', function (data) {
+                    var selected = data.elem.checked === true ? 0 : 1; //开关是否开启，true或者false
+                    var id = $(data.elem).parent().attr('myid');
+                    //设置开关
+                    $.ajax({
+                        url: "{:url('agent/setChannelStatus')}",
+                        type: 'post',
+                        data: {
+                            'roleid': id,
+                            'status': selected
+                        },
+                        success: function (res) {
+                            if (res.code === 0) {
+                                layer.msg(res.msg, {icon: 6});
+                            } else {
+                                layer.msg(res.msg, {icon: 5});
+                                if (selected == 0) {
+                                    //重新添加checked要用prop
+                                    $(data.elem).prop('checked', 'true');
+                                    $(data.elem).next().addClass('layui-form-onswitch');
+                                    $(data.elem).next().find('em').html('开启');
+                                } else {
+                                    $(data.elem).removeAttr('checked');
+                                    $(data.elem).next().removeClass('layui-form-onswitch');
+                                    $(data.elem).next().find('em').html('关闭');
+                                }
+                            }
+                        }
+                    });
+                });
+            },
+
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+
+    function formatNumber(val){
+        if(val>0){
+            return val;
+        }else{
+            return 0;
+        }
+    }
+</script>
+{/block}

@@ -1,0 +1,493 @@
+{extend name="common/base" /}
+{block name="title"}功能配置开关{/block}
+{block name="css"}{/block}
+{block name="content"}
+<script id="toolbar" type="text/html">
+    <div class="layui-btn-container">
+        <button class="layui-btn " lay-event="additem"><i class="layui-icon">&#xe608;</i>{:lang('添加')} </button>
+    </div>
+</script>
+<script id="msg-bar" type="text/html">
+    <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="edit">{:lang('编辑')}</a>
+    <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">{:lang('删除')}</a>
+</script>
+
+
+<script id="msg-bar1" type="text/html">
+    <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="edit">{:lang('编辑')}</a>
+</script>
+
+<div class="layui-card">
+
+    <div class="layui-tab layui-tab-brief" lay-filter="test">
+        <ul class="layui-tab-title">
+            <li class="layui-this">{:lang('开关配置项目')}</li>
+            <li class="">{:lang('未分类配置')}</li>
+            <li class="">{:lang('客户端配置')}</li>
+            <li class="">{:lang('版本开关')}</li>
+            <li class="">{:lang('国家开关')}</li>
+            <li class="">{:lang('强制升级配置')}</li>
+        </ul>
+        <div class="layui-tab-content" id="TabItem" style="background-color: #f2f2f2">
+
+
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script>
+	var tabitem = 5, html = ""; //页签数量
+	layui.use(['jquery'], function () {
+		var $ = layui.jquery;
+		for (var i = 0; i <= tabitem; i++) {
+			if (i == 0) html += "<div class='layui-tab-item layui-show'><table id='Table" + i + "'lay-filter='Table" + i + "'></table> </div>";
+			else
+				html += "<div class='layui-tab-item'><table id='Table" + i + "'lay-filter='Table" + i + "'></table> </div>";
+		}
+		$().ready(function () {
+			$("#TabItem").html(html);
+			// $("#Table1").click();
+		});
+	});
+</script>
+<script>
+
+	var cols = [
+		{field: 'CfgType', align: "center", title: 'CfgType', sort: true, width: 200},
+		{field: 'CfgValue', title: 'CfgValue', sort: true, width: 200},
+		{field: 'Description', title: "{:lang('功能描述')}", sort: true, minWidth: 300,align:'left'},
+        {field: 'Rate', title: "{:lang('比例')}",  minWidth: 200,hide:true},
+		{
+			field: 'Switch', width: 110, title: "{:lang('禁/启用')}", align: "center", templet: function (d) {
+				if (d.Switch == 1) {
+					if (d.CfgValue == 1)
+						return "<input type='checkbox' ctrlID = '" + d.CfgType + "' lay-filter='Disable' lay-skin='switch' lay-text='{:lang('开')}|{:lang('关')}' checked>"
+					else
+						return "<input type='checkbox' ctrlID = '" + d.CfgType + "'  lay-filter='Disable' lay-skin='switch' lay-text='{:lang('开')}|{:lang('关')}'>"
+
+				} else
+					return "<a class='layui-btn layui-btn-sm layui-btn-normal' lay-event='edit'>{:lang('编辑')}</a>"
+
+			}
+		},
+		// {fixed: 'right', title: '操作', align: 'center', minWidth: 100, toolbar: '#msg-bar'}
+	];
+	//Version	DeviceType	Status	RechargeSwitch	DrawBackSwitch	CustomerServiceSwitch
+	var vserion = [
+		{field: 'Version', align: "center", title: 'Version', sort: true, minWidth: 100},
+		{
+			field: 'DeviceType', title: 'DeviceType', sort: true, minWidth: 200, templet: function (d) {
+				switch (Number(d.DeviceType)) {
+					case  0:
+						return '{:lang("所有设备")}';
+					case  1:
+						return 'Android';
+					case  2:
+						return 'IOS';
+				}
+			}
+		},
+		{
+			field: 'Status', align: 'center', title: "{:lang('配置开关')}", minWidth: 100, templet: function (d) {
+				index = 3;
+				field = d[Object.keys(d)[index]];
+				if (field == 1) return "<input type='checkbox' ctrlField='" + this.field + "' ctrlID = '" + d.Version + "' lay-filter='Version' lay-skin='switch' lay-text='{:lang('开')}|{:lang('关')}' checked>"
+				return "<input type='checkbox' ctrlField='" + this.field + "' ctrlID = '" + d.Version + "'  lay-filter='Version' lay-skin='switch' lay-text='{:lang('开')}|{:lang('关')}'>"
+			}
+		},
+
+		{fixed: 'right', title: "{:lang('操作')}", align: 'center', minWidth: 250, toolbar: '#msg-bar'}
+
+	];
+	var country = [
+		{field: 'SortID', align: "center", title: "{:lang('排序ID')}", sort: true, minWidth: 120},
+		{field: 'CountryCode', align: "center", title: "{:lang('国家代码')}", sort: true, minWidth: 120},
+		{
+			field: 'Status', align: 'center', title: "{:lang('配置开关')}", minWidth: 100, templet: function (d) {
+				index = 2;
+				field = d.Status;//d[Object.keys(d)[index]];
+				if (field == 1) return "<input type='checkbox' ctrlField='" + this.field + "' ctrlID = '" + d.CountryCode + "' lay-filter='country' lay-skin='switch' lay-text='{:lang('开')}|{:lang('关')}' checked>"
+				return "<input type='checkbox' ctrlField='" + this.field + "' ctrlID = '" + d.CountryCode + "'  lay-filter='country' lay-skin='switch' lay-text='{:lang('开')}|{:lang('关')}'>"
+			}
+		},
+        {
+            field: 'BankCardSwitch', align: 'center', title: "{:lang('银行代付开关')}", minWidth: 150, templet: function (d) {
+                index = 2;
+                field = d.BankCardSwitch;//d[Object.keys(d)[index]];
+                if (field == 1) return "<input type='checkbox' ctrlField='" + this.field + "' ctrlID = '" + d.CountryCode + "' lay-filter='country' lay-skin='switch' lay-text='{:lang('开')}|{:lang('关')}' checked>"
+                return "<input type='checkbox' ctrlField='" + this.field + "' ctrlID = '" + d.CountryCode + "'  lay-filter='country' lay-skin='switch' lay-text='{:lang('开')}|{:lang('关')}'>"
+            }
+        },
+        {
+            field: 'UPISwitch', align: 'center', title: "{:lang('UPI代付开关')}", minWidth: 150, templet: function (d) {
+                index = 2;
+                field = d.UPISwitch;//d[Object.keys(d)[index]];
+                if (field == 1) return "<input type='checkbox' ctrlField='" + this.field + "' ctrlID = '" + d.CountryCode + "' lay-filter='country' lay-skin='switch' lay-text='{:lang('开')}|{:lang('关')}' checked>"
+                return "<input type='checkbox' ctrlField='" + this.field + "' ctrlID = '" + d.CountryCode + "'  lay-filter='country' lay-skin='switch' lay-text='{:lang('开')}|{:lang('关')}'>"
+            }
+        },
+		{field: 'DrawBackRate', align: "center", title: "{:lang('提现手续费')}", sort: true, minWidth: 120},
+		{field: 'MoneyExchangeRate', align: "center", title: "{:lang('实际金额和金币的换算比例')}", sort: true, minWidth: 220},
+		{field: 'MinDrawBackMoney', align: "center", title: "{:lang('最小提现金币')}", sort: true, minWidth: 150, templet: function (d) {return formatDecimal(d.MinDrawBackMoney / d.MoneyExchangeRate, 0)}},
+		{field: 'MaxDrawBackMoney', align: "center", title: "{:lang('最大提现金币')}", sort: true, minWidth: 150, templet: function (d) {return formatDecimal(d.MaxDrawBackMoney / d.MoneyExchangeRate, 0)}},
+		{fixed: 'right', title: "{:lang('操作')}", align: 'center', width: 250, toolbar: '#msg-bar'}
+	];
+
+	var upgradeVersion =[
+        {field: 'Version', align: "center", title: '{:lang("版本号")}', sort: false, width: 200},
+        {field: 'DownUrl', title: '{:lang("包下载地址")}', sort: false, width: 800},
+        {fixed: 'right', title: "{:lang('操作')}", align: 'center', width: 250, toolbar: '#msg-bar1'}
+    ];
+
+	layui.config({
+		base: '__layui__/' //静态资源所在路径
+	}).extend({
+		index: 'lib/index' //主入口模块
+	}).use(['table', 'layer', 'element', 'laydate', 'form', 'jquery', 'util'], function () {
+		// ID=table0
+		//每个页签的独立变量 增加页签的时候 手动增加
+		var tb0 = 'Table0', tb1 = 'Table1', tb2 = 'Table2', tb3 = 'Table3', tb4 = 'Table4',tb5 = 'Table5';
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, util = layui.util,
+			table = layui.table, $ = layui.$, form = layui.form;
+		//增加页签  闭包增加 TabxxxxEvn
+		//闭包   表格 排序 编辑
+		Wheres = [
+			{Action: 'list', Switch: 1},
+			{Action: 'list', Type: 0, Switch: 0},
+			{Action: 'list', Type: 1, Switch: 0},
+			{Action: 'version',},
+			{Action: 'country',},
+		]
+		Tabs = {
+			tab0Evn: function () { table.render({elem: '#' + tb0, where: Wheres[0], url: "{:url('game_cfg/functionSwitch')}", page: true, cols: [cols], autoSort: false,done: function (res) {
+                        tzTbale();
+                    }}); },
+			tab1Evn: function () { table.render({elem: '#' + tb1, where: Wheres[1], url: "{:url('game_cfg/functionSwitch')}", page: true, cols: [cols], autoSort: false,done: function (res) {
+                        tzTbale();
+                    }}); },
+			tab2Evn: function () { table.render({elem: '#' + tb2, where: Wheres[2], url: "{:url('game_cfg/functionSwitch')}", page: true, cols: [cols], autoSort: false,done: function (res) {
+                        tzTbale();
+                    }}); },
+			tab3Evn: function () { table.render({elem: '#' + tb3, where: Wheres[3], url: "{:url('game_cfg/functionSwitch')}", toolbar: '#toolbar', page: true, cols: [vserion], autoSort: false,done: function (res) {
+                        tzTbale();
+                    }}); },
+			tab4Evn: function () {
+				table.render({
+					elem: '#' + tb4,
+					where: Wheres[4],
+					url: "{:url('game_cfg/functionSwitch')}",
+					toolbar: '#toolbar',
+					page: true,
+					cols: [country]
+					, autoSort: false,
+					done: function (res) {
+                        tzTbale();
+                    }
+				});
+			},
+            tab5Evn: function () {
+                table.render({
+                    elem: '#' + tb5,
+                    where: Wheres[5],
+                    url: "{:url('game_cfg/upgradeVersion')}",
+                    page: true,
+                    cols: [upgradeVersion]
+                    , autoSort: false,
+                    done: function (res) {
+                        tzTbale();
+                    }
+                });
+            },
+		};
+		TabReload = {
+			tab0: function () {table.reload(tb0, {page: {curr: 1}});},
+			tab1: function () {table.reload(tb1, {page: {curr: 1}});},
+			tab2: function () {table.reload(tb2, {page: {curr: 1}});},
+			tab3: function () {table.reload(tb3, {page: {curr: 1}});},
+			tab4: function () {table.reload(tb4, {page: {curr: 1}});},
+			tab5: function () {table.reload(tb5, {page: {curr: 1}});}
+		}
+		TBinit = {
+			searchEvn: function () {
+				var roleid = $.trim($('#roleid').val());
+				table.reload('proxylist', {page: {curr: 1}, where: {'roleid': roleid,}});
+			},
+			sortEvn: function () {
+				table.on('sort(' + tb0 + ')', function (obj) { table.reload(tb4, {initSort: obj, page: {curr: 1}, where: {orderfield: obj.field /*排序字段*/, ordertype: obj.type /*排序方式*/}}); });
+				table.on('sort(' + tb1 + ')', function (obj) { table.reload(tb1, {initSort: obj, page: {curr: 1}, where: {orderfield: obj.field /*排序字段*/, ordertype: obj.type /*排序方式*/}}); });
+				table.on('sort(' + tb2 + ')', function (obj) { table.reload(tb2, {initSort: obj, page: {curr: 1}, where: {orderfield: obj.field /*排序字段*/, ordertype: obj.type /*排序方式*/}}); });
+				table.on('sort(' + tb3 + ')', function (obj) { table.reload(tb3, {initSort: obj, page: {curr: 1}, where: {orderfield: obj.field /*排序字段*/, ordertype: obj.type /*排序方式*/}}); });
+			},
+			editEvn: function () {
+				table.on('tool(' + tb0 + ')', function (obj) {
+					if (obj.event === 'edit') {
+						var url = "{:url('game_cfg/FunctionItemEdit')}?ID=" + obj.data.CfgType + "&Value=" + obj.data.CfgValue +'&Rate='+ obj.data.Rate + "&Msg=" + obj.data.Description;
+						x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.4, $(window).height() * 0.35);
+					}
+				});
+				table.on('tool(' + tb1 + ')', function (obj) {
+					if (obj.event === 'edit') {
+						var url = "{:url('game_cfg/FunctionItemEdit')}?ID=" + obj.data.CfgType + "&Value=" + obj.data.CfgValue+'&Rate='+ obj.data.Rate + "&Msg=" + obj.data.Description;
+						x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.4, $(window).height() * 0.35);
+					}
+				});
+				table.on('tool(' + tb2 + ')', function (obj) {
+					if (obj.event === 'edit') {
+						var url = "{:url('game_cfg/FunctionItemEdit')}?ID=" + obj.data.CfgType + "&Value=" + obj.data.CfgValue +'&Rate='+ obj.data.Rate + "&Msg=" + obj.data.Description;
+						x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.4, $(window).height() * 0.35);
+					}
+				});
+				//版本开关 edit
+				table.on('tool(' + tb3 + ')', function (obj) {
+					if (obj.event == 'delete') {
+						layer.confirm("{:lang('确认删除这条记录？')}", {btn: ['{:lang("确认")}', '{:lang("取消")}']}, function () {
+							$.ajax({
+								type: 'post',
+								url: "{:url('GameCfg/VserionSwitch')}",
+								data: {
+									Action: 'del',
+									ID: obj.data.Version
+								},
+								dataType: 'json',
+								success: function (res) {
+									if (res.code === 1) {
+										layer.msg(res.msg, {icon: 6, time: 1000}, function () {
+											window.location.reload();
+										});
+									} else {
+										layer.msg(res.msg, {icon: 5});
+									}
+								}
+							});
+						});
+					}
+					if (obj.event === 'edit') {
+						// console.info(obj.data);
+						layer.open({
+							title: '{:lang("设备类型修改")}'
+							, btn: ['{:lang("确定")}']
+							, content:
+								'<div class="layui-form-item"><label class="layui-form-label">{:lang("设备类型")}</label><div class="layui-input-block">' +
+								'<select class="layui-input" name="range" id="range" lay-filter="range">' +
+								'<option value="0">{:lang("所有")}</option>' +
+								'<option value="1">Android</option>' +
+								'<option value="2">IOS</option>' +
+								'</select></div></div>',
+							yes: function (index, layero) {
+								$.ajax({
+									type: 'post',
+									url: "{:url('game_cfg/VserionSwitch')}",
+									data: {Action: 'edit', DeviceType: obj.data.Version, value: $('#range').val()},
+									success: function (res) {
+										if (res.code === 1) {
+											layer.msg(res.msg, {icon: 6, time: 1000}, function () {
+												window.location.reload();
+											});
+										} else {
+											layer.msg(res.msg, {icon: 5, time: 1000});
+										}
+									}
+								})
+								// alert($('#range').val());
+							}
+						});
+					}
+				});
+				//国家开关 edit
+				table.on('tool(' + tb4 + ')', function (obj) {
+					if (obj.event == 'delete') {
+						layer.confirm("{:lang('确认删除这条记录？')}", {btn: ['{:lang("确认")}', '{:lang("取消")}']}, function (index) {
+							$.ajax({
+								type: 'post',
+								url: "{:url('GameCfg/CountrySwitch')}",
+								data: {
+									Action: 'del',
+									ID: obj.data.CountryCode
+								},
+								dataType: 'json',
+								success: function (res) {
+									if (res.code === 1) {
+										layer.msg(res.msg, {icon: 6, time: 1000}, function () {
+											layer.close(index)
+											TabReload.tab4();
+										});
+									} else {
+										layer.msg(res.msg, {icon: 5});
+									}
+								}
+							});
+						});
+					}
+					if (obj.event === 'edit') {
+						data = obj.data;
+						data.MaxDrawBackMoney /= data.MoneyExchangeRate;
+						data.MinDrawBackMoney /= data.MoneyExchangeRate;
+						url = "{:url('game_cfg/CountrySwitch')}?Action=editView&ID=" +data.CountryCode+ "&" + getParamsByJson(data);
+						// console.info(url);
+						edit(url, 500, 500, TabReload.tab4);
+					}
+				});
+				//顶部工具
+				//版本号开关 add
+				table.on('toolbar(' + tb3 + ')', function (obj) {
+					if (obj.event === 'additem') {
+						var url = "{:url('GameCfg/VserionSwitch')}?Action=add";
+						x_admin_show('version', url, $(window).width() * 0.4, $(window).height() * 0.35);
+					}
+				});
+				//国家开关 add
+				table.on('toolbar(' + tb4 + ')', function (obj) {
+					if (obj.event == "additem") {
+						layer.prompt({
+							formType: 0,
+							value: '',
+							title: '{:lang("请输入新的国家代码")}',
+							area: ['300px', '450px'] //自定义文本域宽高
+						}, function (value, index, elem) {
+							value = value.trim();
+							if (value.length > 1) {
+								$.ajax({
+									url: "{:url('GameCfg/CountrySwitch')}?Action=add",
+									data: {name: value},
+									success: function (res) {
+										if (res.code === 1) {
+											layer.msg(res.msg, {icon: 6, time: 1000}, function () {
+												layer.close(index)
+												TabReload.tab4();
+											});
+										} else {
+											layer.msg(res.msg, {icon: 5, time: 1000});
+										}
+									}
+								});
+							} else
+								layer.msg('{:lang("请输入国际代码")}', {icon: 5});
+
+						});
+					}
+				});
+
+                //升级配置开关
+                table.on('tool(' + tb5 + ')', function (obj) {
+                    if (obj.event === 'edit') {
+                        data = obj.data;
+                        url = "{:url('game_cfg/upgradeConfigEdit')}?Version=" +data.Version+ "&DownUrl=" +encodeURI(data.DownUrl);
+                        // console.info(url);
+                        x_admin_show('升级配置修改',url, 500, 400);
+                    }
+                });
+
+			},
+			//页签 切换事件
+			TabEvn: function () {
+				element.on('tab(test)', function (data) {
+					switch (data.index) {
+						case 0:
+							return Tabs.tab0Evn();
+						case 1:
+							return Tabs.tab1Evn();
+						case 2:
+							return Tabs.tab2Evn();
+						case 3:
+							return Tabs.tab3Evn();
+						case 4:
+							return Tabs.tab4Evn();
+                        case 5:
+                            return Tabs.tab5Evn();
+					}
+				});
+			},
+			SwitchEvn: function () {
+				form.on('switch(Disable)', function (data) {
+					var ID = data.elem.attributes['ctrlID'].nodeValue;
+					var swtype = data.elem.checked;
+					var type = 0;
+					if (swtype) type = 1;
+					else type = 0;
+					// layer.msg(data);
+					//设置开关
+					$.ajax({
+						url: "{:url('FunctionItemEdit')}",
+						type: 'post',
+						data: {'ID': ID, type: type},
+						success: function (res) {
+							if (res.code === 0) {
+								layer.msg("{:lang('修改成功')}", {icon: 6});
+							} else {
+								layer.msg("{:lang('修改失败')}", {icon: 5});
+							}
+							form.render();
+						}
+					})
+
+				});
+				form.on('switch(Version)', function (data) {
+					console.info(data);
+					var ID = data.elem.attributes['ctrlID'].nodeValue;
+					var field = data.elem.attributes['ctrlField'].nodeValue;
+					var swtype = data.elem.checked;
+					var type = 0;
+					if (swtype) type = 1;
+					else type = 0;
+					// layer.msg(data);
+					//设置开关
+					$.ajax({
+						url: "{:url('VserionSwitch')}",
+						type: 'post',
+						data: {Action: 'update', ID: ID, field: field, type: type},
+						success: function (res) {
+							if (res.code === 1) {
+								layer.msg("{:lang('修改成功')}", {icon: 6});
+							} else {
+								layer.msg("{:lang('修改失败')}", {icon: 5});
+							}
+							form.render();
+						}
+					})
+
+				});
+				form.on('switch(country)', function (data) {
+					console.info(data);
+					var ID = data.elem.attributes['ctrlID'].nodeValue;
+					var field = data.elem.attributes['ctrlField'].nodeValue;
+					var swtype = data.elem.checked;
+					var type = 0;
+					if (swtype) type = 1;
+					else type = 0;
+					// layer.msg(data);
+					//设置开关
+					$.ajax({
+						url: "{:url('CountrySwitch')}",
+						type: 'post',
+						data: {Action: 'update', ID: ID, field: field, type: type},
+						success: function (res) {
+							if (res.code === 1) layer.msg("{:lang('修改成功')}", {icon: 6});
+							else layer.msg("{:lang('修改失败')}", {icon: 5});
+							form.render();
+						}
+					})
+
+				});
+
+			},
+			init: function () {
+				Tabs.tab0Evn();
+				this.sortEvn();
+				this.editEvn();
+				this.TabEvn();
+				this.SwitchEvn();
+				$('#search').on('click', function (e) {
+					e.preventDefault();
+					this.searchEvn();
+				});
+			}
+		}
+		TBinit.init();
+	});
+
+	function edit(url, width, high, callback) {
+		openBarWinParent('{:lang("编辑配置")}', width, high, url, callback, ['{:lang("保存")}', '{:lang("取消")}']);
+	}
+</script>
+{/block}

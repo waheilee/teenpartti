@@ -1,0 +1,48 @@
+{extend name="common/base" /}
+
+{block name="title"}向玩家转账{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+    <div class="layui-row layui-col-space30">
+        <div class="layui-col-md12 layui-col-lg12 layui-col-xs12 layui-col-sm12">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <div class="layui-carousel layadmin-carousel layadmin-dataview" id="test1" data-anim="fade" lay-filter="LAY-index-dataview">
+                        <div carousel-item id="hall">
+                            <div><i class="layui-icon layui-icon-loading1 layadmin-loading"></i></div>
+                            <div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-col-md12 layui-col-lg12 layui-col-xs12 layui-col-sm12">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <div class="layui-carousel layadmin-carousel layadmin-dataview" id="test2" data-anim="fade" lay-filter="LAY-index-dataview">
+                        <div carousel-item id="game">
+                            <div><i class="layui-icon layui-icon-loading1 layadmin-loading"></i></div>
+                            <div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{/block}
+{block name="script"}
+<script type="text/javascript">
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'online', 'carousel'], function() {
+        //隐藏轮播
+        $('.layui-carousel-ind').hide();
+    });
+</script>
+{/block}
+

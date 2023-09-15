@@ -1,0 +1,174 @@
+{extend name="common/base" /}
+
+{block name="title"}充值汇总{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<div class="layui-card">
+    <div class="layui-card-body">
+        <div>
+            <table id="moneylist" lay-filter="moneylist" class="layui-table">
+                <thead>
+                <tr>
+                    <th>玩家银行</th>
+                    <th>玩家游戏银行</th>
+                    <th>金币总额</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td id="wjyh">0</td>
+                    <td id="wjyxyh">0</td>
+                    <td id="jbze">0</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <a style="margin-bottom: 10px;" class="layui-btn" onclick="x_admin_show('系统扩容','addcapacity.html', '', 300)">
+            系统扩容
+        </a>
+    </div>
+    <div class="layui-card-body">
+        <div>
+            <table id="kuorong" lay-filter="kuorong" class="layui-table">
+                <thead>
+                <tr>
+                    <th>扩容总计</th>
+                    <th>当前金币</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td id="krzz">0</td>
+                    <td id="dqjb">0</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <a style="margin-bottom: 10px;" class="layui-btn" onclick="x_admin_show('新增银行账户','addbank.html', '', 400)">
+            添加银行账户
+        </a>
+        <a style="margin-bottom: 10px;" class="layui-btn" onclick="x_admin_show('转账','transfer.html', '', 500)">
+            转账
+        </a>
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        房间彩蛋金额
+    </div>
+    <div class="layui-card-body">
+        <div id="cddata">
+            <table id="cdlist" lay-filter="cdlist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script type="text/html" id="msg-bar">
+    {{#  if(d.AccNo!=''){ }}
+    <a class="layui-btn layui-btn-xs " lay-event="edit">修改</a>
+    {{#  } }}
+    <!--<a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">拉黑</a>-->
+</script>
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'bankname', title: '账户类型', minWidth: 120}
+                    , {field: 'AccNo', title: '账户号', minWidth: 120}
+                    , {field: 'money', title: '金币余额', minWidth: 120}
+                    , {fixed: 'right', title: '操作', align: 'center', minWidth: 100, toolbar: '#msg-bar'}
+                ];
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('bank/index')}" //数据接口
+                    , page: false //开启分页
+                    , cols: [cols]
+                    , done: function (data) {
+                        $('#wjyh').html(data.other.totalmoney.TotalBankMoney);
+                        $('#wjyxyh').html(data.other.totalmoney.TotalGameMoney);
+                        $('#jbze').html(data.other.totalmoney.TotalMoney);
+                        $('#krzz').html(data.other.capacity);
+
+                        var cols2 = [ //表头
+                            {field: 'roomname', title: '房间名称', minWidth: 180}
+                            , {field: 'luckyeggmoney', title: '金额', minWidth: 120}
+                        ];
+                        table.render({
+                            elem: '#cdlist'
+                            , url: "{:url('bank/luckyegg')}" //数据接口
+                            , page: false //开启分页
+                            , cols: [cols2]
+                            , done: function(dt2) {
+                                var bankmoney = data.other.totalmoney.TotalMoney;
+                                var capacity = data.other.capacity;
+                                var eggmoney  = dt2.data[dt2.data.length-1].luckyeggmoney;
+                                var total = parseFloat(bankmoney) + parseFloat(capacity) + parseFloat(eggmoney);
+                                console.log(bankmoney,capacity,eggmoney, bankmoney+capacity+eggmoney);
+                                $('#dqjb').html(total);
+                                tzTbale();
+                            }
+                        });
+                        tzTbale();
+                    }
+                });
+
+
+            },
+
+            //操作事件
+            extraEvent : function () {
+                //编辑
+                table.on('tool(proxylist)', function(obj) {
+                    var data = obj.data //获得当前行数据
+                        ,layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'edit') {
+                        x_admin_show('编辑', 'editbank.html?accno='+data.AccNo+'&acctype='+data.AccType, '', 400);
+                    }
+                });
+            },
+
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

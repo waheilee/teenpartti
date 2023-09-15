@@ -1,0 +1,140 @@
+{extend name="common/base" /}
+
+{block name="title"}线下转账修改{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('payment/editOffline')}" method="post" id="addProxy" >
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">ID：</label>
+        <div class="layui-input-block">
+            <input type="text" id="roleid" name='classid' value="{$classid}" readonly lay-verify="required|number"  autocomplete="off" class="layui-input layui-disabled">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">渠道ID：</label>
+        <div class="layui-input-block">
+            <select name="bankname" id="bankname">
+                <option value="">请选择渠道</option>
+                <!-- foreach循环 -->
+
+                {foreach name="bankname" item="vo" key="k" }
+                <option value="{$k}" {if $clientidentify==$vo } selected {/if}>{$vo}</option>
+                {/foreach}
+                <!-- for循环 -->
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">转账类型：</label>
+        <div class="layui-input-block">
+            <input type="text" id="classname" name="classname" value="{$classname}" lay-verify="required"  autocomplete="off" readonly class="layui-input layui-disabled">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">银行类型：</label>
+        <div class="layui-input-block">
+            <input type="text" id="bank" name="bank" value="{$bank}" lay-verify="required" placeholder="银行类型信息" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">卡号/账号：</label>
+        <div class="layui-input-block">
+            <input type="text" id="cardno" name="cardno" value="{$cardno}" lay-verify="required" placeholder="卡号/账号信息" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">收款人：</label>
+        <div class="layui-input-block">
+            <input type="text" id="cardname" name="cardname" value="{$cardname}" lay-verify="required" placeholder="收款人姓名" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">备注：</label>
+        <div class="layui-input-block">
+            <textarea class="layui-textarea" id="descript" name="descript" placeholder="备注" autocomplete="off">{$descript}</textarea>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >修改</a>
+            <a class="layui-btn layui-btn-primary layui-btn-radius"  id="cancel" >取消</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var layer = layui.layer
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                var roleid = $.trim($('#bankname option:selected').text());
+                var classid = $.trim(data.field.classid)
+                    ,classname = $.trim(data.field.classname)
+                    ,bank = $.trim(data.field.bank)
+                    ,cardno = $.trim(data.field.cardno)
+                    ,cardname = $.trim(data.field.cardname)
+                    ,descript = $.trim(data.field.descript);
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'classid' : classid,
+                        'classname' : classname,
+                        'bank' : bank,
+                        'cardno' : cardno,
+                        'cardname' : cardname,
+                        'descript' : descript,
+                        'clientidentify':roleid,
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

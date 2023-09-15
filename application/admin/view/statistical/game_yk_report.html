@@ -1,0 +1,263 @@
+{extend name="common/base" /}
+
+{block name="title"}玩家盈亏预警报表{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div id="showkindidname2" style="display: none;">
+                    <label class="layui-form-label">{:lang('游戏类型')}：</label>
+
+                </div>
+
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('玩家ID')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="roleid" name="roleid" lay-verify="number" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('日期')}</label>
+                    <div class="layui-input-inline" style="width: 150px;">
+                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('是否充值')}</label>
+                    <div class="layui-input-inline">
+                        <select name="ispay" id="ispay">
+                            <option value="">{:lang('所有')}</option>
+                            <option value="1" selected="selected">{:lang('充值玩家')}</option>
+                            <option value="2">{:lang('未充值玩家')}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('是否在线')}</label>
+                    <div class="layui-input-inline">
+                        <select name="isonline" id="isonline">
+                            <option value="" >{:lang('所有')}</option>
+                            <option value="1" selected="selected">{:lang('在线')}</option>
+                            <option value="2">{:lang('离线')}</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('是否控制')}</label>
+                    <div class="layui-input-inline">
+                        <select name="ctr_status" id="ctr_status">
+                            <option value="">{:lang('所有')}</option>
+                            <option value="1">{:lang('控制中')}</option>
+                            <option value="2" selected="selected">{:lang('未控制')}</option>
+                        </select>
+                    </div>
+                </div>
+
+
+                <div class="layui-inline">
+                    <!-- <div class="layui-input-inline"> -->
+                        <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                    <!-- </div> -->
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script type="text/html" id="msg-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="laohuji">{:lang('控制')}</a>
+</script>
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+            function getWhere(){
+                var roleid = $.trim($('#roleid').val());
+                var date = $.trim($('#LAY-component-form-group-date').val());
+                var ispay = $.trim($('#ispay').val());
+                var isonline = $.trim($('#isonline').val());
+                var ctr_status = $('#ctr_status').val();
+                return {
+                        'roleid': roleid,
+                        'date': date,
+                        'ispay':ispay,
+                        'isonline': isonline,
+                        'ctr_status': ctr_status,
+                };
+            }
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'accountid', title: '玩家ID',align: 'center', minWidth: 100, templet: function (d) {
+                            return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.accountid + "</a>";
+                        }
+                    },
+                    {field: 'totaldeposit', title: "{:lang('总充值')}",align: 'center', minWidth: 120},
+                    {field: 'totalrollout', title: "{:lang('总提现')}",align: 'center', minWidth: 120},
+                    {field: 'lastdeposit', title: "{:lang('最后一笔充值')}", align: 'center',minWidth: 150, sort: true},
+                    {field: 'balance', title: "{:lang('当前余额')}", align: 'center',minWidth: 200, sort: true},
+                    {field: 'mailcoin', title: "{:lang('邮件补偿')}",align: 'center', minWidth: 150},
+                    {field: 'ctrlratio', title: "{:lang('个人胜率')}",align: 'center', minWidth: 150},
+                    {field: 'online', title: "{:lang('在线状态')}",align: 'center', minWidth: 120},
+                    {field: 'gamertp', title: "{:lang('当天RTP')}",align: 'center', minWidth: 150},
+                    {fixed: 'right', title: "{:lang('操作')}", align: 'center', minWidth: 150, toolbar: '#msg-bar'}
+                ];
+
+                table.render({
+                    elem: '#proxylist',
+                    url: "{:url('statistical/gameYkReport')}", //数据接口
+                    where: getWhere(), 
+                    page: true, //开启分页
+                    limit: 15,
+                    cols: [cols],
+                    sort: true,
+                    autoSort: false,
+                    done: function (res, curr, count) {
+                        tzTbale()
+                    }
+                });
+            },
+
+            //搜索
+            search: function () {
+                //执行重载
+                table.reload('proxylist', {
+                    page: {curr: 1},
+                    where: {
+                        'roleid': $.trim($('#roleid').val()),
+                        'date': $.trim($('#LAY-component-form-group-date').val()),
+                        'ispay':$.trim($('#ispay').val()),
+                        'isonline':$.trim($('#isonline').val()),
+                        'ctr_status': $('#ctr_status').val(),
+                    }
+                });
+            },
+
+            //操作事件
+            extraEvent: function () {
+                    //编辑
+                    table.on('tool(proxylist)', function(obj) {
+                        var data = obj.data //获得当前行数据
+                            ,layEvent = obj.event; //获得 lay-event 对应的值
+                        tr = obj.tr; //获得当前行 tr 的DOM对象
+                        if (layEvent === 'edit') {
+                            x_admin_show("{:lang('设置胜率')}", '{:url("room/setPlayerRate")}?roleid='+data.accountid+'&readonly=1&ratio='+data.ctrlratio+'&time='+data.cotroltime, '', 330);
+                        }
+                        else if(layEvent==='laohuji'){
+                            x_admin_show("{:lang('设置老虎机胜率')}", "{:url('room/setTigerPlayerRate')}"+'?roleid='+data.accountid+'&readonly=1&ratio='+data.ctrlratio, '', 300);
+                        }
+                        else if(layEvent==='reset'){
+                            $.ajax({
+                                type:'post',
+                                url:'{:url("gamectrl/resetPersonRate")}',
+                                data:{
+                                    'roleid' : data.accountid
+                                },
+                                dataType:'json',
+                                success: function(res) {
+                                    if (res.code === 0) {
+                                        layer.msg("{:lang('控制已停止')}",{icon:1,time:1000}, function () {
+                                            x_admin_close();
+                                            window.location.reload();
+                                        });
+                                    } else {
+                                        layer.msg(res.msg, {icon:2});
+                                    }
+                                }
+                            });
+                        }
+                        else if(layEvent==='delete'){
+                            $.ajax({
+                                type:'post',
+                                url:'{:url("gamectrl/resetPersonRate")}',
+                                data:{
+                                    'roleid' : data.id
+                                },
+                                dataType:'json',
+                                success: function(res) {
+                                    if (res.code === 0) {
+                                        layer.msg("{:lang('控制删除成功')}",{icon:1,time:1000}, function () {
+                                            x_admin_close();
+                                            window.location.reload();
+                                        });
+                                    } else {
+                                        layer.msg(res.msg, {icon:2});
+                                    }
+                                }
+                            });
+                        } else if (layEvent === 'detail') {
+                            var url = '/admin/player/playerDetail?roleid=' + data.accountid;
+                            x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.6);
+                        }
+                    });
+
+                //排序
+                table.on('sort(proxylist)', function (obj) {
+                    //执行重载
+                    table.reload('proxylist', {
+                        page: {curr: 1},
+                        initSort: obj,
+                        where: getWhere(),
+                    });
+                });
+            },
+
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+                laydate.render({
+                    elem: '#LAY-component-form-group-date'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , lang:'{$datelang ?: "cn"}'
+                    , btns: ['clear', 'confirm']
+                    , value: new Date()
+                });
+
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+        main.init();
+
+    });
+
+    window.reloadView = function () {
+        window.location.reload();
+    }
+    setInterval('reloadView()',2*60*1000);
+
+</script>
+{/block}

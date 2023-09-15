@@ -1,0 +1,154 @@
+{extend name="common/base" /}
+
+{block name="title"}vip等级修改{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('player/modifyVipLevel')}" method="post" id="addProxy" >
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('VIP等级')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="VipLevel" name='VipLevel'  value="{$config.VipLevel}"  autocomplete="off" class="layui-input" readonly="readonly" />
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('所需充值')}：</label>
+        <div class="layui-input-block">
+            <input type="number" id="NeedPoint" name='NeedPoint'   value="{$config.NeedPoint}"  autocomplete="off" class="layui-input"
+                   lay-verify="required|number"/>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('七日签到奖励(7天奖励用逗号,隔开)')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="DayAward" name='DayAward'  value="{$config.DayAward}"  autocomplete="off" class="layui-input"  />
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('每周奖励')}：</label>
+        <div class="layui-input-block">
+            <input type="number" id="WeekAward" name='WeekAward'  value="{$config.WeekAward}"  autocomplete="off" class="layui-input"
+                   lay-verify="required|number"/>
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('每月奖励')}：</label>
+        <div class="layui-input-block">
+            <input type="number" id="MonthAward" name='MonthAward'  value="{$config.MonthAward}"  autocomplete="off" class="layui-input"
+                   lay-verify="required|number"/>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('升级奖励')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="UpLevelAward" name='UpLevelAward'  value="{$config.UpLevelAward}"  autocomplete="off" class="layui-input"
+                   lay-verify="required|number"/>
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <div class="layui-inline">
+            <label class="layui-form-label">{:lang('随机值范围')}</label>
+            <div class="layui-input-inline" style="width: 100px;">
+                <input type="text" name="LimitDown" placeholder="" value="{$config.LimitDown}" autocomplete="off" class="layui-input" lay-verify="required|number">
+            </div>
+            <div class="layui-form-mid">-</div>
+            <div class="layui-input-inline" style="width: 100px;">
+                <input type="text" name="LimitUp" placeholder="" autocomplete="off" value="{$config.LimitUp}" class="layui-input" lay-verify="required|number">
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >{:lang('保存')}</a>
+            <a class="layui-btn layui-btn-primary layui-btn-radius" id="cancel" >{:lang('取消')}</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var layer = layui.layer
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                var VipLevel = $.trim(data.field.VipLevel)
+                    ,NeedPoint = $.trim(data.field.NeedPoint)
+                    ,DayAward = $.trim(data.field.DayAward)
+                    ,WeekAward = $.trim(data.field.WeekAward)
+                    ,MonthAward = $.trim(data.field.MonthAward)
+                    ,UpLevelAward = $.trim(data.field.UpLevelAward)
+                    ,LimitDown = $.trim(data.field.LimitDown)
+                    ,LimitUp = $.trim(data.field.LimitUp);
+
+
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'VipLevel' : VipLevel,
+                        'NeedPoint' : NeedPoint,
+                        'DayAward' : DayAward,
+                        'WeekAward' : WeekAward,
+                        'MonthAward' : MonthAward,
+                        'UpLevelAward' : UpLevelAward,
+                        'LimitUp' : LimitUp,
+                        'LimitDown':LimitDown
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

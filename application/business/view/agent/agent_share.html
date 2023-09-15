@@ -1,0 +1,120 @@
+{extend name="common/base" /}
+{block name="title"}关系列表{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+              
+                <div class="layui-inline">
+                    <a class="layui-btn layui-btn-danger" id="output">{:lang('导出记录')}</a>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+    
+</div>
+
+{/block}
+{block name="script"}
+
+<script>
+    url = "{:url('agent/agentShare')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var table = layui.table;
+        var form  = layui.form;
+        var $ = layui.$;
+        var element  = layui.element;
+          table.render({
+            elem: '#proxylist'
+            ,height: 'full-180'
+            ,url: url+'?action=list'//数据接口
+            ,limit:20
+            ,page: true //开启分页
+            ,id:'proxylist'
+            ,autoSort:false
+            ,cols: [[ //表头
+                {field:'AddDate', title: "{:lang('日期')}",align:'center', minWidth: 300},
+                {field:'RegisterNum', title: "{:lang('注册人数')}",align:'center', minWidth: 300},
+                {field:'GameNum', title: "{:lang('游戏人数(占比百分比)')}",align:'center', minWidth: 300},
+                {field:'RechargeNum', title: "{:lang('充值人数(占比百分比)')}",align:'center', minWidth: 300},
+                // {title:'操作', toolbar: '#toolbar'}
+            ]]
+             ,done:function(){
+                    tzTbale();
+                }
+          });
+          // 搜索 
+          $("#search").on('click', function(){
+             table.reload('proxylist', {
+              page:{
+                  curr:1 
+              },
+              where: {
+                  roleid: $('#roleid').val(),
+              }
+            })
+          });
+
+          $('#output').click(function () {
+            where = {
+                roleid: $('#roleid').val(),
+                limit: 10000000,
+                output: 'exec',
+                action:'list',
+            }
+
+            download();
+
+            function download() {
+                var params = Object.keys(where).map(function (key) {
+                    return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+                }).join("&");
+                url = url + "?" + params;
+                $.ajax({
+                    type: 'POST',
+                    dataType: 'json',
+                    async: true,
+                    url: url, // 生成文件，保存在服务器
+                    success: function (data) {
+                        var result = data;
+                        console.info(data);
+                        switch (result["code"]) {
+                            case 0:
+                                parent.parent.open(url + "&exec=1&outall=true");
+                                break;
+                            case 1:
+                                layer.msg(result["message"]);
+                                break;
+                            case 2:
+                                layer.confirm(result['message'], {
+                                    btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
+                                }, function () {
+                                    parent.parent.open(url + "&exec=1&outall=true");
+                                    layer.msg('', {icon: 6, time: 1000}, function () {
+                                        window.location.reload();
+                                    });
+                                });
+                        }
+                    },
+                    error: function (XMLHttpRequest, textStatus, e) {
+                        console.log("oilDetection.js  method exportOilDetection" + e);
+                    }
+                });
+            }
+        });
+    });
+</script>
+{/block}

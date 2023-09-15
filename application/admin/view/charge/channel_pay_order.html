@@ -1,0 +1,445 @@
+index.html{extend name="common/base" /}
+
+{block name="title"}充值汇总{/block}
+{block name="css"}
+<style>
+    .layui-col-md2{
+        width:19.99999992% !important;
+    }
+</style>{/block}
+
+{block name="content"}
+
+<div class="layui-row layui-col-space20">
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                {:lang('总订单量')}
+                <span class="layui-badge layui-bg-blue layuiadmin-badge">{:lang('总订单量')}</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="ordernum">0</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <!--逃汇总-->
+                {:lang('订单总金额')}
+                <span class="layui-badge layui-bg-blue layuiadmin-badge">{:lang('支付总金额')}</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="paysum">0</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <!--逃汇总-->
+                {:lang('已支付订单')}
+                <span class="layui-badge layui-bg-blue layuiadmin-badge">{:lang('已支付订单')}</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="paytotalCount">0</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <!--逃汇总-->
+                {:lang('已支付金额')}
+                <span class="layui-badge layui-bg-blue layuiadmin-badge">{:lang('已支付金额')}</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="paytotalMoney">0</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <!--逃汇总-->
+                {:lang('成功率')}
+                <span class="layui-badge layui-bg-blue layuiadmin-badge">{:lang('已支付订单/总订单')}</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="success_rate">0</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input type="text" id="roleid" name="roleid" autocomplete="off" placeholder="{:lang('玩家ID')}" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline layui-hide">
+                    <div class="layui-input-inline">
+                        <input type="text" id="account" name="account" autocomplete="off" placeholder="{:lang('玩家账号')}" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input type="text" id="tranNO" name="tranNO" placeholder="{:lang('平台订单号')}" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('日期')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off" class="layui-input" value="{:date('Y-m-d').' 00:00:00'}">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="end" id="LAY-component-form-group-date2" autocomplete="off" class="layui-input" value="{:date('Y-m-d').' 23:59:59'}">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('订单状态')}</label>
+                    <div class="layui-input-inline">
+                        <select name="Status" id="Status">
+                            <option value="-1">{:lang('全部')}</option>
+                            <option value="0">{:lang('未付款')}</option>
+                            <option value="1">{:lang('订单完成')}</option>
+                            <option value="2">{:lang('金币未发放')}</option>
+                            <option value="3">{:lang('第三方失败')}</option>
+                            <option value="100">{:lang('补单成功')}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('是否补发')}</label>
+                    <div class="layui-input-inline">
+                        <select name="isReturn" id="isReturn">
+                            <option value="-1">{:lang('全部')}</option>
+                            <option value="1">{:lang('是')}</option>
+                            <option value="0">{:lang('否')}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('支付通道')}</label>
+                    <div class="layui-input-inline">
+                        <select name="payChannel" id="payChannel">
+                            <option value="-1">{:lang('全部')}</option>
+                            {foreach $channeInfo as $k1 => $v1}
+                            <option value="{$v1['ChannelId']}">{$v1['ChannelName']}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('充值类型')}</label>
+                    <div class="layui-input-inline">
+                        <select name="payType" id="payType">
+                            <option value="-1">{:lang('全部')}</option>
+                            <!--<option value="0">商城</option>-->
+                            <option value="1">{:lang('首充礼包')}</option>
+                            <option value="2">{:lang('充值返利')}</option>
+                            <option value="3">{:lang('商店充值')}</option>
+                            <option value="5">{:lang('周卡充值')}</option>
+                            <option value="6">{:lang('月卡充值')}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input type="text" id="amount" name="amount" autocomplete="off" placeholder="{:lang('输入金额')}" class="layui-input">
+                    </div>
+                   <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="text" id="max_amount" name="max_amount" autocomplete="off" placeholder="{:lang('输入金额')}" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <!-- <div class="layui-input-inline"> -->
+                        <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                        <button type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>
+                    <!-- </div> -->
+                </div>
+                <div class="layui-inline">
+                    <!-- <div class="layui-input-inline"> -->
+                        <a class="layui-btn" id="output">{:lang('导出记录')}</a>
+                    <!-- </div> -->
+                </div>
+
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <div class="layui-row layui-col-space15">
+            <div id="alllist" class="layui-col-md12">
+                <table id="proxylist" lay-filter="proxylist"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script type="text/html" id="msg-bar">
+    {{#if(d.Status!='订单完成'){}}
+        <a class="layui-btn layui-btn-xs" lay-event="bufa">{:lang('补单')}</a>
+
+    {{#}}}
+
+</script>
+<script src="__js__/cache.js"></script>
+<script src="__js__/Barrett.js"></script>
+<script src="__js__/BigInt.js"></script>
+<script src="__js__/RSA.js"></script>
+<script>
+	url = "{:url('charge/ChannelPayOrder')}";
+	layui.config({
+		base: '__layui__/' //静态资源所在路径
+	}).extend({
+		index: 'lib/index' //主入口模块
+
+	}).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
+		var cols = [ //表头
+			{field: 'Id', align: 'center', title: "{:lang('序号')}", minWidth: 60}
+			, {
+				field: 'Status', align: 'center', title: "{:lang('订单状态')}", minWidth: 60, templet: function (d) {
+					str = `<span style="color:`;
+					switch (Number(d.oStatus)) {
+						case  0:
+							str += 'red';
+							break;
+						case  1:
+							str += 'green';
+							break;
+					}
+					var strReturn='';
+                    if(d.isReturn==1){
+                        strReturn='({:lang(\'补发\')})';
+                    }
+					return str += `">` + d.Status + strReturn+ `</span>`;
+				}
+			}
+			, {field: 'OrderId', align: 'center', title: "{:lang('平台订单号')}", minWidth: 220}
+			, {
+				field: 'AddTime', align: 'center', title: "{:lang('订单时间')}", minWidth: 150, templet: function (d) {
+					return d.AddTime.substr(0, 19);
+				}
+			}
+			, {
+				field: 'PayTime', align: 'center', title: "{:lang('支付时间')}", minWidth: 150, templet: function (d) {
+					return d.PayTime.substr(0, 19);
+				}
+			}
+			, {field: 'AccountID', title: '{:lang("玩家ID")}', align: 'center', minWidth: 80, templet: function (d) {
+                            return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.AccountID + "</a>";
+                        }
+                    }
+			, {field: 'RealMoney', align: 'center', title: "{:lang('充值金额')}", minWidth: 100}
+			, {field: 'BaseGoodsValue', align: 'center', title: "{:lang('到账金币')}", minWidth: 100}
+			, {field: 'ChannelName', align: 'center', title: "{:lang('通道名称')}", minWidth: 60}
+			, {field: 'PayType', align: 'center', title:"{:lang('充值类型')}", minWidth: 60}
+			// , {field: 'AccountName', title: '账号', minWidth: 120}
+            , {fixed: 'right', title: '操作', align: 'center', minWidth: 80, toolbar: '#msg-bar'}
+
+		];
+		var main = {
+			renderData: function () {
+				table.render({
+					elem: '#proxylist',
+					url: url,
+					page: true,
+					cols: [cols],
+					where: {'status': -1, Action: 'list'},
+					limit: 10, done: function (res) {
+						$('#paysum').html(res.other.totalMoney);
+						$('#ordernum').html(res.other.totalCount);
+                        $('#paytotalCount').html(res.other.paytotalCount);
+                        $('#paytotalMoney').html(res.other.paytotalMoney);
+                        $('#success_rate').html(res.other.success_rate);
+                        tzTbale();
+					}
+				});
+			},
+
+			//搜索
+			search: function () {
+				//执行重载
+				table.reload('proxylist', {
+					page: {
+						curr: 1 //重新从第 1 页开始
+					},
+					where: {
+						roleid: $.trim($('#roleid').val()),
+						// account: $.trim($('#account').val()),
+						strartdate: $.trim($('#LAY-component-form-group-date').val()),
+						enddate: $.trim($('#LAY-component-form-group-date2').val()),
+						tranNO: $.trim($('#tranNO').val()),
+						payChannel: $.trim($('#payChannel').val()),
+						payType: $.trim($('#payType').val()),
+						amount: $.trim($('#amount').val()),
+                        max_amount: $.trim($('#max_amount').val()),
+						Status: $.trim($('#Status').val()),
+                        isReturn:$.trim($('#isReturn').val())
+					}
+				});
+			},
+            extraEvent: function () {
+                //编辑
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                   if (layEvent === 'bufa') { //删除
+                       var msg = '{:lang(\'确认要支付此订单\')}:<br/>{:lang(\'单号\')}：'+data.OrderId+'<br/>{:lang(\'玩家ID\')}:'+data.AccountID+'<br/>{:lang(\'充值类型\')}：'+data.PayType+'<br/>{:lang(\'金额\')}：'+data.RealMoney+'{:lang(\'的订单吗\')}？';
+                        layer.confirm(msg, {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
+                            layer.prompt({
+                              formType: 1,
+                              value: '',
+                              title: "{:lang('请输入确认密码')}",
+                              btn: ['{:lang("确定")}','{:lang("取消")}'],
+                              area: ['800px', '350px'] //自定义文本域宽高
+                            }, function(value, index, elem){
+                                var m = "   AF148DF38814A7CF2906B8CD2957F88D0F1F7F708A17371E408EE6629B25EC6B8514C3698F874B1C04E2EE7B05518FB58FE9EB57C0DC0617A7012E28D5D66D4B2F4B8676E28CB80DC0BA339740BAA557B872A5D6DD9E70E90C2943EDFB24A4597C252978E3556210E00CFB0BD2428FD77DE108A0BAF3BC8E06D71B3D65CECC6D";
+                                setMaxDigits(131);
+                                var key = new RSAKeyPair("10001", '', m);
+                                var password = encryptedString(key, value);
+                                $.ajax({
+                                    type: 'post',
+                                    url: "{:url('charge/bufacoin')}",
+                                    data: {
+                                        'orderid': data.OrderId,
+                                        'password':password
+                                    },
+                                    dataType: 'json',
+                                    success: function (res) {
+                                        if (res.code == 0) {
+                                            layer.msg("{:lang('补单成功')}", {icon: 1, time: 1000}, function () {
+                                                //window.location.reload();
+                                                table.reload("proxylist",{page:{curr:$(".layui-laypage-em").next().html()}});
+                                                layer.closeAll();
+                                            });
+                                        } else {
+                                            layer.msg(res['msg'], {icon: 5});
+                                        }
+                                    }
+                                });
+                              // alert(value); //得到value
+                              // layer.closeAll();
+                            });
+                        });
+                    }
+                    if (layEvent === 'budan') {
+                        
+                    } else if (layEvent === 'detail') {
+                            var url = '/admin/player/playerDetail?roleid=' + data.AccountID;
+                            x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.6);
+                        }
+                });
+            },
+			init: function () {
+			    main.extraEvent();
+				main.renderData();
+				laydate.render({
+					elem: '#LAY-component-form-group-date'
+					, format: 'yyyy-MM-dd'
+					, max: 1
+                    , lang:'{$datelang ?: "cn"}'
+					, btns: ['clear', 'confirm']
+                    , type: 'datetime'
+				});
+				laydate.render({
+					elem: '#LAY-component-form-group-date2'
+					, format: 'yyyy-MM-dd'
+					, max: 1
+                    , lang:'{$datelang ?: "cn"}'
+					, btns: ['clear', 'confirm']
+                    , type: 'datetime'
+				});
+				$('#search').on('click', function (e) {
+					e.preventDefault();
+					main.search();
+				});
+			}
+		};
+
+		main.init();
+	});
+	$('#output').click(function () {
+		where = {
+			roleid: $.trim($('#roleid').val()),
+			account: $.trim($('#account').val()),
+			strartdate: $.trim($('#LAY-component-form-group-date').val()),
+			enddate: $.trim($('#LAY-component-form-group-date2').val()),
+			tranNO: $.trim($('#tranNO').val()),
+			payChannel: $.trim($('#payChannel').val()),
+			payType: $.trim($('#payType').val()),
+			amount: $.trim($('#amount').val()),
+            max_amount: $.trim($('#max_amount').val()),
+			Status: $.trim($('#Status').val()),
+            isReturn:$.trim($('#isReturn').val()),
+			limit: 10000000,
+			Action: 'exec',
+		}
+
+		download();
+
+		function download() {
+			var params = Object.keys(where).map(function (key) {
+				return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+			}).join("&");
+			url = url + "?" + params;
+			$.ajax({
+				type: 'POST',
+				dataType: 'json',
+				async: true,
+				url: url, // 生成文件，保存在服务器
+				success: function (data) {
+					var result = data;
+					console.info(data);
+					switch (result["code"]) {
+						case 0:
+							parent.parent.open(url + "&exec=1&outall=true");
+							break;
+						case 1:
+							layer.msg(result["message"]);
+							break;
+						case 2:
+							layer.confirm(result['message'], {
+								btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
+							}, function () {
+								parent.parent.open(url + "&exec=1&outall=true");
+								layer.msg('', {icon: 6, time: 1000}, function () {
+									window.location.reload();
+								});
+							});
+					}
+				},
+				error: function (XMLHttpRequest, textStatus, e) {
+					console.log("oilDetection.js  method exportOilDetection" + e);
+				}
+			});
+		}
+	});
+</script>
+{/block}

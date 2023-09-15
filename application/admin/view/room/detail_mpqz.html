@@ -1,0 +1,235 @@
+{extend name="common/base" /}
+
+{block name="title"}所有玩家{/block}
+{block name="css"}
+<style>
+    .layui-table-cell{
+        height:70px;
+        line-height: 70px;
+    }
+</style>
+{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <button class="layui-btn layui-btn-sm layui-btn-radius"
+            onclick="window.history.back()" style="margin-top: 10px;margin-left: 20px;">返回
+    </button>
+    <div class="layui-card-header">
+        伙牌详情
+    </div>
+    <div class="layui-card-body">
+        <form class="layui-form" lay-filter="component-form-group" style="display: none">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">玩家ID</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="roleid" name="roleid" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn search" myid="fdsafdf"  data-type="reload" id="search">搜索</a>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+        <div id="roomId" hidden>{$roomId}</div>
+        <div id="uniqueid" hidden>{$uniqueid}</div>
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script type="text/html" id="msg-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="detail">详情</a>
+    <!--<a class="layui-btn layui-btn-xs " lay-event="ganme">游戏日志</a>-->
+    <!--<a class="layui-btn layui-btn-xs" lay-event="cold">金币日志</a>-->
+    <!--<a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">拉黑</a>-->
+</script>
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            renderData : function() {
+                var cols = [ //表头
+
+                    {field: 'player', title: '玩家ID', minWidth:100}
+
+//                    ,{field: 'card', title: '牌型', minWidth: 120}
+                    , {
+                        field: 'card', title: '牌型', minWidth: 300, templet: function (d) {
+                            console.log(d.card);
+                            var res = '';
+                            if(d.card.length>1){
+                                for (var i = 0; i < d.card.length; i++) {
+                                    if(i==0 ){
+                                        d.card[0]= d.card[0].replace('[','');
+                                    }
+                                    if(i==d.card.length-1 ){
+                                        d.card[d.card.length-1]= d.card[d.card.length-1].replace(']','');
+                                    }
+//                                    res += ' <image src="__static__/poker/'+d.card[i]+'.png" widht="45" height="70">';
+                                    res += `<image src="__static__/poker/${d.card[i]}.png" widht="45" height="70">`;
+                                }
+
+                                return res;
+                            }else{
+                                res='';
+                                return res;
+                            }
+
+                        }
+                    }
+//                    ,{field: 'roomname', title: '房间名', minWidth: 120}
+                    , {
+                        field: 'changetype', title: '输赢情况', minWidth: 120, templet: function (d) {
+                            var res = '';
+                            if (d.changemoney > 0) {
+                                res = '赢';
+                            } else  {
+                                res = '输';
+                            }
+                            return res;
+                        }
+                    }
+                    , {field: 'coinbefore', title: '上局金币', minWidth: 120}
+
+
+                    , {field: 'changemoney', title: '输赢金币', minWidth: 120}
+                    , {field: 'coinafter', title: '当前金币', minWidth: 120}
+                    , {field: 'addtime', title: '时间', minWidth: 120}
+//                    ,{fixed: 'right', title:'操作', align:'center', minWidth:80, toolbar: '#msg-bar'}
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+//                    , url: "{:url('player/all')}" //数据接口
+                    , url: "{:url('room/detailMpqz')}" //数据接口
+                    , page: true //开启分页
+                    , limit:5
+                    ,where:{'roomid':$('#roomId').html(),'uniqueid':$('#uniqueid').html()}
+                    , cols: [cols]
+                    , done: function (d) {
+                        tzTbale()
+                    }
+                });
+
+            },
+
+
+            //搜索
+            search : function() {
+                var roleid = $.trim($('#uniqueid').val());
+                var roomid = $.trim($('#roomId').html());
+//                var orderby = $.trim($('#orderby').val());
+//                var mobile = $.trim($('#mobile').val());
+//                var asc = $.trim($('#asc').val());
+//                var ipaddr = $.trim($('#ipaddr').val());
+
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+
+                        'roleid':roleid,
+                        'roomid':roomid,
+
+                    }
+                });
+            },
+
+            //操作事件
+            extraEvent : function () {
+                //编辑
+                table.on('tool(proxylist)', function(obj) {
+                    var data = obj.data //获得当前行数据
+                        ,layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'detail') {
+
+//                        data.gamedetail="{\n\"bet\":\n{\n\"basescore\":10,\n\"boomtime\":4,\n\"callscore\":3,\n\"chuntian\":\"否\",\n\"player0\":\"single\",\n\"player2\":\"single\",\n\"qiangscore\":1,\n\"totaltime\":24\n},\n\"card\":\n{\n\"host1\":\"方块2,红桃2,黑桃2,黑桃Q,梅花Q,方块Q,红桃10,方块10,梅花8,方块8,红桃8,黑桃7,黑桃5,黑桃4,梅花3,黑桃3,方块3,\",\n\"hostcard\":\"红桃3,红桃A,黑桃8,\",\n\"player0\":\"红桃K,黑桃K,方块K,梅花K,红桃Q,红桃9,梅花7,红桃7,方块7,方块6,梅花6,梅花5,方块5,红桃5,梅花4,红桃4,方块4,\",\n\"player2\":\"大王4,小王,梅花2,方块A,梅花A,黑桃A,红桃J,方块J,梅花J,黑桃J,梅花10,黑桃10,方块9,梅花9,黑桃9,黑桃6,红桃6,\"\n},\n\"host\":\n{\n\"gold\":994648540,\n\"userid\":98002780\n},\n\"lose\":-240,\n\"remaincard\":\n{\n\"host1\":\"方块10,红桃10,黑桃7,方块3,红桃3,梅花3,黑桃3,\",\n\"player0\":\"红桃K,黑桃K,方块K,梅花K,红桃9,梅花7,红桃7,方块7,方块6,梅花6,梅花5,方块5,红桃5,梅花4,红桃4,方块4,\",\n\"player2\":\"\"\n},\n\"roleid\":\n{\n\"host1\":98002780,\n\"player0\":60747,\n\"player2\":60851\n}\n}\n ",
+//                        data.gamedetail= data.gamedetail.replace(/\n/g, "");
+//                        var t=eval(data.gamedetail);
+//                            console.log(data.gamedetail);
+
+//                        x_admin_show("{:lang('玩家详情')}", 'detail.html?uniqueid='+data.uniqueid+'&roomid='+$('#roomid').val()+'&detail='+data.gamedetail,  $(window).width()*0.7, 350);
+
+//                        x_admin_show("{:lang('玩家详情')}", 'detail.html?detail='+data.gamedetail,  $(window).width()*0.7, 350);
+                        x_admin_show("{:lang('玩家详情')}", 'detailZjh.html?uniqueid='+data.uniqueid+'&roomid='+$('#roomid').val(),  $(window).width()*0.7, 350);
+
+//                        $.ajax({
+//                            url: 'detail',
+//                            type: 'POST',
+//                            data:{
+//                                'detail' : data.gamedetail
+//                            },
+//                            dataType:'json',
+//                            success: function (result) {
+////                                console.log(result.data.bet.basescore);
+//                                console.log(result);
+//                                layer.open({
+//                                    type: 1
+////                                    type: 2
+//                                    ,title: false //不显示标题栏
+//                                    ,closeBtn: false
+//                                    ,area: '900px;'
+//                                    ,shade: 0.8
+//                                    ,id: 'LAY_layuipro' //设定一个id，防止重复弹出
+////                                    ,btn: ['火速围观', '残忍拒绝']
+//                                    ,btn: [ '关闭']
+//                                    ,btnAlign: 'c'
+//                                    ,moveType: 1 //拖拽模式，0或者1
+//                                    ,content: '<div><label class="layui-form-label" style="color: red">地主ID:'+result.data.roleid.host1+'</label></div><div style="padding: 15px; line-height: 22px;   font-weight: 300;">'+result.data.card.host1+' </div><br>'
+//                                    +'<label class="layui-form-label" style="color: green">玩家ID:'+result.data.roleid.player0+'</label><div style="padding: 5px; line-height: 22px;   font-weight: 300;">'+result.data.card.player0+' </div><br>'
+//                                    +'<label class="layui-form-label" style="color: green">玩家ID:'+result.data.roleid.player2+'</label><div style="padding: 5px; line-height: 22px;   font-weight: 300;">'+result.data.card.player2+' </div><br>'
+//
+//                                });
+//
+//
+//                            }
+//
+//                        });
+
+
+                    }
+
+                });
+            },
+
+            init : function() {
+                main.renderData();
+
+                main.extraEvent();
+
+                $('#search').on('click', function(e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

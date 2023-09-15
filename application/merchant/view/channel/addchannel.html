@@ -1,0 +1,127 @@
+<!--{extend name="common/base" /}-->
+
+<!--{block name="title"}{/block}-->
+<!--{block name="content"}-->
+{extend name="common/base" /}
+
+{block name="title"}新增支付通道{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<div class="layui-card">
+    <form class="layui-form" lay-filter="component-form-group" style="padding-top: 30px;padding-bottom: 30px;padding-right: 30px;" id="myForm">
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">用户名：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="username" id='username' lay-verify="required" autocomplete="off" class="layui-input" placeholder="请输入用户名" class="layui-input">
+
+                </div>
+
+            </div>
+            <div class="layui-inline" style="font-size: smaller"><nobr>必填、由英文字母、数字组成</nobr></div>
+
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">渠道名称：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="nickname" id="nickname" lay-verify="required" autocomplete="off" class="layui-input" placeholder="请输入昵称">
+
+                </div>
+
+            </div>
+            <div class="layui-inline" style="font-size: smaller"><nobr>可以是中文</nobr></div>
+
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">手机号：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="phone" id="phone" lay-verify="required|phone" autocomplete="off" class="layui-input" placeholder="请输入手机号">
+                </div>
+            </div>
+            <div class="layui-inline" style="font-size: smaller"><nobr>必填、用于登录</nobr></div>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">初始密码：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="password" id="password" lay-verify="required" autocomplete="off" class="layui-input" placeholder="请输入初始密码">
+                </div>
+            </div>
+            <div class="layui-inline" style="font-size: smaller"><nobr>初始密码设置</nobr></div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">状态：</label>
+            <div class="layui-input-block">
+                <input type="checkbox" checked="" id='status' name="status" lay-skin="switch" lay-filter="switchTest" lay-text="启用|禁用">
+            </div>
+        </div>
+
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">查看用户游戏权限：</label>
+            <div class="layui-input-block">
+                <input type="checkbox" checked="" id='auth' name="auth" lay-skin="switch" lay-filter="switchTest2" lay-text="允许|不允许">
+            </div>
+        </div>
+
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" id="search" data-type="reload" type="submit" class="layui-btn layui-btn-radius" lay-submit="">保存</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </div>
+    </form>
+
+</div>
+{/block}
+
+
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+
+        $('#search').click(function (e) {
+            e.preventDefault();
+            $.ajax({
+                type: 'post',
+                url: "{:url('channel/addchannel')}",
+
+                data: $('#myForm').serialize(),
+                dataType: 'json',
+                success: function (res) {
+                    if (res.code === 0) {
+//                        $('#desc').html(res.data);
+                        layer.msg('添加成功，短地址生成中，请稍后再看', {icon:1,time:1000}, function () {
+                            window.location.reload();
+                        });
+                    } else {
+                        layer.msg(res.msg, {icon: 2});
+                    }
+                }
+            });
+        });
+
+    });
+</script>
+{/block}
+
+

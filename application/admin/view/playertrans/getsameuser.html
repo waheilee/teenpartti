@@ -1,0 +1,157 @@
+{extend name="common/base" /}
+
+{block name="title"}所有玩家{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <div class="layui-card-body">
+        <div id="alllist">
+            <input type="text" value="{$ipaddr}" id="ip" style="display: none">
+            <input type="text" value="{$mac}" id="mac" style="display: none">
+            <input type="text" value="{$bank}" id="bank" style="display: none">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            renderData : function() {
+                var cols = [ //表头
+
+                    {field: 'id', title: '玩家ID', minWidth:100}
+                    ,{field: 'nickname', title: '昵称', minWidth:90}
+                    , {field: 'balance', title: '银行余额', minWidth:100, sort: true}
+                    , {field: 'gamebalance', title: '携带余额', minWidth:100, sort: true}
+                    , {field: 'accountname', title: '手机号', minWidth:120}
+                    , {field: 'totalin', title: '总充值', minWidth:120, sort: true}
+                    , {field: 'totalout', title: '总转出', minWidth:120, sort: true}
+                    , {field: 'totalget', title: '充退差', minWidth:120, sort: true}
+                    , {field: 'totalwater', title: '总流水', minWidth:120, sort: true}
+                    , {field: 'huoyue', title: '活跃度', minWidth:80}
+                    , {field: 'lastlogintime', title: '上次登录时间', minWidth:160}
+                    , {field: 'registertime', title: '注册时间', minWidth:160}
+
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('playertrans/getsameuser')}" //数据接口
+                    , page: true //开启分页
+                    , limit:10
+                    , sort: true
+                    , cols: [cols]
+                    , where : {
+                        'ip' : $('#ip').val(),
+                        'mac' : $('#mac').val(),
+                        'bank' : $('#bank').val(),
+                    }
+                    , done: function(res) {
+                        var orderby = res.other.orderby,
+                            asc = res.other.asc;
+                        if (orderby !== 0) {
+
+                            var fieldval = '', typeval = 'asc';
+                            if (asc === 1) {
+                                typeval = 'desc';
+                            }
+                            if (orderby === 1) {
+                                fieldval = 'totalin';
+                            } else if (orderby === 2) {
+                                fieldval = 'totalout';
+                            } else if (orderby === 3) {
+                                fieldval = 'totalget';
+                            } else if (orderby === 4) {
+                                fieldval = 'totalwater';
+                            } else if (orderby === 5) {
+                                fieldval = 'balance';
+                            } else if (orderby === 6) {
+                                fieldval = 'gamebalance';
+                            }
+                            $('th[data-field='+fieldval+']').find('span.layui-table-sort').attr('lay-sort', typeval);
+                        }
+                    }
+                });
+            },
+
+
+            //操作事件
+            extraEvent : function () {
+                //排序
+                table.on('sort(proxylist)', function(obj) {
+                    var field = obj.field;
+                    var type  = obj.type;
+                    var fieldval = 0, typeval = 0;
+                    if (type === 'desc') {
+                        typeval = 1;
+                    }
+                    if (field === 'totalin') {
+                        fieldval = 1;
+                    } else if (field === 'totalout') {
+                        fieldval = 2;
+                    } else if (field === 'totalget') {
+                        fieldval = 3;
+                    } else if (field === 'totalwater') {
+                        fieldval = 4;
+                    } else if (field === 'balance') {
+                        fieldval = 5;
+                    } else if (field === 'gamebalance') {
+                        fieldval = 6;
+                    }
+
+                    var ip = $.trim($('#ip').val());
+                    var mac = $.trim($('#mac').val());
+                    var bank = $.trim($('#bank').val());
+
+                    //执行重载
+                    table.reload('proxylist', {
+                        page: {
+                            curr: 1 //重新从第 1 页开始
+                        },
+                        where: {
+                            'asc':typeval,
+                            'orderby':fieldval,
+                            'ip':ip,
+                            'mac':mac,
+                            'bank':bank,
+                        }
+                    });
+
+                });
+            },
+
+            init : function() {
+                main.renderData();
+                main.extraEvent();
+
+                $('#search').on('click', function(e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

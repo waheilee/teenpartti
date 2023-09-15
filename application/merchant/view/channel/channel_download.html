@@ -1,0 +1,253 @@
+{extend name="common/base" /}
+
+{block name="title"}所有玩家{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">渠道ID：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="roleid" name="roleid" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">搜索</a>
+                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script type="text/html" id="show-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="show">点击查看</a>
+</script>
+<script type="text/html" id="show-bar1">
+    <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="show1">点击查看</a>
+</script>
+<script type="text/html" id="show-bar2">
+    <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="show2">点击查看</a>
+</script>
+<script type="text/html" id="msg-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="detail">修改</a>
+    <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="edit">重置落地页</a>
+</script>
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            renderData : function() {
+                var cols = [ //表头
+
+                    {field: 'qudao', title: '渠道ID', minWidth:100}
+                    ,{field: 'nickname', title: '渠道名称', minWidth:100}
+//                    , {field: 'apkaddress', title: 'APK地址', minWidth:120}
+                    , {field: 'url', title: '微信推广地址', minWidth:120, toolbar: '#show-bar'}
+                    , {field: 'url1', title: '短信推广地址', minWidth:120, toolbar: '#show-bar1'}
+                    , {field: 'url2', title: '其他推广地址', minWidth:120, toolbar: '#show-bar2'}
+//                    , {field: 'jscode', title: 'JS百度统计代码', minWidth:120}
+                    ,{fixed: 'right', title:'操作', align:'center', minWidth:200, toolbar: '#msg-bar'}
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+//                    , url: "{:url('player/all')}" //数据接口
+                    , url: "{:url('channel/channelDownload')}" //数据接口
+                    , page: true //开启分页
+                    , limit:15
+                    , sort: true
+                    , cols: [cols]
+                    , done: function (res, curr, count) {
+                        tzTbale();
+                    }
+                });
+            },
+
+            //搜索
+            search : function() {
+                var roleid = $.trim($('#roleid').val());
+
+
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'roleid':roleid,
+
+                    }
+                });
+            },
+
+            //操作事件
+            extraEvent : function () {
+                //编辑
+                table.on('tool(proxylist)', function(obj) {
+                    var data = obj.data //获得当前行数据
+                        ,layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'detail') {
+                        var id = data.qudao
+                            ,balance = data.balance;
+                        x_admin_show('编辑', 'editdownload?id='+id+'&channelname='+data.nickname, '', 400);
+                    } else if (layEvent === 'edit') {
+                        var id = data.qudao;
+                        $.ajax({
+                            type:'post',
+                            url:'reseturl',
+                            data:{
+                                'qudao' : id
+                            },
+                            dataType:'json',
+                            success: function(res) {
+                                if (res.code === 0) {
+                                    layer.msg(res.msg, {icon: 1});
+                                } else {
+                                    layer.msg(res.msg, {icon: 2});
+                                }
+                            }
+                        });
+                    } else if (layEvent === 'show') {
+                        var id = data.qudao;
+                        $.ajax({
+                            type:'post',
+                            url:'geturl',
+                            data:{
+                                'roleid' : id
+                            },
+                            dataType:'json',
+                            success: function(res) {
+                                if (res.code === 0) {
+                                    layer.open({
+                                        type: 1
+                                        ,title:'短地址'
+                                        ,offset: 'c'
+                                        ,area:["500px","350px"]
+                                        ,content: '<div style="padding: 20px 100px;">'+ res.data +'</div>'
+                                        ,btn: '关闭'
+                                        ,btnAlign: 'c'
+                                        ,shade: 0
+                                        ,cancel:function() {
+                                            layer.closeAll();
+                                        }
+                                        ,yes: function(){
+                                            layer.closeAll();
+                                        }
+                                    });
+                                } else {
+                                    layer.msg(res.msg, {icon: 2});
+                                }
+                            }
+                        });
+                    } else if (layEvent === 'show1') {
+                        var id = data.qudao;
+                        $.ajax({
+                            type:'post',
+                            url:'geturl1',
+                            data:{
+                                'roleid' : id
+                            },
+                            dataType:'json',
+                            success: function(res) {
+                                if (res.code === 0) {
+                                    layer.open({
+                                        type: 1
+                                        ,title:'短地址'
+                                        ,offset: 'c'
+                                        ,area:["500px","350px"]
+                                        ,content: '<div style="padding: 20px 100px;">'+ res.data +'</div>'
+                                        ,btn: '关闭'
+                                        ,btnAlign: 'c'
+                                        ,shade: 0
+                                        ,cancel:function() {
+                                            layer.closeAll();
+                                        }
+                                        ,yes: function(){
+                                            layer.closeAll();
+                                        }
+                                    });
+                                } else {
+                                    layer.msg(res.msg, {icon: 2});
+                                }
+                            }
+                        });
+                    } else if (layEvent === 'show2') {
+                        var id = data.qudao;
+                        $.ajax({
+                            type:'post',
+                            url:'geturl2',
+                            data:{
+                                'roleid' : id
+                            },
+                            dataType:'json',
+                            success: function(res) {
+                                if (res.code === 0) {
+                                    layer.open({
+                                        type: 1
+                                        ,title:'短地址'
+                                        ,offset: 'c'
+                                        ,area:["500px","350px"]
+                                        ,content: '<div style="padding: 20px 100px;">'+ res.data +'</div>'
+                                        ,btn: '关闭'
+                                        ,btnAlign: 'c'
+                                        ,shade: 0
+                                        ,cancel:function() {
+                                            layer.closeAll();
+                                        }
+                                        ,yes: function(){
+                                            layer.closeAll();
+                                        }
+                                    });
+                                } else {
+                                    layer.msg(res.msg, {icon: 2});
+                                }
+                            }
+                        });
+                    }
+                });
+
+            },
+
+            init : function() {
+                main.renderData();
+                main.extraEvent();
+                $('#search').on('click', function(e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

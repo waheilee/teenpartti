@@ -1,0 +1,95 @@
+{extend name="common/base" /}
+
+{block name="title"}选择提现通道{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('Playertrans/onekeyThirdPay')}" method="post" id="addProxy" >
+    <input type="hidden" id="orderno" name="orderno" value="{$orderno}" />
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('提现通道')}</label>
+        <div class="layui-input-block">
+            <select name="channelid" id="channelid" lay-filter="activityfilter">
+                <option value="-1">{:lang('请选择')}</option>
+                {foreach $list as $k => $v}
+                    <option value="{$v.ChannelId}" >{$v.ChannelName}[{$v.ChannelId}]</option>
+                {/foreach}
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >{:lang('确定')}</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" id="cancel" >{:lang('取消')}</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var layer = layui.layer
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                var orderNo = $.trim(data.field.orderno);
+                var channelId =$.trim(data.field.channelid);
+
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'OrderNo' : orderNo,
+                        'channelid' : channelId
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res['code']===0) {
+                            layer.msg(res['msg'],{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+
+                            layer.msg(res['msg'],{icon:2,time:5000}, function () {
+                                x_admin_close();
+                            });
+//                            x_admin_close();
+                        }
+                    }
+                });
+            },
+
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

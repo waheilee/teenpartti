@@ -1,0 +1,385 @@
+{extend name="common/base" /}
+{block name="title"}同桌记录{/block}
+{block name="css"}{/block}
+{block name="content"}
+<style>
+    .layui-form-label {
+        width: auto;
+        text-align: center
+    }
+
+    .layui-table-cell {
+        height: auto
+    }
+
+    .groub {
+        font-size: 40px
+    }
+</style>
+<div class="layui-card">
+    <input id="UniqueId" type="hidden" value="{$data.UniqueId}">
+    <input id="date" type="hidden" value="{$data.date}">
+    <input id="UserID" type="hidden" value="{$data.UserID}">
+    <input id="KindID" type="hidden" value="{$data.KindID}">
+    <div class="layui-card-body">
+
+        <div class="layui-card"  id="publicdata">
+            <div ID="Head2" class="layui-card-header"></div>
+            <div class="layui-card-body">
+                <table id="proxylist2" lay-filter="proxylist2"></table>
+            </div>
+        </div>
+
+        <div class="layui-card">
+            <div ID="Head1" class="layui-card-header">{:lang('用户数据')}</div>
+            <div class="layui-card-body">
+                <table id="proxylist" lay-filter="proxylist"></table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+    var KindID = Number($("#KindID").val());
+    var cols = Array();
+    switch (KindID) {
+        case 3200:
+            cols[0] = [
+                {field: 'UserID', title: '{:lang("用户ID")}', width: 120,templet: function (d) {
+                        return " <a class='layui-bg-green'  onclick='openroleinfo("+d.UserID+")'>" + d.UserID + "</a>";
+                    }},
+                {field: 'player', title: '{:lang("座位号")}', width: 80},
+                {field: 'detail', title: 'detail', width: 280},
+                {field: 'endpoints', title: 'endpoints', width: 100},
+                {field: 'total', title: 'total', width: 100},
+                {field: 'bet', title: '{:lang("下注")}', width: 120},
+                {field: 'win', title: '{:lang("输/赢")}', width: 120},
+                // {field: 'UserTotalBet', title: '用户总投注', minWidth: 80},
+            ];
+            cols[1] = [ //表头
+                {field: "Score", title: "{:lang('输/赢')}"},
+                {field: "bet", title: "{:lang('下注')}"},
+                {field: "chairid", title: "{:lang('座号')}"},
+                {field: "fetched", title: "fetched"},
+                {field: "gold", title: "gold"},
+                {field: "status", title: "{:lang('状态')}"},
+
+            ];
+            break;
+        case 3300:
+        case 3600:
+            /**7UP7DOWN**/
+            cols[0] = [
+                {field: 'UserId', title: '{:lang("玩家ID")}', width: 120,templet: function (d) {
+                        return " <a class='layui-bg-green'  onclick='openroleinfo("+d.UserId+")'>" + d.UserId + "</a>";
+                    }},
+                {field: 'baozi', title: '{:lang("区域豹子")}', width: 180},
+                {field: 'dianshu', title: '{:lang("区域点数")}', width: 180},
+                {field: 'areadown', title: '{:lang("区域Down")}', width: 180},
+                {field: 'areaup', title: '{:lang("区域UP")}', width: 180},
+                {field: 'renyibaozi', title: '{:lang("任意豹子")}', width: 180},
+                {field: 'LostWin', title: '{:lang("输赢")}', width: 150}
+            ];
+            cols[1] = [ //表头
+                {field: 'name', title: '{:lang("名称")}', width: 120},
+                {
+                    field: '', title: '{:lang("总下注")}', minWidth: 500, templet: function (d) {
+                        // console.info(d);
+                        if (typeof (d.card) !== "undefined" && d.card != null) {
+                            res = '';
+                            for (i = 0; i < 12; i++) {
+                                if (typeof (d.card[i]) !== "undefined") {
+                                    switch (d.LAY_INDEX) {
+                                        // case 1:
+                                        //     res += " 点数 " + i + "===" + d.card[i] + ",";
+                                        //     break;
+                                        case 0:
+                                            res += `<image src="__static__/saizi/` + i + `.png" widht="25" height="50"> ` +
+                                                `<image src="__static__/saizi/` + i + `.png" widht="25" height="50"> ` + d.card[i] + "   ";
+                                            break;
+                                        case  1:
+                                            res += `<image src="__static__/saizi/` + d.card[i] + `.png" widht="25" height="50"> `;
+                                            break;
+                                        default :
+                                            res += d.card[i];
+                                            break;
+                                    }
+                                }
+                            }
+                            return res;
+                        } else return "";
+
+                    }
+                }
+            ];
+            break
+        case 3400:
+            cols[0] = [ //表头
+                {field: "UserId", title: "{:lang('玩家ID')}", width: 120,templet: function (d) {
+                        return " <a class='layui-bg-green'  onclick='openroleinfo("+d.UserId+")'>" + d.UserId + "</a>";
+                    }}
+                , {
+                    field: "", title: "{:lang('阶段')}", width: 180, templet: function (d) {
+                        return d.GameStatus == 104 ? "{:lang('AB下注')}" : "{:lang('花色下注')}"
+                    }
+                },
+                {
+                    field: '', title: '{:lang("下注明细")}', width: 350,templet: function (d) {
+                        if (d.GameStatus == 104) {
+                            return "A: " + d.BAT_ANDAR + "  B: " + d.BAT_BAHAR;
+                        } else
+                            return " {:lang('梅花')}:" + d.BAT_CLUB + "  {:lang('方块')}:" + d.BAT_DIAMOND + " {:lang('红心')}:" + d.BAT_HEART + "  {:lang('黑桃')}:" + d.BAT_SPADE;
+                    }
+                },
+
+                {field: "WinScore", title: "{:lang('输赢金额')}",width: 180},
+
+            ];
+            cols[1] = [
+                {
+                    field: "", title: "{:lang('开奖结果')}", width: 120, templet: function (d) {
+                        var res = '';
+                        console.log('result:'+d.result.indexOf('Side'));
+                        if (d.result.indexOf('面') != -1 || d.result.indexOf('Side')!=-1)
+                            res += '<span style="font-weight: bold">' + d.result + '</span>';
+                        else
+                            res += ' <image src="__static__/poker/' + d.result + '.png" widht="45" height="70">';
+
+                        return res;
+                    }
+
+                },
+                {
+                    field: "", title: "{:lang('牌型')}", width: 450, templet: function (d) {
+                        var res = '', count = Object.keys(d.card).length;
+                        if (count > 1) {
+                            for (var i = 0; i < count; i++) {
+                                if (d.card[i].length > 1)
+                                    res += ' <image src="__static__/poker/' + d.card[i] + '.png" widht="45" height="70">';
+                                else
+                                    res += '<span class="groub">' + d.card[i] + '</span>';
+                            }
+                            return res;
+                        } else return res;
+
+                    }
+                },
+            ];
+            break;
+        case 20200:
+        case 20300:
+            cols[0] = [
+                {field: 'UserId', title: '{:lang("玩家ID")}', width: 120,templet: function (d) {
+                        return " <a class='layui-bg-green'  onclick='openroleinfo("+d.UserId+")'>" + d.UserId + "</a>";
+                    }},
+                {field: 'chairid', title: '{:lang("座位号")}', width: 120},
+                {field: 'bet', title: '{:lang("下注")}', width: 120},
+                {field: 'winlost', title: '{:lang("输赢")}', width: 120}
+            ];
+            $('#publicdata').hide();
+            break;
+        case 3800:
+            cols[0] = [
+                {field: 'UserId', title: '{:lang("玩家ID")}', width: 120,templet: function (d) {
+                        return " <a class='layui-bg-green'  onclick='openroleinfo("+d.UserId+")'>" + d.UserId + "</a>";
+                    }},
+                {field: 'bet', title: '{:lang("下注")}', width: 120},
+                {field: 'opendata', title: '{:lang("开奖区域")}', width: 120},
+                {field: 'winlost', title: '{:lang("输赢")}', width: 180}
+            ];
+            $('#publicdata').hide();
+            break;
+    }
+    if ([2600, 3100].includes(KindID)) {
+        cols[0] = [ //表头
+            { field: 'roleid', title: '{:lang("玩家ID")}',width:120,templet: function (d) {
+                    return " <a class='layui-bg-green'  onclick='openroleinfo("+d.roleid+")'>" + d.roleid + "</a>";
+                }},
+            { field: 'chareid', title: '{:lang("座位号")}',width:100},
+            {
+                field: "", title: "{:lang('状态')}", width: 120, templet: function (d) {
+                    return  d.player
+                }
+            },
+            {
+                field: '', title: '{:lang("牌")}',width: 600, templet: function (d) {
+                    var res = '', count = Object.keys(d).length;
+                    console.log('res:'+count);
+                    if (count > 1) {
+                        for (var i = 0; i < count - 7; i++) {
+                            if (d[i].length > 1)
+                                res += ' <image src="__static__/poker/' + d[i] + '.png" width="30" >';
+                            else
+                                res += '<span class="groub">' + d[i] + '</span>';
+                        }
+                        return res;
+                    } else return res;
+                }
+            },
+            { field: 'bet', title: '{:lang("下注金额")}',width:120},
+            { field: 'winlost', title: '{:lang("输赢金额")}',width:180}
+        ];
+        cols[1] = [
+            { field: 'itemname', title: '{:lang("名称")}',width:120},
+            {
+                field: '', title: '{:lang("值")}', width: 120, templet: function (d) {
+                    var res = '', count = Object.keys(d.card).length;
+                    if (count > 0) {
+                        for (var i = 0; i < count; i++) {
+                            if (d.card[i].length > 1)
+                                res += ' <image src="__static__/poker/' + d.card[i] + '.png" width="35" >';
+                            else
+                                res += '<span class="groub">' + d.card[i] + '</span>';
+                        }
+                        return res;
+                    } else return res;
+                }
+            }
+            // {
+            //     field: 'player.chairid', title: 'chairid', minWidth: 100, templet: function (d) {
+            //         return d.player.chairid;
+            //     }
+            // },
+            // {
+            //     field: 'player.gold', title: 'gold', minWidth: 100, templet: function (d) {
+            //         return Math.floor(d.player.gold) / {$bl};
+            //     }
+            // },
+            // {
+            //     field: 'player.initgold', title: 'initgold', minWidth: 100, templet: function (d) {
+            //         return d.player.initgold / {$bl};
+            //     }
+            // },
+            // {
+            //     field: 'player.status', title: 'status', minWidth: 80, templet: function (d) {
+            //         return d.player.status;
+            //     }
+            // },
+            // {field: 'lostpoints', title: 'lostpoints', minWidth: 80},
+            // {
+            //     field: 'win', title: 'win/lost', width: 180, templet: function (d) {
+            //         return typeof (d.win) == "undefined" ? d.lost / {$bl} : d.win / {$bl};
+            //     }
+            // },
+        ];
+
+    }
+    if ([2500, 2700, 2800, 2900, 3000, 3500].includes(KindID)) {
+        cols[0] = [
+            {field: 'roleid', title: '{:lang("玩家ID")}', minWidth: 100 ,templet: function (d) {
+                    return " <a class='layui-bg-green'  onclick='openroleinfo("+d.roleid+")'>" + d.roleid + "</a>";
+                }
+            },
+            {field: 'chairid', title: '{:lang("座位")}', minWidth: 100},
+            {
+                field: 'player', title: '{:lang("原始牌")}', minWidth: 100, templet: function (d) {
+                    var res = '';
+                    for (var i = 0; i < d.lpoke.length; i++) {
+                        res += ' <image src="__static__/poker/' + d.lpoke[i] + '.png" width="35" >';
+                    }
+                    return res;
+                }
+            },
+            {
+                field: 'player', title: '{:lang("结束牌")}', minWidth: 100, templet: function (d) {
+                    var res = '';
+                    for (var i = 0; i < d.poke.length; i++) {
+                        res += ' <image src="__static__/poker/' + d.poke[i] + '.png" width="35" >';
+                    }
+                    return res;
+                }
+            },
+            { field: 'bet', title: '{:lang("下注金额")}',width:120},
+            { field: 'winlost', title: '{:lang("输赢金额")}',width:120}
+        ];
+        cols[1] = [
+            // {
+            //     field: 'lost', title: 'win/lost', width: 180, templet: function (d) {
+            //         return typeof (d.win) == "undefined" ? d.lost / {$bl} : d.win / {$bl};
+            //     }
+            // },
+            // {
+            //     field: 'player', title: 'bet', minWidth: 100, templet: function (d) {
+            //         return Math.floor(d.player.bet) / {$bl};
+            //     }
+            // },
+            // {
+            //     field: 'UserId', title: '玩家ID', minWidth: 100, templet: function (d) {
+            //         return d.player.UserId
+            //     }
+            // },
+            // {
+            //     field: 'player', title: '座位', minWidth: 100, templet: function (d) {
+            //         return d.player.chairid
+            //     }
+            // },
+            // {
+            //     field: 'player', title: 'gold', minWidth: 100, templet: function (d) {
+            //         return Math.floor(d.player.gold) / {$bl};
+            //     }
+            // },
+            // {
+            //     field: 'player', title: 'status', minWidth: 100, templet: function (d) {
+            //         return d.player.status
+            //     }
+            // },
+        ];
+        $('#publicdata').hide();
+    }
+
+
+    layui.config({
+        base: '__layui__/'
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$;
+        var Data, Other;
+        Main = {
+            GetData: function () {
+                $.ajax({
+                    url: "{:url('UserPackageManage/DiskRecord')}",
+                    data: {
+                        UniqueId: $("#UniqueId").val(),
+                        UserID: $("#UserID").val(),
+                        date: $("#date").val(),
+                        RoomID: KindID
+                    },
+                    success: function (data) {
+                        Data = data.data;
+                        Other = data.other;
+                        console.info("data", Data);
+                        //console.info("Other", Other);
+                        table.render({
+                            elem: '#proxylist',
+                            data: Data,
+                            // limit: 5,
+                            cols: [cols[0]]
+                        });
+                        table.render({
+                            elem: '#proxylist2',
+                            data: Other,
+                            // limit: 5,
+                            cols: [cols[1]]
+                        });
+                    },
+                });
+            },
+        }
+        Main.GetData();
+
+    });
+
+    function openroleinfo(roleid){
+        if($.isNumeric(roleid)) {
+            var url = '/admin/player/playerDetail?roleid=' + roleid;
+            x_admin_show('{:lang("玩家详情")}', url, $(window).width() * 0.95, $(window).height() * 0.95);
+        }
+    }
+
+</script>
+{/block}

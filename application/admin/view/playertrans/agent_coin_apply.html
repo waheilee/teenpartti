@@ -1,0 +1,282 @@
+{extend name="common/base" /}
+{block name="title"}{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-row layui-col-space20" >
+<!--     <div class="layui-col-md6">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                待领取金额
+
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #ff0000" id="total">0</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-col-md6">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                
+                {:lang('已领取金额')}
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: red" id="totalout">0</p>
+            </div>
+        </div>
+    </div> -->
+</div>
+<div class="layui-card" style="margin-top: 5px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('玩家ID')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="roleid" name="roleid" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                        <button type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>
+
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <a class="layui-btn layui-btn-danger" id="output">{:lang('导出记录')}</a>
+                </div>
+            </div>
+        </form>
+        <div class="layui-card-body">
+            <div id="alllist">
+                <table id="proxylist" lay-filter="proxylist"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+
+<script type="text/html" id="msg-bar">
+
+    <a class="layui-btn layui-btn-xs" lay-event="agree">{:lang('同意')}</a>
+    <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="refuse">{:lang('拒绝')}</a>
+    <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="freeze">{:lang('没收')}</a>
+</script>
+
+<script>
+    url = "{:url('playertrans/agentCoinApply')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
+        var main = {
+            renderData: function () {
+                //设置表头
+                var cols = [
+                    {field: 'RoleID', align: 'center', title: '{:lang('玩家ID')}', width: 100, templet: function (d) {
+                            return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.RoleID + "</a>";
+                        }
+                    },
+                    {field: 'AbleProfit', align: 'center', title: "{:lang('代理流水返利')}", minWidth: 150, sort: true},
+                    {field: 'ProfitType', align: 'center', title: "{:lang('代理邀请奖励')}"},
+                    {field: 'ReceiveProfit', align: 'center', title: "{:lang('代理首充奖励')}", minWidth: 150, sort: true},
+                    {field: 'TotalProfit', align: 'center', title: "{:lang('总收益')}", minWidth: 150, sort: true},
+                    // {
+                    //     fixed: 'right', title: "{:lang('操作')}", align: 'center', minWidth: 300, templet: function (d) {
+                    //         var str='';str += "<a class=\"layui-btn layui-btn-xs\" lay-event=\"edit\">{:lang('审核通过')}</a>" +
+                    //             "<a class=\"layui-btn layui-btn-xs layui-btn-danger \" lay-event=\"refuse\">{:lang('拒绝')}</a>" +
+                    //             "    <a class=\"layui-btn layui-btn-xs layui-btn-warm \" lay-event=\"freeze\">{:lang('没收')}</a>";
+                    //         return str;
+                    //     }
+                    // }
+                ];
+                table.render({
+                    elem: '#proxylist', url: url, page: true, limit: 15, cols: [cols],where: {Status:0,action:'list'},sort: true, autoSort: false
+                    , done: function (res, curr, count) {
+                        $("#total").html(res.other.unclaimed);
+                        $("#totalout").html(res.other.Received);
+                        tzTbale()
+
+                    }
+                });
+            },
+            //搜索
+            search: function () {
+                var roleid = $.trim($('#roleid').val());
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'roleid': roleid,//AccountID
+                    }
+                });
+            },
+
+            //操作事件
+            extraEvent: function () {
+                //排序
+                table.on('sort(proxylist)', function (obj) {
+                    //执行重载
+                    table.reload('proxylist', {
+                        initSort: obj,
+                        page: {curr: 1},
+                        where: {
+                            roleid: $.trim($('#roleid').val()),
+                            orderytpe: obj.type,
+                            orderby: obj.field,
+                        }
+                    });
+
+                });
+                //编辑
+                table.on('tool(proxylist)', function (obj) {
+                    //获得当前行数据
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+
+                    if (layEvent === 'refuse') {
+                        layer.confirm("{:lang('确认要拒绝审核？')}", {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
+                            $.ajax({
+                                type: 'post',
+                                url: "{:url('Playertrans/agentcoincheck')}",
+                                data: {
+                                    'status': 300,
+                                    'roleid':data.RoleID
+                                },
+                                dataType: 'json',
+                                success: function (res) {
+                                    if (res.code === 0) {
+                                        layer.msg(res.msg, {icon: 6, time: 1000}, function () {
+                                            window.location.reload();
+                                        });
+                                    } else {
+                                        layer.msg(res.msg, {icon: 5});
+                                    }
+                                }
+                            });
+                        });
+
+                    } else if (layEvent === 'freeze') {
+                        layer.confirm("{:lang('确认要没收奖励？')}", {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
+                            $.ajax({
+                                type: 'post',
+                                url: "{:url('Playertrans/agentcoincheck')}",
+                                data: {
+                                    'status': 200,
+                                    'roleid':data.RoleID
+                                },
+                                dataType: 'json',
+                                success: function (res) {
+                                    if (res.code === 0) {
+                                        layer.msg(res.msg, {icon: 6, time: 1000}, function () {
+                                            window.location.reload();
+                                        });
+                                    } else {
+                                        layer.msg(res.msg, {icon: 5});
+                                    }
+                                }
+                            });
+                        });
+
+                    } else if (layEvent === 'edit') {
+                        layer.confirm("{:lang('确认要审核通过？')}", {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
+                            $.ajax({
+                                type: 'post',
+                                url: "{:url('Playertrans/agentcoincheck')}",
+                                data: {
+                                    'status': 100,
+                                    'roleid':data.RoleID
+                                },
+                                dataType: 'json',
+                                success: function (res) {
+                                    if (res.code === 0) {
+                                        layer.msg(res.msg, {icon: 6, time: 1000}, function () {
+                                            window.location.reload();
+                                        });
+                                    } else {
+                                        layer.msg(res.msg, {icon: 5});
+                                    }
+                                }
+                            });
+                        });
+                    }else if (layEvent === 'detail') {
+                            var url = '/admin/player/playerDetail?roleid=' + data.RoleID;
+                            x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.6);
+                        }
+                });
+            },
+
+
+            init: function () {
+                form.render(null, 'component-form-group');
+                main.extraEvent();
+                main.renderData();
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+        main.init();
+        $('#output').click(function () {
+            where = {
+               roleid: $.trim($('#roleid').val()),
+                Status:0,
+                limit: 10000000,
+                output: 'exec',
+                action:'list',
+            }
+
+            download();
+
+            function download() {
+                var params = Object.keys(where).map(function (key) {
+                    return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+                }).join("&");
+                url = url + "?" + params;
+                $.ajax({
+                    type: 'POST',
+                    dataType: 'json',
+                    async: true,
+                    url: url, // 生成文件，保存在服务器
+                    success: function (data) {
+                        var result = data;
+                        console.info(data);
+                        switch (result["code"]) {
+                            case 0:
+                                parent.parent.open(url + "&exec=1&outall=true");
+                                break;
+                            case 1:
+                                layer.msg(result["message"]);
+                                break;
+                            case 2:
+                                layer.confirm(result['message'], {
+                                    btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
+                                }, function () {
+                                    parent.parent.open(url + "&exec=1&outall=true");
+                                    layer.msg('', {icon: 6, time: 1000}, function () {
+                                        window.location.reload();
+                                    });
+                                });
+                        }
+                    },
+                    error: function (XMLHttpRequest, textStatus, e) {
+                        console.log("oilDetection.js  method exportOilDetection" + e);
+                    }
+                });
+            }
+        });
+    });
+</script>
+{/block}

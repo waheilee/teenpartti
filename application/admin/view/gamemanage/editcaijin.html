@@ -1,0 +1,123 @@
+{extend name="common/base" /}
+
+{block name="title"}设置玩家胜率{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('gamemanage/editcaijin')}" method="post" id="addProxy" >
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('奖池类型')}：</label>
+        <div class="layui-input-block">
+            <input type="hidden" id="jacktype" name="jacktype" value="{$info.jacktype}"/>
+            <input type="text" id="jkname" name='jkname' value="{$info.jacktypename}"  readonly  autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('虚拟彩金金额')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="vcj" name="vcj" lay-verify="require|number" value="{$info.vcj}" placeholder="{:lang('请输入虚拟彩金金额')}" autocomplete="off" class="layui-input">
+
+        </div>
+    </div>
+
+    {if $info.jacktype eq 0}
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('最小库存')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="minstock" name="minstock" lay-verify="require|number" value="{$info.minstock}" placeholder="{:lang('最小库存')}" autocomplete="off" class="layui-input">
+
+        </div>
+    </div>
+
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('最大库存')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="maxstock" name="maxstock" lay-verify="require|number" value="{$info.maxstock}" placeholder="{:lang('最大库存')}" autocomplete="off" class="layui-input">
+
+        </div>
+    </div>
+ {/if}
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >{:lang('确认')}</button>
+            <a class="layui-btn layui-btn-primary layui-btn-radius" id="cancel" >{:lang('取消')}</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var layer = layui.layer
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                var jacktype = $.trim(data.field.jacktype)
+                    ,vcj = $.trim(data.field.vcj);
+                var minstock= $.trim(data.field.minstock);
+                var maxstock= $.trim(data.field.maxstock);
+
+
+                if(vcj==0){
+                    layer.msg("{:lang('请输入虚拟彩金金额')}", {icon:5});
+                    return;
+                }
+
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'jacktype' : jacktype,
+                        'vcj' : vcj,
+                        'minstock':minstock,
+                        'maxstock':maxstock
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

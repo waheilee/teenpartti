@@ -1,0 +1,196 @@
+{extend name="common/base" /}
+
+{block name="title"}{/block}
+{block name="css"}{/block}
+{block name="content"}
+<style>
+    .layui-inline .layui-form-label {width: auto}
+</style>
+
+<div class="layui-card">
+    <div class="layui-card-body">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline" style="width: 263px">
+                    <label class="layui-form-label">日期</label>
+                    <div class="layui-input-inline" style="width: 90px">
+                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off" class="layui-input">
+                    </div>
+                    <div class="layui-form-mid"> -</div>
+                    <div class="layui-input-inline" style="width: 90px">
+                        <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date2" name="end" type="text">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">机器人</label>
+                    <div class="layui-input-inline" style="width: 100px">
+                        <select id="Robot" name="Robot">
+                            <option value="0">所有</option>
+                            <option value="1">是</option>
+                            <option value="2">否</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" data-type="reload" id="search">搜索</a>
+                        <a class="layui-btn" id="output">导出记录</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script id="msg-bar" type="text/html">
+    {{# if(d.VerifyState==0){ }}
+    <a class="layui-btn layui-btn-xs" lay-event="sendMail">审核</a>
+    {{#  } }}
+    {{# if(d.VerifyState!=2){ }}
+    <a class="layui-btn layui-btn-xs" lay-event="del">作废</a>
+    {{#  } }}
+
+</script>
+<script>
+	var main;
+	var bl = 1000;
+	layui.config({
+		base: '__layui__/' //静态资源所在路径
+	}).extend({
+		index: 'lib/index' //主入口模块
+
+	}).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
+		url = "{:url('pk_match/PkMatchDayReport')}"
+		main = {
+			renderData: function () {
+				var cols = [ //表头
+					{field: 'MyDate', align: 'center', title: 'MyDate', width: 110},
+					{field: 'TotalCount', align: 'center', title: '总场次', width: 110},
+					{field: 'AvgSec', align: 'center', title: '平均时长(秒)', width: 110},
+					{field: 'JoinFee', align: 'center', title: '总消耗', width: 110, templet: function (d) { return formatDecimal(d.JoinFee / bl, 2); }},
+					{field: 'WinScore', align: 'center', title: '连胜奖励', width: 110, templet: function (d) { return formatDecimal(d.WinScore / bl, 2); }},
+					{field: 'WinAward', align: 'center', title: '总产出', width: 110, templet: function (d) { return formatDecimal(d.WinAward / bl, 2); }},
+					{
+						field: 'SysWin', align: 'center', title: '盈亏', width: 110, templet: function (d) {
+							score = formatDecimal(d.SysWin / bl, 2);
+							color = score > 0 ? 'red' : 'green';
+							return "<span style='color:" + color + "'>" + score + "</span>";
+						}
+					},
+					{
+						field: 'Rtp', align: 'center', title: 'Rtp', width: 110, templet: function (d) {
+							return formatDecimal(d.Rtp, 2) + '%';
+						}
+					},
+				];
+				table.render({elem: '#proxylist', url: url, where: {Action: 'list', Robot: 1}, page: true, cols: [cols],});
+			},
+
+			//搜索
+			search: function () {
+				//执行重载
+				table.reload('proxylist', {
+					page: {curr: 1}, where: {
+						// Notice: $.trim($("#Notice").val()),
+						start: $.trim($("#LAY-component-form-group-date").val()),
+						end: $.trim($("#LAY-component-form-group-date2").val()),
+						Robot: $.trim($("#Robot").val()),
+					},
+
+				});
+			},
+
+
+			//操作事件
+			extraEvent: function () {
+			},
+			init: function () {
+				laydate.render({
+					elem: '#LAY-component-form-group-date'
+					, format: 'yyyy-MM-dd'
+					, max: 1
+					, btns: ['clear', 'confirm']
+					, value: new Date(2021, 5, 1)
+				});
+				laydate.render({
+					elem: '#LAY-component-form-group-date2'
+					, format: 'yyyy-MM-dd'
+					, max: 1
+					, lang:'{$datelang ?: "cn"}'
+					, btns: ['clear', 'confirm']
+					, value: new Date()
+				});
+				main.renderData();
+				main.extraEvent();
+				$('#search').on('click', function (e) {
+					e.preventDefault();
+					main.search();
+				});
+			}
+		};
+		main.init();
+	});
+
+	$('#output').click(function () {
+		where = {
+			RoleId: $.trim($("#RoleId").val()),
+			Amount: $.trim($("#Amount").val()),
+			Title: $.trim($("#Title").val()),
+			Notice: $.trim($("#Notice").val()),
+			start: $.trim($("#LAY-component-form-group-date").val()),
+			end: $.trim($("#LAY-component-form-group-date2").val()),
+			VerifyState: $.trim($("#VerifyState").val()),
+			ExtraType: $.trim($("#ExtraType").val()),
+			limit: 10000000,
+			Action: 'exec',
+		}
+
+		download();
+
+		function download() {
+			var params = Object.keys(where).map(function (key) {
+				return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+			}).join("&");
+			url = url + "?" + params;
+			$.ajax({
+				type: 'POST',
+				dataType: 'json',
+				async: true,
+				url: url, // 生成文件，保存在服务器
+				success: function (data) {
+					var result = data;
+					console.info(data);
+					switch (result["code"]) {
+						case 0:
+							parent.parent.open(url + "&exec=1&outall=true");
+							break;
+						case 1:
+							layer.msg(result["message"]);
+							break;
+						case 2:
+							layer.confirm(result['message'], {
+								btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
+							}, function () {
+								parent.parent.open(url + "&exec=1&outall=true");
+								layer.msg('', {icon: 6, time: 1000}, function () {
+									window.location.reload();
+								});
+							});
+					}
+				},
+				error: function (XMLHttpRequest, textStatus, e) {
+					console.log("oilDetection.js  method exportOilDetection" + e);
+				}
+			});
+		}
+	});
+</script>
+{/block}

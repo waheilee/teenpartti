@@ -1,0 +1,260 @@
+{extend name="common/base" /}
+
+{block name="title"}游戏日志{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-row layui-col-space20" style="display: none">
+    <div class="layui-col-md3">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                输赢总金币
+                <span class="layui-badge layui-bg-blue layuiadmin-badge">总</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="totalin">0</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-col-md3">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                赢汇总
+                <span class="layui-badge layui-bg-blue layuiadmin-badge">赢</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="win">0</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-col-md3">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                输汇总
+                <span class="layui-badge layui-bg-blue layuiadmin-badge">输</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="lose">0</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-col-md3">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                逃汇总
+                <span class="layui-badge layui-bg-blue layuiadmin-badge">逃</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="escape">0</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div id="showkindidname2" style="display: none;">
+                    <label class="layui-form-label">游戏类型：</label>
+
+                </div>
+
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">玩家ID</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="roleid" name="roleid" lay-verify="number" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">玩家账号</label>
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="account" name="account" type="text">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">房间</label>
+                    <div class="layui-input-inline">
+                        <select name="roomid" id="roomid">
+                            <option value="0">所有</option>
+                            <!-- foreach循环 -->
+                            {foreach name="selectData" item="vo"}
+                            <option value="{$vo.RoomID}">{$vo.RoomName}</option>
+                            {/foreach}
+                            <!-- for循环 -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">日期</label>
+                    <div class="layui-input-inline" style="width: 150px;">
+                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                    <div class="layui-form-mid" style="display: none">
+                        -
+                    </div>
+                    <div class="layui-input-inline" style="width: 100px;display: none">
+                        <input type="text" name="end" id="LAY-component-form-group-date2" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">搜索</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'date', title: '日期', minWidth: 100},
+                    {field: 'RoleID', title: '玩家ID', minWidth: 100, sort: true},
+                    // {field: 'AccountName', title: '玩家账号', minWidth: 100},
+                    {field: 'LoginName', title: '昵称', minWidth: 100},
+                    {field: 'RoomId', title: '房间ID', minWidth: 100},
+                    {field: 'RoomName', title: '房间名称', minWidth: 120},
+                    {field: 'draw', title: '局数', minWidth: 120, sort: true},
+                    {field: 'TotalTax', title: '总税收', minWidth: 120, sort: true},
+                    {field: 'WinMoney', title: '游戏输赢', minWidth: 120, sort: true},
+                    {
+                        field: 'win', title: '盈亏', minWidth: 120, templet: function (d) {
+                            return Math.round((parseFloat(d.WinMoney) - parseFloat(d.TotalTax)) * 1000) / 1000;
+                        }
+                    },
+                    {field: 'totalwater', title: '总流水', minWidth: 120}
+//                    ,{fixed: 'right', title:'操作', align:'center', minWidth:250, toolbar: '#msg-bar'}
+//                        , {field: 'proxyincome', title: '备注', minWidth:150}
+//                        , {field: 'proxyincome', title: '操作', minWidth:150}
+                ];
+
+                table.render({
+                    elem: '#proxylist',
+                    url: "{:url('statistical/gamedailylog')}", //数据接口
+                    page: true, //开启分页
+
+                    limit: 15,
+                    cols: [cols],
+                    sort: true,
+                    autoSort: false,
+                    done: function (res, curr, count) {
+                        tzTbale()
+                    }
+                });
+            },
+
+            //搜索
+            search: function () {
+                //执行重载
+                table.reload('proxylist', {
+                    page: {curr: 1},
+                    where: {
+                        'roleid': $.trim($('#roleid').val()),
+                        'date': $.trim($('#LAY-component-form-group-date').val()),
+                        'roomid': $.trim($('#roomid').val()),
+                        'account': $.trim($('#account').val()),
+
+                    }
+                });
+            },
+
+            //操作事件
+            extraEvent: function () {
+                //编辑
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'detail') {
+                        window.location.href = 'playerDetail?roleid=' + data.id;
+                    } else if (layEvent === 'ganme') { //删除
+                        window.location.href = 'gameLog?roleid=' + data.id;
+                    } else if (layEvent === 'cold') {
+                        window.location.href = 'coinLog?roleid=' + data.id;
+                    } else if (layEvent === 'delete') {
+
+                    }
+                });
+
+                //排序
+                table.on('sort(proxylist)', function (obj) {
+                    //执行重载
+                    table.reload('proxylist', {
+                        page: {curr: 1},
+                        initSort: obj,
+                        where: {
+                            'roleid': $.trim($('#roleid').val()),
+                            'roomid': $.trim($('#roomid').val()),
+                            'orderType': obj.type,
+                            'orderby': obj.field,
+                        }
+                    });
+                });
+            },
+
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+                laydate.render({
+                    elem: '#LAY-component-form-group-date'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , btns: ['clear', 'confirm']
+                    , value: new Date()
+                });
+                laydate.render({
+                    elem: '#LAY-component-form-group-date2'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , btns: ['clear', 'confirm']
+                    , value: new Date()
+                });
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

@@ -1,0 +1,272 @@
+{extend name="common/base" /}
+
+{block name="title"}游戏日志{/block}
+{block name="css"}{/block}
+{block name="content"}
+<!--<div class="layui-row layui-col-space20">-->
+<!--<div class="layui-col-md3">-->
+<!--<div class="layui-card">-->
+<!--<div class="layui-card-header">-->
+<!--输赢总金币-->
+<!--<span class="layui-badge layui-bg-blue layuiadmin-badge">总</span>-->
+<!--</div>-->
+<!--<div class="layui-card-body layuiadmin-card-list">-->
+<!--<p class="layuiadmin-big-font" style="color: #009688" id="totalin">0</p>-->
+<!--</div>-->
+<!--</div>-->
+<!--</div>-->
+
+<!--<div class="layui-col-md3">-->
+<!--<div class="layui-card">-->
+<!--<div class="layui-card-header">-->
+<!--赢汇总-->
+<!--<span class="layui-badge layui-bg-blue layuiadmin-badge">赢</span>-->
+<!--</div>-->
+<!--<div class="layui-card-body layuiadmin-card-list">-->
+<!--<p class="layuiadmin-big-font" style="color: #009688" id="win">0</p>-->
+<!--</div>-->
+<!--</div>-->
+<!--</div>-->
+
+<!--<div class="layui-col-md3">-->
+<!--<div class="layui-card">-->
+<!--<div class="layui-card-header">-->
+<!--输汇总-->
+<!--<span class="layui-badge layui-bg-blue layuiadmin-badge">输</span>-->
+<!--</div>-->
+<!--<div class="layui-card-body layuiadmin-card-list">-->
+<!--<p class="layuiadmin-big-font" style="color: #009688" id="lose">0</p>-->
+<!--</div>-->
+<!--</div>-->
+<!--</div>-->
+
+<!--<div class="layui-col-md3">-->
+<!--<div class="layui-card">-->
+<!--<div class="layui-card-header">-->
+<!--&lt;!&ndash;逃汇总&ndash;&gt;-->
+<!--税收汇总-->
+<!--<span class="layui-badge layui-bg-blue layuiadmin-badge">逃</span>-->
+<!--</div>-->
+<!--<div class="layui-card-body layuiadmin-card-list">-->
+<!--<p class="layuiadmin-big-font" style="color: #009688" id="escape">0</p>-->
+<!--</div>-->
+<!--</div>-->
+<!--</div>-->
+<!--</div>-->
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+
+                <label class="layui-form-label">玩家ID</label>
+                <div class="layui-input-inline" style="width: 100px;">
+                    <input type="text" id="roleid" name="roleid" lay-verify="number" autocomplete="off"
+                           class="layui-input">
+                </div>
+
+
+                <label class="layui-form-label">日期</label>
+                <div class="layui-input-inline" style="width: 100px;">
+                    <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off"
+                           class="layui-input">
+                </div>
+                <div class="layui-form-mid">
+                    -
+                </div>
+                <div class="layui-input-inline" style="width: 100px;">
+                    <input type="text" name="end" id="LAY-component-form-group-date2" autocomplete="off"
+                           class="layui-input">
+                </div>
+
+                <label class="layui-form-label">房间</label>
+                <div class="layui-input-inline">
+                    <select name="roomid" id="roomid">
+                        <option value="0">所有</option>
+                        <!-- foreach循环 -->
+                        {foreach name="selectData" item="vo"}
+                        <option value="{$vo.roomid}">{$vo.RoomName}</option>
+                        {/foreach}
+                        <!-- for循环 -->
+                    </select>
+                </div>
+
+
+                <label class="layui-form-label">游戏结果</label>
+                <div class="layui-input-inline"  style="width: 100px;">
+                    <select name="result" id="result">
+                        <option value="-1">所有</option>
+                        <option value="0">赢</option>
+                        <option value="1">输</option>
+                        <option value="2">和</option>
+                        <option value="3">逃</option>
+                    </select>
+                </div>
+
+
+                <label class="layui-form-label"></label>
+                <div class="layui-input-inline">
+                    <a class="layui-btn" id="search" data-type="reload">搜索</a>
+                </div>
+
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+
+<script type="text/html" id="msg-bar">
+
+    <a class="layui-btn layui-btn-xs" lay-event="tongchang">同场数据</a>
+
+</script>
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'roleid', title: '玩家ID', minWidth: 100}
+                    , {field: 'rolename', title: '角色名字', minWidth: 120}
+//                    ,{field: 'kindname', title: '游戏种类', minWidth: 120}
+                    , {field: 'roomname', title: '房间名', minWidth: 120}
+                    , {
+                        field: 'changetype', title: '输赢情况', minWidth: 120, templet: function (d) {
+                            var res = '';
+                            if (d.changetype == 0) {
+                                res = '赢';
+                            } else if (d.changetype == 1) {
+                                res = '输';
+                            } else if (d.changetype == 2) {
+                                res = '和';
+                            } else if (d.changetype == 3) {
+                                res = '逃';
+                            }
+                            return res;
+                        }
+                    }
+                    , {field: 'premoney', title: '上局金币', minWidth: 120}
+
+
+                    , {field: 'money', title: '输赢金币', minWidth: 120}
+                    , {field: 'lastmoney', title: '当前金币', minWidth: 120}
+                    , {field: 'addtime', title: '时间', minWidth: 120}
+//                    , {fixed: 'right', title:'操作', align:'center', minWidth:100, toolbar: '#msg-bar'}
+//                        , {field: 'proxyincome', title: '备注', minWidth:150}
+//                        , {field: 'proxyincome', title: '操作', minWidth:150}
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('playertrans/gamelog')}" //数据接口
+                    , page: true //开启分页
+                    , limit: 10
+                    , where: {
+                        winlost: -1
+                    }
+                    , cols: [cols]
+                    , done: function (res, curr, count) {
+                        $('#totalin').html(res.other.alltotal.sum);
+                        $('#win').html(res.other.alltotal.win);
+                        $('#lose').html(res.other.alltotal.lose);
+                        $('#escape').html(res.other.alltotal.escape);
+                        tzTbale()
+                    }
+                });
+            },
+
+            //搜索
+            search: function () {
+                var roleid = $.trim($('#roleid').val());
+                var roomid = $.trim($('#roomid').val());
+                var strartdate = $.trim($('#LAY-component-form-group-date').val());
+                var enddate = $.trim($('#LAY-component-form-group-date2').val());
+                var winlost = $.trim($('#result').val());
+
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'roleid': roleid,
+                        'roomid': roomid,
+                        'strartdate': strartdate,
+                        'enddate': enddate,
+                        'winlost': winlost,
+                    }
+                });
+            },
+
+            //操作事件
+            extraEvent: function () {
+                //编辑
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'tongchang') {
+//                        alert(55);
+//                        window.location.href='detailMpqz.html?uniqueid='+data.uniqueid+'&roomid='+$('#roomid').val();
+                        window.location.href = 'coPlayer.html?roomid=' + $('#roomid').val();
+                        var roomid = $("#tt").val();
+
+//                        var url = 'lookPartnerCard.html?roomid='+roomid;
+//                        var url = 'coPlayer.html?roomid='+roomid;
+//
+//                        x_admin_show('查看伙牌', url, $(window).width()*0.5, 330);
+                    } else if (layEvent === 'ganme') { //删除
+                        alert(data.nickname);
+                    } else if (layEvent === 'cold') {
+
+                    } else if (layEvent === 'delete') {
+
+                    }
+                });
+            },
+
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+                laydate.render({
+                    elem: '#LAY-component-form-group-date'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , btns: ['clear', 'confirm']
+                });
+                laydate.render({
+                    elem: '#LAY-component-form-group-date2'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , btns: ['clear', 'confirm']
+                });
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

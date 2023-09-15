@@ -1,0 +1,171 @@
+{extend name="common/base" /}
+{block name="title"}盘控操作日志{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('操作用户')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="txtsearch" name="CheckUser" autocomplete="off"  class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">
+                        {:lang('操作时间')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="startTime" id="startTime" autocomplete="off" class="layui-input">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="endTime" id="endTime" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label" style="width: 120px">{:lang('收放/水')}</label>
+                    <div class="layui-input-inline">
+                        <select name="condition" id="Type" name="Type">
+                            <option value="-1" selected>{:lang('全部')}</option>
+                            <option value="0">{:lang('收水')}</option>
+                            <option value="1">{:lang('放水')}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                        <button type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+
+        <div class="layui-card-body">
+            <div id="alllist">
+                <table id="proxylist" lay-filter="proxylist"></table>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- <div class="layui-tab layui-tab-card layui-tab-brief"> -->
+    <div class="layui-table"  id="dataTable" ></div>
+<!-- </div> -->
+
+{/block}
+{block name="script"}
+
+
+
+<script>
+    //初始化
+    var initURL = [
+        //Ajax获取基础配置
+        "{:url('GamePlatecontrol/PlatecontrolLog')}?action=list",
+    ];
+    var pagelimt = 12,
+        limits = [12, 24, 50, 100];
+    //表头
+    var tb1cols = [
+        {field: 'ID', title: 'ID', align: 'center', width: 100},
+        {field: 'CheckUser', title: "{:lang('操作用户')}", align: 'center', minWidth: 150},
+        {field: 'Type', title: "{:lang('收放/水')}", align: 'center', minWidth: 200 , templet: function(d) { return d.Type==0?"<span class='layui-bg-green'>{:lang('收水')}</span>":"<span class='layui-bg-red'>{:lang('放水')}</span>"}},
+        {field: 'Water', title: "{:lang('操作数')}", align: 'center', minWidth: 150},
+        {field: 'InsertTime', title: "{:lang('操作时间')}", minWidth: 120},
+
+    ];
+
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
+
+        table.render({
+            elem: '#dataTable',
+            url: initURL[0],
+            cols: [tb1cols],
+            page: true,
+            limit:pagelimt,
+            limits:limits
+        });
+
+        var main = {
+            // 搜索
+            search: function () {
+                var txtsearch = $.trim($('#txtsearch').val());
+                //执行重载
+                table.reload('dataTable', {
+                    page: {curr: 1},//重新从第 1 页开始
+                    where: {
+                        'txtsearch': txtsearch,
+                        'startTime':$.trim($('#startTime').val()),
+                        'endTime':$.trim($('#endTime').val()),
+                        'type':$.trim($('#Type').val())
+                    }
+                });
+            },
+            //操作事件
+            extraEvent: function () {
+                //编辑
+                // table.on('tool(proxylist)', function (obj) {
+                //     var data = obj.data //获得当前行数据
+                //         , layEvent = obj.event; //获得 lay-event 对应的值
+                //     tr = obj.tr; //获得当前行 tr 的DOM对象
+                //     if (layEvent === 'edit') {
+                //         x_admin_show('编辑', initURL[1] + data.ID, '', 360);
+                //     } else if (layEvent === 'del') {
+                //         var ID = data.ID;
+                //         layer.confirm('{:lang(\'确认要删除吗？\')}', function (index) {
+                //             //捉到所有被选中的，发异步进行删除
+                //             $.get(initURL[2], {ID: ID}, function (data, textStatus, xhr) {
+                //                 if (data.code == 1) {
+                //                     layer.msg(data.msg, {icon: 1, time: 1000}, function () {
+                //                         window.location.reload();
+                //                     });
+                //                 } else {
+                //                     layer.msg(data.msg, {icon: 2, time: 1000});
+                //                 }
+                //             });
+                //         });
+                //     }
+                // });
+
+            },
+
+            init: function () {
+                // main.renderData();
+                laydate.render({
+                    elem: '#startTime'
+                    , format: 'yyyy-MM-dd HH:mm:ss'
+                    , max: 1
+                    , lang:'{$datelang ?: "cn"}'
+                    , type: 'datetime'
+                });
+                laydate.render({
+                    elem: '#endTime'
+                    , format: 'yyyy-MM-dd HH:mm:ss'
+                    , max: 1
+                    , lang:'{$datelang ?: "cn"}'
+                    , type: 'datetime'
+                });
+                main.extraEvent();
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

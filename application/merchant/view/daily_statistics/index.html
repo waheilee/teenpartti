@@ -1,0 +1,158 @@
+{extend name="common/base" /}
+
+{block name="title"}日况统计概要{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('日期')}</label>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="end" id="LAY-component-form-group-date2" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                    <button type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>
+                    <a class="layui-btn" id="output">{:lang('导出记录')}</a>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script type="text/html" id="formatScaling">
+
+</script>
+<script>
+    var bl = "{$bl}"? Number("{$bl}"):1000;
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+            var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+                ,table = layui.table
+                ,$ = layui.$
+            ,form = layui.form;
+
+            var main = {
+                 renderData : function() {
+                    var cols = [ //表头
+                        {field: 'Date', title: "{:lang('日期')}", minWidth:120, align:'center'}
+                        ,{field: 'HistoryCoinStock', title: "{:lang('金币历史库存')}", minWidth:100, align:'center',templet: function(d){
+                                if(d.HistoryCoinStock){
+                                    return formatDecimal(d.HistoryCoinStock / bl,0);
+                                } else {
+                                    return '——';
+                                }
+                        }}
+                        , {field: 'PlatformRtp', title: "{:lang('平台RTP(%)')}", minWidth:100, align:'center',templet: function(d){ return formatDecimal(d.PlatformRtp * 100, 2); }}
+                        , {field: 'GameRTP', title: "{:lang('游戏RTP(%)')}", minWidth:100, align:'center',templet: function(d){ return formatDecimal(d.GameRTP * 100, 2); }}
+                        , {field: 'TotalRecharge', title: "{:lang('总充值')}", minWidth:100, align:'center',templet: function(d){ return formatDecimal(d.TotalRecharge / bl,3); }}
+                        , {field: 'TotalWithDraw', title: "{:lang('总提现')}", minWidth:100, align:'center',templet: function(d){ return formatDecimal(d.TotalWithDraw / bl,3); }}
+                        , {field: 'TotalProfit', title: "{:lang('充提差')}", minWidth:100, align:'center',templet: function(d){
+                            return formatDecimal(d.TotalProfit / bl,3);
+                        }}
+                        , {field: 'PlatformProfitLoss', title: "{:lang('游戏盈亏')}", minWidth:100, align:'center',templet: function(d){
+                            return formatDecimal(d.PlatformProfitLoss / bl,0);
+                        }}
+                        , {field: 'Tax', title: "{:lang('税收')}", minWidth:60, align:'center',templet: function(d){ return formatDecimal(d.Tax / bl,0);}}
+                        , {field: 'FreeCoinProduct', title: "{:lang('免费金币')}", minWidth:100, align:'center',templet: function(d){ return formatDecimal(d.FreeCoinProduct / bl,0); }}
+                        , {field: 'GameCoinProduct', title: "{:lang('游戏中奖')}", minWidth:100, align:'center',templet: function(d){
+                            return formatDecimal((d.GameCoinProduct) / bl,0);
+                             }}
+                        , {field: 'AgentReward', title: "{:lang('代理佣金')}", minWidth:100, align:'center',templet: function(d){ return formatDecimal(d.AgentReward / bl,0); }}
+                        , {field: 'MailExtraGiftCoins', title: "{:lang('邮件赠送')}", minWidth:100, align:'center',templet: function(d){ return formatDecimal(d.MailExtraGiftCoins / bl,0); }}
+                        , {field: 'DailyActivyAwardCoin', title: "{:lang('充值赠送')}", minWidth:130, align:'center',templet: function(d){ return formatDecimal(d.DailyActivyAwardCoin / bl,0); }}
+                        , {field: 'TotalDayConsume', title: "{:lang('总投注')}", minWidth:100, align:'center',templet: function(d){ return formatDecimal(d.TotalDayConsume / bl,0); }}
+                        , {field: 'FirstChargeNum', title: "{:lang('首充人数')}", minWidth:100, align:'center'}
+                        , {field: 'FirstChargeAmount', title: "{:lang('首充金额')}", minWidth:100, align:'center',templet: function(d){ return formatDecimal(d.FirstChargeAmount / bl,0); }}
+                        , {field: 'ActiveUsers', title: "{:lang('活跃用户')}", minWidth:80, align:'center'}
+                        , {field: 'NewUser', title: "{:lang('新增用户')}", minWidth:80, align:'center'}
+                        , {field: 'UpdateTime', title: "{:lang('更新时间')}", minWidth:200, align:'center'}
+                    ];
+
+                    table.render({
+                        elem: '#proxylist'
+                        , url: "{:url('DailyStatistics/index')}" //数据接口
+                        , page: true //开启分页
+                        , limit:15
+                        , cols: [cols]
+                    });
+                },
+
+                //搜索
+                search : function() {
+                    var strartdate = $.trim($('#LAY-component-form-group-date').val());
+                    var enddate = $.trim($('#LAY-component-form-group-date2').val());
+
+                    //执行重载
+                    table.reload('proxylist', {
+                        page: {
+                            curr: 1 //重新从第 1 页开始
+                        },
+                        where: {
+                            'start':strartdate,
+                            'end':enddate
+                        }
+                    });
+                },
+
+                 init : function() {
+                    main.renderData();
+                    laydate.render({
+                        elem: '#LAY-component-form-group-date'
+                        , format: 'yyyy-MM-dd'
+                        , max: 1
+                        , lang:'{$datelang ?: "cn"}'
+                        , btns: ['clear', 'confirm']
+                    });
+                    laydate.render({
+                        elem: '#LAY-component-form-group-date2'
+                        , format: 'yyyy-MM-dd'
+                        , max: 1
+                        , lang:'{$datelang ?: "cn"}'
+                        , btns: ['clear', 'confirm']
+                    });
+                    $('#search').on('click', function(e) {
+                        e.preventDefault();
+                        main.search();
+                    });
+                }
+            };
+
+            main.init();
+    });
+    $('#output').click(function(){
+        var start = $.trim($('#LAY-component-form-group-date').val());
+        var end = $.trim($('#LAY-component-form-group-date2').val());
+        var url = "{:url('DailyStatistics/exportDailyStatistics')}?start=" + start + '&end='+ end;
+        location.href = url;
+    });
+</script>
+{/block}

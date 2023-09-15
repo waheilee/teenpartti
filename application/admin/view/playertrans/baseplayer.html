@@ -1,0 +1,240 @@
+{extend name="common/base" /}
+
+{block name="title"}所有玩家{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <div class="layui-card-header">
+    </div>
+    <div class="layui-card-body">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+
+                <label class="layui-form-label">{:lang('玩家ID')}</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="roleid" value="{$roleid}" autocomplete="off" class="layui-input" readonly>
+                </div>
+
+                <label class="layui-form-label">{:lang('昵称')}</label>
+                <div class="layui-input-inline">
+                    <input type="text" value="{$data['RealName']}" autocomplete="off" class="layui-input" readonly>
+                </div>
+
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">{:lang('注册账号')}</label>
+                <div class="layui-input-block">
+                    <input autocomplete="off" class="layui-input" readonly type="text" value="{$data.accoutname}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">{:lang('登录IP')}</label>
+                <div class="layui-input-inline">
+                    <input type="text" value="{$data['lastloginip']}" id="loginip" autocomplete="off" class="layui-input" readonly>
+                </div>
+
+                <label class="layui-form-label">{:lang('注册IP')}</label>
+                <div class="layui-input-inline">
+                    <input type="text" value="{$data['regip']}" autocomplete="off" class="layui-input" readonly>
+                </div>
+
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">{:lang('同IP数量')}</label>
+                <div class="layui-input-inline">
+                    <input style="width: 70%;float: left" type="text" id="sameip" value="{$data['sameiptotal']}" autocomplete="off" class="layui-input" readonly>
+                    <button style="float: right;margin-top: 4px" type="button" id="getuserbyip" class="layui-btn layui-btn-sm layui-btn-normal">
+                        <i class="layui-icon">&#xe615;</i>
+                    </button>
+                </div>
+
+                <label class="layui-form-label">{:lang('同MAC数量')}</label>
+                <div class="layui-input-inline">
+                    <input type="text" style="width: 70%;float: left" id="samemac"  value="{$data['samemactotal']}" autocomplete="off" class="layui-input" readonly>
+                    <button style="float: right;margin-top: 4px" type="button" id="getuserbymac" class="layui-btn layui-btn-sm layui-btn-normal">
+                        <i class="layui-icon">&#xe615;</i>
+                    </button>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">{:lang('登录MAC')}</label>
+                <div class="layui-input-block">
+                    <input type="text" value="{$data['loginmachineserial']}" id="loginmac" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">{:lang('注册MAC')}</label>
+                <div class="layui-input-block">
+                    <input type="text" value="{$data['regmachineserial']}" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">{:lang('首次登入时间')}</label>
+                <div class="layui-input-inline">
+                    <input type="text" value="{$data['firstlogintime']}" autocomplete="off" class="layui-input"
+                           readonly>
+                </div>
+                <label class="layui-form-label">{:lang('账号详情')}最后登入时间</label>
+                <div class="layui-input-inline">
+                    <input type="text" value="{$data['lastlogintime']}" autocomplete="off" class="layui-input" readonly>
+                </div>
+                <label class="layui-form-label">{:lang('账号详情')}设备类型</label>
+                <div class="layui-input-inline">
+                    <input type="text" value="{if $data['device']==1}安卓{elseif $data['device']==2 /}IOS{else /}其他{/if}" autocomplete="off" class="layui-input" readonly>
+                </div>
+            </div>
+            <div class="layui-form-item">
+
+                <label class="layui-form-label">{:lang('账号详情')}今日充值次数</label>
+                <div class="layui-input-inline">
+                    <input type="text" value="{$data['todaychargetime']}" autocomplete="off" class="layui-input"
+                           readonly>
+                </div>
+                <label class="layui-form-label">{:lang('账号详情')}历史充值次数</label>
+                <div class="layui-input-inline">
+                    <input type="text" value="{$data['historychargetime']}" autocomplete="off" class="layui-input"
+                           readonly>
+                </div>
+
+                <label class="layui-form-label">{:lang('账号详情')}首充金额</label>
+                <div class="layui-input-inline">
+                    <input type="text" value="{$data['firstcharge']/1000|round=3}" autocomplete="off"
+                           class="layui-input" readonly>
+                </div>
+            </div>
+            <div class="layui-form-item">
+
+                <label class="layui-form-label">{:lang('账号详情')}今日充值金币</label>
+                <div class="layui-input-inline">
+                    <input type="text" value="{$data['todaycharge']/1000|round=3}" autocomplete="off"
+                           class="layui-input" readonly>
+                </div>
+                <label class="layui-form-label">{:lang('账号详情')}历史充值金币</label>
+                <div class="layui-input-inline">
+                    <input type="text" value="{$data['historycharge']/1000|round=3}" autocomplete="off"
+                           class="layui-input" readonly>
+                </div>
+
+                <label class="layui-form-label">{:lang('账号详情')}玩家总流水</label>
+                <div class="layui-input-inline">
+                    <input type="text" value="{$data['totalwater']/1000|round=3}" autocomplete="off" class="layui-input"
+                           readonly>
+                </div>
+            </div>
+
+            <div class="layui-btn-container" style="margin-top: 40px;text-align: center">
+                <a class="layui-btn" id="coinlog">{:lang('账号详情')}玩家流水详情</a>
+                <a class="layui-btn" id="chargelog">{:lang('账号详情')}玩家充值记录</a>
+                <a class="layui-btn" id="gamelog">{:lang('账号详情')}总游戏记录</a>
+                <a class="layui-btn" id="selfgamelog">{:lang('账号详情')}玩家游戏记录</a>
+                <a class="layui-btn" id="gamedailylog">{:lang('账号详情')}每日房间游戏记录</a>
+                <a class="layui-btn layui-btn-normal" id="withdraw">{:lang('账号详情')}同支付宝/银行卡玩家</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script type="text/html" id="msg-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="detail">{:lang('账号详情')}详情</a>
+    <!--<a class="layui-btn layui-btn-xs " lay-event="ganme">{:lang('账号详情')}游戏日志</a>-->
+    <!--<a class="layui-btn layui-btn-xs" lay-event="cold">{:lang('账号详情')}金币日志</a>-->
+    <!--<a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">{:lang('账号详情')}拉黑</a>-->
+</script>
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+
+        var main = {
+
+            //操作事件
+            extraEvent: function () {
+
+                $('#coinlog').on('click', function(e) {
+                    e.preventDefault();
+                    var url = 'coinlog?roleid='+$('#roleid').val();
+                    x_admin_show('玩家流水详情', url,  $(window).width()*0.95, $(window).height()*0.95);
+                });
+                $('#gamelog').on('click', function(e) {
+                    e.preventDefault();
+                    var url = 'gamelog';
+                    x_admin_show('总游戏记录', url,  $(window).width()*0.95, $(window).height()*0.95);
+                });
+                $('#selfgamelog').on('click', function(e) {
+                    e.preventDefault();
+                    var url = 'selfgamelog?roleid='+$('#roleid').val();
+                    x_admin_show('玩家游戏记录', url,  $(window).width()*0.95, $(window).height()*0.95);
+                });
+
+                $('#gamedailylog').on('click', function(e) {
+                    e.preventDefault();
+                    var url = 'gamedailylog?roleid='+$('#roleid').val();
+                    x_admin_show('每日房间游戏记录', url,  $(window).width()*0.95, $(window).height()*0.95);
+                });
+
+                $('#chargelog').on('click', function(e) {
+                    e.preventDefault();
+                    var url = 'chargelog?roleid='+$('#roleid').val();
+                    x_admin_show('玩家充值记录', url,  $(window).width()*0.95, $(window).height()*0.95);
+                });
+
+                //同ip查询
+                $('#getuserbyip').on('click', function(e) {
+                    e.preventDefault();
+                    var loginip = $('#loginip').val();
+                    var sameip = $('#sameip').val();
+                    if (sameip == 0 || sameip == '' || sameip=='null' || loginip == '') {
+                        layer.msg('暂无同IP对应的玩家信息', {icon:7});
+                        return false;
+                    }
+
+                    var url = 'getsameuser?ip='+loginip;
+                    x_admin_show('<span style="color: #FF5722">同IP玩家</span>', url,  $(window).width()*0.95, $(window).height()*0.95);
+                });
+
+                //同mac查询
+                $('#getuserbymac').on('click', function(e) {
+                    e.preventDefault();
+                    var loginmac = $('#loginmac').val();
+                    var samemac = $('#samemac').val();
+                    if (samemac == 0 || samemac == '' || samemac=='null' || loginmac == '') {
+                        layer.msg('暂无同MAC码对应的玩家信息', {icon:7});
+                        return false;
+                    }
+                    var url = 'getsameuser?mac='+loginmac;
+                    x_admin_show('<span style="color: #FF5722">同MAC玩家</span>', url,  $(window).width()*0.95, $(window).height()*0.95);
+                });
+
+
+                //同bank查询
+                $('#withdraw').on('click', function(e) {
+                    e.preventDefault();
+                    var url = 'getsameuser?bank='+$('#roleid').val();
+                    x_admin_show('<span style="color: #FF5722">同支付宝/银行卡玩家</span>', url,  $(window).width()*0.95, $(window).height()*0.95);
+                });
+            },
+
+            init: function () {
+                main.extraEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

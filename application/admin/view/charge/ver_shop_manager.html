@@ -1,0 +1,107 @@
+{extend name="common/base" /}
+{block name="title"}商品管理{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+    </div>
+    <div class="layui-card-body">
+        <button class="layui-btn " onclick="x_admin_show('{:lang(\'添加商品\')}','VerShopManager?Action=add',700,600)"><i class="layui-icon layui-icon-add-circle"></i></button>
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+
+<script id="msg-bar" type="text/html">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">{:lang('编辑')}</a>
+    <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="del">{:lang('删除')}</a>
+</script>
+
+<script>
+    var cols = [ //表头
+        {field: 'BaseGoodsValue', align: 'center', title: "{:lang('金币')}", minWidth: 100},
+        {field: 'RealMoney', align: 'center', title: "{:lang('金额')}", minWidth: 100},
+        {field: 'FirstChargeAward', align: 'center', title: "{:lang('首次充值奖励')}", minWidth: 120},
+        {field: 'DayFirstCharge', align: 'center', title: "{:lang('每日首充奖励')}", minWidth: 120},
+        {field: 'ExtraAward', align: 'center', title: "{:lang('额外奖励')}", minWidth: 120},
+        {field: 'parentAward', align: 'center', title: "{:lang('首充上级奖励')}", minWidth: 120},
+        {fixed: 'right', align: 'center', title: "{:lang('操作')}", align: 'center', minWidth: 150, toolbar: '#msg-bar'}
+    ];
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
+
+        var main = {
+            renderData: function () {
+                table.render({
+                    elem: '#proxylist', url: "{:url('Charge/VerShopManager')}", where: {Action: 'list'}, page: true
+                    , limit: 15, sort: true, cols: [cols],done: function (res) {
+                        tzTbale();
+                    }
+                });
+            },
+
+            //搜索
+            search: function () {
+                // var username = $.trim($('#username').val());
+                // //执行重载
+                // table.reload('proxylist', {
+                // 	page: {curr: 1},//重新从第 1 页开始
+                // 	// where: {'ChannelId': username,}
+                // });
+            },
+            //操作事件
+            extraEvent: function () {
+                //编辑
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'edit') {
+                        console.info(data);
+                        var vipaward = data.Vip1GoodsValue+','+data.Vip2GoodsValue+','+data.Vip3GoodsValue+','+data.Vip4GoodsValue+','+data.Vip5GoodsValue+','+data.Vip6GoodsValue+','+data.Vip7GoodsValue+','+data.Vip8GoodsValue+','+data.Vip9GoodsValue+','+data.Vip10GoodsValue+','+data.Vip11GoodsValue+','+data.Vip12GoodsValue+','+data.Vip13GoodsValue+','+data.Vip14GoodsValue+','+data.Vip15GoodsValue+','+data.Vip16GoodsValue+','+data.Vip17GoodsValue+','+data.Vip18GoodsValue+','+data.Vip19GoodsValue+','+data.Vip20GoodsValue;
+                        url = 'VerShopManager?Action=edit&BaseGoodsValue=' + data.BaseGoodsValue + "&RealMoney=" + data.RealMoney +'&FirstChargeAward='+data.FirstChargeAward+"&parentAward="+data.parentAward+ "&ID=" + data.ID + "&ExtraAward=" + data.ExtraAward+'&VipAward='+'&DayFirstCharge='+data.DayFirstCharge;
+                        x_admin_show('{:lang(\'编辑\')}', url, 700,600);
+                    } else if (layEvent === 'del') {
+                        layer.confirm('{:lang(\'确认要删除吗？\')}',{
+                            btn: ['{:lang("确定")}','{:lang("取消")}'] //按钮
+                        }, function (index) {
+                            //捉到所有被选中的，发异步进行删除
+                            $.post("VerShopManager?Action=del", {Goods: data.BaseGoodsValue, Money: data.RealMoney, ID: data.ID}, function (data, textStatus, xhr) {
+                                if (data.code == 1) {
+                                    layer.msg(data.msg, {icon: 1, time: 1000}, function () {
+                                        window.location.reload();
+                                    });
+                                } else {
+                                    layer.msg(data.msg, {icon: 2, time: 1000});
+                                }
+                            });
+                        });
+                    }
+                });
+
+            },
+
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

@@ -1,0 +1,423 @@
+{extend name="common/base" /}
+{block name="title"}团队明细{/block}
+{block name="css"}
+<style type="text/css">
+/*.layui-table-header .layui-table-cell {*/
+/*height: 100px;*/
+/*padding: 15px;*/
+/*position: relative;*/
+/*box-sizing: border-box;*/
+/*white-space: initial;   */
+/*word-break: break-word;*/
+/*}*/
+</style>
+{/block}
+{block name="content"}
+<div class="layui-row layui-col-space20">
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('首充人数')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="FirstDepositPerson"
+                                                                 style="color: #009688"></p></div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('首充金额')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="FirstDepositMoney"
+                                                                 style="color: #009688"></p></div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('1+2+3级打码')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="dm"
+                                                                 style="color: #009688"></p></div>
+        </div>
+    </div>
+
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('一级有效人数')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="Lv1Tax"
+                                                                 style="color: #009688"></p></div>
+        </div>
+    </div>
+
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('二级有效人数')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="Lv2Tax"
+                                                                 style="color: #009688"></p></div>
+        </div>
+    </div>
+
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('三级有效人数')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="Lv3Tax"
+                                                                 style="color: #009688"></p></div>
+        </div>
+    </div>
+
+
+</div>
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('玩家ID')}</label>
+                    <div class="layui-input-inline" style="width: 100px;"><input autocomplete="off" class="layui-input" id="RoleID"
+                                                           lay-verify="number" name="RoleID" value="{$roleid}"
+                                                           type="text"></div>
+                </div>
+
+                <!--<div class="layui-inline">-->
+                <!--<label class="layui-form-label">{:lang('每日收益')}</label>-->
+                <!--<div class="layui-input-inline"><input autocomplete="off" class="layui-input" id="reward_amount"-->
+                <!--lay-verify="number" name="reward_amount" type="text"></div>-->
+                <!--</div>-->
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('时间')}</label>
+                    <div class="layui-input-inline" style="width: 120px;">
+                        <input type="text" name="start_date" id="LAY-component-form-group-date1" autocomplete="off"
+                               class="layui-input" value="{:date('Y-m-d')}">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline" style="width: 120px;">
+                        <input type="text" name="end_date" id="LAY-component-form-group-date2" autocomplete="off"
+                               class="layui-input" value="{:date('Y-m-d')}">
+                    </div>
+                </div>
+
+
+                <input type="hidden" name="tab" id="searchtab" value="total">
+                <div class="layui-inline">
+                    <!-- <div class="layui-input-inline"> -->
+                    <a class="layui-btn" id="search">{:lang('搜索')}</a>
+                    <a class="layui-btn layui-btn-normal" id="output">{:lang('导出记录')}</a>
+
+                    <a class="layui-btn" id="today">{:lang('今日')}</a>
+                    <a class="layui-btn" id="yestoday">{:lang('昨日')}</a>
+                    <a class="layui-btn" id="q_day">{:lang('前一天')}</a>
+                    <a class="layui-btn" id="h_day">{:lang('后一天')}</a>
+                    <a class="layui-btn" id="week">{:lang('本周')}</a>
+                    <a class="layui-btn" id="lastweek">{:lang('上周')}</a>
+                    <a class="layui-btn" id="month">{:lang('本月')}</a>
+                    <a class="layui-btn" id="lastmonth">{:lang('上个月')}</a>
+                    <!-- </div> -->
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        {if($parentid>0)}
+        <a class="layui-btn layui-btn-primary" style="margin-bottom: 10px;">{$parentid}{:lang('的子代理')}</a>
+        <!--<a style="margin-bottom: 10px;" class="layui-btn" onclick="parent.window.history.go(-1);">-->
+            <!--{:lang('后退')}-->
+        <!--</a>-->
+        {/if}
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+
+<script id="msg-bar" type="text/html">
+    <input type="button" class="layui-btn layui-btn-xs" lay-event="lookteam" value="{:lang('查看下级成员')}">
+</script>
+<script>
+
+    url = "{:url('agent/AgentWaterDaily')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$,
+            form = layui.form;
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'AddTime', title: "{:lang('日期')}", width: 110, align: 'center', fixed: 'left', sort: true},
+                    {field: 'ProxyId', title: "{:lang('代理ID')}", width: 100, align: 'center', fixed: 'left'},
+                    {field: 'dm', title: "{:lang('1+2级打码')}", width: 100, align: 'center'},
+                    {
+                        field: 'RewardAmount',
+                        title: "{:lang('个人收益')}",
+                        width: 105,
+                        align: 'center',
+                        templet: function (data) {
+                            return '<span style="color: #0000FF;font-weight: bold">' + data.RewardAmount + '</span>';
+                        }
+                    },
+                    {field: 'DailyDeposit', title: "{:lang('个人充值')}", width: 120, align: 'center', sort: true},
+                    {field: 'DailyRunning', title: "{:lang('个人流水')}", width: 120, align: 'center', sort: true},
+                    {field: 'Lv1PersonCount', title: "{:lang('一级人数')}", width: 120, align: 'center', sort: true},
+                    {field: 'ValidInviteCount', title: "{:lang('一级有效人数')}", width: 150, align: 'center', sort: true,templet: function (data) {
+                            return '<span style="color: #0000FF;font-weight: bold">' + data.ValidInviteCount + '</span>';
+                    }},
+                    {field: 'Lv1FirstDepositPlayers', title: "{:lang('一级首充人数')}", width: 150, align: 'center', sort: true},
+                    // {field: 'FirstDepositMoney', title: "{:lang('首充金额')}", width: 105, align: 'center', sort: true},
+                    {field: 'Lv1Deposit', title: "{:lang('一级充值')}", width: 120, align: 'center', sort: true},
+                    {field: 'Lv1Running', title: "{:lang('一级流水')}", width: 120, align: 'center', sort: true},
+                    {field: 'Lv2PersonCount', title: "{:lang('二级人数')}", width: 120, align: 'center', sort: true},
+                    {field: 'Lv2ValidInviteCount', title: "{:lang('二级有效人数')}", width: 150, align: 'center', sort: true,templet: function (data) {
+                            return '<span style="color: red;font-weight: bold">' + data.Lv2ValidInviteCount + '</span>';
+                    }},
+                    {field: 'Lv2FirstDepositPlayers', title: "{:lang('二级首充人数')}", width: 150, align: 'center', sort: true},
+                    {field: 'Lv2Deposit', title: "{:lang('二级充值')}", width: 120, align: 'center', sort: true},
+                    {field: 'Lv2Running', title: "{:lang('二级流水')}", width: 120, align: 'center', sort: true},
+                    {field: 'Lv3PersonCount', title: "{:lang('三级人数')}", width: 120, align: 'center'},
+                    {field: 'Lv3ValidInviteCount', title: "{:lang('三级有效人数')}", width: 150, align: 'center', sort: true},
+                    {field: 'Lv3FirstDepositPlayers', title: "{:lang('三级首充人数')}", width: 150, align: 'center', sort: true},
+                    {field: 'Lv3Deposit', title: "{:lang('三级充值')}", width: 120, align: 'center', sort: true},
+                    {field: 'Lv3Running', title:"{:lang('三级流水')}", width: 120, align: 'center'},
+                    {fixed: 'right', title: "{:lang('操作')}", align: 'center', width: 150, toolbar: '#msg-bar'}
+                ];
+                table.render({
+                    elem: '#proxylist', url: url, where: {
+                        parentid: '{$parentid}',
+                        RoleID: '{$roleid}',
+                        start:$('#LAY-component-form-group-date1').val(),
+                        end:$('#LAY-component-form-group-date2').val(),
+                        Action: 'list'
+                    }, page: true, limit: 15, cols: [cols], sort: true, autoSort: false,
+                    done: function (res, curr, count) {
+                        tzTbale()
+                        $('#LAY-component-form-group-date1').val(res['other']['startdate']);
+                        $('#LAY-component-form-group-date2').val(res['other']['enddate']);
+                        $('#FirstDepositPerson').html(res['other'][0]['FirstDepositPerson']);
+                        $('#FirstDepositMoney').html(res['other'][0]['FirstDepositMoney']);
+                        $('#Lv1PersonCount').html(res['other'][0]['Lv1PersonCount']);
+                        $('#Lv1Tax').html(res['other'][0]['ValidInviteCount']);
+                        $('#Lv2Tax').html(res['other'][0]['Lv2ValidInviteCount']);
+                        $('#Lv3Tax').html(res['other'][0]['Lv3ValidInviteCount']);
+                        $('#dm').html(res['other'][0]['dm']);
+                        
+                    }
+                });
+            },
+
+            //搜索
+            search: function (e) {
+                if (e <= 0) {
+                    $('#searchtab').val('');
+                    $('.layui-btn-danger').removeClass('layui-btn-danger');
+                }
+                //执行重载
+                table.reload('proxylist', {
+                    page: {curr: 1},
+                    where: {
+                        roleid: $.trim($('#RoleID').val()),
+                        tab: $.trim($('#searchtab').val()),
+                        start: $.trim($('#LAY-component-form-group-date1').val()),
+                        end: $.trim($('#LAY-component-form-group-date2').val())
+                    },
+                    done: function (res, curr, count) {
+                        tzTbale()
+                        $('#LAY-component-form-group-date1').val(res['other']['startdate']);
+                        $('#LAY-component-form-group-date2').val(res['other']['enddate']);
+                        $('#FirstDepositPerson').html(res['other'][0]['FirstDepositPerson']);
+                        $('#FirstDepositMoney').html(res['other'][0]['FirstDepositMoney']);
+                        $('#Lv1PersonCount').html(res['other'][0]['Lv1PersonCount']);
+                        $('#Lv1Tax').html(res['other'][0]['ValidInviteCount']);
+                        $('#Lv2Tax').html(res['other'][0]['Lv2ValidInviteCount']);
+                        $('#Lv3Tax').html(res['other'][0]['Lv3ValidInviteCount']);
+                        $('#dm').html(res['other'][0]['dm']);
+                    }
+                });
+            },
+
+            //操作事件
+            extraEvent: function () {
+
+
+                //编辑&&删除
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data, layEvent = obj.event;
+                    var data = obj.data, layEvent = obj.event;
+                    if (layEvent === 'lookteam') {
+                        var startdate=$('#LAY-component-form-group-date1').val();
+                        var enddate =$('#LAY-component-form-group-date2').val();
+                        var url = "{:url('agent/AgentWaterDaily')}" + "?parentid=" + data.ProxyId + '&startdate=' + startdate+'&enddate='+enddate;
+                        top.layui.index.openTabsPage(url, data.ProxyId + "{:lang('的下级列表')}");
+                    }
+                });
+
+
+
+                //排序
+                table.on('sort(proxylist)', function (obj) {
+                    //执行重载
+                    table.reload('proxylist', {
+                        initSort: obj,
+                        page: {
+                            curr: 1 //重新从第 1 页开始
+                        },
+                        where: {
+                            roleid: $.trim($('#RoleID').val()),
+                            tab: $.trim($('#searchtab').val()),
+                            start: $.trim($('#LAY-component-form-group-date1').val()),
+                            end: $.trim($('#LAY-component-form-group-date2').val()),
+                            ordertype: obj.type,
+                            orderfield: obj.field
+                        }
+                    });
+
+                });
+            },
+
+
+
+        init: function () {
+            main.renderData();
+            main.extraEvent();
+            laydate.render({
+                elem: '#LAY-component-form-group-date1'
+                , format: 'yyyy-MM-dd'
+                , max: 1
+                , lang: '{$datelang ?: "cn"}'
+                , btns: ['clear', 'confirm']
+                //, value: new Date()
+            });
+
+            laydate.render({
+                elem: '#LAY-component-form-group-date2'
+                , format: 'yyyy-MM-dd'
+                , max: 1
+                , lang: '{$datelang ?: "cn"}'
+                , btns: ['clear', 'confirm']
+                //, value: new Date()
+            });
+            $('#search').on('click', function (e) {
+                e.preventDefault();
+                main.search(0);
+            });
+        }
+    }
+        ;
+
+        main.init();
+        // $('#search').click(function () {
+        //     $('#searchtab').val('');
+        //     $('.layui-btn-danger').removeClass('layui-btn-danger');
+        //     // main.search();
+        // });
+        $('#today').click(function () {
+            $('#searchtab').val('today');
+            $('.layui-btn-danger').removeClass('layui-btn-danger');
+            $('#today').addClass('layui-btn-danger');
+            main.search(1);
+        });
+        $('#yestoday').click(function () {
+            $('#searchtab').val('yestoday');
+            $('.layui-btn-danger').removeClass('layui-btn-danger');
+            $('#yestoday').addClass('layui-btn-danger');
+            main.search(2);
+        });
+        $('#q_day').click(function () {
+            $('#searchtab').val('q_day');
+            $('.layui-btn-danger').removeClass('layui-btn-danger');
+            $('#q_day').addClass('layui-btn-danger');
+            main.search(3);
+        });
+        $('#h_day').click(function () {
+            $('#searchtab').val('h_day');
+            $('.layui-btn-danger').removeClass('layui-btn-danger');
+            $('#h_day').addClass('layui-btn-danger');
+            main.search(4);
+        });
+        $('#month').click(function () {
+            $('#searchtab').val('month');
+            $('.layui-btn-danger').removeClass('layui-btn-danger');
+            $('#month').addClass('layui-btn-danger');
+            main.search(5);
+        });
+        $('#lastmonth').click(function () {
+            $('#searchtab').val('lastmonth');
+            $('.layui-btn-danger').removeClass('layui-btn-danger');
+            $('#lastmonth').addClass('layui-btn-danger');
+            main.search(6);
+        });
+        $('#week').click(function () {
+            $('#searchtab').val('week');
+            $('.layui-btn-danger').removeClass('layui-btn-danger');
+            $('#week').addClass('layui-btn-danger');
+            main.search(7);
+        });
+        $('#lastweek').click(function () {
+            $('#searchtab').val('lastweek');
+            $('.layui-btn-danger').removeClass('layui-btn-danger');
+            $('#lastweek').addClass('layui-btn-danger');
+            main.search(8);
+        });
+    });
+
+    function formatNumber(val) {
+        if (val > 0) {
+            return val;
+        } else {
+            return 0;
+        }
+    }
+
+    $('#output').click(function () {
+        where = {
+            roleid: $.trim($('#RoleID').val()),
+            start: $.trim($('#LAY-component-form-group-date1').val()),
+            end: $.trim($('#LAY-component-form-group-date2').val()),
+            limit: 10000000,
+            output: 'exec',
+            Action:'exec'
+        }
+
+        download();
+
+        function download() {
+            var params = Object.keys(where).map(function (key) {
+                return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+            }).join("&");
+            url = url + "?" + params;
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                async: true,
+                url: url, // 生成文件，保存在服务器
+                success: function (data) {
+                    var result = data;
+                    console.info(data);
+                    switch (result["code"]) {
+                        case 0:
+                            parent.parent.open(url + "&exec=1&outall=true");
+                            break;
+                        case 1:
+                            layer.msg(result["message"]);
+                            break;
+                        case 2:
+                            layer.confirm(result['message'], {
+                                btn: ["{:lang('是')}", "{:lang('否')}"] //按钮
+                            }, function () {
+                                parent.parent.open(url + "&exec=1&outall=true");
+                                layer.msg('', {icon: 6, time: 1000}, function () {
+                                    window.location.reload();
+                                });
+                            });
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, e) {
+                    console.log("oilDetection.js  method exportOilDetection" + e);
+                }
+            });
+        }
+    });
+</script>
+{/block}

@@ -1,0 +1,302 @@
+{extend name="common/base" /}
+
+{block name="title"}游戏日志{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<style>.layui-form-label { width: auto; text-align: center}</style>
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-input-inline">
+                    <select id="PackID" name="PackID">
+                        <option value="{$PackIDS}">可用分包</option>
+                        {foreach $PackID as $k1 => $v1}
+                        <option value="{$v1['OperatorId']}">{$v1['PackageName']}</option>
+                        {/foreach}
+                    </select>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">玩家ID</label>
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="roleid" lay-verify="number" name="roleid" type="text">
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">玩家账号</label>
+                        <div class="layui-input-inline">
+                            <input autocomplete="off" class="layui-input" id="mobile" name="mobile" placeholder="玩家账号" type="text">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">日期</label>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date" name="start" type="text">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date2" name="end" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">房间</label>
+                    <div class="layui-input-inline">
+                        <select id="roomid" name="roomid">
+                            <option value="0">所有</option>
+                            <!-- foreach循环 -->
+                            {foreach name="selectData" item="vo"}
+                            <option value="{$vo.RoomID}">{$vo.RoomName}</option>
+                            {/foreach}
+                            <!-- for循环 -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">游戏结果</label>
+                    <div class="layui-input-inline">
+                        <select id="result" name="result">
+                            <option value="-1">所有</option>
+                            <option value="0">赢</option>
+                            <option value="1">输</option>
+                            <option value="2">和</option>
+                            <option value="3">逃</option>
+                            <option value="4">扫雷发红包</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" data-type="reload" id="search">搜索</a>
+                        <a class="layui-btn" id="output">导出记录</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+
+<script id="msg-bar" type="text/html">
+    {{#  if(!(RegExp(/红包扫雷/).test(d.roomname) || RegExp(/李逵劈鱼/).test(d.roomname) || RegExp(/水果拉霸/).test(d.roomname) )
+
+    ) { }}
+    <a class="layui-btn layui-btn-xs " lay-event="DiskRecord">查看结果</a>
+    {{#  } }}
+    <!--<a class="layui-btn layui-btn-xs" lay-event="tongchang">同场数据</a>-->
+
+
+</script>
+<script>
+	var cols = [ //表头
+		{field: 'PackageName', title: '包名', minWidth: 80},
+		{field: 'RoleID', title: '玩家ID', minWidth: 80},
+		{field: 'AccountName', title: '账号名称', minWidth: 120},
+		{field: 'RoomID', align: "center", title: '房间ID', width: 80},
+		{field: 'RoomName', title: '房间名', minWidth: 150},
+		{
+			field: 'ChangeType', align: "center", title: '输赢', width: 100, templet: function (d) {
+				switch (Number(d.ChangeType)) {
+					case  0:
+						return '赢';
+					case  1:
+						return '输';
+					case  2:
+						return '和';
+					case  3:
+						return '逃';
+					case  4:
+						return '扫雷发红包';
+					case  6:
+						return '免费道具';
+					default :
+						return Number(d.ChangeType);
+				}
+			}
+		},
+		{
+			field: 'FreeGame', title: '免费', align: "center", width: 60, templet: function (d) {
+				if (d.FreeGame == '是')
+					return '<span style="color:#FF5722"> ' + d.FreeGame + '</span>';
+				return '<span style="color:#009688"> ' + d.FreeGame + '</span>';
+			}
+		},
+		{field: 'GameRoundRunning', title: '下注金额', minWidth: 100},
+		{
+			field: 'Money', title: '输赢金币', minWidth: 100, templet: function (d) {
+				return d.Money > 0 ? "<span style='color: red'>+" + d.Money + "</span>" : "<span style='color: green'>" + d.Money + "</span>";
+			}
+		},
+		{field: 'AwardMoney', align: "center", title: '中奖金额', minWidth: 100},
+		{field: 'PreMoney', align: "center", title: '上局金币', minWidth: 100},
+		{field: 'LastMoney', align: "center", title: '当前金币', minWidth: 100},
+		{field: 'Tax', align: "center", title: '税收', width: 90},
+		{
+			field: 'AddTime', align: "center", title: '时间', minWidth: 160, templet: function (d) {
+				return d.AddTime.substr(0, d.AddTime.length - 4)
+			}
+		},
+		//, {fixed: 'right', title: '操作', align: 'center', width: 90, toolbar: '#msg-bar'}
+		{
+			fixed: 'right', title: '操作', align: 'center', width: 90, templet: function (d) {
+				return " <a class=\"layui-bg-green\" lay-event=\"DiskRecord\">查看结果</a>";
+			}
+		}
+
+	];
+	layui.config({
+		base: '__layui__/' //静态资源所在路径
+	}).extend({
+		index: 'lib/index' //主入口模块
+	}).use(['table', 'layer', 'element', 'laydate', 'form', 'jquery', 'util'], function () {
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, util = layui.util, table = layui.table, $ = layui.$, form = layui.form;
+		//初始赋值
+		var date = new Date();
+		var nowYear = date.getFullYear();
+		var month = ("0" + (date.getMonth() + 1)).slice(-2);
+		var day = ("0" + date.getDate()).slice(-2);
+		var today = nowYear + "-" + (month) + "-" + (day);
+		laydate.render({elem: '#LAY-component-form-group-date', value: today, isInitValue: true});
+		laydate.render({elem: '#LAY-component-form-group-date2', value: today, isInitValue: true});
+		var strartdate = $.trim($('#LAY-component-form-group-date').val());
+		var enddate = $.trim($('#LAY-component-form-group-date2').val());
+
+
+		var main = {
+			renderData: function () {
+				table.render({
+					elem: '#proxylist',
+					url: "{:url('UserPackageManage/GameRecord')}",
+					page: true //开启分页
+					, limit: 15
+					, where: {
+						roleid: $.trim($('#roleid').val()),
+						winlost: -1,
+						strartdate: strartdate,
+						enddate: enddate,
+					},
+					cols: [cols],
+					done: function (d) {
+						tzTbale()
+					}
+					// done: function (res, curr, count) {					}
+				});
+			},
+			//搜索
+			search: function () {
+				//执行重载
+				table.reload("proxylist", {
+					page: {curr: 1},
+					where: {
+						'roleid': $.trim($('#roleid').val()),
+						'roomid': $.trim($('#roomid').val()),
+						'strartdate': $.trim($('#LAY-component-form-group-date').val()),
+						'enddate': $.trim($('#LAY-component-form-group-date2').val()),
+						'winlost': $.trim($('#result').val()),
+						'mobile': $.trim($('#mobile').val()),
+						'PackID': $("#PackID").val()
+					},
+					// done: function () {					},
+				});
+			},
+			//操作事件
+			extraEvent: function () {
+				//编辑
+				table.on('tool(proxylist)', function (obj) {
+					var data = obj.data, layEvent = obj.event; //获得 lay-event 对应的值
+					tr = obj.tr; //获得当前行 tr 的DOM对象
+					if (layEvent === 'DiskRecord') {
+						tb = data.AddTime.replace(/-/g, '').substr(0, 8);
+						var url = 'DiskRecord.html?UniqueId=' + data.SerialNumber + "&date=" + tb + "&UserID=" + data.RoleID + "&RoomID=" + data.RoomID;
+						x_admin_show(data.RoomName + '详情', url, 1200, 700);
+					}
+				});
+			},
+
+			init: function () {
+				main.renderData();
+				main.extraEvent();
+				laydate.render({
+					elem: '#LAY-component-form-group-date'
+					, format: 'yyyy-MM-dd'
+					, max: 1
+					, btns: ['clear', 'confirm']
+				});
+				laydate.render({
+					elem: '#LAY-component-form-group-date2'
+					, format: 'yyyy-MM-dd'
+					, max: 1
+					, btns: ['clear', 'confirm']
+				});
+				$('#search').on('click', function (e) {
+					e.preventDefault();
+					main.search();
+				});
+			}
+		};
+
+		main.init();
+	});
+
+
+	$('#output').click(function () {
+		var roleid = $.trim($('#roleid').val());
+		var mobile = $.trim($('#mobile').val());
+		var roomid = $.trim($('#roomid').val());
+		var strartdate = $.trim($('#LAY-component-form-group-date').val());
+		var enddate = $.trim($('#LAY-component-form-group-date2').val());
+		var winlost = $.trim($('#result').val());
+		download(roleid, roomid, strartdate, enddate, winlost, mobile, true);
+		var param = "?roleid=" + roleid + "&roomid=" + roomid + "&strartdate=" + strartdate + "&enddate=" + enddate + "&winlost=" + winlost + "&mobile=" + mobile;
+
+		function download(roleid, roomid, strartdate, enddate, winlost, mobile, check) {
+			$.ajax({
+				type: 'POST',
+				dataType: 'json',
+				async: true,
+				url: "{:url('player/outGamelogRecord')}", // 生成文件，保存在服务器
+				data: {roleid: roleid, roomid: roomid, strartdate: strartdate, enddate: enddate, winlost: winlost, mobile: mobile, check: check},
+				success: function (data) {
+					var result = data;
+					switch (result["code"]) {
+						case 0:
+							parent.parent.open('/admin/player/outGamelogRecord.html' + param);
+							break;
+						case 1:
+							layer.msg(result["message"]);
+							break;
+						case 2:
+							layer.confirm(result['message'], {
+								btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
+							}, function () {
+								parent.parent.open('/admin/player/outGamelogRecord.html' + param + "&outall=true");
+								layer.msg('', {icon: 6, time: 1000}, function () {
+									window.location.reload();
+								});
+							});
+					}
+
+				},
+				error: function (XMLHttpRequest, textStatus, e) {
+					console.log("oilDetection.js  method exportOilDetection" + e);
+				}
+			});
+		}
+	});
+
+</script>
+{/block}

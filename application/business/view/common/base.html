@@ -1,0 +1,41 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{block name="title"}管理后台{/block}</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="{$laypath}/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="{$laypath}/style/admin.css" media="all">
+    {block name="css"}{/block}
+</head>
+<body>
+    <style>
+    thead .layui-table-cell {
+    height: auto;
+    white-space: initial;
+    /*为了让字母和数字也换行*/
+    word-break: break-word;
+    line-height: 20px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+</style>
+<div class="layui-fluid">
+    {block name="content"}{/block}
+</div>
+<script type="text/javascript" src="__js__/jquery.min.js"></script>
+<script src="{$laypath}/layui/layui.js?t=1"></script>
+<script type="text/javascript" src="__static__/js/xadmin.js"></script>
+<script type="text/javascript" src="__static__/js/common.js?v=1.0"></script>
+{block name="script"}
+<script>
+
+</script>
+{/block}
+</body>
+</html>
+

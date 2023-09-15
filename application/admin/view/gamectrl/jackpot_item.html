@@ -1,0 +1,91 @@
+{extend name="common/base" /}
+{block name="title"}{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" id="addmailbox" method="post">
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('角色ID')}</label>
+        <div class="layui-input-block"><input VALUE="" autocomplete="off" class="layui-input" ID="RoleID" type="number"></div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('彩金类型')}</label>
+        <div class="layui-input-block">
+            <input type="radio" name="JackpotType" value="87" title="{:lang('Minor彩金')}" checked>
+            <input type="radio" name="JackpotType" value="88" title="{:lang('major彩金')}" >
+            <input type="radio" name="JackpotType" value="89" title="{:lang('grand彩金')}" >
+            <input type="radio" name="JackpotType" value="28" title="{:lang('jackpot彩金')}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a class="layui-btn layui-btn-radius" id="addit" lay-filter="addit" lay-submit=""  type="submit">{:lang('添加')}</a>
+            <a class="layui-btn layui-btn-primary layui-btn-radius" id="cancel" lay-filter="cancel" lay-submit="">{:lang('取消')}</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+	url = "{:url('gamectrl/JackpotDistribution')}";
+	layui.config({base: '__layui__/'}).extend({
+		index: 'lib/index'
+	}).use(['index', 'table', 'layer', 'element', 'layedit', 'laydate', 'form', 'jquery'], function () {
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, layedit = layui.layedit, table = layui.table, $ = layui.$, form = layui.form;
+		var main = {
+			submitForm: function (data) {
+				$.ajax({
+					type: 'post',
+					url: url, data: {
+						Action: 'addItem',
+						RoleID: $.trim($("#RoleID").val()),
+						JackpotType: $('input[name="JackpotType"]:checked').val(),
+					},
+					dataType: 'json',
+					success: function (res) {
+						if (res.code == 1) {
+							layer.msg(res.msg, {icon: 1, time: 1000}, function () {
+								x_admin_close();
+								parent.location.reload();
+							});
+						} else {
+							layer.msg(res.msg, {icon: 2});
+						}
+					}
+				});
+			},
+
+			bindEvent: function () {
+				form.on('submit(addit)', function (data) {
+					main.submitForm(data);
+					return false;
+				});
+
+				$('#cancel').on('click', function (e) {
+					e.preventDefault();
+					x_admin_close();
+				})
+			},
+
+			init: function () {
+				laydate.render({
+					elem: '#sendtime'
+					, type: 'datetime'
+					, format: 'yyyy-MM-dd HH:mm:ss'
+					, btns: ['clear', 'confirm']
+				});
+				main.bindEvent();
+			}
+		};
+
+		$(document).on('click', '#searchrole', function () {
+			x_admin_show('', '#', 600, 600);
+		});
+		main.init();
+	});
+</script>
+{/block}

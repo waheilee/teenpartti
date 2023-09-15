@@ -1,0 +1,131 @@
+{extend name="common/base" /}
+
+{block name="title"}支付通道修改{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('gamemanage/editTask')}" method="post" id="addProxy" >
+
+
+
+
+
+    <!--<div class="layui-form-item">-->
+        <!--<label class="layui-form-label">房间id：</label>-->
+        <!--<div class="layui-input-block">-->
+
+            <input type="hidden" id="roomid" name='roomid' lay-verify="required" placeholder="请输入客服微信号" autocomplete="off" class="layui-input" value="{$roomid}" >
+        <!--</div>-->
+    <!--</div>-->
+    <div class="layui-form-item">
+        <label class="layui-form-label">房间名称：</label>
+        <div class="layui-input-block">
+            <input type="text" id="taskname" name='taskname' lay-verify="required" placeholder="请输入客服微信号" autocomplete="off" class="layui-input" value="{$taskname}" >
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">游戏局数：</label>
+        <div class="layui-input-block">
+            <input type="text" id="taskreqround" name='taskreqround' lay-verify="required" placeholder="请输入客服微信号" autocomplete="off" class="layui-input" value="{$taskreqround}" >
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">游戏奖励：</label>
+        <div class="layui-input-block">
+            <input type="text" id="taskaward" name='taskaward' lay-verify="required" placeholder="请输入客服微信号" autocomplete="off" class="layui-input" value="{$taskaward}" >
+        </div>
+    </div>
+
+    <div class="layui-form-item" style="display: none">
+        <label class="layui-form-label">状态：</label>
+        <div class="layui-input-block">
+            <select name="condition" id="status" name="status" >
+                {if $status==1}
+                <option value="1" selected>上架</option>
+                {elseif $status==0/}
+                <option value="0"  selected>下架</option>
+
+                {/if}
+
+
+            </select>
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >修改</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" lay-submit="" lay-filter="cancel" id="cancel" >取消</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var layer = layui.layer
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                var roomid = $.trim(data.field.roomid),
+                    taskreqround = $.trim(data.field.taskreqround),
+                    taskaward = $.trim(data.field.taskaward),
+                    taskname = $.trim(data.field.taskname);
+//                noticetip = $.trim(data.field.noticetip);
+//                type=$('#type').val();
+
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'roomid' : roomid,
+                        'taskreqround' : taskreqround,
+                        'taskaward' : taskaward,
+                        'taskname' :taskname,
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

@@ -1,0 +1,220 @@
+{extend name="common/base" /}
+
+{block name="title"}{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<div class="layui-card">
+    <div class="layui-card-body">
+        <a style="margin-bottom: 10px;" class="layui-btn" onclick="x_admin_show('添加活动信息','addactivityinfo.html', 700,600)">
+            <i class="layui-icon layui-icon-add-circle"></i>
+        </a>
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script type="text/html" id="msg-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="edit"><i class="layui-icon layui-icon-edit"></i></a>
+    <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete"><i class="layui-icon layui-icon-delete"></i></a>
+    <!--<a class="layui-btn layui-btn-xs" lay-event="open"><i class="layui-icon layui-icon-set-fill"></i></a>-->
+
+</script>
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'activityid', title: '活动ID', minWidth: 50}
+                    , {field: 'activityname', title: '活动名称', minWidth: 300}
+                    , {field: 'activitytype', title: '活动类型', minWidth: 180}
+                    , {field: 'begintime', title: '开始时间', minWidth: 160}
+                    , {field: 'endtime', title: '结束时间', minWidth: 160}
+                    , {
+                        field: 'status', title: '状态', minWidth: 120, templet: function (d) {
+                            var myid = d.activityid;
+                            if (d.status == 0) {
+                                return '<a class="myopen" myid="' + myid + '" style="margin-left: 10px" lay-event="setstatus"><input type="checkbox" name="open" lay-filter="setstatus" lay-skin="switch" lay-text="开启|关闭"></a>';
+                            } else {
+                                return '<a class="myopen" myid="' + myid + '" style="margin-left: 10px" lay-event="setstatus"><input type="checkbox"  name="open" lay-filter="setstatus" lay-skin="switch" checked lay-text="开启|关闭"></a>';
+                            }
+                        }
+                    }
+                    , {field: 'roomid', title: '房间名称', minWidth: 160}
+                    , {
+                        field: 'needcontinue', title: '是否连续', minWidth: 120, templet: function (d) {
+                            var myid = d.activityid;
+                            if (d.needcontinue == 0) {
+                                return '<a class="myopen" myid="' + myid + '" style="margin-left: 10px" lay-event="setcontinue"><input type="checkbox" name="open" lay-filter="setcontinue" lay-skin="switch" lay-text="是|否"></a>';
+                            } else {
+                                return '<a class="myopen" myid="' + myid + '" style="margin-left: 10px" lay-event="setcontinue"><input type="checkbox"  name="open" lay-filter="setcontinue" lay-skin="switch" checked lay-text="是|否"></a>';
+                            }
+                        }
+                    }
+                    , {field: 'vipawardlevel', title: 'vip等级', minWidth: 50}
+                    , {field: 'activitydesc', title: '活动描述', minWidth: 200}
+                    , {fixed: 'right', title: '操作', align: 'center', minWidth: 150, toolbar: '#msg-bar'}
+
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('activity/activityinfo')}" //数据接口
+                    , page: true //开启分页
+                    , cols: [cols]
+                    , done:function(res){
+                        tzTbale();
+                    }
+                });
+            },
+
+            //搜索
+            search : function() {
+//                var roleid = $.trim($('#bankname').html());
+                var roleid = $.trim($('#bankname option:selected').text());
+                if(roleid=='请选择渠道'){
+                    roleid='';
+                }
+
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+
+                    }
+                });
+            },
+
+
+            //操作事件
+            extraEvent : function () {
+                //编辑&&删除
+                table.on('tool(proxylist)', function(obj) {
+                    var data = obj.data //获得当前行数据
+                        ,layEvent = obj.event; //获得 lay-event 对应的值
+                    if (layEvent === 'edit') {
+                        var id = data.activityid
+                            ,type = data.type
+                        x_admin_show('编辑活动信息', 'addactivityinfo?id='+id, 700,600);
+                    }
+                    else if(layEvent === 'delete'){
+                        layer.confirm("{:lang('确认删除这条记录？')}", {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
+                            $.ajax({
+                                type: 'post',
+                                url: "{:url('activity/delactivity')}",
+                                data: {
+                                    'id': data.activityid
+                                },
+                                dataType: 'json',
+                                success: function (res) {
+                                    if (res.code === 0) {
+                                        layer.msg(res.msg, {icon: 6, time: 1000}, function () {
+                                            window.location.reload();
+                                        });
+                                    } else {
+                                        layer.msg(res.msg, {icon: 5});
+                                    }
+                                }
+                            });
+                        });
+                    }
+                });
+
+                form.on('switch(setstatus)', function(data){
+                    var selected = data.elem.checked === true ? 1 : 0; //开关是否开启，true或者false
+                    var id = $(data.elem).parent().attr('myid');
+                    //设置开关
+                    $.ajax({
+                        url: "{:url('activity/setinfostatus')}",
+                        type: 'post',
+                        data: {
+                            'id': id,
+                            'status': selected
+                        },
+                        success: function (res) {
+                            if (res.code === 0) {
+                                layer.msg(res.msg,{icon: 6});
+                            } else {
+                                layer.msg(res.msg, {icon: 5});
+                                if (selected == 0) {
+                                    //重新添加checked要用prop
+                                    $(data.elem).prop('checked','true');
+                                    $(data.elem).next().addClass('layui-form-onswitch');
+                                    $(data.elem).next().find('em').html('开启');
+                                } else {
+                                    $(data.elem).removeAttr('checked');
+                                    $(data.elem).next().removeClass('layui-form-onswitch');
+                                    $(data.elem).next().find('em').html('关闭');
+                                }
+                            }
+                        }
+                    });
+                });
+
+
+                form.on('switch(setcontinue)', function(data){
+                    var selected = data.elem.checked === true ? 1 : 0; //开关是否开启，true或者false
+                    var id = $(data.elem).parent().attr('myid');
+                    //设置开关
+                    $.ajax({
+                        url: "{:url('activity/setcontinue')}",
+                        type: 'post',
+                        data: {
+                            'id': id,
+                            'status': selected
+                        },
+                        success: function (res) {
+                            if (res.code === 0) {
+                                layer.msg(res.msg,{icon: 6});
+                            } else {
+                                layer.msg(res.msg, {icon: 5});
+                                if (selected == 0) {
+                                    //重新添加checked要用prop
+                                    $(data.elem).prop('checked','true');
+                                    $(data.elem).next().addClass('layui-form-onswitch');
+                                    $(data.elem).next().find('em').html('是');
+                                } else {
+                                    $(data.elem).removeAttr('checked');
+                                    $(data.elem).next().removeClass('layui-form-onswitch');
+                                    $(data.elem).next().find('em').html('否');
+                                }
+                            }
+                        }
+                    });
+                });
+
+
+
+            },
+            init : function() {
+                main.renderData();
+                main.extraEvent();
+                $('#search').on('click', function(e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

@@ -1,0 +1,1073 @@
+{extend name="common/base" /}
+{block name="title"}所有玩家{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-input-inline" style="width: 355px">
+
+                    <input type="text" id="roleid" name="roleid" placeholder="{:lang('玩家ID，多个玩家ID请用英文,隔开')}" autocomplete="off"
+                           class="layui-input">
+                </div>
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off"
+                               class="layui-input" placeholder="{:lang('注册时间')}"/>
+                    </div>
+                    <div class="layui-form-mid"> -</div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="end" id="LAY-component-form-group-date2" autocomplete="off"
+                               class="layui-input" placeholder="{:lang('注册时间')}"/>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <select name="usertype" id="usertype">
+                        <option value="-1">{:lang('渠道')}</option>
+                        {foreach $usertype as $k1 => $v1}
+                        <option value="{$k1}">{:lang($v1)}</option>
+                        {/foreach}
+                    </select>
+                </div>
+
+                <div class="layui-inline">
+                    <input type="text" id="account" name="account" placeholder="{:lang('账号')},{:lang('手机号')}" autocomplete="off"
+                           class="layui-input">
+                </div>
+
+                <div class="layui-inline">
+                    <input type="text" id="regip" name="regip" placeholder="{:lang('注册IP')}" autocomplete="off"
+                           class="layui-input">
+                </div>
+
+                <div class="layui-inline">
+                    <input type="text" id="ipaddr" name="ipaddr" placeholder="{:lang('最后登录IP')}" autocomplete="off"
+                           class="layui-input">
+                </div>
+
+                {if(config('is_portrait') != 1)}
+                <div class="layui-inline">
+                    <input type="text" id="bankusername" name="bankusername" placeholder="{:lang('银行账户名')}"
+                           autocomplete="off" class="layui-input">
+                </div>
+
+
+                <div class="layui-inline">
+                    <input type="text" id="bankcard" name="bankcard" placeholder="{:lang('银行账号')}"
+                           autocomplete="off" class="layui-input">
+                </div>
+
+                <div class="layui-inline">
+                    <input type="text" id="upi" name="upi" placeholder="{:lang('UPI码')}" autocomplete="off"
+                           class="layui-input">
+                </div>
+                {/if}
+                {if(config('is_portrait') == 1)}
+                <div class="layui-input-inline">
+                    <input type="text" id="PackID" name="PackID" placeholder="{:lang('渠道ID')}" autocomplete="off"
+                           class="layui-input">
+                </div>
+                {/if}
+                <div class="layui-input-inline">
+                    <input type="text" id="proxyId" name="proxyId" placeholder="{if(config('is_portrait')==1)}{:lang('推广ID')}{else/}{:lang('渠道ID')}{/if}" autocomplete="off"
+                           class="layui-input">
+                </div>
+                <div class="layui-inline">
+                    <input type="text" id="minrecharge" name="minrecharge" placeholder="{:lang('最小充值')}" autocomplete="off"
+                           class="layui-input">
+                </div>
+                <div class="layui-inline">
+                    <input type="text" id="maxrecharge" name="maxrecharge" placeholder="{:lang('最大充值')}" autocomplete="off"
+                           class="layui-input">
+                </div>
+                <div class="layui-inline" style="width: 45px;left: 20px">
+                    <label class="">{:lang('在线')}</label>
+                </div>
+                <div class="layui-inline" style="width: 100px">
+                    <select name="online" id="online">
+                        <option value="-1">{:lang('所有')}</option>
+                        <option value="0">{:lang('在线')}</option>
+                        <option value="1">{:lang('离线')}</option>
+                    </select>
+                </div>
+                <div class="layui-inline" style="width: 120px">
+                    <select name="isdisable" id="isdisable">
+                        <option value="-1">{:lang('所有状态')}</option>
+                        <option value="0">{:lang('正常')}</option>
+                        <option value="1">{:lang('禁用')}</option>
+                    </select>
+                </div>
+                <div class="layui-inline" style="width: 120px">
+                    <select name="VipLv" id="VipLv">
+                        <option value="">{:lang('所有等级')}</option>
+                        {for start="0" end="21"}
+                        <option value="{$i}">Vip{$i}</option>
+                        {/for}
+                    </select>
+                </div>
+                <div class="layui-inline" style="width: 120px">
+                    <select name="isrecharge" id="isrecharge">
+                        <option value="">{:lang('是否充值')}</option>
+                        <option value="0">{:lang('否')}</option>
+                        <option value="1">{:lang('是')}</option>
+                    </select>
+                </div>
+                <div class="layui-inline" style="width: 140px">
+                    <select name="isbind" id="isbind">
+                        <option value="-1">{:lang('是否绑定手机号')}</option>
+                        <option value="0">{:lang('否')}</option>
+                        <option value="1">{:lang('是')}</option>
+                    </select>
+                </div>
+
+                <div class="layui-inline">
+                    <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                    <button type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>
+                </div>
+                <div class="layui-inline">
+                    <a class="layui-btn" id="output">{:lang('导出记录')}</a>
+                </div>
+
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script type="text/html" id="msg-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="addremark">{:lang('添加备注')}</a>
+    <a class="layui-btn layui-btn-xs" lay-event="dmset">{:lang('打码量设置')}</a>
+    <a class="layui-btn layui-btn-xs" lay-event="dmrateset">{:lang('打码百分比设置')}</a>
+    <!-- <a class="layui-btn layui-btn-xs" lay-event="edit">{:lang('编辑账号')}</a>
+    <a class="layui-btn layui-btn-xs" lay-event="setInviteCode">{:lang('设置上级ID')}</a>
+    <a class="layui-btn layui-btn-xs" lay-event="unbidphone">{:lang('解绑手机号码')}</a> -->
+    <a class="layui-btn layui-btn-xs" lay-event="deleteAccount">{:lang('删除账号')}</a>
+    <a class="layui-btn layui-btn-xs" lay-event="setControll">{:lang('开关控制权限')}</a>
+    <!--<a class="layui-btn layui-btn-xs" lay-event="unlockgold">{:lang('解锁金币')}</a>-->
+    <a class="layui-btn layui-btn-xs" lay-event="setProftSwitch">{:lang('佣金返利开关')}</a>
+    <!--    <a class="layui-btn layui-btn-xs " lay-event="ganme">{:lang('游戏日志')}</a>-->
+    <!--    <a class="layui-btn layui-btn-xs" lay-event="cold">{:lang('金币日志')}</a>-->
+    <!--<a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">{:lang('拉黑')}</a>-->
+    {if(config('topg')==1)}
+    <a class="layui-btn layui-btn-xs" layui-btn-danger" lay-event="topg">{:lang('进入PG')}</a>
+    {/if}
+</script>
+<script src="__js__/cache.js"></script>
+<script src="__js__/Barrett.js"></script>
+<script src="__js__/BigInt.js"></script>
+<script src="__js__/RSA.js"></script>
+<script>
+
+    var cols = [ //表头
+        {
+            field: 'ID', title: "{:lang('玩家ID')}", width: 100,fixed:true, templet: function (d) {
+                return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.ID+ "</a>";
+            }
+        },
+        {field: 'AccountName', align: 'center', title: "{:lang('玩家账号')}", minWidth: 180, sort: true},
+        {field: 'proxyId', align: 'center', title: "{if(config('is_portrait')==1)}{:lang('推广ID')}{else/}{:lang('渠道ID')}{/if}", width: 120},
+
+        {field: 'VipLv', align: 'center', title: "{:lang('VIP等级')}", width: 80, templet: function (d) {
+                if (d.VipLv == null || d.VipLv == undefined || d.VipLv == '') {
+                    d.VipLv = 0;
+                }
+                return "VIP"+d.VipLv;
+            }
+        },
+        {field: 'countryCode', align: 'center', title: "{:lang('国籍')}", width: 80},
+        {
+            field: '', title: "{:lang('是否在线')}", width: 120, align: "center", templet: function (d) {
+                if(d.is_oline == 1) {
+                    return "<span class=\"layui-bg-green\">&nbsp;{:lang('在线')}&nbsp;</span>";
+                } else {
+                    return "<span class=\"layui-bg-red\">&nbsp;{:lang('离线')}&nbsp;</span>";
+                }
+            }
+        },
+        {
+            field: 'GmType', title: "{:lang('登陆类型')}", align: "center", width: 150, templet: function (d) {
+                switch (Number(d.GmType)) {
+                    case 0:
+                        return "{:lang('游客')}";
+                    case 1:
+                        return "Google";
+                    case 2:
+                        return "Facebook";
+                    case 3:
+                        return "IOS";
+                    case 5:
+                        return "{:lang('手机')}";
+                    case 6:
+                        return "{:lang('邮箱')}";
+                }
+            }
+        },
+        {field: 'TotalDeposit', align: 'center', title: "{:lang('总充值')}", width: 150, sort: true},
+        {field: 'TotalRollOut', align: 'center', title: "{:lang('总提现')}", width: 150, sort: true},
+        {field: 'Money', align: 'center', title: "{:lang('余额')}", width: 110, sort: true},
+        {field: 'ProxyBonus', align: 'center', title: "{:lang('代理账户')}", width: 110, sort: true},
+        {
+            field: 'RegisterTime', align: 'center', title: "{:lang('注册时间')}", width: 160, sort: true, templet: function (d) {
+                return d.RegisterTime.substr(0, 19)
+            }
+        },
+        {field: 'RegIP', align: 'center', title: "{:lang('注册IP')}", minWidth: 180},
+        {field: 'LastLoginIP', align: 'center', title: "{:lang('最后IP')}", minWidth: 180},
+        {field: 'LastLoginTime', align: 'center', title: "{:lang('最后登录时间')}", width: 180, sort: true},
+        {
+            field: 'Locked', width: 120, title: "{:lang('禁/启用')}", align: "center", templet: function (d) {
+                var normal ="{:lang('正常|封号')}"
+                if (d.Locked == 0) {
+                    return "<input type='checkbox' ctrlID = '" + d.ID + "' lay-filter='Disable' lay-skin='switch' lay-text='"+normal+"' checked>"
+                } else {
+                    return "<input type='checkbox' ctrlID = '" + d.ID + "'  lay-filter='Disable' lay-skin='switch' lay-text='"+normal+"'>"
+                }
+            }
+        },
+        {if(config('app_type')==3)}
+    {
+        field: 'ProxyCommiSwitch', width: 120, title: "{:lang('佣金返利开关')}", align: "center", templet: function (d) {
+        var normal ="{:lang('开启|关闭')}"
+        if (d.ProxyCommiSwitch == 1) {
+            return "<input type='checkbox' ctrlID = '" + d.ID + "' lay-filter='BonusSwitch' lay-skin='switch' lay-text='"+normal+"' checked>"
+        } else {
+            return "<input type='checkbox' ctrlID = '" + d.ID + "'  lay-filter='BonusSwitch' lay-skin='switch' lay-text='"+normal+"'>"
+        }
+    }
+    },
+    {/if}
+        {
+            field: "", width: 120, title: "{:lang('强退')}", align: "center", templet: function (d) {
+            if(d.is_oline == 1) {
+                return "<a lay-submit class='layui-btn layui-btn-sm layui-bg-red' ctrlID = '" + d.ID + "' lay-filter='Retreat'>{:lang('强退')}</a>";
+            }
+            return "";
+        }
+        },
+        {if(config('is_portrait')!=1)}
+        {field: 'UserName', align: 'center', title: "{:lang('银行账号')}", minWidth: 120},
+        {field: 'BankCardNo', align: 'center', title: "{:lang('银行卡号')}", minWidth: 180},
+        {field: 'IFSCCode', align: 'center', title: "{:lang('IFSC码')}", minWidth: 180},
+        {field: 'UPICode', align: 'center', title: "{:lang('UPI码')}", minWidth: 180},
+        {field: 'SystemRight', align: 'center', title: "{:lang('是否控制号')}", minWidth: 180},
+        {/if}
+            {fixed: 'right', title: "{:lang('操作')}", align: 'center', minWidth: 250, toolbar: '#msg-bar'}
+        ];
+            var is_portrait = "{:config('is_portrait')}";
+            if (is_portrait == 1) {
+                cols.splice(1,0,{field: 'OperatorId', align: 'center', title: "{:lang('渠道ID')}", width: 150})
+            }
+
+            function getOnline() {
+                // $.ajax({
+                //     url: "{:url('player/all')}",
+                //     type: 'post',
+                //     data: {'Action': "onlinelist",'Need':'data'},
+                //     success: function (res) {
+                //         online = res.data;
+                //         console.info(res.data);
+                //         // form.render();
+                //     }
+                // })
+            }
+
+            function editDm(id, dm, t) {
+                $.ajax({
+                    type: 'post',
+                    url: "{:url('player/setDm')}",
+                    beforeSend: function () {
+                        var layindex = layer.msg("{:lang('稍等片刻,马上就好')}", {
+                            icon:16,
+                            shade:[0.1, '#fff'],
+                            time:false //不自动关闭
+                        });
+                    },
+                    data: {
+                        'roleid': id,
+                        'dm': dm,
+                        'type': t
+                    },
+                    dataType: 'json',
+                    success: function (res) {
+                        if (res.code == 0) {
+                            layer.msg("{:lang('设置成功')}", {icon: 1, time: 1000}, function () {
+                                //window.location.reload();
+                                layer.closeAll();
+                            });
+                        } else {
+                            layer.msg(res['msg'], {icon: 5});
+                        }
+                    }
+                });
+            }
+            function editRateDm(id, dm, t) {
+                $.ajax({
+                    type: 'post',
+                    url: "{:url('player/setRateDm')}",
+                    beforeSend: function () {
+                        var layindex = layer.msg("{:lang('稍等片刻,马上就好')}", {
+                            icon:16,
+                            shade:[0.1, '#fff'],
+                            time:false //不自动关闭
+                        });
+                    },
+                    data: {
+                        'roleid': id,
+                        'dm': dm,
+                        'type': t
+                    },
+                    dataType: 'json',
+                    success: function (res) {
+                        if (res.code == 0) {
+                            layer.msg("{:lang('设置成功')}", {icon: 1, time: 1000}, function () {
+                                //window.location.reload();
+                                layer.closeAll();
+                            });
+                        } else {
+                            layer.msg(res['msg'], {icon: 5});
+                        }
+                    }
+                });
+            }
+            var online = getOnline();
+
+
+
+            layui.config({base: '__layui__/'}).extend({index: 'lib/index'}).use(['table', 'layer', 'element', 'laydate', 'form', 'jquery', 'util'], function () {
+                var element = layui.element, layer = layui.layer, laydate = layui.laydate, util = layui.util,
+                    table = layui.table, $ = layui.$, form = layui.form;
+                var main = {
+                    renderData: function () {
+                        table.render({
+                            elem: '#proxylist',
+                            url: "{:url('player/all')}?Action=list&Need=data", //数据接口
+                            page: true, limit: 15,
+                            sort: true, autoSort: false,
+                            cols: [cols],
+                            done: function (res) {
+                                tzTbale()
+                            }
+                        });
+                    },
+                    //搜索
+                    search: function () {
+                        // var nickname = $.trim($('#nickname').val());
+                        // var mobile = $.trim($('#mobile').val());
+                        //执行重载
+                        table.reload('proxylist', {
+                            page: {curr: 1},
+                            where: {
+                                startTime: $.trim($('#LAY-component-form-group-date').val()),
+                                endTime: $.trim($('#LAY-component-form-group-date2').val()),
+                                roleid: $.trim($('#roleid').val()),
+                                account: $.trim($('#account').val()),
+                                // 'nickname': nickname,
+                                mobile: $.trim($('#mobile').val()),
+                                isonline: $.trim($('#online').val()),
+                                isdisable: $.trim($('#isdisable').val()),
+                                ip: $.trim($('#regip').val()),
+                                lastIP: $.trim($('#ipaddr').val()),
+                                usertype: $.trim($('#usertype').val()),
+                                bankcard: $.trim($('#bankcard').val()),
+                                bankusername: $.trim($('#bankusername').val()),
+                                upi: $.trim($('#upi').val()),
+                                proxyId:$.trim($('#proxyId').val()),
+                                iscontroll:$.trim($('#iscontroll').val()),
+                                minrecharge:$.trim($('#minrecharge').val()),
+                                maxrecharge:$.trim($('#maxrecharge').val()),
+                                VipLv:$.trim($('#VipLv').val()),
+                                isrecharge:$.trim($('#isrecharge').val()),
+                                isbind:$.trim($('#isbind').val()),
+                                PackID:$.trim($('#PackID').val()),
+
+
+                            },
+                            done: function () {
+                                getOnline()
+                                tzTbale()
+                            }
+
+                        });
+                    },
+
+                    //操作事件
+                    extraEvent: function () {
+                        //开关事件
+                        form.on('switch(Disable)', function (data) {
+                            var ID = data.elem.attributes['ctrlID'].nodeValue;
+                            var swtype = data.elem.checked;
+                            var type = 0;
+                            if (swtype) type = 0;
+                            else type = 1;
+                            // layer.msg(data);
+                            //设置开关
+                            $.ajax({
+                                url: "{:url('player/updateRoleStatus')}",
+                                type: 'post',
+                                data: {'roleid': ID, type: type},
+                                success: function (res) {
+                                    if (res.code === 0) {
+                                        // layer.msg(res.msg, {icon: 6});
+                                        layer.msg(res.msg, {icon: 6});
+                                    } else {
+                                        // layer.msg(res.msg, {icon: 5});
+                                        layer.msg("{:lang('修改失败')}", {icon: 5});
+                                    }
+                                    form.render();
+                                }
+                            })
+
+                        });
+
+
+                        form.on('switch(BonusSwitch)', function (data) {
+                            var ID = data.elem.attributes['ctrlID'].nodeValue;
+                            var swtype = data.elem.checked;
+                            var msg ='';
+                            if(swtype==1){
+                                msg ='确认开启佣金返利？';
+                            }
+                            else{
+                                msg ='确认关闭佣金返利？';
+                            }
+                            layer.confirm( '玩家：'+ID + msg, {
+                                btn: ["{:lang('是')}", "{:lang('否')}"] //按钮
+                                , btn1: function (index, layero) {
+                                    $.ajax({
+                                        type: 'post',
+                                        url: "{:url('player/setProftSwitch')}",
+                                        data: {
+                                            'roleid': ID,
+                                            'status': swtype
+                                        },
+                                        dataType: 'json',
+                                        success: function (res) {
+                                            if (res.code == 0) {
+                                                layer.msg("{:lang('操作成功')}", {icon: 1, time: 1000}, function () {
+                                                    //window.location.reload();
+                                                    table.reload("proxylist", {page: {curr: $(".layui-laypage-em").next().html()}});
+                                                    layer.closeAll();
+                                                });
+                                            } else {
+                                                layer.msg(res['msg'], {icon: 5});
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+
+                        });
+
+
+
+                        $(document).off('mousedown','.layui-table-grid-down').
+                        on('mousedown','.layui-table-grid-down',function (event) {
+                            table._tableTrCurrr = $(this).closest('td');
+                        });
+                        $(document).off('click','.layui-table-tips-main [lay-event]').
+                        on('click','.layui-table-tips-main [lay-event]',function (event) {
+                            //debugger
+                            var elem = $(this);
+                            var tableTrCurrr =  table._tableTrCurrr;
+                            if(!tableTrCurrr){
+                                return;
+                            }
+                            var layerIndex = elem.closest('.layui-table-tips').attr('times');
+                            console.log(layerIndex);
+                            layer.close(layerIndex);
+                            table._tableTrCurrr.find('[lay-event="' + elem.attr('lay-event') +'"]').click();
+                        });
+
+                        //编辑
+                        table.on('tool(proxylist)', function (obj) {
+                            var data = obj.data //获得当前行数据
+                                , layEvent = obj.event; //获得 lay-event 对应的值
+                            tr = obj.tr; //获得当前行 tr 的DOM对象
+                            if (layEvent === 'detail') {
+                                var url = 'playerDetail?roleid=' + data.ID;
+                                x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.8);
+                            } else if (layEvent === 'ganme') { //游戏日志
+                                //window.location.href =
+                                var url = '/admin/player/gameLog?roleid=' + data.ID;
+                                window.parent.layui.index.openTabsPage(url, data.accountname + "玩家游戏日志");
+                            } else if (layEvent === 'cold') {
+                                var url = '/admin/player/coinLog?roleid=' + data.ID;
+                                window.parent.layui.index.openTabsPage(url, data.accountname + "玩家金币日志");
+                            } else if (layEvent === 'unlockgold') {
+                                $.ajax({
+                                    url: "{:url('player/queryGold')}",
+                                    type: 'post',
+                                    data: {'roleid': data.ID, 'type': 1},
+                                    success: function (res) {
+
+                                        if (res.data == 0) {
+                                            layer.msg('该玩家没有冻结金币', {icon: 6});
+                                            form.render();
+                                        }
+                                        else {
+                                            var message = "账号：" + data.ID + "冻结金币：" + res.data;
+                                            if (res.code === 0) layer.msg(message, {icon: 6}, function () {
+                                                layer.confirm('要现在解冻吗?', {
+                                                    btn: ['{:lang("是")}', '{:lang("否")}'] //可以无限个按钮
+                                                    , btn1: function (index, layero) {
+                                                        $.ajax({
+                                                            url: "{:url('player/queryGold')}",
+                                                            type: 'post',
+                                                            data: {'roleid': data.ID, 'type': 2},
+                                                            success: function (res) {
+                                                                if (res.code === 0) layer.msg(res.msg, {icon: 6});
+                                                                else layer.msg(res.msg, {icon: 5});               // layer.msg('操作失败', {icon: 5});
+                                                                form.render();
+                                                            }
+                                                        });
+                                                    }
+                                                });
+                                            });               // layer.msg('操作成功', {icon: 6});
+                                            else layer.msg(res.msg, {icon: 5});               // layer.msg('操作失败', {icon: 5});
+                                            form.render();
+                                        }
+                                    }
+                                })
+                            } else if (layEvent === 'addremark') {
+                                layer.prompt({
+                                    formType: 2,
+                                    value: '',
+                                    title: "{:lang('请输入备注')}",
+                                    btn: ['{:lang("确定")}', '{:lang("取消")}'],
+                                    area: ['300px', '100px'] //自定义文本域宽高
+                                }, function (value, index, elem) {
+                                    $.ajax({
+                                        type: 'post',
+                                        url: "{:url('player/addCommnet')}",
+                                        data: {
+                                            'roleid': data.ID,
+                                            'comment': value,
+                                            'type': 1
+                                        },
+                                        dataType: 'json',
+                                        success: function (res) {
+                                            if (res.code == 0) {
+                                                layer.msg("{:lang('添加成功')}", {icon: 1, time: 1000}, function () {
+                                                    //window.location.reload();
+                                                    table.reload("proxylist", {page: {curr: $(".layui-laypage-em").next().html()}});
+                                                    layer.closeAll();
+                                                });
+                                            } else {
+                                                layer.msg(res['msg'], {icon: 5});
+                                            }
+                                        }
+                                    });
+                                    // alert(value); //得到value
+                                    // layer.closeAll();
+                                });
+                            } else if (layEvent === 'dmset') {
+                                // $.ajax({
+                                //     type: 'post',
+                                //     url: "{:url('player/getDm')}?roleid="+data.ID,
+                                //     data: {
+                                //         'roleid': data.ID,
+                                //     },
+                                //     dataType: 'json',
+                                //     success: function (res) {
+                                //         if (res.code == 0) {
+                                //             var lCurWaged = res.data.lCurWaged;
+                                var content = '<form class="layui-form" action="">' +
+                                    // '<div class="layui-form-item"><label class="layui-form-label" style="width:87px">{:lang("当前值")}</label><div class="layui-input-block"><input type="text" name="title" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" value="'+lCurWaged+'" readonly=""></div></div>'+
+                                    '<div class="layui-form-item"><label class="layui-form-label" style="width:87px">{:lang("金额")}</label><div class="layui-input-block"><input type="number" name="title" lay-verify="title" autocomplete="off" placeholder="{:lang(\'请输入金额\')}" class="layui-input" id="lCurWaged" value="0" ></div></div>' +
+                                    '</form>';
+                                layer.open({
+                                    content: content,
+                                    title: '{:lang("打码量设置")}'
+                                    , btn: ['{:lang("增加冻结金额")}', '{:lang("增减当前打码")}']
+                                    , yes: function (index, layero) {
+                                        var lCurWaged = $("#lCurWaged").val();
+                                        if (lCurWaged == '') {
+                                            layer.msg("{:lang('请输入打码值')}");
+                                            return;
+                                        }
+                                        editDm(data.ID, lCurWaged, 2);
+                                    }
+                                    , btn2: function (index, layero) {
+                                        var lCurWaged = $("#lCurWaged").val();
+                                        if (lCurWaged == '') {
+                                            layer.msg("{:lang('请输入打码值')}");
+                                            return;
+                                        }
+                                        editDm(data.ID, lCurWaged, 1);
+                                    }
+                                });
+                                //         } else {
+                                //             layer.msg(res['msg'], {icon: 5});
+                                //             return false;
+                                //         }
+                                //     }
+                                // });
+
+                                // x_admin_show('{:lang(\'编辑单控\')}', "{:url('/admin/player/online2Control')}?roleid="+ data.ID, 700, 600);
+                            } else if (layEvent === 'dmrateset') {
+                                // $.ajax({
+                                //     type: 'post',
+                                //     url: "{:url('player/getDm')}?roleid="+data.ID,
+                                //     data: {
+                                //         'roleid': data.ID,
+                                //     },
+                                //     dataType: 'json',
+                                //     success: function (res) {
+                                //         if (res.code == 0) {
+                                //             var lCurWaged = res.data.lCurWaged;
+                                var content = '<form class="layui-form" action="">' +
+                                    // '<div class="layui-form-item"><label class="layui-form-label" style="width:87px">{:lang("当前值")}</label><div class="layui-input-block"><input type="text" name="title" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" value="'+lCurWaged+'" readonly=""></div></div>'+
+                                    '<div class="layui-form-item"><label class="layui-form-label">{:lang("百分比0-100")}</label><div class="layui-input-block"><input type="number" min="0"name="title" lay-verify="title" autocomplete="off" placeholder="{:lang(\'请输入百分比%\')}" class="layui-input" id="dmrate" value="0" ></div></div>' +
+                                    '</form>';
+                                layer.open({
+                                    content: content,
+                                    title: '{:lang("打码量设置")}'
+                                    , btn: ['{:lang("赢百分比")}', '{:lang("输百分比")}']
+                                    , yes: function (index, layero) {
+                                        var dmrate = $("#dmrate").val();
+                                        if (dmrate == '') {
+                                            layer.msg("{:lang('请输入百分比值')}");
+                                            return;
+                                        }
+                                        editRateDm(data.ID, dmrate, 0);
+                                    }
+                                    , btn2: function (index, layero) {
+                                        var dmrate = $("#dmrate").val();
+                                        if (dmrate == '') {
+                                            layer.msg("{:lang('请输入百分比值')}");
+                                            return;
+                                        }
+                                        editRateDm(data.ID, dmrate, 1);
+                                    }
+                                });
+                                //         } else {
+                                //             layer.msg(res['msg'], {icon: 5});
+                                //             return false;
+                                //         }
+                                //     }
+                                // });
+
+                                // x_admin_show('{:lang(\'编辑单控\')}', "{:url('/admin/player/online2Control')}?roleid="+ data.ID, 700, 600);
+                            } else if (layEvent === 'setInviteCode') {
+                                layer.prompt({
+                                    formType: 3,
+                                    value: '',
+                                    title: "{:lang('设置上级ID')}",
+                                    btn: ['{:lang("确定")}', '{:lang("取消")}'],
+                                    area: ['300px', '100px'] //自定义文本域宽高
+                                }, function (value, index, elem) {
+                                    $.ajax({
+                                        type: 'post',
+                                        url: "{:url('player/setUpperCode')}",
+                                        data: {
+                                            'roleid': data.ID,
+                                            'invite_code': value,
+                                        },
+                                        dataType: 'json',
+                                        success: function (res) {
+                                            if (res.code == 0) {
+                                                layer.msg("{:lang('操作成功')}", {icon: 1, time: 1000}, function () {
+                                                    //window.location.reload();
+                                                    table.reload("proxylist", {page: {curr: $(".layui-laypage-em").next().html()}});
+                                                    layer.closeAll();
+                                                });
+                                            } else {
+                                                layer.msg(res['msg'], {icon: 5});
+                                            }
+                                        }
+                                    });
+                                    // alert(value); //得到value
+                                    // layer.closeAll();
+                                });
+                            } else if (layEvent === 'edit') {
+                                var content = '<form class="layui-form" action="">' +
+                                    '<div class="layui-form-item">' +
+                                    '<label class="layui-form-label" style="width:87px">{:lang("手机号码")}</label>' +
+                                    '<div  class="layui-input-inline" style="width:50%"><input type="text" name="title" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" value="' + data.phone + '" id="edit_phone" readonly="readonly">' +
+                                    '</div></div>' +
+                                    '<div class="layui-form-item"><label class="layui-form-label" style="width:87px">{:lang("密码")}</label><div class="layui-input-block"><input type="text" name="title" lay-verify="title" autocomplete="off" placeholder="{:lang(\'请输入密码\')}" class="layui-input" id="edit_password" value="" ></div></div>' +
+                                    '</form>';
+                                layer.open({
+                                    content: content,
+                                    area: ['500px', '300px'],
+                                    title: '{:lang("编辑账号")}'
+                                    , btn: ['{:lang("确定")}', '{:lang("解绑")}']
+                                    , yes: function (index, layero) {
+                                        //按钮【按钮一】的回调
+                                        // var quhao = $("#edit_quhao").val();
+                                        // if (quhao == '') {
+                                        //     layer.msg("{:lang('请输入区号')}");
+                                        //     return;
+                                        // }
+                                        var phone = $("#edit_phone").val();
+                                        // if (phone == '') {
+                                        //     layer.msg("{:lang('请输入手机号码')}");
+                                        //     return;
+                                        // }
+                                        var password = $("#edit_password").val();
+                                        if (password == '') {
+                                            layer.msg("{:lang('请输入密码')}");
+                                            return;
+                                        }
+                                        $.ajax({
+                                            type: 'post',
+                                            url: "{:url('player/editPlayer')}",
+                                            data: {
+                                                'id': data.ID,
+                                                // 'quhao': quhao,
+                                                'phone': phone,
+                                                'password': password
+                                            },
+                                            dataType: 'json',
+                                            success: function (res) {
+                                                if (res.code == 0) {
+                                                    layer.msg("{:lang('设置成功')}", {icon: 1, time: 1000}, function () {
+                                                        $(".layui-laypage-btn")[0].click();
+                                                        layer.closeAll();
+                                                    });
+                                                } else {
+                                                    layer.msg(res['msg'], {icon: 5});
+                                                }
+                                            }
+                                        });
+                                    }
+                                    , btn2: function (index, layero) {
+                                        $.ajax({
+                                            type: 'post',
+                                            url: "{:url('player/editPlayer')}",
+                                            data: {
+                                                'id': data.ID,
+                                                // 'quhao': quhao,
+                                                'phone': phone,
+                                                'password': password
+                                            },
+                                            dataType: 'json',
+                                            success: function (res) {
+                                                if (res.code == 0) {
+                                                    layer.msg("{:lang('设置成功')}", {icon: 1, time: 1000}, function () {
+                                                        $(".layui-laypage-btn")[0].click();
+                                                        layer.closeAll();
+                                                    });
+                                                } else {
+                                                    layer.msg(res['msg'], {icon: 5});
+                                                }
+                                            }
+                                        });
+                                        layer.closeAll();
+                                    }
+                                });
+
+                                // x_admin_show('{:lang(\'编辑单控\')}', "{:url('/admin/player/online2Control')}?roleid="+ data.ID, 700, 600);
+                            } else if (layEvent === 'unbidphone'){
+                                layer.confirm("{:lang('确认解绑手机号码')} : " + data.Mobile + '?', {
+                                    btn: ["{:lang('是')}", "{:lang('否')}"] //按钮
+                                    , btn1: function (index, layero) {
+                                        $.ajax({
+                                            type: 'post',
+                                            url: "{:url('player/unbindPhone')}",
+                                            data: {
+                                                'id': data.ID,
+                                            },
+                                            dataType: 'json',
+                                            success: function (res) {
+                                                if (res.code == 0) {
+                                                    layer.msg("{:lang('操作成功')}", {icon: 1, time: 1000}, function () {
+                                                        //window.location.reload();
+                                                        table.reload("proxylist", {page: {curr: $(".layui-laypage-em").next().html()}});
+                                                        layer.closeAll();
+                                                    });
+                                                } else {
+                                                    layer.msg(res['msg'], {icon: 5});
+                                                }
+                                            }
+                                        });
+
+                                    }
+                                });
+
+                            }
+                            else if (layEvent === 'deleteAccount'){
+                                layer.prompt({
+                                    formType: 1,
+                                    value: '',
+                                    title: "{:lang('请输入确认密码')}",
+                                    btn: ['{:lang("确定")}','{:lang("取消")}'],
+                                    area: ['800px', '350px'] //自定义文本域宽高
+                                }, function(value, index, elem){
+                                    var m = "   AF148DF38814A7CF2906B8CD2957F88D0F1F7F708A17371E408EE6629B25EC6B8514C3698F874B1C04E2EE7B05518FB58FE9EB57C0DC0617A7012E28D5D66D4B2F4B8676E28CB80DC0BA339740BAA557B872A5D6DD9E70E90C2943EDFB24A4597C252978E3556210E00CFB0BD2428FD77DE108A0BAF3BC8E06D71B3D65CECC6D";
+                                    setMaxDigits(131);
+                                    var key = new RSAKeyPair("10001", '', m);
+                                    var password = encryptedString(key, value);
+                                    $.ajax({
+                                        url: "{:url('player/deleteAccount')}",
+                                        type:"POST",
+                                        dataType: 'json',
+                                        async: true,
+                                        data:{
+                                            id: data.ID,
+                                            password:password
+                                        },
+                                        success:function(res){
+                                            if (res.code == 0) {
+                                                layer.msg("{:lang('操作成功')}");
+                                                $(".layui-laypage-btn")[0].click();
+                                                setTimeout(function() {
+                                                    layer.closeAll();
+                                                }, 1000);
+                                                //
+                                            } else {
+                                                layer.msg(res['msg'], {icon: 5});
+                                            }
+                                        }
+                                    });
+                                });
+                            }
+                            else if (layEvent === 'setControll'){
+                                // if(data.AccountName==''){
+                                //     layer.msg('未绑定手机号无法设置', {icon: 5});
+                                //     return false;
+                                // }
+
+                                var msg ="{:lang('是否设为控制号')} : ";
+                                if(parseInt(data.SystemRight)==96){
+                                    msg ="{:lang('是否取消控制号')} : ";
+                                }
+                                layer.confirm( msg+ data.AccountName + '?', {
+                                    btn: ["{:lang('是')}", "{:lang('否')}"] //按钮
+                                    , btn1: function (index, layero) {
+                                        $.ajax({
+                                            type: 'post',
+                                            url: "{:url('player/setControll')}",
+                                            data: {
+                                                'id': data.ID,
+                                                'kz': data.SystemRight
+                                            },
+                                            dataType: 'json',
+                                            success: function (res) {
+                                                if (res.code == 0) {
+                                                    layer.msg("{:lang('操作成功')}", {icon: 1, time: 1000}, function () {
+                                                        //window.location.reload();
+                                                        table.reload("proxylist", {page: {curr: $(".layui-laypage-em").next().html()}});
+                                                        layer.closeAll();
+                                                    });
+                                                } else {
+                                                    layer.msg(res['msg'], {icon: 5});
+                                                }
+                                            }
+                                        });
+
+                                    }
+                                });
+
+                            }
+                            else if (layEvent === 'setProftSwitch'){
+                                var ID = data.ID;
+                                var swtype = data.ProxyCommiSwitch;
+                                var msg ='';
+                                if(swtype==1){
+                                    msg ='确认关闭佣金返利？';
+                                }
+                                else{
+                                    msg ='确认开启佣金返利？';
+                                }
+                                layer.confirm( '玩家：'+ID + msg, {
+                                    btn: ["{:lang('是')}", "{:lang('否')}"] //按钮
+                                    , btn1: function (index, layero) {
+                                        $.ajax({
+                                            type: 'post',
+                                            url: "{:url('player/setProftSwitch')}",
+                                            data: {
+                                                'roleid': ID,
+                                                'status': swtype
+                                            },
+                                            dataType: 'json',
+                                            success: function (res) {
+                                                if (res.code == 0) {
+                                                    layer.msg("{:lang('操作成功')}", {icon: 1, time: 1000}, function () {
+                                                        //window.location.reload();
+                                                        table.reload("proxylist", {page: {curr: $(".layui-laypage-em").next().html()}});
+                                                        layer.closeAll();
+                                                    });
+                                                } else {
+                                                    layer.msg(res['msg'], {icon: 5});
+                                                }
+                                            }
+                                        });
+                                    }
+                                });
+
+                            } else if (layEvent === 'topg') {
+                                window.top.layui.index.openTabsPage(data.pg_link, '玩家ID：'+data.ID);
+                            }
+                        });
+
+                        form.on('submit(Retreat)', function (data) {
+                            var ID = data.elem.attributes['ctrlID'].nodeValue;
+                            layer.confirm("{:lang('真的要强退')} : " + ID + ' 吗?', {
+                                btn: ["{:lang('是')}", "{:lang('否')}"] //按钮
+                                , btn1: function (index, layero) {
+                                    $.ajax({
+                                        url: "{:url('player/forceQuit')}",
+                                        type: 'post',
+                                        data: {'roleid': ID},
+                                        success: function (res) {
+                                            if (res.code === 0) layer.msg(res.msg, {icon: 6});               // layer.msg('操作成功', {icon: 6});
+                                            else layer.msg(res.msg, {icon: 5});               // layer.msg('操作失败', {icon: 5});
+                                            form.render();
+                                        }
+                                    })
+
+                                }
+                            });
+
+
+                        });
+
+                        //排序
+                        table.on('sort(proxylist)', function (obj) {
+                            var roleid = $.trim($('#roleid').val());
+                            var roomid = $.trim($('#roomid').val());
+                            var mobile = $.trim($('#mobile').val());
+                            var usertype = $.trim($('#usertype').val());
+                            var iscontroll = $.trim($('#iscontroll').val());
+                            var minrecharge=$.trim($('#minrecharge').val());
+                            var maxrecharge=$.trim($('#maxrecharge').val());
+                            var VipLv=$.trim($('#VipLv').val());
+                            var isrecharge=$.trim($('#isrecharge').val());
+                            var isbind = $.trim($('#isbind').val());
+
+                            //执行重载
+                            table.reload('proxylist', {
+                                initSort: obj,
+                                page: {
+                                    curr: 1 //重新从第 1 页开始
+                                },
+                                where: {
+                                    'roleid': roleid,
+                                    'roomid': roomid,
+                                    'orderfield': obj.field,
+                                    'ordertype': obj.type,
+                                    'usertype': usertype,
+                                    'iscontroll':iscontroll,
+                                    'minrecharge':minrecharge,
+                                    'maxrecharge':maxrecharge,
+                                    'VipLv':VipLv,
+                                    'isrecharge':isrecharge,
+                                    'isbind':isbind,
+                                    'PackID':$.trim($('#PackID').val()),
+                                }
+                            });
+
+                        });
+
+
+
+                    },
+
+                    init: function () {
+                        form.render(null, 'component-form-group');
+                        laydate.render({
+                            elem: '#LAY-component-form-group-date'
+                            , format: 'yyyy-MM-dd HH:mm:ss'
+                            , max: 1
+                            , lang: '{$datelang ?: "cn"}'
+                            , btns: ['clear', 'confirm']
+                            , type: 'datetime'
+                            // , value: new Date()
+                        });
+                        laydate.render({
+                            elem: '#LAY-component-form-group-date2'
+                            , format: 'yyyy-MM-dd HH:mm:ss'
+                            , max: 1
+                            , lang: '{$datelang ?: "cn"}'
+                            , btns: ['clear', 'confirm']
+                            , type: 'datetime'
+                            // , value: new Date()
+                        });
+                        main.renderData();
+                        main.extraEvent();
+                        $('#search').on('click', function (e) {
+                            e.preventDefault();
+                            main.search();
+                        });
+                    }
+                };
+
+                main.init();
+            });
+
+            $('#output').click(function () {
+                where = {
+                    startTime: $.trim($('#LAY-component-form-group-date').val()),
+                    endTime: $.trim($('#LAY-component-form-group-date2').val()),
+                    roleid: $.trim($('#roleid').val()),
+                    isonline: $.trim($('#online').val()),
+                    isdisable: $.trim($('#isdisable').val()),
+                    lastIP: $.trim($('#ipaddr').val()),
+                    ip: $.trim($('#regip').val()),
+                    proxyId:$.trim($('#proxyId').val()),
+                    limit: 100000,
+                    usertype: $.trim($('#usertype').val()),
+                    iscontroll:$.trim($('#iscontroll').val()),
+                    minrecharge:$.trim($('#minrecharge').val()),
+                    maxrecharge:$.trim($('#maxrecharge').val()),
+                    VipLv:$.trim($('#VipLv').val()),
+                    isrecharge:$.trim($('#isrecharge').val()),
+                    isbind:$.trim($('#isbind').val()),
+                    PackID:$.trim($('#PackID').val()),
+                    Action: 'exec',
+                }
+
+                download();
+
+                function download() {
+                    var params = Object.keys(where).map(function (key) {
+                        return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+                    }).join("&");
+                    url = "{:url('player/all')}?" + params;
+                    $.ajax({
+                        type: 'POST',
+                        dataType: 'json',
+                        async: true,
+                        url: url, // 生成文件，保存在服务器
+                        success: function (data) {
+                            var result = data;
+                            console.info(data);
+                            switch (result["code"]) {
+                                case 0:
+                                    parent.parent.open(url + "&exec=1&outall=true");
+                                    break;
+                                case 1:
+                                    layer.msg(result["message"]);
+                                    break;
+                                case 2:
+                                    layer.confirm(result['message'], {
+                                        btn: ["{:lang('是')}", "{:lang('否')}"] //按钮
+                                    }, function () {
+                                        parent.parent.open(url + "&exec=1&outall=true");
+                                        layer.msg('', {icon: 6, time: 1000}, function () {
+                                            window.location.reload();
+                                        });
+                                    });
+                            }
+
+                        },
+                        error: function (XMLHttpRequest, textStatus, e) {
+                            console.log("oilDetection.js  method exportOilDetection" + e);
+                        }
+                    });
+                }
+
+
+            });
+</script>
+{/block}

@@ -1,0 +1,111 @@
+{extend name="common/base" /}
+
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('gamectrl/fishrate')}" method="post" id="addProxy" >
+
+    <input type="text" id="roomid" name='roomid'  value="{$roomId}" hidden>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('房间信息')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="info" name='info'  value="{$roomname}(ID:{$roomId})" autocomplete="off" class="layui-input" readonly>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('系统税率')}(‰)：</label>
+        <div class="layui-input-block">
+            <input type="text" id="nSysTaxRatio" name='nSysTaxRatio' lay-verify="required|number" value="{$nSysTaxRatio}" placeholder="请输入系统税率（千分比）" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('彩金比率')}(‰)：</label>
+        <div class="layui-input-block">
+            <input type="text" id="nCaiJinRatio" name='nCaiJinRatio' lay-verify="required|number" value="{$nCaiJinRatio}" placeholder="请输入彩金比率（千分比）" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('明税比率')}(‰)：</label>
+        <div class="layui-input-block">
+            <input type="text" id="nExplicitTaxRatio" name='nExplicitTaxRatio' lay-verify="required|number" value="{$nExplicitTaxRatio}" placeholder="请输入明税比率（千分比）" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >{:lang('设置')}</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" lay-submit="" lay-filter="cancel" id="cancel" >{:lang('取消')}</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                var nSysTaxRatio = $.trim(data.field.nSysTaxRatio),
+                    nCaiJinRatio = $.trim(data.field.nCaiJinRatio),
+                    nExplicitTaxRatio = $.trim(data.field.nExplicitTaxRatio);
+                var id = $('#roomid').val();
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'id' : id,
+                        'nCaiJinRatio' : nCaiJinRatio,
+                        'nSysTaxRatio' : nSysTaxRatio,
+                        'nExplicitTaxRatio' :nExplicitTaxRatio
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg('设置成功',{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+                            layer.msg('设置失败', {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                });
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

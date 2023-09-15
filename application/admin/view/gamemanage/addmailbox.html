@@ -1,0 +1,238 @@
+{extend name="common/base" /}
+
+{block name="title"}添加邮件发送{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('gamemanage/addmailbox')}" method="post" id="addmailbox" >
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">选择玩家：</label>
+        <div class="layui-input-block">
+            <input type="text" id="rolelist" name='rolelist' value="全部" lay-verify="required"  placeholder="" autocomplete="off" class="layui-input">
+                <!--<a   class="layui-btn layui-bg-blue" id="searchrole">选择玩家</a><br/>-->
+            <!--<span id="rolelist">[1111111],[1111112],[1111113],[1111111],[1111112],[1111113]</span>-->
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">邮件标题：</label>
+        <div class="layui-input-block">
+            <input type="text" id="mailtitle" name='mailtitle'  lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">邮件文本：</label>
+        <div class="layui-input-block">
+            <textarea name="mailtxt" id="mailtxt" placeholder="请输入"  lay-verify="content" class="layui-textarea"></textarea>
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">邮件类型：</label>
+        <div class="layui-input-block">
+            <select name="recordtype" id="recordtype" lay-verify="required" lay-search="">
+                <option value="-1" selected="selected">请选择</option>
+                {volist name='mailtype' id='vo' }
+                <option value="{$key}">{$key}-{$vo}</option>
+                {/volist}
+            </select>
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">附件类型：</label>
+        <div class="layui-input-block">
+            <select name="extratype" id="extratype" lay-verify="required" lay-filter="extratype">
+                <option value="-1" selected="selected" >请选择</option>
+                {volist name='extratype' id='vo' }
+                <option value="{$key}">{$key}-{$vo}</option>
+                {/volist}
+            </select>
+        </div>
+    </div>
+
+
+    <div class="layui-form-item" style="display: none" id="showextra">
+        <label class="layui-form-label">附件数量：</label>
+        <div class="layui-input-block">
+            <input type="text" id="amount" name='amount' lay-verify="number" value="1"  placeholder="" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">发送类型：</label>
+        <div class="layui-input-block">
+            <input type="radio" name="sendtype" value="0" title="即时发送" checked="" lay-filter="sendtype">
+            <input type="radio" name="sendtype" value="1" title="定时发送" lay-filter="sendtype">
+        </div>
+    </div>
+
+    <div class="layui-form-item" style="display: none" id="showsend">
+        <label class="layui-form-label">定时发送时间：</label>
+        <div class="layui-input-block">
+            <input type="text" id="sendtime" name='sendtime'  placeholder="" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+
+
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >保存</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" lay-submit="" lay-filter="cancel" id="cancel" >取消</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element','layedit', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,layedit = layui.layedit
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                var
+                    rolelist = $.trim(data.field.rolelist),
+                    mailtitle = $.trim(data.field.mailtitle),
+                    mailtxt = $.trim(data.field.mailtxt),
+                    recordtype = $.trim(data.field.recordtype),
+                    extratype = $.trim(data.field.extratype),
+                    sendtime = $.trim(data.field.sendtime),
+                    amount = $.trim(data.field.amount),
+                    sendtype = $.trim(data.field.sendtype);
+
+                if(sendtype==1){
+                    if(sendtime==''){
+                        layer.msg('请输入发送时间', {icon:2});
+                        return;
+                    }
+                }
+
+                if(recordtype==-1){
+                    layer.msg('请选择邮件类型', {icon:2});
+                    return;
+                }
+
+                if(extratype==-1){
+                    layer.msg('请选择附件类型', {icon:2});
+                    return;
+                }
+                else
+                {
+                    if(parseInt(extratype)>0){
+                        if(amount==''){
+                            layer.msg('请输入附件数量', {icon:2});
+                            return;
+                        }
+                    }
+                }
+
+
+                $.ajax({
+                    type:'post',
+//                    type:'get',
+                    url:data.form.action,
+                    data:{
+                        'rolelist' : rolelist,
+                        'title':mailtitle,
+                        'mailtxt' : mailtxt,
+                        'recordtype' : recordtype,
+                        'extratype' : extratype,
+                        'sendtime' : sendtime,
+                        'sendtype' : sendtype,
+                        'amount' : amount
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                laydate.render({
+                    elem: '#sendtime'
+                    ,type: 'datetime'
+                    ,format:'yyyy-MM-dd HH:mm:ss'
+                    ,btns: ['clear', 'confirm']
+                });
+                main.bindEvent();
+            }
+        };
+
+        form.on('radio(sendtype)', function(data){
+            if(data.value==1){
+                $("#showsend").show();
+            }
+            else{
+                $("#showsend").hide();
+            }
+        });
+
+        // var index = layedit.build('mailtxt',{
+        //     height: 120
+        // });
+        //
+        // form.verify({
+        //     //content富文本域中的lay-verify值
+        //     content: function(value) {
+        //         return layedit.sync(index);
+        //     }
+        // });
+
+        form.on('select(extratype)', function(data){
+            if(parseInt(data.value)>0){
+                $("#showextra").show();
+            }
+            else{
+                $("#showextra").hide();
+            }
+        });
+
+        $(document).on('click','#searchrole',function(){
+            x_admin_show('','#',600,600);
+        });
+        main.init();
+    });
+</script>
+{/block}

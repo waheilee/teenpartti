@@ -1,0 +1,242 @@
+{extend name="common/base" /}
+
+{block name="title"}{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-fluid">
+      <div class="layui-row layui-col-space15">
+        <div class="layui-col-sm6 layui-col-md4">
+          <div class="layui-card">
+            <div class="layui-card-header">
+              
+              <span class="layui-badge layui-bg-blue layuiadmin-badge">{:lang('总人数')}：</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+              <p class="layuiadmin-big-font" id="total_count">0</p>
+            </div>
+          </div>
+        </div>
+        <div class="layui-col-sm6 layui-col-md4">
+          <div class="layui-card">
+            <div class="layui-card-header">
+              <span class="layui-badge layui-bg-blue layuiadmin-badge">{:lang('总金额')}：</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+              <p class="layuiadmin-big-font" id="total_amount">0</p>
+            </div>
+          </div>
+        </div>
+</div>
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('代理ID')}：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="RoleId" name="RoleId" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('返利类型')}：</label>
+                    <div class="layui-input-inline">
+                        <select name="hd_name" id="hd_name">
+                            <option value="" >{:lang('全部')}</option>
+                            {foreach $activity_arr as $k1 => $v1}
+                            <option value="{$k1}">{$v1}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('时间')}：</label>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="start_date" id="LAY-component-form-group-date" autocomplete="off"
+                               class="layui-input" value="{:date('Y-m-d')}">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="end_date" id="LAY-component-form-group-date2" autocomplete="off"
+                               class="layui-input" value="{:date('Y-m-d')}">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                    <button type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>
+                    <a class="layui-btn layui-btn-danger" id="output">{:lang('导出记录')}</a>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+            var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+                ,table = layui.table
+                ,$ = layui.$
+            ,form = layui.form;
+
+            var main = {
+                 renderData : function() {
+                    var cols = [ //表头
+                        {field: 'RoleID', title: "{:lang('代理ID')}", minWidth:200, align:'center', templet: function (d) {
+                            return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.RoleID + "</a>";
+                        }
+                    }
+                        
+                        , {field: 'hd_name', title: "{:lang('返利类型')}", minWidth:200, align:'center'}
+                        , {field: 'ReceiveAmt', title: "{:lang('领取金额')}", minWidth:200, align:'center'}
+                        , {field: 'AddTime', title: "{:lang('时间')}", minWidth:200, align:'center'}
+                    ];
+
+                    table.render({
+                        elem: '#proxylist'
+                        , url: "{:url('agent/receive')}?action=list" //数据接口
+                        , page: true //开启分页
+                        , limit:10
+                        , cols: [cols]
+                        , done: function (res, curr, count) {
+                        $('#total_count').html(res['other']['total_count']);
+                        $('#total_amount').html(res['other']['total_amount']);
+
+                    }
+                    });
+                },
+
+                //搜索
+                search : function() {
+                    var strartdate = $.trim($('#LAY-component-form-group-date').val());
+                    var enddate = $.trim($('#LAY-component-form-group-date2').val());
+                    var RoleId = $.trim($('#RoleId').val());
+                    var hd_name = $.trim($('#hd_name').val());
+
+                    //执行重载
+                    table.reload('proxylist', {
+                        page: {
+                            curr: 1 //重新从第 1 页开始
+                        },
+                        where: {
+                            'start_date':strartdate,
+                            'end_date':enddate,
+                            'roleid': RoleId,
+                            'hd_name': hd_name,
+                            
+                        }
+                    });
+                },
+                //操作事件
+		          extraEvent: function () {
+                    // 详情
+                    table.on('tool(proxylist)', function (obj) {
+                        var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+                        tr = obj.tr; //获得当前行 tr 的DOM对象
+                        if (layEvent === 'detail') {
+                            var url = '/admin/player/playerDetail?roleid=' + data.RoleID;
+                            x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.6);
+                        }
+                    });
+		          },
+                 init : function() {
+                    main.renderData();
+                    main.extraEvent();
+                    laydate.render({
+                        elem: '#LAY-component-form-group-date'
+                        , format: 'yyyy-MM-dd'
+                        , max: 1
+                        , btns: ['clear', 'confirm']
+                    });
+                    laydate.render({
+                        elem: '#LAY-component-form-group-date2'
+                        , format: 'yyyy-MM-dd'
+                        , max: 1
+                        , btns: ['clear', 'confirm']
+                    });
+                    $('#search').on('click', function(e) {
+                        e.preventDefault();
+                        main.search();
+                    });
+                }
+            };
+
+            main.init();
+    });
+
+    $('#output').click(function () {
+        var strartdate = $.trim($('#LAY-component-form-group-date').val());
+        var enddate = $.trim($('#LAY-component-form-group-date2').val());
+        var RoleId = $.trim($('#RoleId').val());
+        var hd_name = $.trim($('#hd_name').val());
+            where = {
+                'start_date':strartdate,
+                'end_date':enddate,
+                'roleid': RoleId,
+                'hd_name': hd_name,
+                limit: 10000000,
+                output: 'exec',
+                action:'list'
+            }
+
+            download();
+
+            function download() {
+                var params = Object.keys(where).map(function (key) {
+                    return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+                }).join("&");
+                var output_url = "{:url('agent/receive')}" + "?" + params;
+                $.ajax({
+                    type: 'POST',
+                    dataType: 'json',
+                    async: true,
+                    url: output_url, // 生成文件，保存在服务器
+                    success: function (data) {
+                        var result = data;
+                        console.info(data);
+                        switch (result["code"]) {
+                            case 0:
+                                parent.parent.open(output_url + "&exec=1&outall=true");
+                                break;
+                            case 1:
+                                layer.msg(result["message"]);
+                                break;
+                            case 2:
+                                layer.confirm(result['message'], {
+                                    btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
+                                }, function () {
+                                    parent.parent.open(output_url + "&exec=1&outall=true");
+                                    layer.msg('', {icon: 6, time: 1000}, function () {
+                                        window.location.reload();
+                                    });
+                                });
+                        }
+                    },
+                    error: function (XMLHttpRequest, textStatus, e) {
+                        console.log("oilDetection.js  method exportOilDetection" + e);
+                    }
+                });
+            }
+        });
+</script>
+{/block}

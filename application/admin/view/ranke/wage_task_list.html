@@ -1,0 +1,348 @@
+{extend name="common/base" /}
+
+{block name="title"}支付通道{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+
+            <div class="layui-form-item">
+                <div class="layui-input-inline">
+                    <input type="text" id="roleid" name="roleid" placeholder="{:lang('玩家ID')}" autocomplete="off"
+                           class="layui-input">
+                </div>
+                {if(config('is_portrait') == 1)}
+                <div class="layui-input-inline">
+                    <input autocomplete="off" class="layui-input" id="OperatorId" lay-verify="number" name="OperatorId" placeholder="{:lang('渠道ID')}" type="text">
+                </div>
+                {/if}
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('注册时间')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="start_date" id="start_date" autocomplete="off" class="layui-input">
+                    </div>
+                    <div class="layui-form-mid"> -
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="end_date" id="end_date" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('余额范围')}</label>
+                    <div class="layui-input-inline">
+                        <input type="number" name="amount_min" id="amount_min"  autocomplete="off" class="layui-input">
+                    </div>
+                    <div class="layui-form-mid" > -
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="number" name="amount_max" id="amount_max" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('打码任务')}</label>
+                    <div class="layui-input-inline">
+                        <input type="number" name="wage_min" id="wage_min"  autocomplete="off" class="layui-input">
+                    </div>
+                    <div class="layui-form-mid" > -
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="number" name="wage_max" id="wage_max" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+
+
+                <div class="layui-inline">
+                    <!-- <div class="layui-input-inline"> -->
+                    <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                    <a class="layui-btn" id="output">{:lang('导出记录')}</a>
+                    <!-- </div> -->
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <!--<a style="margin-bottom: 10px;" class="layui-btn" onclick="x_admin_show('新增微信客服','addWeixin.html', '', 500)">-->
+        <!--<i class="layui-icon layui-icon-add-circle"></i>-->
+        <!--</a>-->
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script type="text/html" id="toolbarDemo">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="onekeyPass">{:lang('打码批量清零')}</button>
+
+    </div>
+</script>
+
+<script type="text/html" id="msg-bar">
+    <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="wageclear">{:lang('打码清零')}</a>
+</script>
+<script>
+    url = "{:url('ranke/wageTaskList')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {type: 'checkbox', fixed: 'left'},
+                    {field: 'AccountID', align: 'center', title: "{:lang('玩家ID')}", width: 120, sort: true, templet: function (d) {
+                            return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.AccountID + "</a>";
+                        }
+                    },
+                    {field: 'RegisterTime', align: 'center', title: '注册时间', minWidth: 200},
+                    {
+                        field: 'Money', align: 'center', title: "{:lang('携带金币')}", width: 180, sort: true,  templet: function (d) {
+                            return d.Money != 0 ? d.Money : '0.00';
+                        }
+                    },
+                    {
+                        field: 'Money', align: 'center', title: "{:lang('总和')}", width: 180, sort: true,  templet: function (d) {
+                            return d.Money != 0 ? d.Money : '0.00';
+                        }
+                    },
+                    {field: 'TotalDeposit', align: 'center', title: "{:lang('总充值')}", width: 150, sort: true},
+                    {field: 'TotalRollOut', align: 'center', title: "{:lang('总提现')}", width: 150, sort: true},
+                    {
+                        field: 'iFreezonMoney', align: 'center', title: "{:lang('冻结金额')}", width: 180, templet: function (d) {
+                            return d.iFreezonMoney != 0 ? d.iFreezonMoney : '0.00';
+                        }
+                    },
+                    {
+                        field: 'CashAble', align: 'center', title: "{:lang('可提金额')}", width: 180,  templet: function (d) {
+                            return d.CashAble != 0 ? d.CashAble : '0.00';
+                        }
+                    }
+                    ,
+                    {field: 'iCurWaged', align: 'center', title: "{:lang('当前完成打码')}", width: 180},
+                    {field: 'iNeedWaged', align: 'center', title: "{:lang('打码任务')}", width: 180},
+                    {fixed: 'right', title: "{:lang('操作')}", align: 'center', minWidth: 150, toolbar: '#msg-bar'}
+
+
+
+                ];
+                var is_portrait = "{:config('is_portrait')}";
+                if (is_portrait == 1) {
+                    cols.splice(1,0,{field: 'OperatorId', align: 'center', title: "{:lang('渠道ID')}", width: 150})
+                }
+                table.render({
+                    elem: '#proxylist',
+                    url: url,
+                    page: true, where: {Action: 'list'},
+                    limits:[10,15,20,25,30,35,40,45,50,100,200,500,1000],
+                    toolbar: '#toolbarDemo',
+                    defaultToolbar:[],
+                    cols: [cols],
+                    autoSort: false,
+                    done: function (res) {$(".layui-table-main tr").each(function (index, val) {
+                        $($(".layui-table-fixed-l .layui-table-body tbody tr")[index]).height($(val).height());
+                        $($(".layui-table-fixed-r .layui-table-body tbody tr")[index]).height($(val).height());
+                    });
+                    }
+                });
+            },
+            search: function () {
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        roleid: $.trim($('#roleid').val()),
+                        OperatorId: $.trim($('#OperatorId').val()),
+                        start_date:$('#start_date').val(),
+                        end_date:$('#end_date').val(),
+                        amount_min:$('#amount_min').val(),
+                        amount_max:$('#amount_max').val(),
+                        wage_min:$('#wage_min').val(),
+                        wage_max:$('#wage_max').val()
+                        // 'AccountName': AccountName,
+                        // 'NickName': NickName,
+                    }
+                });
+            },
+            extraEvent: function () {
+                //排序
+                table.on('sort(proxylist)', function (obj) {
+                    //执行重载
+                    table.reload('proxylist', {
+                        initSort: obj,
+                        page: {
+                            curr: 1 //重新从第 1 页开始
+                        },
+                        where: {
+                            'OperatorId': $.trim($('#OperatorId').val()),
+                            'orderby': obj.field,
+                            'ordertype': obj.type,
+                            'start_date':$('#start_date').val(),
+                            'end_date':$('#end_date').val(),
+                        }
+                    });
+
+                });
+
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'detail') {
+                        var url = '/admin/player/playerDetail?roleid=' + data.AccountID;
+                        x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.6);
+                    }
+                    if(layEvent=='wageclear'){
+                        layer.confirm("玩家："+data.AccountID+",{:lang('确认打码清零？')}", {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
+                            $.ajax({
+                                type: 'post',
+                                url: "{:url('Ranke/wageClear')}",
+                                data: {
+                                    'AccountID': data.AccountID
+                                },
+                                dataType: 'json',
+                                success: function (res) {
+                                    if (res.code === 0) {
+                                        layer.msg(res.msg, {icon: 1, time: 1000}, function () {
+                                            main.renderData();
+                                        });
+                                    } else {
+                                        layer.msg(res.msg, {icon: 2});
+                                    }
+                                }
+                            });
+                        });
+                    }
+                });
+
+                //触发表格复选框选择
+                table.on('checkbox(proxylist)', function(obj){
+                    console.log(obj)
+                });
+                table.on('toolbar(proxylist)', function(obj){
+                    var checkStatus = table.checkStatus(obj.config.id);
+                    switch(obj.event){
+                        case 'onekeyPass':
+                            var da = checkStatus.data;
+                            if (da.length == 0) {
+                                layer.msg('{:lang("未选择记录")}');
+                                return;
+                            }
+                            var AccountID = [];
+                            for (var i = da.length - 1; i >= 0; i--) {
+                                AccountID.push(da[i].AccountID)
+                            }
+                            layer.confirm("{:lang('确认要批量清零？')}", {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
+                                $.ajax({
+                                    type: 'post',
+                                    url: "{:url('Ranke/wageClear')}",
+                                    data: {
+                                        'AccountID': AccountID
+                                    },
+                                    dataType: 'json',
+                                    success: function (res) {
+                                        if (res.code === 0) {
+                                            layer.msg(res.msg, {icon: 1, time: 1000}, function () {
+                                                main.renderData();
+                                            });
+                                        } else {
+                                            layer.msg(res.msg, {icon: 2});
+                                        }
+                                    }
+                                });
+                            });
+
+
+                            break;
+                    };
+                });
+            },
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+        laydate.render({elem: '#start_date', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+        laydate.render({elem: '#end_date', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+        main.init();
+    });
+    $('#output').click(function () {
+        where = {
+            OperatorId: $.trim($('#OperatorId').val()),
+            limit: 10000000,
+            Action: 'exec',
+            start_date:$('#start_date').val(),
+            end_date:$('#end_date').val(),
+            amount_min:$('#amount_min').val(),
+            amount_max:$('#amount_max').val(),
+            wage_min:$('#wage_min').val(),
+            wage_max:$('#wage_max').val()
+        }
+
+        download();
+
+        function download() {
+            var params = Object.keys(where).map(function (key) {
+                return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+            }).join("&");
+            outurl = url + "?" + params;
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                async: true,
+                url: outurl, // 生成文件，保存在服务器
+                success: function (data) {
+                    var result = data;
+                    console.info(data);
+                    switch (result["code"]) {
+                        case 0:
+                            parent.parent.open(outurl + "&exec=1&outall=true");
+                            break;
+                        case 1:
+                            layer.msg(result["message"]);
+                            break;
+                        case 2:
+                            layer.confirm(result['message'], {
+                                btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
+                            }, function () {
+                                parent.parent.open(outurl + "&exec=1&outall=true");
+                                layer.msg('', {icon: 6, time: 1000}, function () {
+                                    window.location.reload();
+                                });
+                            });
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, e) {
+                    console.log("oilDetection.js  method exportOilDetection" + e);
+                }
+            });
+        }
+    });
+</script>
+{/block}

@@ -1,0 +1,159 @@
+{extend name="common/base" /}
+{block name="title"}添加公告{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" id="additem" method="post">
+    <input type="hidden" ID="ID" VALUE="{$ID}">
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang("标题")}：</label>
+        <div class="layui-input-block">
+            <input autocomplete="off" class="layui-input" id="title" name='title' placeholder="" type="text">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang("推送时间")}：</label>
+        <div class="layui-input-inline" style="width: 150px">
+            <input type="text" name="push" id="push" autocomplete="off" class="layui-input dateItem">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang("开始时间")}：</label>
+        <div class="layui-input-inline" style="width: 150px">
+            <input type="text" name="start" id="start" autocomplete="off" class="layui-input dateItem">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang("结束时间")}：</label>
+        <div class="layui-input-inline" style="width: 150px">
+            <input type="text" name="end" id="end" autocomplete="off" class="layui-input dateItem">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang("国家")}：</label>
+        <div class="layui-input-inline" style="width: 150px">
+            <select id="CountryCode" name="CountryCode">
+                <option value="">{:lang("请选择")}</option>
+                {volist name="country" id='vo'}
+                <option value="{$vo.CountryCode}" >{$vo.CountryName}-{$vo.CountryCode}</option>
+                {/volist}
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang("备注")}：</label>
+        <div class="layui-input-block">
+            <textarea class="layui-textarea" id="content" lay-verify="content" name="content" placeholder="{:lang('请输入')}"></textarea>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang("类型")}：</label>
+        <div class="layui-input-block">
+            <select lay-filter="ClassId" id="ClassId" name="ClassId">
+                <option selected="selected" value="2">{:lang("公告")}</option>
+                <option value="3">{:lang("弹窗")}</option>
+            </select>
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a class="layui-btn layui-btn-radius" id="addit" lay-filter="addit" lay-submit="" style="margin-left: 15%" type="submit">{:lang("发送")}</a>
+            <a class="layui-btn layui-btn-primary layui-btn-radius" id="cancel" lay-filter="cancel" lay-submit="">{:lang("取消")}</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+	url = "{:url('Gamemanage/PublicnoteManage')}";
+	layui.config({base: '__layui__/'}).extend({
+		index: 'lib/index'
+	}).use(['table', 'layer', 'element', 'layedit', 'laydate', 'form', 'jquery'], function () {
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, layedit = layui.layedit, table = layui.table, $ = layui.$, form = layui.form;
+
+		var main = {
+			submitForm: function (data) {
+				$.ajax({
+					type: 'post',
+					url: url,
+					data: {
+						Action: '{$Action}',
+						MsgID: $('#ID').val(),
+						MsgTitle: $.trim(data.field.title),
+						MsgContent: $.trim(data.field.content),
+						ClassId: $.trim(data.field.ClassId),
+						StartTime: $.trim(data.field.start),
+						EndTime: $.trim(data.field.end),
+						PushMsgTime: $.trim(data.field.push),
+						CountryCode:  $('#CountryCode').val(),
+						LanguageType: 0,
+						Status: 1,
+					},
+					dataType: 'json',
+					success: function (res) {
+						if (res.code === 1) {
+							layer.msg(res.msg, {icon: 1, time: 500}, function () {
+								x_admin_close();
+								parent.location.reload();
+							});
+						} else {
+							layer.msg(res.msg, {icon: 2});
+						}
+					}
+				});
+			},
+
+			bindEvent: function () {
+				form.on('submit(addit)', function (data) {
+					main.submitForm(data);
+					return false;
+				});
+
+				$('#cancel').on('click', function (e) {
+					e.preventDefault();
+					x_admin_close();
+				})
+			},
+
+			init: function () {
+				if ('{$Action}' == 'edit') {
+					$.ajax({
+						type: 'get',
+						url: url,
+						data: {Action: 'get', ID: $('#ID').val()},
+						success: function (res) {
+							$('#title').val(res.data.MsgTitle);
+							$('#content').val(res.data.MsgContent);
+							$('#push').val(res.data.PushMsgTime.substr(0, 19));
+							$('#start').val(res.data.StartTime.substr(0, 19));
+							$('#end').val(res.data.EndTime.substr(0, 19));
+							$('#ClassId').val(res.data.ClassId);
+                            $("#CountryCode").find("option[value = '"+res.data.CountryCode+"']").attr("selected","selected");
+							$('#addit').html('{:lang("更新")}');
+							layui.form.render("select");
+						}
+					})
+				}
+				// table.render();
+				lay('.dateItem').each(function () {
+					laydate.render({elem: this, trigger: 'click',lang:'{$datelang ?: "cn"}', format: 'yyyy-MM-dd HH:mm:ss', type: 'datetime', value: new Date});
+				});
+				main.bindEvent();
+			}
+		};
+		$(document).on('click', '#searchrole', function () {
+			x_admin_show('', '#', 600, 600);
+		});
+		main.init();
+
+	});
+
+
+</script>
+{/block}

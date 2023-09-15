@@ -1,0 +1,104 @@
+{extend name="common/base" /}
+
+{block name="title"}新增IP/机器码{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('gamemanage/blacklist')}" method="post" id="addProxy" >
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('类型')}：</label>
+        <div class="layui-input-block">
+            <select id="type" name="type" >
+                <option value="1" >IP</option>
+                <option value="3" >IP段</option>
+                <option value="4" selected>{:lang('玩家ID')}</option>
+
+
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('IP/IP段/玩家ID')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="ip" name="ip"  placeholder="{:lang('IP/IP段/玩家ID')}" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >{:lang('新增')}</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" lay-submit="" lay-filter="cancel" id="cancel" >{:lang('取消')}</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                var ip   = $('#ip').val(),
+                    type = $('#type').val();
+
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'ip' : ip,
+                        'type' : type,
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        console.log(res);
+                        if (res.code === 0) {
+
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

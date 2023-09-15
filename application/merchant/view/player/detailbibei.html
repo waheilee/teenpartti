@@ -1,0 +1,107 @@
+{extend name="common/base" /}
+
+{block name="title"}所有玩家{/block}
+{block name="css"}
+<style type="text/css">
+    /*删格化5等份*/
+    .layui-col-lg2-4,.layui-col-md2-4,.layui-col-sm2-4,.layui-col-xs2-4{position:relative;display:block;box-sizing:border-box}
+    .layui-col-xs2-4{float:left}
+    .layui-col-xs2-4{width:19.9999992%}
+    .layui-col-xs-offset2-4{margin-left:19.9999992%}
+    @media screen and (min-width:768px){
+        .layui-col-sm2-4{float:left}
+        .layui-col-sm2-4{width:19.9999992%}
+        .layui-col-sm-offset2-4{margin-left:19.9999992%}
+    }
+    @media screen and (min-width:992px){
+        .layui-col-md2-4{float:left}
+        .layui-col-md2-4{width:19.9999992%}
+        .layui-col-md-offset2-4{margin-left:19.9999992%}
+    }
+    @media screen and (min-width:1200px){
+        .layui-col-lg2-4{float:left}
+        .layui-col-lg2-4{width:19.9999992%}
+        .layui-col-lg-offset2-4{margin-left:19.9999992%}
+    }
+</style>
+{/block}
+{block name="content"}
+
+<div class="layui-card" >
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <div class="layui-inline">
+            <label class="layui-form-label">游戏名称：</label>
+            <div class="layui-input-inline">
+                {$game.roomname}
+            </div>
+        </div>
+
+        <div class="layui-inline">
+            <label class="layui-form-label">日期时间：</label>
+            <div class="layui-input-inline">
+                {$game.addtime}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="layui-card" >
+    <table class="layui-table">
+        <colgroup>
+            <col width="150">
+            <col width="200">
+            <col>
+            <col>
+        </colgroup>
+        <thead>
+        <tr>
+            <th>玩家ID</th>
+            <th>总押注</th>
+            <th>赢钱</th>
+            <th>选择模式</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>{$game.UserId}</td>
+            <td>{$game.DiceBet}</td>
+            <td>{$game.DiceAward}</td>
+            <td>{$game.cardname}</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+
+<div class="layui-card" >
+    <div class="layui-row">
+        <div class="layui-row layui-col-space1">
+            <div class="layui-col-xs2-1">
+                <div class="layui-card">
+                    <div class="layui-card-body" >
+                        <img src="{$game.cardpic}" style="height: 200px;"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{/block}
+{block name="script"}
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+
+        }
+    );
+
+
+
+    {/block}

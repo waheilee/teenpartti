@@ -1,0 +1,128 @@
+{extend name="common/base" /}
+
+{block name="title"}线下转账修改{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<!--<form class="layui-form" action="{:url('payment/editOffline')}" method="post" id="addProxy" >-->
+<form class="layui-form" action="{:url('playertrans/handle')}" method="post" id="addProxy"  style="position: relative;right: 30px;">
+    <div style="display: none">
+
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">{:lang('玩家ID')}：</label>
+            <div class="layui-input-block">
+                <!--<input type="text" id="roleid" name='roleid' value="{$roleid}" readonly lay-verify="required|number"  autocomplete="off" class="layui-input layui-disabled">-->
+                <input type="text" id="roleid" name='roleid' value="{$roleid}" readonly lay-verify=""  autocomplete="off" class="layui-input layui-disabled">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">{:lang('订单ID')}：</label>
+            <div class="layui-input-block">
+                <!--<input type="text" id="orderid" name="orderid" value="{$orderid}" lay-verify="required"  autocomplete="off" readonly class="layui-input layui-disabled">-->
+                <input type="text" id="orderid" name="orderid" value="{$orderid}" lay-verify=""  autocomplete="off" readonly class="layui-input layui-disabled">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">{:lang('状态')}：</label>
+            <div class="layui-input-block">
+                <input type="text" id="status" name="status" value="{$status}" lay-verify="" placeholder="{:lang('状态')}" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">{:lang('审核人')}：</label>
+            <div class="layui-input-block">
+                <input type="text" id="checkuser" name="checkuser" value="{$checkuser}" lay-verify="" placeholder="{:lang('审核人')}" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('备注')}：</label>
+        <div class="layui-input-block">
+            <textarea class="layui-textarea" id="descript" name="descript" placeholder="{:lang('备注')}" autocomplete="off">{$descript}</textarea>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >{:lang('确定')}</a>
+            <a class="layui-btn layui-btn-primary layui-btn-radius"  id="cancel" >{:lang('取消')}</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var layer = layui.layer
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                console.log(data.field.orderid);
+                var roleid= $.trim(data.field.roleid)
+
+                    ,orderid = $.trim(data.field.orderid)
+
+                    ,status = $.trim(data.field.status)
+                    ,checkuser= $.trim(data.field.checkuser)
+
+                descript = $.trim(data.field.descript);
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'roleid' : roleid,
+                        'orderid' : orderid ,
+                        'status' : status,
+                        'checkuser' : checkuser,
+
+                        'descript' : descript
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

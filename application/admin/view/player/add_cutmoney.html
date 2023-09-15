@@ -1,0 +1,136 @@
+{extend name="common/base" /}
+
+{block name="title"}向玩家转账{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('player/addCutmoney')}" method="post" id="addProxy" >
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">玩家ID：</label>
+        <div class="layui-input-block">
+            <input type="text" id="roleid" name='roleid' lay-verify="required|number" placeholder="请输入玩家ID" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <!--<div class="layui-form-item" >-->
+        <!--<label class="layui-form-label">转账类型：</label>-->
+        <!--<div class="layui-input-block">-->
+            <!--<select name="classid" id="classid">-->
+                <!--<option value="1">测试专用赠送</option>-->
+                <!--<option value="2">充值手工补发</option>-->
+                <!--<option value="3">转给超级玩家</option>-->
+            <!--</select>-->
+        <!--</div>-->
+    <!--</div>-->
+    <div class="layui-form-item">
+        <label class="layui-form-label">扣款金额：</label>
+        <div class="layui-input-block">
+            <input type="text" id="totalmoney" name="totalmoney" lay-verify="required|number" placeholder="请输入扣款金额" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <!--<div class="layui-form-item" style="display: none">-->
+    <div class="layui-form-item" >
+        <label class="layui-form-label">扣款类型：</label>
+        <div class="layui-input-block" id="status">
+            <input type="radio" id="no" name="sex" value="3" title="银行账户"  checked >
+            <input type="radio" id="yes" name="sex" value="4" title="携带金额"   >
+
+
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">备注：</label>
+        <div class="layui-input-block">
+            <textarea class="layui-textarea" id="descript" name="descript"></textarea>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >新增</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" lay-submit="" lay-filter="cancel" id="cancel" >取消</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+
+        var main = {
+            submitForm : function(data) {
+                var roleid = $.trim(data.field.roleid),
+//                    classid = $.trim(data.field.classid),
+                    totalmoney = $.trim(data.field.totalmoney),
+                    descript = $.trim(data.field.descript);
+                var moneytype=$("input[name='sex']:checked").val();
+
+//                if (roleid == '' || classid== '' || totalmoney == '' ) {
+                if (roleid == ''  || totalmoney == '' ) {
+                    layer.msg('参数有误', {icon:2});
+                    return false;
+                }
+                if ( totalmoney < 0) {
+                    layer.msg('扣款金额必须为正数', {icon:2});
+                    return false;
+                }
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'roleid' : roleid,
+//                        'classid' : classid,
+                        'totalmoney' : totalmoney,
+                        'moneytype' : moneytype,
+                        'descript' : descript
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

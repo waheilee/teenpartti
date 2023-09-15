@@ -1,0 +1,116 @@
+{include file='public/head'}
+<body>
+<style type="text/css" media="screen">
+    header {
+        color: black;
+    }
+</style>
+
+
+<div class="x-body">
+    <form class="layui-form">
+        <input id="id" type="hidden" value="{$data.id}">
+        <div class="layui-form-item">
+            <label class="layui-form-label">
+                {:lang("用户角色")}
+            </label>
+            <div class="layui-input-block">
+                <select id='group_id' name="group_id" value="{$data['group_id']}">
+                    {php}
+                    foreach($auth_group as $vo){
+                    if($vo['id']==$data['group_id']){
+                    {/php}
+                    <option selected value="{$vo.id}">{:lang($vo.title)}</option>
+                    {php} }else{ {/php}
+                    <option value="{$vo.id}">{:lang($vo.title)}</option>
+                    {php} } } {/php}
+
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">{:lang("用户名")}</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" id="username" lay-verify="required|username" name="username" placeholder="{:lang('请输入用户名')}" type="text"
+                       value="{$data.username}">
+            </div>
+        </div>
+
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">{:lang("密码")}</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" id="password" lay-verify="pass" name="password" placeholder="{:lang('留空为不修改')}" type="password">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">{:lang("确认密码")}</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" id="check_password" name="check_password" placeholder="{:lang('请输入确认密码')}" type="password">
+            </div>
+        </div>
+
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-filter="toSubmit" lay-submit="" style="margin-left: 15%">{:lang("提交")}</button>
+                <button class="layui-btn layui-btn-primary" id="reset" type="reset">{:lang("重置")}</button>
+            </div>
+        </div>
+
+    </form>
+</div>
+</body>
+{include file='public/foot'}
+<script type="text/javascript">
+    $(document).ready(function () {
+        var form = layui.form;
+        var layer = layui.layer;
+        form.render();
+        var PackIDS = "";
+        form.on('checkbox(PackID)', function (data) {
+            PackID = new Array();
+            $("input:checkbox[name='PackID']:checked").each(function () {
+                PackID.push($(this).val());
+            });
+
+            PackIDS = PackID;
+        });
+
+        form.on('submit(toSubmit)', function (data) {
+            console.info(PackIDS);
+            $.ajax({
+                url: "{:url('User/editUser')}",
+                type: 'post',
+                data: {
+                    id: $("#id").val(),
+                    group_id: $("#group_id").val(),
+                    username: $("#username").val(),
+                    password: $("#password").val(),
+                    check_password: $("#check_password").val(),
+                    PackID: PackIDS.toString()
+                },
+                success: function (data) {
+                    console.log(data);
+                    if (data.code == 0) {
+                        layer.msg(data.msg);
+                    } else {
+                        layer.msg(data.msg, {icon: 1, time: 500}, function () {
+                            $("#reset").click();
+                            x_admin_close();
+                            parent.location.reload();
+                        });
+                    }
+                    //服务器端返回处理逻辑
+                },
+                error: function (XmlHttpRequest, textStatus, errorThrown) {
+                    layer.msg('{:lang("服务器处理失败")}');
+                }
+            })
+            return false;
+        });
+    });
+</script>
+</html>

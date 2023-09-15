@@ -1,0 +1,180 @@
+{extend name="common/base" /}
+
+{block name="title"}支付通道{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+       <h3>新增分发</h3>
+    </div>
+    <div class="layui-card-body">
+        <a style="margin-bottom: 10px;" class="layui-btn" onclick="x_admin_show('新增分发','addfenfa.html', 500, 300)">
+            <i class="layui-icon layui-icon-add-circle"></i>
+        </a>
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script type="text/html" id="msg-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="edit"><i class="layui-icon layui-icon-edit"></i></a>
+    <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete"><i class="layui-icon layui-icon-delete"></i></a>
+    <!--<a class="layui-btn layui-btn-xs" lay-event="open"><i class="layui-icon layui-icon-set-fill"></i></a>-->
+
+</script>
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            renderData : function() {
+                var cols = [ //表头
+
+                    {field: 'id', title: 'ID', hide:true}
+                    , {field: 'key', title: '渠道', minWidth:60}
+                    ,{field: 'descript', title: '渠道名称', minWidth:120}
+//                    , {field: 'percent', title: '类型', minWidth:120}
+                    , {field: 'value', title: '状态', minWidth:150, templet: function(d){
+                        //$('#msg-bar a').remove('.myopen');
+                         var myid = d.id;
+                         if (d.value == 0) {
+                             //$('#msg-bar').append('<a class="myopen" style="margin-left: 10px" lay-event="open"><input type="checkbox"  name="open" lay-filter="open" lay-skin="switch" checked lay-text="开启|关闭"></a>');
+                             return '<a class="myopen" myid="'+myid+'" style="margin-left: 10px" lay-event="open"><input type="checkbox" name="open" lay-filter="open" lay-skin="switch" lay-text="开启|关闭"></a>';
+                         } else {
+                             //$('#msg-bar').append('<a class="myopen" style="margin-left: 10px" lay-event="open"><input type="checkbox" name="open" lay-filter="open" lay-skin="switch" lay-text="开启|关闭"></a>');
+                             return '<a class="myopen" myid="'+myid+'" style="margin-left: 10px" lay-event="open"><input type="checkbox"  name="open" lay-filter="open" lay-skin="switch" checked lay-text="开启|关闭"></a>';
+                         }
+                    }}
+                    ,{field: 'updatetime', title: '更新时间', minWidth:180}
+
+                    , {fixed: 'right', title:'操作', align:'center', minWidth:100, toolbar: '#msg-bar'}
+
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('channel/fenfa')}" //数据接口
+                    , page: true //开启分页
+                    , limit:50
+                    , cols: [cols]
+//                    , done: function () {
+//                        $("[data-field='status']").css('display','none');
+//                    }
+                    , done: function (res) {
+                        tzTbale();
+                    }
+                });
+            },
+
+
+            //操作事件
+            extraEvent : function () {
+                //编辑&&删除
+                table.on('tool(proxylist)', function(obj) {
+                    var data = obj.data //获得当前行数据
+                        ,layEvent = obj.event; //获得 lay-event 对应的值
+                    if (layEvent === 'edit') {
+                        var id = data.id
+                            ,key = data.key
+                            ,descript = data.descript;
+
+                        x_admin_show('编辑', 'editfenfa?id='+id+'&key='+key+'&descript='+descript, 500, 350);
+                    } else if (layEvent === 'delete') {
+                        layer.confirm("{:lang('确认删除这条记录？')}",{btn: ['确认','取消']}, function() {
+                            $.ajax({
+                                type: 'post',
+                                url: "{:url('channel/delfenfa')}",
+                                data: {
+                                    'id': data.id
+                                },
+                                dataType: 'json',
+                                success: function (res) {
+                                    if (res.code === 0) {
+                                        layer.msg(res.msg, {icon: 6,time:1000}, function() {
+                                            window.location.reload();
+                                        });
+                                    } else {
+                                        layer.msg(res.msg, {icon: 5});
+                                    }
+                                }
+                            });
+                        });
+                    }
+                });
+
+                //开启关闭通道
+                form.on('switch(open)', function(data){
+                    console.log(data);
+
+                    var selected = data.elem.checked === true ? 1 : 0; //开关是否开启，true或者false
+                    var id = $(data.elem).parent().attr('myid');
+
+
+                    //设置开关
+                    $.ajax({
+                        url: "{:url('channel/updatefenfa')}",
+                        type: 'post',
+                        data: {
+                            'id': id,
+                            'value': selected
+                        },
+                        success: function (res) {
+                            if (res.code === 0) {
+
+                                table.reload('proxylist', {
+                                    page: {
+                                        curr: 1 //重新从第 1 页开始
+                                    },
+                                });
+                                layer.msg(res.msg,{icon: 6});
+                            } else {
+
+                                layer.msg(res.msg, {icon: 5});
+
+
+                                if (selected == 0) {
+                                    //重新添加checked要用prop
+                                    $(data.elem).prop('checked','true');
+                                    $(data.elem).next().addClass('layui-form-onswitch');
+                                    $(data.elem).next().find('em').html('开启');
+                                } else {
+                                    $(data.elem).removeAttr('checked');
+                                    $(data.elem).next().removeClass('layui-form-onswitch');
+                                    $(data.elem).next().find('em').html('关闭');
+                                }
+                            }
+                        }
+
+                    })
+
+                });
+
+            },
+
+
+            init : function() {
+                main.renderData();
+                main.extraEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

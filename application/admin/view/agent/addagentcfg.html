@@ -1,0 +1,106 @@
+{extend name="common/base" /}
+
+{block name="title"}配置{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('agent/addagentcfg')}" method="post" id="addProxy" >
+    <input type="hidden" name="Id" id="Id"  value="{$info.Id}" />
+    <div class="layui-form-item">
+        <label class="layui-form-label">配置名称 ：</label>
+        <div class="layui-input-block">
+            <input type="text" id="CfgName" name='CfgName' lay-verify="required" placeholder="请输入配置名称"  value="{$info.CfgName}" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">配置名：</label>
+        <div class="layui-input-block">
+            <input type="text" id="Cfgkey" name='Cfgkey' lay-verify="required" placeholder="请输入配置名" autocomplete="off" value="{$info.Cfgkey}" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">配置值：</label>
+        <div class="layui-input-block">
+            <input type="text" id="CfgValue" name='CfgValue' lay-verify="required" placeholder="请输入配置值" autocomplete="off" value="{$info.CfgValue}" class="layui-input">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >保存</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" lay-submit="" lay-filter="cancel" id="cancel" >取消</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                var CfgName = $.trim(data.field.CfgName);
+                var Cfgkey = $.trim(data.field.Cfgkey);
+                var CfgValue = $.trim(data.field.CfgValue);
+                var Id = $.trim(data.field.Id);
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'CfgName' : CfgName,
+                        'Cfgkey' : Cfgkey,
+                        'CfgValue' : CfgValue,
+                        'id' : Id
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

@@ -1,0 +1,137 @@
+{extend name="common/base" /}
+{block name="title"}{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form action="{:url('Charge/ShopManager')}?Action={$action}" class="layui-form" id="addmailbox" method="post">
+    <input ID="ID" hidden value="{$info.ID}">
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('金币')}</label>
+        <div class="layui-input-block">
+            <input VALUE="{$info.BaseGoodsValue ?? 0}" autocomplete="off" class="layui-input" id="BaseGoodsValue" type="text">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label"> {:lang('金额')}</label>
+        <div class="layui-input-block">
+            <input VALUE="{$info.RealMoney?? 0}" autocomplete="off" class="layui-input" id="RealMoney" type="text">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label"> {:lang('首充奖励')}</label>
+        <div class="layui-input-block">
+            <input VALUE="{$info.FirstChargeAward?? 0}" autocomplete="off" class="layui-input" id="FirstChargeAward" type="text">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label"> {:lang('每日首充奖励')}</label>
+        <div class="layui-input-block">
+            <input VALUE="{$info.DayFirstCharge?? 0}" autocomplete="off" class="layui-input" id="DayFirstCharge" type="text">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label"> {:lang('额外奖励')}</label>
+        <div class="layui-input-block">
+            <input VALUE="{$info.ExtraAward?? 0}" autocomplete="off" class="layui-input" id="ExtraAward" type="text">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label"> {:lang('首充上级奖励')}</label>
+        <div class="layui-input-block">
+            <input VALUE="{$info.parentAward?? 0}" autocomplete="off" class="layui-input" id="parentAward" type="text">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label"> {:lang('20级VIP奖励')}</label>
+        <div class="layui-input-block">
+            <input VALUE="{$info.VipAward}" autocomplete="off" class="layui-input" id="VipAward" type="text">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a class="layui-btn layui-btn-radius" id="addit" lay-filter="addit" lay-submit="" style="margin-left: 15%" type="submit">{:lang('保存')}</a>
+            <a class="layui-btn layui-btn-primary layui-btn-radius" id="cancel" lay-filter="cancel" lay-submit="">{:lang('取消')}</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+	layui.config({
+		base: '__layui__/' //静态资源所在路径
+	}).extend({
+		index: 'lib/index' //主入口模块
+
+	}).use(['table', 'layer', 'element', 'layedit', 'laydate', 'form', 'jquery'], function () {
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, layedit = layui.layedit, table = layui.table, $ = layui.$, form = layui.form;
+		var main = {
+			submitForm: function (data) {
+				$.ajax({
+					type: 'post',
+					url: data.form.action,
+					data: {
+						'ID': $("#ID").val(),
+						'BaseGoodsValue': $.trim($("#BaseGoodsValue").val()),
+						'RealMoney': $.trim($("#RealMoney").val()),
+						'FirstChargeAward':$.trim($('#FirstChargeAward').val()),
+                        'parentAward':$.trim($('#parentAward').val()),
+                        'CountryCode': $.trim($("#CountryCode").val()),
+                        'VipAward': $.trim($("#VipAward").val()),
+                        'ExtraAward':$.trim($("#ExtraAward").val()),
+                        'DayFirstCharge':$.trim($("#DayFirstCharge").val())
+					},
+					dataType: 'json',
+					success: function (res) {
+						if (res.code == 1) {
+							layer.msg(res.msg, {icon: 1, time: 1000}, function () {
+								x_admin_close();
+								parent.location.reload();
+							});
+						} else {
+							layer.msg(res.msg, {icon: 2});
+						}
+					}
+				});
+			},
+
+			bindEvent: function () {
+				form.on('submit(addit)', function (data) {
+					main.submitForm(data);
+					return false;
+				});
+
+				$('#cancel').on('click', function (e) {
+					e.preventDefault();
+					x_admin_close();
+				})
+			},
+
+			init: function () {
+				laydate.render({
+					elem: '#sendtime'
+					, type: 'datetime'
+					, format: 'yyyy-MM-dd HH:mm:ss'
+					, btns: ['clear', 'confirm']
+				});
+				main.bindEvent();
+			}
+		};
+
+		$(document).on('click', '#searchrole', function () {
+			x_admin_show('', '#', 600, 600);
+		});
+		main.init();
+	});
+</script>
+{/block}

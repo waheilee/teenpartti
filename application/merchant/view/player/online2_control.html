@@ -1,0 +1,115 @@
+{extend name="common/base" /}
+{block name="title"}新增银商{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+    <form class="layui-form" id="edit_form" onsubmit="return false">
+      <div class="layui-form-item">
+        <label class="layui-form-label">{:lang("游戏ID")}：</label>
+        <div class="layui-input-inline">
+          <input name="roleid" required="" lay-verify="required" autocomplete="off" class="layui-input" type="text" value="{$roleid ?? ''}">
+        </div>
+        <div class="layui-input-inline">
+          <button class="layui-btn layui-btn-danger" onclick="cancel({$roleid ?? ''})" lay-filter="formDemo">{:lang("一键取消点控")}</button>
+        </div>
+        <!-- <div class="layui-form-mid layui-word-aux"></div>  -->
+      </div>
+
+      <div class="layui-form-item">
+        <label class="layui-form-label">{:lang("选择概率")}：</label>
+        <div class="layui-input-block">
+          <input type="radio" value="130" name="radio" lay-filter='radio' title="+30%" {if condition="(isset($data['CtrlRatio'])) && ($data['CtrlRatio'] == 130)"}checked=""{/if}>
+          <input type="radio" value="140" name="radio" lay-filter='radio' title="+40%"{if condition="(isset($data['CtrlRatio'])) && ($data['CtrlRatio'] == 140)"}checked=""{/if}>
+          <input type="radio" value="150" name="radio" lay-filter='radio' title="+50%"{if condition="(isset($data['CtrlRatio'])) && ($data['CtrlRatio'] == 150)"}checked=""{/if}>
+          <input type="radio" value="160" name="radio" lay-filter='radio' title="+60%"{if condition="(isset($data['CtrlRatio'])) && ($data['CtrlRatio'] == 160)"}checked=""{/if}>
+          <input type="radio" value="170" name="radio" lay-filter='radio' title="+70%"{if condition="(isset($data['CtrlRatio'])) && ($data['CtrlRatio'] == 170)"}checked=""{/if}>
+          <br/>
+          <input type="radio" value="30" name="radio" lay-filter='radio' title="-30%"{if condition="(isset($data['CtrlRatio'])) && ($data['CtrlRatio'] == 30)"}checked=""{/if}>
+          <input type="radio" value="40" name="radio" lay-filter='radio' title="-40%"{if condition="(isset($data['CtrlRatio'])) && ($data['CtrlRatio'] == 40)"}checked=""{/if}>
+          <input type="radio" value="50" name="radio" lay-filter='radio' title="-50%"{if condition="(isset($data['CtrlRatio'])) && ($data['CtrlRatio'] == 50)"}checked=""{/if}>
+          <input type="radio" value="60" name="radio" lay-filter='radio' title="-60%"{if condition="(isset($data['CtrlRatio'])) && ($data['CtrlRatio'] == 60)"}checked=""{/if}>
+          <input type="radio" value="70" name="radio" lay-filter='radio' title="-70%"{if condition="(isset($data['CtrlRatio'])) && ($data['CtrlRatio'] == 70)"}checked=""{/if}>
+        </div>
+        <div class="layui-form-mid layui-word-aux"></div>
+      </div>
+      <div class="layui-form-item">
+        <label class="layui-form-label">{:lang("当前概率")}：</label>
+        <div class="layui-input-block">
+          <input name="CtrlRatio" id="CtrlRatio" required="" lay-verify="required" autocomplete="off" class="layui-input" type="text" value="{$data['CtrlRatio'] ?? 100 }">
+        </div>
+        <div class="layui-form-mid layui-word-aux"></div> 
+      </div>
+      <div class="layui-form-item">
+        <label class="layui-form-label">>{:lang("预设输赢(元)")}：</label>
+        <div class="layui-input-block">
+          <input name="InitialPersonMoney" required="" lay-verify="required" autocomplete="off" class="layui-input" type="text" value="{$data['InitialPersonMoney'] ?? '0'}">
+        </div>
+        <div class="layui-form-mid layui-word-aux"><span style="color: red">{:lang("注意：正值为送分，负值为杀分")}
+          <br/>
+          {:lang("注意：预设输赢的幅度不能超过30000")}
+          </span>
+        </div> 
+      </div>
+
+      <div class="layui-form-item layui-form-text">
+        <label class="layui-form-label">{:lang("备注")}</label>
+        <div class="layui-input-block">
+          <textarea placeholder="{:lang('请输入内容')}" class="layui-textarea" name="remark"></textarea>
+        </div>
+      </div>
+
+      <div class="layui-form-item">
+        <div class="layui-input-block">
+          <button class="layui-btn" onclick="ajax()" lay-filter="formDemo">{:lang("设置")}</button>
+        </div>
+      </div>
+    </form>
+{/block}
+{block name="script"}
+<script>
+layui.use('form', function(){
+  var form = layui.form;
+  //监听提交
+  form.on('radio(radio)', function(data){
+    $("#CtrlRatio").val(data.value);
+  });
+
+});
+    function ajax(){
+      var post_data = $("#edit_form").serialize();
+      $.ajax({
+          url:"",
+          type:"POST",
+          data:post_data,
+          success:function(ret){
+              if (ret.code == 0) {
+                layer.msg(ret.msg);
+                // parent.$(".layui-laypage-btn")[0].click();
+                parent.location.reload();
+              }
+              if (ret.code == 1) {
+                  layer.msg(ret.msg);
+              }
+          }
+      });
+    }
+    function cancel(el){
+      $.ajax({
+            type:'post',
+            url:'{:url("gamectrl/resetPersonRate")}',
+            data:{
+                'roleid' : el
+            },
+            dataType:'json',
+            success: function(res) {
+                if (res.code === 0) {
+                    layer.msg('{:lang("控制已取消")}');
+                    parent.location.reload();
+                } else {
+                    layer.msg(res.msg, {icon:2});
+                }
+            }
+        });
+    }
+</script>
+{/block}

@@ -1,0 +1,342 @@
+{extend name="common/base" /}
+
+{block name="title"}支付通道{/block}
+{block name="css"}{/block}
+{block name="content"}
+<style>
+.layui-anim{
+    max-height: 500px !important;
+}
+</style>
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <h3>{:lang('游戏配置信息')}</h3>
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <label class="layui-form-label">{:lang('房间')}</label>
+                <div class="layui-input-inline">
+                    <select name="roomid" id="roomid2" lay-search>
+                        <option value="0">{:lang('所有')}</option>
+                        {foreach $roomlist as $k2 => $v2}
+                        <option value="{$v2.RoomID}">{$v2.RoomName}</option>
+                        {/foreach}
+                    </select>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline" style="width: 300px;">
+                        <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                        <a class="layui-btn layui-bg-blue" id="kindset" onclick="x_admin_show('{:lang(\'按类型盘控\')}', '{:url(\'gamectrl/KindWaterSet\')}', 700, 400)">{:lang('按类型盘控')}</a>
+
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body" >
+        <!--<a style="margin-bottom: 10px;" class="layui-btn" onclick="x_admin_show('新增微信客服','addWeixin.html', '', 500)">-->
+            <!--<i class="layui-icon layui-icon-add-circle"></i>-->
+        <!--</a>-->
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script type="text/html" id="msg-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">{:lang('控制设置')}</a>
+    <a class="layui-btn layui-btn-xs layui-bg-blue " lay-event="pankong">{:lang('盘控设置')}</a>
+    <a class="layui-btn layui-btn-xs layui-bg-orange" lay-event="pklog">{:lang('盘控日志')}</a>
+    <a class="layui-btn layui-btn-xs layui-bg-blue" lay-event="nopankong">{:lang('取消盘控')}</a>
+</script>
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            renderData : function() {
+                var cols = [ //表头
+                      {field: 'nRoomId', title: "{:lang('房间ID')}", width:90,sort:true,fixed:'left'}
+                    , {field: 'roomname', title: "{:lang('房间名称')}", width:180}
+                    , {field: 'nOldRoomCtrlValue', title: "{:lang('设置胜率')}(%)", minWidth:120, style: 'color: #FF5722',sort:true}
+                    , {field: 'nCtrlValue', title: "{:lang('系统胜率')}(%)", minWidth:120, style: 'color: #FF5722',sort:true}
+                    , {field: 'CurRoomWaterIn', title: "{:lang('当前收水值')}", minWidth:100}
+                    , {field: 'CurRoomWaterOut', title: "{:lang('当前放水值')}", minWidth:100}
+                    , {field: 'lTotalProfit', title: "{:lang('当前库存')}", minWidth:120, style:'color: #FF5722;',sort:true}
+                    // , {field: 'lMaxStorage', title: "{:lang('库存上限')}", minWidth:100}
+                    // , {field: 'lMinStorage', title: "{:lang('库存下限')}", minWidth:100}
+                    , {field: 'nAdjustValue', title: "{:lang('最大偏移值')}", minWidth:120}
+                    , {field: 'mingtax', title: "{:lang('明税税率')}(‰)", minWidth:110}
+                    , {field: 'lHistorySumTax', title: "{:lang('明税')}", minWidth:100,sort:true}
+                    // , {field: 'nProfitPercent', title: "{:lang('暗税税率')}(‰)", minWidth:110}
+                    // , {field: 'lTotalBlackTax', title: "{:lang('暗税')}", minWidth:100,sort:true}
+                    , {field: 'goldmoney', title: "{:lang('最大中奖金币')}", minWidth:100}
+                    ,{title:"{:lang('操作')}", align:'center', width:250, toolbar: '#msg-bar',fixed:'right'}
+                ];
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('gamectrl/index')}" //数据接口
+                    , page: true //开启分页
+                    , sort: true
+                    , cols: [cols]
+                    ,done: function(res) {
+                        tzTbale()
+                        $('th[data-field="nCtrlValue"] span').css('color', '#FF5722');
+                        $('th[data-field="lTotalProfit"] span').css('color', '#FF5722');
+                        var orderby = res.other.orderby,
+                            asc = res.other.asc;
+                        if (orderby !==-1) {
+
+                            var fieldval = '', typeval = 'asc';
+                            if (asc === 1) {
+                                typeval = 'desc';
+                            }
+                            if (orderby === 0) {
+                                fieldval = 'nRoomId';
+                            }
+                            else if (orderby === 1) {
+                                fieldval = 'nOldRoomCtrlValue';
+                            }
+                            else if (orderby === 2) {
+                                fieldval = 'nCtrlValue';
+                            } else if (orderby === 3) {
+                                fieldval = 'lTotalProfit';
+                            } else if (orderby === 4) {
+                                fieldval = 'lHistorySumTax';
+                            } else if (orderby === 5) {
+                                fieldval = 'lTotalBlackTax';
+                            }
+                            $('th[data-field='+fieldval+']').find('span.layui-table-sort').attr('lay-sort', typeval);
+                        }
+                    }
+                });
+            },
+
+            submitForm : function(data) {
+                var setrange = $.trim(data.field.setrange),
+                    ajustvalue = $.trim(data.field.ajustvalue),
+                    minstorage = $.trim(data.field.minstorage),
+                    maxstorage = $.trim(data.field.maxstorage),
+                    curstorage = $.trim(data.field.curstorage),
+                    percent = $.trim(data.field.percent);
+                var id=0;
+                if (setrange == 1) {
+                    id = 0;
+                } else if (setrange == 2) {
+                    id = $('#kindid').val();
+                } else if (setrange == 3) {
+                    id = $('#roomid').val();
+                }
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'setrange' : setrange,
+                        'id' : id,
+                        'percent' : percent,
+                        'ajustvalue' : ajustvalue,
+                        'curstorage' : curstorage,
+                        'minstorage' : minstorage,
+                        'maxstorage' : maxstorage,
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg("{:lang('设置成功')}",{icon:1,time:1000}, function () {
+                                //window.location.reload();
+                                table.reload("proxylist",{page:{curr:$(".layui-laypage-em").next().html()}});
+                                // var index = parent.layer.getFrameIndex(window.name);
+                                // parent.layui.table.reload('table');
+                                // parent.layer.close(index);
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            //搜索
+            search : function() {
+                var roomid = $.trim($('#roomid2').val());
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'roomId':roomid,
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                $('#search').on('click', function(e) {
+                    e.preventDefault();
+                    main.search();
+                });
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                });
+                //监听等待开始游戏点击事件
+                form.on('select(setrange)', function (data) {
+                    var value = data.value;
+                    if (value == 1) {
+                        $('#showkindidname').hide();
+                        $('#showroomidname').hide();
+                    } else if (value==2){
+                        $('#showroomidname').hide();
+                        $('#showkindidname').show();
+                    } else if (value==3){
+                        $('#showroomidname').show();
+                        $('#showkindidname').hide();
+                    } else {
+                        $('#showkindidname').hide();
+                        $('#showroomidname').hide();
+                    }
+                });
+            },
+
+
+            //操作事件
+            extraEvent : function () {
+                //编辑
+                table.on('tool(proxylist)', function(obj) {
+                    var data = obj.data //获得当前行数据
+                        ,layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'edit') {
+                        x_admin_show('{:lang(\'修改游戏配置\')}','setProfit?id='+data.nRoomId+'&percent='+data.nProfitPercent+'&ajustvalue='+data.nAdjustValue+'&roomname='+data.roomname+'&curstorage='+data.lTotalProfit+'&minstorage='+data.lMinStorage+'&maxstorage='+data.lMaxStorage+'&roomctrl='+data.nCtrlValue+'&goldmoney='+data.goldmoney,600,600);
+                    }
+                    else if(layEvent === 'setprofit'){
+                        x_admin_show('{:lang(\'设置游戏类型胜率\')}','setProfitbykind?id='+data.KindID+'&percent='+data.nProfitPercent+'&ajustvalue='+data.nAdjustValue+'&roomname='+data.roomname+'&curstorage='+data.lTotalProfit+'&minstorage='+data.lMinStorage+'&maxstorage='+data.lMaxStorage+'&roomctrl='+data.nCtrlValue+'&goldmoney='+data.goldmoney,600,400);
+                    }
+                    else if(layEvent === 'pankong'){
+                        x_admin_show("{:lang('盘控设置')}",'RoomWaterSet?roomId='+data.nRoomId+'&CurRoomWaterIn='+data.CurRoomWaterIn+'&CurRoomWaterOut='+data.CurRoomWaterOut+'&roomname='+data.roomname,600,400);
+                    }
+                    else if(layEvent === 'pklog'){
+                        x_admin_show("{:lang('盘控日志')}",'GlobalSetLog?roomId='+data.nRoomId+'&roomname='+data.roomname,900,500);
+                    }
+                    else if(layEvent === 'nopankong'){
+                        layer.confirm("{:lang('确认取消吗?')}", {
+                            btn: ['{:lang("是")}', '{:lang("否")}'] //可以无限个按钮
+                            , btn1: function (index, layero) {
+                                $.ajax({
+                                    type: 'post',
+                                    url: "{:url('gamectrl/CancelControll')}",
+                                    data: {
+                                        'roomId': data.nRoomId
+                                    },
+                                    dataType: 'json',
+                                    success: function (res) {
+                                        if (res.code === 0) {
+                                            layer.msg("{:lang('操作成功')}", {icon: 1, time: 1000}, function () {
+                                                //window.location.reload();
+                                                table.reload("proxylist", {page: {curr: $(".layui-laypage-em").next().html()}});
+                                            });
+                                        } else {
+                                            layer.msg("{:lang('操作失败')}", {icon: 2});
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+
+
+                $(document).off('mousedown','.layui-table-grid-down').
+                on('mousedown','.layui-table-grid-down',function (event) {
+                    table._tableTrCurrr = $(this).closest('td');
+                });
+                $(document).off('click','.layui-table-tips-main [lay-event]').
+                on('click','.layui-table-tips-main [lay-event]',function (event) {
+                    //debugger
+                    var elem = $(this);
+                    var tableTrCurrr =  table._tableTrCurrr;
+                    if(!tableTrCurrr){
+                        return;
+                    }
+                    var layerIndex = elem.closest('.layui-table-tips').attr('times');
+                    console.log(layerIndex);
+                    layer.close(layerIndex);
+                    table._tableTrCurrr.find('[lay-event="' + elem.attr('lay-event') +'"]').click();
+                });
+
+
+                //排序
+                table.on('sort(proxylist)', function(obj) {
+                    var field = obj.field;
+                    var type  = obj.type;
+                    var fieldval = 0, typeval = 0;
+                    if (type === 'desc') {
+                        typeval = 1;
+                    }
+                    if (field === 'nRoomId') {
+                        fieldval = 0;
+                    }
+                    else if (field === 'nOldRoomCtrlValue') {
+                        fieldval = 1;
+                    }
+                    else if (field === 'nCtrlValue') {
+                        fieldval = 2;
+                    } else if (field === 'lTotalProfit') {
+                        fieldval = 3;
+                    } else if (field === 'lHistorySumTax') {
+                        fieldval = 4;
+                    }
+                    else if(field=='lTotalBlackTax')
+                    {
+                        fieldval = 5;
+                    }
+                    var roomid = $.trim($('#roomid2').val());
+
+                    //执行重载
+                    table.reload('proxylist', {
+                        page: {
+                            curr: 1 //重新从第 1 页开始
+                        },
+                        where: {
+                            'asc':typeval,
+                            'roomid':roomid,
+                            'orderby':fieldval,
+                        }
+                    });
+
+                });
+            },
+
+            init : function() {
+                main.renderData();
+                main.bindEvent();
+                main.extraEvent();
+            }
+        };
+
+        main.init();
+    });
+
+
+
+
+
+</script>
+{/block}

@@ -1,0 +1,456 @@
+{extend name="common/base" /}
+
+{block name="title"}游戏日志{/block}
+{block name="css"}{/block}
+{block name="content"}
+<!--<div class="layui-row layui-col-space20">-->
+<!--<div class="layui-col-md3">-->
+<!--<div class="layui-card">-->
+<!--<div class="layui-card-header">-->
+<!--输赢总金币-->
+<!--<span class="layui-badge layui-bg-blue layuiadmin-badge">总</span>-->
+<!--</div>-->
+<!--<div class="layui-card-body layuiadmin-card-list">-->
+<!--<p class="layuiadmin-big-font" style="color: #009688" id="totalin">0</p>-->
+<!--</div>-->
+<!--</div>-->
+<!--</div>-->
+
+<!--<div class="layui-col-md3">-->
+<!--<div class="layui-card">-->
+<!--<div class="layui-card-header">-->
+<!--赢汇总-->
+<!--<span class="layui-badge layui-bg-blue layuiadmin-badge">赢</span>-->
+<!--</div>-->
+<!--<div class="layui-card-body layuiadmin-card-list">-->
+<!--<p class="layuiadmin-big-font" style="color: #009688" id="win">0</p>-->
+<!--</div>-->
+<!--</div>-->
+<!--</div>-->
+
+<!--<div class="layui-col-md3">-->
+<!--<div class="layui-card">-->
+<!--<div class="layui-card-header">-->
+<!--输汇总-->
+<!--<span class="layui-badge layui-bg-blue layuiadmin-badge">输</span>-->
+<!--</div>-->
+<!--<div class="layui-card-body layuiadmin-card-list">-->
+<!--<p class="layuiadmin-big-font" style="color: #009688" id="lose">0</p>-->
+<!--</div>-->
+<!--</div>-->
+<!--</div>-->
+
+<!--<div class="layui-col-md3">-->
+<!--<div class="layui-card">-->
+<!--<div class="layui-card-header">-->
+<!--&lt;!&ndash;逃汇总&ndash;&gt;-->
+<!--税收汇总-->
+<!--<span class="layui-badge layui-bg-blue layuiadmin-badge">总</span>-->
+<!--</div>-->
+<!--<div class="layui-card-body layuiadmin-card-list">-->
+<!--<p class="layuiadmin-big-font" style="color: #009688" id="escape">0</p>-->
+<!--</div>-->
+<!--</div>-->
+<!--</div>-->
+<!--</div>-->
+
+<div class="layui-card" >
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">玩家ID</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="roleid" name="roleid" lay-verify="number" value="{$roleid}" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">玩家账号</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="mobile" name="mobile" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">日期</label>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="end" id="LAY-component-form-group-date2" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">房间</label>
+                    <div class="layui-input-inline">
+                        <select name="roomid" id="roomid">
+                            <option value="0">所有</option>
+                            <!-- foreach循环 -->
+                            {foreach name="selectData" item="vo"}
+                            <option value="{$vo.roomid}">{$vo.RoomName}</option>
+                            {/foreach}
+                            <!-- for循环 -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">游戏结果</label>
+                    <div class="layui-input-inline">
+                        <select name="result" id="result">
+                            <option value="-1">所有</option>
+                            <option value="0">赢</option>
+                            <option value="1">输</option>
+                            <option value="2">和</option>
+                            <option value="3">逃</option>
+                            <option value="4">扫雷发红包</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">搜索</a>
+                        <a class="layui-btn" id="output">导出记录</a>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+
+<script type="text/html" id="msg-bar">
+
+    {{#  if(!(RegExp(/红包扫雷/).test(d.roomname) || RegExp(/李逵劈鱼/).test(d.roomname) || RegExp(/水果拉霸/).test(d.roomname))){ }}
+    <a class="layui-btn layui-btn-xs " lay-event="benju">查看结果</a>
+    {{#  } }}
+    <!--<a class="layui-btn layui-btn-xs" lay-event="tongchang">同场数据</a>-->
+
+
+</script>
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+        //初始赋值
+        var date = new Date();
+        var nowYear = date.getFullYear();
+        var month = ("0" + (date.getMonth() + 1)).slice(-2);
+        var day = ("0" + date.getDate()).slice(-2);
+        var today = nowYear+"-"+(month)+"-"+(day);
+
+        laydate.render({
+            elem: '#LAY-component-form-group-date'
+            ,value: today
+            ,isInitValue: true
+        });
+
+        laydate.render({
+            elem: '#LAY-component-form-group-date2'
+            ,value: today
+            ,isInitValue: true
+        });
+        var strartdate = $.trim($('#LAY-component-form-group-date').val());
+        var enddate = $.trim($('#LAY-component-form-group-date2').val());
+
+
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'roleid', title: '玩家ID', minWidth:100}
+                    , {field: 'accountname', title: '账号名称', minWidth: 120}
+                    , {field: 'roomid', title: '房间ID', minWidth: 60}
+//                    ,{field: 'kindname', title: '游戏种类', minWidth: 120}
+                    ,{field: 'roomname', title: '房间名', minWidth: 150}
+                    , {
+                        field: 'changetype', title: '输赢', minWidth: 80, templet: function (d) {
+                            var res = '';
+                            if (d.changetype == 0) {
+                                res = '赢';
+                            } else if (d.changetype == 1) {
+                                res = '输';
+                            } else if (d.changetype == 2) {
+                                res = '和';
+                            } else if (d.changetype == 3) {
+                                res = '逃';
+                            }else if (d.changetype == 4) {
+                                res = '扫雷发红包';
+                            }
+                            return res;
+                        }
+                    }
+                    , {field: 'freegame', title: 'FreeGame', minWidth: 80, templet: function (d) {
+                            if(d.freegame=='是'){
+                                return '<span style="color:#FF5722"> '+d.freegame+'</span>';
+                            }
+                            else
+                            {
+                                return '<span style="color:#009688"> '+d.freegame+'</span>';
+                            }
+                        }
+                    }
+                    , {field: 'gameroundrunning', title: '下注金额', minWidth: 120}
+                    , {field: 'money', title: '输赢金币', minWidth: 120}
+                    , {field: 'awardmoney', title: '中奖金额', minWidth: 120}
+                    , {field: 'premoney', title: '上局金币', minWidth: 120}
+                    , {field: 'lastmoney', title: '当前金币', minWidth: 120}
+                    , {field: 'tax', title: '税收', minWidth: 100}
+                    , {field: 'addtime', title: '时间', minWidth: 180}
+                    , {fixed: 'right', title:'操作', align:'center', minWidth:100, toolbar: '#msg-bar'}
+//                        , {field: 'proxyincome', title: '备注', minWidth:150}
+//                        , {field: 'proxyincome', title: '操作', minWidth:150}
+                ];
+
+
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('player/gamelog')}" //数据接口
+                    , page: true //开启分页
+                    , limit:15
+                    , where: {
+                        winlost:-1,
+                        roleid : $('#roleid').val(),
+                        strartdate:strartdate,
+                        enddate:enddate,
+
+                    }
+                    , cols: [cols]
+                    ,done: function(res, curr, count){
+                        tzTbale()
+//                        console.log(res);
+                        //$('#totalin').html(res.other.alltotal.sum);
+                        //$('#win').html(res.other.alltotal.win);
+                        //$('#lose').html(res.other.alltotal.lose);
+//                        $('#escape').html(res.other.alltotal.escape);
+                        //$('#escape').html(res.other.alltotal.totaltax);
+
+
+
+                    }
+                });
+            },
+
+            //搜索
+            search: function () {
+                var roleid = $.trim($('#roleid').val());
+                var roomid = $.trim($('#roomid').val());
+                var strartdate = $.trim($('#LAY-component-form-group-date').val());
+                var enddate = $.trim($('#LAY-component-form-group-date2').val());
+                var winlost = $.trim($('#result').val());
+                var mobile = $.trim($('#mobile').val());
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'roleid': roleid,
+                        'roomid': roomid,
+                        'strartdate': strartdate,
+                        'enddate': enddate,
+                        'winlost': winlost,
+                        'mobile':mobile
+                    }
+
+
+
+
+
+                });
+            },
+
+            //操作事件
+            extraEvent: function () {
+                //编辑
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'tongchang') {
+//                        alert(55);
+//                        window.location.href='detailMpqz.html?uniqueid='+data.uniqueid+'&roomid='+$('#roomid').val();
+                        window.location.href='coPlayer.html?roomid='+$('#roomid').val();
+                        var roomid = $("#tt").val();
+
+//                        var url = 'lookPartnerCard.html?roomid='+roomid;
+//                        var url = 'coPlayer.html?roomid='+roomid;
+//
+//                        x_admin_show('查看伙牌', url, $(window).width()*0.5, 330);
+                    } else if (layEvent === 'benju') { //删除
+                        var roomname = data.roomname;
+                        var brnn= RegExp(/百人/);
+                        var doudizhu= RegExp(/斗地主/);
+                        var bcbm= RegExp(/奔驰宝马/);
+                        var mpqz= RegExp(/明牌抢庄/);
+                        var bjl= RegExp(/百家乐/);
+                        var dzpk= RegExp(/德州扑克/);
+                        var pj= RegExp(/牌九/);
+                        var hlsb= RegExp(/欢乐骰宝/);
+                        var lhd= RegExp(/龙虎斗/);
+                        var mj= RegExp(/二人麻将/);
+                        var zjh= RegExp(/炸金花/);
+                        var jdnn= RegExp(/抢庄牛牛/);
+                        var fqzs= RegExp(/飞禽走兽/);
+                        var hhdz= RegExp(/红黑大战/);
+
+
+                        if(data.roomid>=4000){
+                            var url = 'detailtiger.html?uniqueid='+data.serialnumber
+                                +'&roomid='+data.roomid+'&userid='+data.roleid+'&roomname='+data.roomname+'&date='+data.addtime;
+                            x_admin_show(data.roomname+'详情', url, 750, 600);
+                            return;
+                        }
+
+
+                        if(brnn.exec(roomname)){
+//                            var url = 'detailBcbm.html?uniqueid='+data.serialnumber+'&roomid='+data.roomid;
+//                            var url = 'lookPartnerCardBrnn.html?roomid='+data.nRoomId;
+                            var url = 'detailBrnn2.html?uniqueid='+data.serialnumber+'&roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 430);
+                        }else if(pj.exec(roomname)){
+                            var url = 'detailBrnn2.html?uniqueid='+data.serialnumber+'&roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 430);
+
+                        } else if(doudizhu.exec(roomname)){
+//                            var url = 'lookPartnerCard.html?roomid='+data.nRoomId;
+                            var url = 'detail.html?uniqueid='+data.serialnumber+'&roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 430);
+
+                        }else if(bcbm.exec(roomname)){
+//                            var url = 'lookPartnerCardBcbm.html?roomid='+data.nRoomId;
+                            var url = 'detailBcbm2.html?uniqueid='+data.serialnumber+'&roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 430);
+
+                        }else if(bjl.exec(roomname)){
+//                            var url = 'lookPartnerCardBjl.html?roomid='+data.nRoomId;
+                            var url = 'detailBjl2.html?uniqueid='+data.serialnumber+'&roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 430);
+
+                        }else if(dzpk.exec(roomname)){
+//                            var url = 'lookPartnerCardDzpk.html?roomid='+data.nRoomId;
+                            var url = 'detailDzpk2.html?uniqueid='+data.serialnumber+'&roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 430);
+
+                        }else if(hlsb.exec(roomname)){
+//                            var url = 'lookPartnerCardHlsb.html?roomid='+data.nRoomId;
+                            var url = 'detailBcbm2.hlsb?uniqueid='+data.serialnumber+'&roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 430);
+
+                        }else if(hlsb.exec(roomname)){
+//                            var url = 'lookPartnerCardHlsb.html?roomid='+data.nRoomId;
+                            var url = 'detailHlsb2.html?uniqueid='+data.serialnumber+'&roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 430);
+
+                        }else if(lhd.exec(roomname)){
+//                            var url = 'lookPartnerCardLonghudou.html?roomid='+data.nRoomId;
+                            var url = 'detailLonghudou2.html?uniqueid='+data.serialnumber+'&roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 430);
+
+                        }else if(mj.exec(roomname)){
+//                            var url = 'lookPartnerCardMj.html?roomid='+data.nRoomId;
+                            var url = 'detailMj.html?uniqueid='+data.serialnumber+'&roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 430);
+
+                        }else if(jdnn.exec(roomname)){
+//                            var url = 'lookPartnerCardMpqz.html?roomid='+data.nRoomId;
+                            var url = 'detailMpqz2.html?uniqueid='+data.serialnumber+'&roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 430);
+
+                        } else if(mpqz.exec(roomname)){
+//                            var url = 'lookPartnerCardMpqz.html?roomid='+data.nRoomId;
+                            var url = 'detailMpqz2.html?uniqueid='+data.serialnumber+'&roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 430);
+
+                        }else if(fqzs.exec(roomname)){
+//                            var url = 'lookPartnerCardBcbm.html?roomid='+data.nRoomId;
+                            var url = 'detailBcbm2.html?uniqueid='+data.serialnumber+'&roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 430);
+
+                        }else if(hhdz.exec(roomname)){
+//                            var url = 'lookPartnerCardLonghudou.html?roomid='+data.nRoomId;
+                            var url = 'detailHlsb2.html?uniqueid='+data.serialnumber+'&roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 430);
+
+                        }else if(zjh.exec(roomname)){
+//                            var url = 'lookPartnerCardZjh.html?roomid='+data.nRoomId;
+                            var url = 'detailZjh2.html?uniqueid='+data.serialnumber+'&roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 430);
+
+                        }else{
+                            layer.msg('暂无数据', {icon: 5});
+//                            var url = 'lookPartnerCardMpqz.html?roomid='+data.nRoomId;
+//                            var url = 'detailMpqz.html?uniqueid='+data.serialnumber+'&roomid='+data.roomid;
+//                            var url = 'detailOther.html?uniqueid='+data.serialnumber+'&roomid='+data.roomid;
+//                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 430);
+                        }
+                    } else if (layEvent === 'cold') {
+
+                    } else if (layEvent === 'delete') {
+
+                    }
+                });
+            },
+
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+                laydate.render({
+                    elem: '#LAY-component-form-group-date'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , btns: ['clear', 'confirm']
+                });
+                laydate.render({
+                    elem: '#LAY-component-form-group-date2'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , btns: ['clear', 'confirm']
+                });
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+
+
+
+    $('#output').click(function () {
+        var roleid = $.trim($('#roleid').val());
+        var mobile = $.trim($('#mobile').val());
+        var roomid = $.trim($('#roomid').val());
+        var strartdate = $.trim($('#LAY-component-form-group-date').val());
+        var enddate = $.trim($('#LAY-component-form-group-date2').val());
+        var winlost = $.trim($('#result').val());
+        var param = "?roleid="+roleid+"&roomid="+roomid+"&strartdate="+strartdate+"&enddate="+enddate+"&winlost="+winlost+"&mobile="+mobile;
+        parent.parent.open('/admin/player/output_gamelog.html'+param);//, "{:lang('public_output_gamelog')}");
+    });
+</script>
+{/block}

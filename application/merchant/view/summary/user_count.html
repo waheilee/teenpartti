@@ -1,0 +1,188 @@
+{extend name="common/base" /}
+
+{block name="title"}在线玩家列表{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-row layui-col-space20">
+    <div class="layui-col-md12">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                总注册量
+                <span class="layui-badge layui-bg-blue layuiadmin-badge">注册量</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="regnum">0</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-col-md6" style="display: none">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                历史最高在线人数
+                <span class="layui-badge layui-bg-blue layuiadmin-badge">在线人数</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="onlinenum">0</p>
+            </div>
+        </div>
+    </div>
+
+
+
+
+</div>
+
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">日期</label>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off" class="layui-input">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="end" id="LAY-component-form-group-date2" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">搜索</a>
+                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <div class="layui-row layui-col-space30">
+            <!--<div class="layui-col-md6">-->
+                <!--<div class="layui-card layui-carousel x-admin-carousel x-admin-backlog">-->
+                    <!--<div class="layui-card-header">-->
+                        <!--总注册量-->
+                        <!--<span class="layui-badge layui-bg-blue layuiadmin-badge">注册量</span>-->
+                    <!--</div>-->
+                    <!--<div class="layui-card-body layuiadmin-card-list">-->
+                        <!--<p class="layuiadmin-big-font" style="color:#009688" id="regnum">0</p>-->
+
+                    <!--</div>-->
+                <!--</div>-->
+            <!--</div>-->
+            <!--<div class="layui-col-md6">-->
+                <!--<div class="layui-card layui-carousel x-admin-carousel x-admin-backlog">-->
+                    <!--<div class="layui-card-header">-->
+                        <!--历史最高在线人数-->
+                        <!--<span class="layui-badge layui-bg-blue layuiadmin-badge">在线人数</span>-->
+                    <!--</div>-->
+                    <!--<div class="layui-card-body layuiadmin-card-list">-->
+                        <!--<p class="layuiadmin-big-font" style="color:#009688" id="onlinenum">0</p>-->
+
+                    <!--</div>-->
+                <!--</div>-->
+            <!--</div>-->
+            <div id="alllist" class="layui-col-md12">
+                <table id="proxylist" lay-filter="proxylist"></table>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+
+
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+            var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+                ,table = layui.table
+                ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            renderData : function() {
+                var cols = [ //表头
+                    {field: 'date', title: '时间', minWidth:150}
+                    ,{field: 'regtotal', title: '注册量', minWidth:120}
+                    , {field: 'logintotal', title: '登录量', minWidth:120}
+                    , {field: 'online', title: '最高在线人数', minWidth:120}
+                    , {field: 'totallogin', title: '活跃玩家', minWidth:120}
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('summary/userCount')}" //数据接口
+                    , page: true //开启分页
+                    , cols: [cols]
+                    , done: function(res, curr, count){
+                        //如果是异步请求数据方式，res即为你接口返回的信息。
+                        //如果是直接赋值的方式，res即为：{data: [], count: 99} data为当前页数据、count为数据总长度
+                        $('#regnum').html(res.other.regnum);
+                        $('#onlinenum').html(res.other.maxonline);
+                    }
+                });
+            },
+
+
+            //搜索
+            search : function() {
+                var start = $.trim($('#LAY-component-form-group-date').val());
+                var end = $.trim($('#LAY-component-form-group-date2').val());
+
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'strartdate':start,
+                        'enddate':end,
+                    }
+                });
+            },
+
+
+            init : function() {
+                form.render(null, 'component-form-group');
+                laydate.render({
+                    elem: '#LAY-component-form-group-date'
+                    ,format:'yyyy-MM-dd'
+                    ,max:1
+                    ,btns: ['clear', 'confirm']
+                    ,value: new Date()
+                });
+                laydate.render({
+                    elem: '#LAY-component-form-group-date2'
+                    ,format:'yyyy-MM-dd'
+                    ,max:1
+                    ,btns: ['clear', 'confirm']
+                    ,value: new Date()
+                });
+                main.renderData();
+                $('#search').on('click', function(e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

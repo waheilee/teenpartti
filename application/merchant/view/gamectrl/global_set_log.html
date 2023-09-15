@@ -1,0 +1,182 @@
+{extend name="common/base" /}
+{block name="title"}手机列表{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-card">
+
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script type="text/html" id="msg-bar">
+    <!--    <a class="layui-btn layui-btn-xs" lay-event="detail">玩家详情</a>-->
+
+    <!--    <a class="layui-btn layui-btn-xs " lay-event="ganme">游戏日志</a>-->
+    <!--    <a class="layui-btn layui-btn-xs" lay-event="cold">金币日志</a>-->
+    <!--<a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">拉黑</a>-->
+</script>
+
+<script>
+    url= "{:url('gamectrl/GlobalSetLog')}?roomId={$roomid}";//数据接口
+    var cols = [ //表头
+        {field: 'RoomId',align:"center" , title: "{:lang('游戏ID')}", width: 120},
+        {field: 'CurWaterIn',align:"center", title: "{:lang('收水值')}", width: 150},
+        {field: 'CurWaterOut',align:"center", title: "{:lang('放水值')}", width: 150},
+        {field: 'RoomCtrlValue',align:"center", title: "{:lang('当前控制值')}", width: 150},
+        {field: 'AddTime',align:"center", title: "{:lang('添加时间')}", width: 180,templet:function (d){
+                return d.AddTime.substr(0,19);
+        }}
+    ];
+
+
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['table', 'layer', 'element', 'laydate', 'form', 'jquery', 'util'], function () {
+        var element = layui.element, layer = layui.layer, laydate = layui.laydate, util = layui.util, table = layui.table, $ = layui.$, form = layui.form;
+
+        laydate.render({
+            elem: '#regTime',
+            range: true,
+            done: function (value, date, endDate) {
+                dates = value.split(" - ");
+                // console.info(dates[0] +"  "+ dates[1]);
+                $("#startTime").val(dates[0]);
+                $("#endTime").val(dates[1]);
+            }
+        });
+
+
+        var main = {
+            renderData: function () {
+
+                table.render({
+                    elem: '#proxylist',
+                    url: url, //数据接口
+                    page: true, limit: 15,
+                    sort: true, autoSort: false,
+                    cols: [cols],
+                    done: function (res) {$(".layui-table-main tr").each(function (index, val) {
+                        $($(".layui-table-fixed-l .layui-table-body tbody tr")[index]).height($(val).height());
+                        $($(".layui-table-fixed-r .layui-table-body tbody tr")[index]).height($(val).height());
+                    });
+                    }
+                });
+            },
+            //搜索
+            search: function () {
+                // var nickname = $.trim($('#nickname').val());
+                // var mobile = $.trim($('#mobile').val());
+                //执行重载
+                table.reload('proxylist', {
+                    page: {curr: 1},
+                    where: {
+                        roleid: $.trim($('#roleid').val()),
+                    },
+                    done: function () {
+
+                    }
+
+                });
+            },
+
+            //操作事件
+            extraEvent: function () {
+                //排序
+                table.on('sort(proxylist)', function (obj) {
+                    var roleid = $.trim($('#roleid').val());
+                    //执行重载
+                    table.reload('proxylist', {
+                        page: {
+                            curr: 1 //重新从第 1 页开始
+                        },
+                        where: {
+                            'roleid': roleid,
+                            'orderfield': obj.field,
+                            'ordertype': obj.type,
+                        }
+                    });
+
+                });
+
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'detail') {
+                        var url = '/admin/player/playerDetail?roleid=' + data.AccountID;
+                        x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.6);
+                    }
+                });
+            },
+
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+
+    $('#output').click(function () {
+        where = {
+            'roleid': $.trim($('#roleid').val()),
+            limit: 10000000,
+            Action: 'exec',
+        }
+
+        download();
+
+        function download() {
+            var params = Object.keys(where).map(function (key) {
+                return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+            }).join("&");
+            url = url +"?"+ params;
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                async: true,
+                url: url, // 生成文件，保存在服务器
+                success: function (data) {
+                    var result = data;
+                    console.info(data);
+                    switch (result["code"]) {
+                        case 0:
+                            parent.parent.open(url + "&exec=1&outall=true");
+                            break;
+                        case 1:
+                            layer.msg(result["message"]);
+                            break;
+                        case 2:
+                            layer.confirm(result['message'], {
+                                btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
+                            }, function () {
+                                parent.parent.open(url + "&exec=1&outall=true");
+                                layer.msg('', {icon: 6, time: 1000}, function () {
+                                    window.location.reload();
+                                });
+                            });
+                    }
+
+                },
+                error: function (XMLHttpRequest, textStatus, e) {
+                    console.log("oilDetection.js  method exportOilDetection" + e);
+                }
+            });
+        }
+    });
+</script>
+{/block}

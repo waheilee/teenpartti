@@ -1,0 +1,103 @@
+{extend name="common/base" /}
+{block name="title"}关系列表{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<div class="layui-card" style="margin-top: 0px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('日期')}</label>
+                    <div class="layui-input-inline" style="width: 150px;">
+                        <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date" name="date" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <a class="layui-btn" data-type="reload" id="search">{:lang('搜索')}</a>
+                    <!-- <a class="layui-btn layui-btn-danger" id="output">{:lang('导出记录')}</a> -->
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+
+</div>
+
+{/block}
+{block name="script"}
+
+<script>
+    url = "{:url('Statistical/ecologMonitor')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var table = layui.table;
+        var form  = layui.form;
+        var $ = layui.$;
+        var element  = layui.element;
+        var laydate = layui.laydate;
+          table.render({
+            elem: '#proxylist'
+            ,height: 'full-180'
+            ,url: url+'?action=list&MonitorType={$MonitorType}'//数据接口
+            ,limit:20
+            ,page: true //开启分页
+            ,id:'proxylist'
+            ,autoSort:false
+            ,cols: [[ //表头
+                {field:'date', title: "{:lang('时间')}",align:'center', minWidth: 200},
+                 {field:'GameRTP', title: "{:lang('游戏RTP(%)')}",align:'center', minWidth: 200, templet: function (d) {
+                       return d.GameRTP + "%"
+                    }
+                },
+                {field:'TotalDayConsume', title: "{:lang('总消耗')}",align:'center', minWidth: 200},
+                {field:'GameCoinProduct', title: "{:lang('游戏金币产出')}",align:'center', minWidth: 200},
+                {field:'ColorCoinProduct', title: "{:lang('彩金产出')}",align:'center', minWidth: 200},
+                {field:'TotalRecharge', title: "{:lang('总充值')}",align:'center', minWidth: 200},
+                {field:'TotalWithDraw', title: "{:lang('总提现')}",align:'center', minWidth: 200},
+                {field:'TotalProfit', title: "{:lang('总盈利')}",align:'center', minWidth: 200},
+                {field:'GameWeath', title: "{:lang('携带余额')}",align:'center', minWidth: 200},
+                {field:'GameProfitLose', title: "{:lang('玩家盈亏')}",align:'center', minWidth: 200},
+                {field:'UpdateTime', title: "{:lang('更新时间')}",align:'center', minWidth: 200},
+                // {title:'操作', toolbar: '#toolbar'}
+            ]]
+          });
+          // 搜索
+          $("#search").on('click', function(){
+             table.reload('proxylist', {
+              page:{
+                  curr:1
+              },
+              where: {
+                  MonitorType: '{$MonitorType}',
+                  date:$('#LAY-component-form-group-date').val(),
+              }
+            })
+          });
+
+          $('#output').click(function () {
+
+            });
+
+        laydate.render({
+            elem: '#LAY-component-form-group-date'
+            , format: 'yyyy-MM-dd'
+            , max: 1
+            , btns: ['clear', 'confirm']
+            // , value: new Date()
+        });
+
+
+
+
+    });
+</script>
+{/block}

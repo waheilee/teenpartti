@@ -1,0 +1,527 @@
+{include file='public/head'}
+
+<div class="x-body layui-anim-scaleSpring">
+    <fieldset class="layui-elem-field">
+            <legend>数据统计</legend>
+            <div class="layui-field-box">
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <div class="layui-card-body">
+                            <div class="layui-carousel x-admin-carousel x-admin-backlog" lay-anim="" lay-indicator="inside" lay-arrow="none" style="width: 100%; height: 90px;">
+                                <div carousel-item="">
+                                    <ul class="layui-row layui-col-space10 layui-this">
+                                        <li class="layui-col-xs3">
+                                            <a href="javascript:;" class="x-admin-backlog-body">
+                                                <h3>文章数</h3>
+                                                <p>
+                                                    <cite>66</cite></p>
+                                            </a>
+                                        </li>
+                                        <li class="layui-col-xs3">
+                                            <a href="javascript:;" class="x-admin-backlog-body">
+                                                <h3>会员数</h3>
+                                                <p>
+                                                    <cite>12</cite></p>
+                                            </a>
+                                        </li>
+                                        <li class="layui-col-xs3">
+                                            <a href="javascript:;" class="x-admin-backlog-body">
+                                                <h3>回复数</h3>
+                                                <p>
+                                                    <cite>99</cite></p>
+                                            </a>
+                                        </li>
+                                        <li class="layui-col-xs3">
+                                            <a href="javascript:;" class="x-admin-backlog-body">
+                                                <h3>商品数</h3>
+                                                <p>
+                                                    <cite>67</cite></p>
+                                            </a>
+                                        </li>
+                                    
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+
+   <fieldset class="layui-elem-field">
+            <legend>图表统计</legend>
+            <div class="layui-field-box">
+                    <div id="container"  class="layui-col-md8" style="height: 380px;"></div>
+                     <div id="container-3"  class="layui-col-md3" style="height: 175px;"></div>
+
+                    <div id="container-2"  class="layui-col-md3" style="height: 175px;"></div>
+            </div>
+        </fieldset>
+
+
+
+
+        <fieldset class="layui-elem-field">
+            <legend>系统通知</legend>
+            <div class="layui-field-box">
+                <table class="layui-table" lay-skin="line">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <a class="x-a" href="/" target="_blank">新版Admin 3.0上线了</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <a class="x-a" href="/" target="_blank">纯技术交流</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </fieldset>
+
+
+
+  <!--   <fieldset class="layui-elem-field">
+        <legend>
+            别走,给颗star
+        </legend>
+        <div class="layui-field-box">
+           <script   src='//gitee.com/wenhainan/LotusAdmin/star_widget_preview'></script>
+        </div>
+    </fieldset> -->
+
+    
+
+
+
+    <fieldset class="layui-elem-field">
+        <legend>
+            信息统计
+        </legend>
+        <div class="layui-field-box">
+            <table class="layui-table" lay-even="">
+                <thead>
+                    <tr>
+                        <th>
+                            统计
+                        </th>
+                        <th>
+                            资讯库
+                        </th>
+                        <th>
+                            图片库
+                        </th>
+                        <th>
+                            产品库
+                        </th>
+                        <th>
+                            用户
+                        </th>
+                        <th>
+                            管理员
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            总数
+                        </td>
+                        <td>
+                            92
+                        </td>
+                        <td>
+                            9
+                        </td>
+                        <td>
+                            0
+                        </td>
+                        <td>
+                            8
+                        </td>
+                        <td>
+                            20
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            今日
+                        </td>
+                        <td>
+                            0
+                        </td>
+                        <td>
+                            0
+                        </td>
+                        <td>
+                            0
+                        </td>
+                        <td>
+                            0
+                        </td>
+                        <td>
+                            0
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            昨日
+                        </td>
+                        <td>
+                            0
+                        </td>
+                        <td>
+                            0
+                        </td>
+                        <td>
+                            0
+                        </td>
+                        <td>
+                            0
+                        </td>
+                        <td>
+                            0
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            本周
+                        </td>
+                        <td>
+                            2
+                        </td>
+                        <td>
+                            0
+                        </td>
+                        <td>
+                            0
+                        </td>
+                        <td>
+                            0
+                        </td>
+                        <td>
+                            0
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            本月
+                        </td>
+                        <td>
+                            2
+                        </td>
+                        <td>
+                            0
+                        </td>
+                        <td>
+                            0
+                        </td>
+                        <td>
+                            0
+                        </td>
+                        <td>
+                            0
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table class="layui-table">
+                <thead>
+                    <tr>
+                        <th colspan="2" scope="col">
+                            服务器信息
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th width="30%">
+                            服务器计算机名
+                        </th>
+                        <td>
+                            <span id="lbServerName">
+                                http://127.0.0.1/
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            服务器IP地址
+                        </td>
+                        <td>
+                            192.168.1.1
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            服务器域名
+                        </td>
+                        <td>
+                            www.wen2b.com
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            服务器端口
+                        </td>
+                        <td>
+                            80
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            服务器NGINX版本
+                        </td>
+                        <td>
+                            1.8
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            本文件所在文件夹
+                        </td>
+                        <td>
+                            D:\WebSite\HanXiPuTai.com\XinYiCMS.Web\
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            服务器操作系统
+                        </td>
+                        <td>
+                            Centeros7.3
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            系统所在文件夹
+                        </td>
+                        <td>
+                            \www\wwwroot\LotusAdmin
+                        </td>
+                    </tr>
+
+                 
+                </tbody>
+            </table>
+        </div>
+    </fieldset>
+
+
+</div>
+{include file='public/foot'}
+<script type="text/javascript">
+
+            var dom = document.getElementById("container");
+            var myChart = echarts.init(dom);
+            var app = {};
+            option = null;
+                
+          function randomData() {
+    now = new Date(+now + oneDay);
+    value = value + Math.random() * 21 - 10;
+    return {
+        name: now.toString(),
+        value: [
+            [now.getFullYear(), now.getMonth() + 1, now.getDate()].join('/'),
+            Math.round(value)
+        ]
+    }
+}
+
+var data = [];
+var now = +new Date(2015, 9, 3);
+var oneDay = 24 * 3600 * 1000;
+var value = Math.random() * 1000;
+for (var i = 0; i < 1000; i++) {
+    data.push(randomData());
+}
+
+option = {
+    title: {
+        text: '订单量',
+        subtext: '实时数据',
+        textStyle:{
+            color:'black',
+        },
+        left:'45%'
+    },
+    color: ['#009688'],
+    tooltip: {
+        trigger: 'axis',
+        formatter: function (params) {
+            params = params[0];
+            var date = new Date(params.name);
+            return date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear() + ' : ' + params.value[1];
+        },
+        axisPointer: {
+            animation: false
+        }
+    },
+    xAxis: {
+        type: 'time',
+        splitLine: {
+            show: false
+        }
+    },
+    yAxis: {
+        type: 'value',
+        boundaryGap: [0, '100%'],
+        splitLine: {
+            show: false
+        }
+    },
+    series: [{
+        name: '模拟数据',
+        type: 'line',
+        showSymbol: false,
+        hoverAnimation: true,
+        data: data
+    }]
+};
+
+setInterval(function () {
+
+    for (var i = 0; i < 5; i++) {
+        data.shift();
+        data.push(randomData());
+    }
+
+    myChart.setOption({
+        series: [{
+            data: data
+        }]
+    });
+}, 1000);
+
+
+
+            if (option && typeof option === "object") {
+                myChart.setOption(option, true);
+            }
+
+
+
+
+
+
+
+
+var dom2 = document.getElementById("container-2");
+var myChart2 = echarts.init(dom2);
+option2 = {
+     title: {
+        text: '销售额',
+        left:'45%'
+    },
+    tooltip: {
+        trigger: 'axis'
+    },
+    color: ['#009688'],
+    tooltip : {
+        trigger: 'axis',
+        axisPointer : {            // 坐标轴指示器，坐标轴触发有效
+            type : 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+        }
+    },
+    grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+    },
+    xAxis : [
+        {
+            type : 'category',
+            data : ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+            axisTick: {
+                alignWithLabel: true
+            }
+        }
+    ],
+    yAxis : [
+        {
+            type : 'value'
+        }
+    ],
+    series : [
+        {
+            name:'直接访问',
+            type:'bar',
+            barWidth: '60%',
+            data:[10, 52, 200, 334, 390, 330, 220]
+        }
+    ]
+};
+;
+if (option2 && typeof option2 === "object") {
+    myChart2.setOption(option2, true);
+}
+
+
+option3 = {
+    title : {
+        text: '访问来源',
+        // subtext: '来自爬虫数据',
+        x:'center',
+        left:'45%',
+    },
+    tooltip: {
+        trigger: 'item',
+        formatter: "{a} <br/>{b}: {c} ({d}%)"
+    },
+    legend: {
+        orient: 'vertical',
+        x: 'left',
+        data:['直接访问','邮件营销','联盟广告','视频广告','搜索引擎']
+    },
+    series: [
+        {
+            name:'访问来源',
+            type:'pie',
+            center: ['60%', '50%'],
+            // radius: ['50%', '70%'],
+            radius:'70%',
+            avoidLabelOverlap: false,
+            label: {
+                normal: {
+                    show: false,
+                    position: 'center'
+                },
+                emphasis: {
+                    show: true,
+                    textStyle: {
+                        fontSize: '30',
+                        fontWeight: 'bold'
+                    }
+                }
+            },
+            labelLine: {
+                normal: {
+                    show: false
+                }
+            },
+            data:[
+                {value:335, name:'直接访问'},
+                {value:310, name:'邮件营销'},
+                {value:234, name:'联盟广告'},
+                {value:135, name:'视频广告'},
+                {value:1548, name:'搜索引擎'}
+            ]
+        }
+
+
+    ]
+};
+
+
+var dom3 = document.getElementById("container-3");
+var myChart3 = echarts.init(dom3);
+
+if (option3 && typeof option3 === "object") {
+    myChart3.setOption(option3, true);
+}
+
+</script>

@@ -1,0 +1,142 @@
+{extend name="common/base" /}
+{block name="title"}团队列表{/block}
+{block name="css"}{/block}
+{block name="content"}
+<style type="text/css">
+    .layui-col-md2 {
+          width: 14.2857143% !important;
+        }
+</style>
+
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('玩家ID')}：</label>
+                    <div class="layui-input-inline"><input autocomplete="off" class="layui-input" id="RoleID" lay-verify="number" name="RoleID" type="text">
+                    </div>
+                </div>
+                
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('日期')}：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="start_date" id="LAY-component-form-group-date" autocomplete="off"
+                               class="layui-input" value="">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="end_date" id="LAY-component-form-group-date2" autocomplete="off"
+                               class="layui-input" value="">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                        <a class="layui-btn" data-type="reload" id="search">{:lang('搜索')}</a>
+                        
+                </div>
+                <div class="layui-inline">
+                    <a class="layui-btn layui-btn-danger" id="output">{:lang('导出记录')}</a>
+                        
+                </div>
+                
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+
+<script id="msg-bar" type="text/html">
+    <input type="button" class="layui-btn layui-btn-xs" lay-event="lookteam" value="{:lang('查看下级成员')}">
+</script>
+<script>
+
+    url = "{:url('player/playDayReward')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'AddTime', title: "{:lang('日期')}", minWidth: 150, align: 'center', sort: false},
+                    {field: 'RoleID', title: "{:lang('玩家ID')}", minWidth: 200, align: 'center', sort: false},
+                    
+                    {field: 'ReChargeAmount', title: "{:lang('充值金额')}", minWidth: 120, align: 'center', sort: false},
+                    {field: 'UserFirstReChargeBonus', title: "{:lang('首充奖励')}", minWidth: 120, align: 'center', sort: false},
+                    {field: 'ReChargeBonus', title: "{:lang('复充奖励')}", minWidth: 120, align: 'center', sort: false},
+                    {field: 'DailyChargeBonus', title: "{:lang('日充奖励')}", minWidth: 120, align: 'center', sort: false},
+                    {field: 'VipBonus', title: "{:lang('VIP奖励')}", minWidth: 120, align: 'center', sort: false},
+                    {field: 'UserBetBonus', title: "{:lang('投注返利')}", minWidth: 120, align: 'center', sort: false},
+                    {field: 'MailBonus', title: "{:lang('邮箱赠送')}", minWidth: 120, align: 'center', sort: false},
+                    {field: 'LotteryBonus', title: "{:lang('转盘赠送')}", minWidth: 120, align: 'center', sort: false},
+                    {field: 'Commission', title: "{:lang('代理佣金')}", minWidth: 120, align: 'center', sort: false},
+                ];
+                table.render({
+                    elem: '#proxylist', url: url, where: {
+                        action:'list'
+                    }, page: true, limit: 15, cols: [cols], sort: true, autoSort: false,
+                    done: function (res, curr, count) {
+                        tzTbale()
+                    }
+                });
+            },
+            //搜索
+            search: function () {
+                //执行重载
+                var is_recharge = 0;
+                $("input[name = 'is_recharge']:checked").each(function(i){
+                        is_recharge = $(this).val();
+                 });
+                table.reload('proxylist', {
+                    page: {curr: 1},
+                    where: {
+                        strartdate: $.trim($('#LAY-component-form-group-date').val()),
+                        enddate: $.trim($('#LAY-component-form-group-date2').val()),
+                        RoleID: $.trim($('#RoleID').val()),
+                    }
+                });
+            },
+
+            //操作事件
+            extraEvent: function () {
+
+            },
+
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+                laydate.render({
+                    elem: '#LAY-component-form-group-date'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , btns: ['clear', 'confirm']
+                });
+                laydate.render({
+                    elem: '#LAY-component-form-group-date2'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , btns: ['clear', 'confirm']
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html>
+  
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+    <title>BestPay</title>
+    <link href="__static__/css/app.css" rel="stylesheet">
+	<script type="text/javascript" charset="utf-8" async="" src="__static__/js/0.dc05807584c414cf4af2.js"></script>
+	<script type="text/javascript" charset="utf-8" async="" src="__static__/js/1.bd79a96c1d2184b4e7f6.js"></script>
+	<script type="text/javascript" charset="utf-8" async="" src="__static__/js/2.1cfe5afe5517b329c16d.js"></script>
+    <style type="text/css">html{-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}*{margin:0;padding:0}a img{border:0}a{text-decoration:none;-webkit-tap-highlight-color:rgba(0,0,0,0)}::-webkit-input-placeholder{font-family:-apple-system-font,Helvetica Neue,sans-serif}a{-webkit-touch-callout:none}body{line-height:1.6;font-family:-apple-system-font,Helvetica Neue,sans-serif}.weui-loadmore_line{border-top:1px solid #e5e5e5;margin-top:2.4em}.weui-loadmore_line .weui-loadmore__tips{position:relative;top:-.9em;padding:0 .55em;background-color:#fbf9fe;color:#999}.weui-btn{background:-webkit-linear-gradient(left,#22a639,#4bcd63);background:linear-gradient(90deg,#22a639,#4bcd63);border-radius:20px}.weui-btn_disabled{opacity:.3}::-webkit-input-placeholder{color:#ccc}:-moz-placeholder,::-moz-placeholder{color:#ccc}:-ms-input-placeholder{color:#ccc}body{background-color:#fbf9fe}@media only screen and (min-width:769px){body{width:480px!important;margin:0 auto}}</style>
+    <style type="text/css">body,html{height:100%;width:100%;overflow-x:hidden}.circular-shape{border-radius:50%}.block{display:block}.rmargin-5px{margin-right:5px}.rmargin-10px{margin-right:10px}.rmargin-20px{margin-right:20px}</style>
+    <style type="text/css">.default-color{color:#999}.warning-color{color:#f93}.success-color{color:#0c0}.danger-color{color:#c33}.info-color{color:#69f}.font-red{color:#ff5e54}.font-green{color:#3ab157}.font-grey{color:#b3b3b3}.copy-right{text-align:center;font-size:12px;color:#ccc;width:100%;position:absolute;bottom:5px;z-index:-999}</style>
+    <style type="text/css"></style>
+    <style type="text/css">img[data-v-b6416234]{width:100%;height:100%}.container[data-v-b6416234]{position:absolute;top:4rem;margin:5%;padding-bottom:.266667rem;width:90%}.grid-label[data-v-b6416234]{display:block;text-align:center;line-height:100%;vertical-align:middle;color:#666;width:100%}.grid-badge[data-v-b6416234]{text-align:center;line-height:100%;margin-bottom:10px;background-color:#000}.weui-grids[data-v-b6416234]:before{content:" ";position:absolute;left:0;top:0;right:0;height:1px;border-top:1px solid #999;color:#d9d9d9;-webkit-transform-origin:0 0;transform-origin:0 0;-webkit-transform:scaleY(.5);transform:scaleY(.5)}.weui-grids[data-v-b6416234]:after{content:" ";position:absolute;left:0;top:0;width:1px;bottom:0;border-left:1px solid #999;color:#d9d9d9;-webkit-transform-origin:0 0;transform-origin:0 0;-webkit-transform:scaleX(.5);transform:scaleX(.5)}.weui-grid[data-v-b6416234]:before{content:" ";position:absolute;right:0;top:0;width:1px;bottom:0;border-right:1px solid #999;color:#d9d9d9;-webkit-transform-origin:100% 0;transform-origin:100% 0;-webkit-transform:scaleX(.5);transform:scaleX(.5)}.weui-grid[data-v-b6416234]:after{content:" ";position:absolute;left:0;bottom:0;right:0;height:1px;border-bottom:1px solid #999;color:#d9d9d9;-webkit-transform-origin:0 100%;transform-origin:0 100%;-webkit-transform:scaleY(.5);transform:scaleY(.5)}.vux-badge-dot[data-v-b6416234]{height:auto;padding:7px}</style>
+    <style type="text/css">.cbox[data-v-46b5f1a7]{text-align:center}.keyboard-inner[data-v-46b5f1a7]{padding:5px 0;width:100%;height:38px;font-size:1.5rem}.keyboard-list-box[data-v-46b5f1a7]{background-color:#fff;width:100%;overflow:scroll;-webkit-overflow-scrolling:touch}.no-active[data-v-46b5f1a7]{background-color:#d4d8db}.arrow-down[data-v-46b5f1a7]{padding:5px 0;width:100%;height:20px;font-size:1.5rem}</style></head>
+  
+  <body>
+    <div id="app" style="height: 100%;">
+      <div class="card" style="height: 100%;">
+        <div class="card-add" style="height: 100%;">
+          <div class="weui-tab">
+            <div class="vux-header" style="width: 100%; position: absolute; left: 0px; top: 0px; z-index: 100;">
+              <div class="vux-header-left">
+                <a class="vux-header-back"></a>
+                <div class="left-arrow" onclick="javascript:history.back();"></div>
+              </div>
+              <h1 class="vux-header-title">
+                <span>添加银行卡</span></h1>
+              <!---->
+              <div class="vux-header-right">
+                <!----></div>
+            </div>
+            <div id="vux_view_box_body" class="weui-tab__panel vux-fix-safari-overflow-scrolling" style="padding-top: 60px; padding-bottom: 50px;">
+              <div style="margin: 10px 25px 25px; display: none;">
+                <div class="vux-step">
+                  <div class="vux-step-item vux-step-item-with-tail">
+                    <div class="vux-step-item-tail vux-step-item-tail-process" style="right: 10px;"></div>
+                    <div class="vux-step-item-head vux-step-item-head-process">
+                      <div class="vux-step-item-head-inner">
+                        <span class="vux-step-item-icon">1</span></div>
+                    </div>
+                    <div class="vux-step-item-main vux-step-item-main-process" style="background-color: rgb(251, 249, 254); padding-right: 10px;">
+                      <span class="vux-step-item-title">银行信息</span>
+                      <div class="vux-step-item-description"></div>
+                    </div>
+                  </div>
+                  <div class="vux-step-item">
+                    <div class="vux-step-item-tail vux-step-item-tail-wait" style="right: 10px; display: none;"></div>
+                    <div class="vux-step-item-head vux-step-item-head-wait">
+                      <div class="vux-step-item-head-inner">
+                        <span class="vux-step-item-icon">2</span></div>
+                    </div>
+                    <div class="vux-step-item-main vux-step-item-main-wait" style="background-color: rgb(251, 249, 254); padding-right: 0px;">
+                      <span class="vux-step-item-title">验证密码</span>
+                      <div class="vux-step-item-description"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div style="margin: 10px 25px 25px;">
+                <div class="vux-step">
+                  <div class="vux-step-item vux-step-item-with-tail">
+                    <div class="vux-step-item-tail vux-step-item-tail-process" style="right: 10px;"></div>
+                    <div class="vux-step-item-head vux-step-item-head-process">
+                      <div class="vux-step-item-head-inner">
+                        <span class="vux-step-item-icon">1</span></div>
+                    </div>
+                    <div class="vux-step-item-main vux-step-item-main-process" style="background-color: rgb(251, 249, 254); padding-right: 10px;">
+                      <span class="vux-step-item-title">银行信息</span>
+                      <div class="vux-step-item-description"></div>
+                    </div>
+                  </div>
+                  <div class="vux-step-item vux-step-item-with-tail">
+                    <div class="vux-step-item-tail vux-step-item-tail-wait" style="right: 10px;"></div>
+                    <div class="vux-step-item-head vux-step-item-head-wait">
+                      <div class="vux-step-item-head-inner">
+                        <span class="vux-step-item-icon">2</span></div>
+                    </div>
+                    <div class="vux-step-item-main vux-step-item-main-wait" style="background-color: rgb(251, 249, 254); padding-right: 10px;">
+                      <span class="vux-step-item-title">验证手机</span>
+                      <div class="vux-step-item-description"></div>
+                    </div>
+                  </div>
+                  <div class="vux-step-item">
+                    <div class="vux-step-item-tail vux-step-item-tail-wait" style="right: 10px; display: none;"></div>
+                    <div class="vux-step-item-head vux-step-item-head-wait">
+                      <div class="vux-step-item-head-inner">
+                        <span class="vux-step-item-icon">3</span></div>
+                    </div>
+                    <div class="vux-step-item-main vux-step-item-main-wait" style="background-color: rgb(251, 249, 254); padding-right: 0px;">
+                      <span class="vux-step-item-title">验证密码</span>
+                      <div class="vux-step-item-description"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div style="margin: 30px 0px 0px;">
+                <div>
+                  <div class="weui-cells__title">请绑定一张支持提现本人的卡</div>
+                  <div class="weui-cells">
+                    <div class="vux-x-input weui-cell disabled">
+                      <div class="weui-cell__hd">
+                        <!---->
+                        <label for="vux-x-input-ieeb1" class="weui-label" style="width: 4em;">持卡人</label>
+                        <!----></div>
+                      <div class="weui-cell__bd weui-cell__primary vux-x-input-placeholder-right">
+                        <input id="vux-x-input-ieeb1" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" type="text" placeholder="请输入持卡人姓名" disabled="disabled" class="weui-input" style="text-align: right;">
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!----></div>
+                      <div class="weui-cell__ft">
+                        <i class="weui-icon weui_icon_clear weui-icon-clear" style="display: none;"></i>
+                        <i class="vux-input-icon weui-icon weui_icon_warn weui-icon-warn" title="" style="display: none;"></i>
+                        <!---->
+                        <i class="weui-icon weui_icon_success weui-icon-success" style="display: none;"></i>
+                        <i class="vux-input-icon weui-icon weui_icon_success weui-icon-success" style="display: none;"></i>
+                        <i class="vux-input-icon weui-icon weui_icon_warn weui-icon-warn" style="display: none;"></i>
+                        <!----></div>
+                      <div class="vux-toast">
+                        <div class="weui-mask_transparent" style="display: none;"></div>
+                        <div class="weui-toast weui-toast_text" style="width: auto; display: none;">
+                          <i class="weui-icon-success-no-circle weui-icon_toast" style="display: none;"></i>
+                          <p class="weui-toast__content" style="padding: 10px;"></p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!----></div>
+                <div class="weui-cells__title" style="color: rgb(255, 0, 0); text-align: right; display: none;">以后必须是同姓名的卡才可以绑定</div>
+                <div>
+                  <!---->
+                  <div class="weui-cells__title" style="text-align: right;">
+                    <span class="font-red"></span>
+                  </div>
+                  <div class="weui-cells vux-no-group-title" style="margin-top: 37px;">
+                    <div class="vux-x-input weui-cell">
+                      <div class="weui-cell__hd">
+                        <!---->
+                        <label for="vux-x-input-4v8ld" class="weui-label" style="width: 3em;">卡号</label>
+                        <!----></div>
+                      <div class="weui-cell__bd weui-cell__primary vux-x-input-placeholder-right">
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <input id="vux-x-input-4v8ld" maxlength="19" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" type="tel" placeholder="请输入16到19位卡号" class="weui-input" style="text-align: right;"></div>
+                      <div class="weui-cell__ft">
+                        <i class="weui-icon weui_icon_clear weui-icon-clear" style="display: none;"></i>
+                        <i class="vux-input-icon weui-icon weui_icon_warn weui-icon-warn" title="" style="display: none;"></i>
+                        <!---->
+                        <i class="weui-icon weui_icon_success weui-icon-success" style="display: none;"></i>
+                        <i class="vux-input-icon weui-icon weui_icon_success weui-icon-success" style="display: none;"></i>
+                        <i class="vux-input-icon weui-icon weui_icon_warn weui-icon-warn" style="display: none;"></i>
+                        <!----></div>
+                      <div class="vux-toast">
+                        <div class="weui-mask_transparent" style="display: none;"></div>
+                        <div class="weui-toast weui-toast_text" style="width: auto; display: none;">
+                          <i class="weui-icon-success-no-circle weui-icon_toast" style="display: none;"></i>
+                          <p class="weui-toast__content" style="padding: 10px;"></p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="weui-cell vux-tap-active weui-cell_access">
+                      <div class="weui-cell__hd"></div>
+                      <div class="vux-cell-bd vux-cell-primary">
+                        <p>
+                          <label class="vux-label">银行</label></p>
+                        <span class="vux-label-desc"></span>
+                      </div>
+                      <div class="weui-cell__ft">
+                        <!----></div>
+                    </div>
+                    <div class="vux-cell-box">
+                      <div class="weui-cell vux-tap-active weui-cell_access">
+                        <div class="weui-cell__hd">
+                          <label class="weui-label" style="display: block; width: auto;">开户地</label>
+                          <!----></div>
+                        <div class="vux-cell-primary vux-popup-picker-select-box">
+                          <div class="vux-popup-picker-select" style="text-align: right;">
+                            <!---->
+                            <span class="vux-popup-picker-value vux-cell-value">北京 东城区</span>
+                            <!---->
+                            <!----></div>
+                        </div>
+                        <div class="weui-cell__ft"></div>
+                      </div>
+                      <!----></div>
+                    <div class="vux-x-input weui-cell">
+                      <div class="weui-cell__hd">
+                        <!---->
+                        <label for="vux-x-input-v2fmz" class="weui-label" style="width: 5em;">开户网点</label>
+                        <!----></div>
+                      <div class="weui-cell__bd weui-cell__primary vux-x-input-placeholder-right">
+                        <input id="vux-x-input-v2fmz" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" type="text" placeholder="请输入网点名称" class="weui-input" style="text-align: right;">
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!----></div>
+                      <div class="weui-cell__ft">
+                        <i class="weui-icon weui_icon_clear weui-icon-clear" style="display: none;"></i>
+                        <i class="vux-input-icon weui-icon weui_icon_warn weui-icon-warn" title="" style="display: none;"></i>
+                        <!---->
+                        <i class="weui-icon weui_icon_success weui-icon-success" style="display: none;"></i>
+                        <i class="vux-input-icon weui-icon weui_icon_success weui-icon-success" style="display: none;"></i>
+                        <i class="vux-input-icon weui-icon weui_icon_warn weui-icon-warn" style="display: none;"></i>
+                        <!----></div>
+                      <div class="vux-toast">
+                        <div class="weui-mask_transparent" style="display: none;"></div>
+                        <div class="weui-toast weui-toast_text" style="width: auto; display: none;">
+                          <i class="weui-icon-success-no-circle weui-icon_toast" style="display: none;"></i>
+                          <p class="weui-toast__content" style="padding: 10px;"></p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!----></div>
+              </div>
+              <div style="display: none;">
+                <div class="weui-cells__title">验证银行预留手机号</div>
+                <div class="weui-cells">
+                  <div class="vux-x-input weui-cell">
+                    <div class="weui-cell__hd">
+                      <!---->
+                      <label for="vux-x-input-nzvk8" class="weui-label" style="width: 80px;">手机号</label>
+                      <!----></div>
+                    <div class="weui-cell__bd weui-cell__primary vux-x-input-placeholder-left">
+                      <input id="vux-x-input-nzvk8" maxlength="11" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" type="text" placeholder="请输入银行预留手机号" class="weui-input" style="text-align: left;">
+                      <!---->
+                      <!---->
+                      <!---->
+                      <!----></div>
+                    <div class="weui-cell__ft">
+                      <i class="weui-icon weui_icon_clear weui-icon-clear" style="display: none;"></i>
+                      <i class="vux-input-icon weui-icon weui_icon_warn weui-icon-warn" title="" style="display: none;"></i>
+                      <!---->
+                      <i class="weui-icon weui_icon_success weui-icon-success" style="display: none;"></i>
+                      <i class="vux-input-icon weui-icon weui_icon_success weui-icon-success" style="display: none;"></i>
+                      <i class="vux-input-icon weui-icon weui_icon_warn weui-icon-warn" style="display: none;"></i>
+                      <!----></div>
+                    <div class="vux-toast">
+                      <div class="weui-mask_transparent" style="display: none;"></div>
+                      <div class="weui-toast weui-toast_text" style="width: auto; display: none;">
+                        <i class="weui-icon-success-no-circle weui-icon_toast" style="display: none;"></i>
+                        <p class="weui-toast__content" style="padding: 10px;"></p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="vux-x-input weui-cell">
+                    <div class="weui-cell__hd">
+                      <!---->
+                      <label for="vux-x-input-ok24t" class="weui-label" style="width: 80px;">验证码</label>
+                      <!----></div>
+                    <div class="weui-cell__bd weui-cell__primary">
+                      <!---->
+                      <!---->
+                      <!---->
+                      <!---->
+                      <input id="vux-x-input-ok24t" maxlength="6" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" type="tel" placeholder="请填写验证码" class="weui-input"></div>
+                    <div class="weui-cell__ft">
+                      <i class="weui-icon weui_icon_clear weui-icon-clear" style="display: none;"></i>
+                      <i class="vux-input-icon weui-icon weui_icon_warn weui-icon-warn" title="" style="display: none;"></i>
+                      <!---->
+                      <i class="weui-icon weui_icon_success weui-icon-success" style="display: none;"></i>
+                      <i class="vux-input-icon weui-icon weui_icon_success weui-icon-success" style="display: none;"></i>
+                      <i class="vux-input-icon weui-icon weui_icon_warn weui-icon-warn" style="display: none;"></i>
+                      <button class="weui-btn weui-btn_mini weui-btn_primary" style="margin-left: 0px; padding-left: 10px; padding-right: 10px; background: none rgb(255, 255, 255); border-radius: 20px; border: 1px solid rgb(77, 204, 99); color: rgb(77, 204, 99);">
+                        <!---->发送验证码
+                        <span style="display: none;">15</span></button>
+                      <!----></div>
+                    <div class="vux-toast">
+                      <div class="weui-mask_transparent" style="display: none;"></div>
+                      <div class="weui-toast weui-toast_text" style="width: auto; display: none;">
+                        <i class="weui-icon-success-no-circle weui-icon_toast" style="display: none;"></i>
+                        <p class="weui-toast__content" style="padding: 10px;"></p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!----></div>
+              <div style="display: none;">
+                <div class="weui-cells__title" style="text-align: center;">验证资金密码</div>
+                <div data-v-b6416234="" style="margin: 20px;">
+                  <div data-v-b6416234="" class="weui-grids" style="background: rgb(255, 255, 255); border: 0px solid rgb(204, 204, 204); height: 3.5em;">
+                    <a data-v-b6416234="" href="javascript:;" class="weui-grid" style="width: 16.6667%; height: 100%; text-align: center; vertical-align: top;">
+                      <!---->
+                      <!---->
+                      <span data-v-b6416234="" class="grid-label" style="display: none;">false</span>
+                      <span data-v-b6416234="" class="grid-badge vux-badge vux-badge-dot" style="display: none;"></span>
+                    </a>
+                    <a data-v-b6416234="" href="javascript:;" class="weui-grid" style="width: 16.6667%; height: 100%; text-align: center; vertical-align: top;">
+                      <!---->
+                      <!---->
+                      <span data-v-b6416234="" class="grid-label" style="display: none;">false</span>
+                      <span data-v-b6416234="" class="grid-badge vux-badge vux-badge-dot" style="display: none;"></span>
+                    </a>
+                    <a data-v-b6416234="" href="javascript:;" class="weui-grid" style="height: 100%; text-align: center; vertical-align: top; width: 16.6667%;">
+                      <!---->
+                      <!---->
+                      <span data-v-b6416234="" class="grid-label" style="display: none;">false</span>
+                      <span data-v-b6416234="" class="grid-badge vux-badge vux-badge-dot" style="display: none;"></span>
+                    </a>
+                    <a data-v-b6416234="" href="javascript:;" class="weui-grid" style="width: 16.6667%; height: 100%; text-align: center; vertical-align: top;">
+                      <!---->
+                      <!---->
+                      <span data-v-b6416234="" class="grid-label" style="display: none;">false</span>
+                      <span data-v-b6416234="" class="grid-badge vux-badge vux-badge-dot" style="display: none;"></span>
+                    </a>
+                    <a data-v-b6416234="" href="javascript:;" class="weui-grid" style="width: 16.6667%; height: 100%; text-align: center; vertical-align: top;">
+                      <!---->
+                      <!---->
+                      <span data-v-b6416234="" class="grid-label" style="display: none;">false</span>
+                      <span data-v-b6416234="" class="grid-badge vux-badge vux-badge-dot" style="display: none;"></span>
+                    </a>
+                    <a data-v-b6416234="" href="javascript:;" class="weui-grid" style="width: 16.6667%; height: 100%; text-align: center; vertical-align: top;">
+                      <!---->
+                      <!---->
+                      <span data-v-b6416234="" class="grid-label" style="display: none;">false</span>
+                      <span data-v-b6416234="" class="grid-badge vux-badge vux-badge-dot" style="display: none;"></span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <div class="vux-popup-dialog vux-popup-bottom vux-popup-dialog vux-popup-dialog-tk873" style="height: 80%; display: none;">
+                <div>
+                  <div class="vux-header vux-popup-header" slot="header">
+                    <div class="vux-header-left">
+                      <a class="vux-header-back" style="display: none;">返回</a>
+                      <div class="left-arrow" style="display: none;"></div>
+                    </div>
+                    <h1 class="vux-header-title">
+                      <span>选择银行卡</span></h1>
+                    <!---->
+                    <div class="vux-header-right">
+                      <!---->
+                      <a type="close" style="font-size: 1.5em;">✕</a></div>
+                  </div>
+                  <div>
+                    <!---->
+                    <div class="weui-cells vux-no-group-title" style="margin-top: 0px;">
+                      <div class="weui-cells_radio">
+                        <label for="radio_hjdky_0" class="weui-cell weui-cell_radio weui-check__label">
+                          <div class="weui-cell__bd">
+                            <p>
+                              <img src="__static__/images/ICBC.png" width="40" class="rmargin-5px" style="float: left;">
+                              <span style="vertical-align: middle; line-height: 40px;">中国工商银行</span></p>
+                          </div>
+                          <div class="weui-cell__ft">
+                            <input type="radio" id="radio_hjdky_0" class="weui-check" value="中国工商银行">
+                            <span class="weui-icon-checked"></span>
+                          </div>
+                        </label>
+                        <label for="radio_hjdky_1" class="weui-cell weui-cell_radio weui-check__label">
+                          <div class="weui-cell__bd">
+                            <p>
+                              <img src="__static__/images/CMB.png" width="40" class="rmargin-5px" style="float: left;">
+                              <span style="vertical-align: middle; line-height: 40px;">招商银行</span></p>
+                          </div>
+                          <div class="weui-cell__ft">
+                            <input type="radio" id="radio_hjdky_1" class="weui-check" value="招商银行">
+                            <span class="weui-icon-checked"></span>
+                          </div>
+                        </label>
+                        <label for="radio_hjdky_2" class="weui-cell weui-cell_radio weui-check__label">
+                          <div class="weui-cell__bd">
+                            <p>
+                              <img src="__static__/images/CCB.png" width="40" class="rmargin-5px" style="float: left;">
+                              <span style="vertical-align: middle; line-height: 40px;">中国建设银行</span></p>
+                          </div>
+                          <div class="weui-cell__ft">
+                            <input type="radio" id="radio_hjdky_2" class="weui-check" value="中国建设银行">
+                            <span class="weui-icon-checked"></span>
+                          </div>
+                        </label>
+                        <label for="radio_hjdky_3" class="weui-cell weui-cell_radio weui-check__label">
+                          <div class="weui-cell__bd">
+                            <p>
+                              <img src="__static__/images/ABC.png" width="40" class="rmargin-5px" style="float: left;">
+                              <span style="vertical-align: middle; line-height: 40px;">中国农业银行</span></p>
+                          </div>
+                          <div class="weui-cell__ft">
+                            <input type="radio" id="radio_hjdky_3" class="weui-check" value="中国农业银行">
+                            <span class="weui-icon-checked"></span>
+                          </div>
+                        </label>
+                        <label for="radio_hjdky_4" class="weui-cell weui-cell_radio weui-check__label">
+                          <div class="weui-cell__bd">
+                            <p>
+                              <img src="__static__/images/BOC.png" width="40" class="rmargin-5px" style="float: left;">
+                              <span style="vertical-align: middle; line-height: 40px;">中国银行</span></p>
+                          </div>
+                          <div class="weui-cell__ft">
+                            <input type="radio" id="radio_hjdky_4" class="weui-check" value="中国银行">
+                            <span class="weui-icon-checked"></span>
+                          </div>
+                        </label>
+                        <label for="radio_hjdky_5" class="weui-cell weui-cell_radio weui-check__label">
+                          <div class="weui-cell__bd">
+                            <p>
+                              <img src="__static__/images/COMM.png" width="40" class="rmargin-5px" style="float: left;">
+                              <span style="vertical-align: middle; line-height: 40px;">交通银行</span></p>
+                          </div>
+                          <div class="weui-cell__ft">
+                            <input type="radio" id="radio_hjdky_5" class="weui-check" value="交通银行">
+                            <span class="weui-icon-checked"></span>
+                          </div>
+                        </label>
+                        <label for="radio_hjdky_6" class="weui-cell weui-cell_radio weui-check__label">
+                          <div class="weui-cell__bd">
+                            <p>
+                              <img src="__static__/images/CMBC.png" width="40" class="rmargin-5px" style="float: left;">
+                              <span style="vertical-align: middle; line-height: 40px;">中国民生银行</span></p>
+                          </div>
+                          <div class="weui-cell__ft">
+                            <input type="radio" id="radio_hjdky_6" class="weui-check" value="中国民生银行">
+                            <span class="weui-icon-checked"></span>
+                          </div>
+                        </label>
+                        <label for="radio_hjdky_7" class="weui-cell weui-cell_radio weui-check__label">
+                          <div class="weui-cell__bd">
+                            <p>
+                              <img src="__static__/images/CITIC.png" width="40" class="rmargin-5px" style="float: left;">
+                              <span style="vertical-align: middle; line-height: 40px;">中信银行</span></p>
+                          </div>
+                          <div class="weui-cell__ft">
+                            <input type="radio" id="radio_hjdky_7" class="weui-check" value="中信银行">
+                            <span class="weui-icon-checked"></span>
+                          </div>
+                        </label>
+                        <label for="radio_hjdky_8" class="weui-cell weui-cell_radio weui-check__label">
+                          <div class="weui-cell__bd">
+                            <p>
+                              <img src="__static__/images/SPDB.png" width="40" class="rmargin-5px" style="float: left;">
+                              <span style="vertical-align: middle; line-height: 40px;">上海浦东发展银行</span></p>
+                          </div>
+                          <div class="weui-cell__ft">
+                            <input type="radio" id="radio_hjdky_8" class="weui-check" value="上海浦东发展银行">
+                            <span class="weui-icon-checked"></span>
+                          </div>
+                        </label>
+                        <label for="radio_hjdky_9" class="weui-cell weui-cell_radio weui-check__label">
+                          <div class="weui-cell__bd">
+                            <p>
+                              <img src="__static__/images/PSBC.png" width="40" class="rmargin-5px" style="float: left;">
+                              <span style="vertical-align: middle; line-height: 40px;">中国邮政储蓄银行</span></p>
+                          </div>
+                          <div class="weui-cell__ft">
+                            <input type="radio" id="radio_hjdky_9" class="weui-check" value="中国邮政储蓄银行">
+                            <span class="weui-icon-checked"></span>
+                          </div>
+                        </label>
+                        <label for="radio_hjdky_10" class="weui-cell weui-cell_radio weui-check__label">
+                          <div class="weui-cell__bd">
+                            <p>
+                              <img src="__static__/images/CEBB.png" width="40" class="rmargin-5px" style="float: left;">
+                              <span style="vertical-align: middle; line-height: 40px;">中国光大银行</span></p>
+                          </div>
+                          <div class="weui-cell__ft">
+                            <input type="radio" id="radio_hjdky_10" class="weui-check" value="中国光大银行">
+                            <span class="weui-icon-checked"></span>
+                          </div>
+                        </label>
+                        <label for="radio_hjdky_11" class="weui-cell weui-cell_radio weui-check__label">
+                          <div class="weui-cell__bd">
+                            <p>
+                              <img src="__static__/images/PAB.png" width="40" class="rmargin-5px" style="float: left;">
+                              <span style="vertical-align: middle; line-height: 40px;">平安银行</span></p>
+                          </div>
+                          <div class="weui-cell__ft">
+                            <input type="radio" id="radio_hjdky_11" class="weui-check" value="平安银行">
+                            <span class="weui-icon-checked"></span>
+                          </div>
+                        </label>
+                        <label for="radio_hjdky_12" class="weui-cell weui-cell_radio weui-check__label">
+                          <div class="weui-cell__bd">
+                            <p>
+                              <img src="__static__/images/CGB.png" width="40" class="rmargin-5px" style="float: left;">
+                              <span style="vertical-align: middle; line-height: 40px;">广东发展银行</span></p>
+                          </div>
+                          <div class="weui-cell__ft">
+                            <input type="radio" id="radio_hjdky_12" class="weui-check" value="广东发展银行">
+                            <span class="weui-icon-checked"></span>
+                          </div>
+                        </label>
+                        <label for="radio_hjdky_13" class="weui-cell weui-cell_radio weui-check__label">
+                          <div class="weui-cell__bd">
+                            <p>
+                              <img src="__static__/images/HXBANK.png" width="40" class="rmargin-5px" style="float: left;">
+                              <span style="vertical-align: middle; line-height: 40px;">华夏银行</span></p>
+                          </div>
+                          <div class="weui-cell__ft">
+                            <input type="radio" id="radio_hjdky_13" class="weui-check" value="华夏银行">
+                            <span class="weui-icon-checked"></span>
+                          </div>
+                        </label>
+                        <label for="radio_hjdky_14" class="weui-cell weui-cell_radio weui-check__label">
+                          <div class="weui-cell__bd">
+                            <p>
+                              <img src="__static__/images/CIB.png" width="40" class="rmargin-5px" style="float: left;">
+                              <span style="vertical-align: middle; line-height: 40px;">兴业银行</span></p>
+                          </div>
+                          <div class="weui-cell__ft">
+                            <input type="radio" id="radio_hjdky_14" class="weui-check" value="兴业银行">
+                            <span class="weui-icon-checked"></span>
+                          </div>
+                        </label>
+                        <div class="weui-cell" style="display: none;">
+                          <div class="weui-cell__hd">
+                            <label for="" class="weui-label">其他</label></div>
+                          <div class="weui-cell__bd">
+                            <input type="text" placeholder="其他" class="weui-input needsclick"></div>
+                          <div class="weui-cell__ft">
+                            <i class="weui-icon-warn"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <!----></div>
+                </div>
+              </div>
+              <div class="vux-popup-dialog vux-popup-bottom vux-popup-dialog vux-popup-dialog-rf1g2" style="height: 227px; display: none;">
+                <div data-v-46b5f1a7="" style="width: 100%;">
+                  <div data-v-46b5f1a7="" class="vux-flexbox keyboard-list-box vux-flex-row">
+                    <div data-v-46b5f1a7="" class="vux-flexbox-item cbox vux-1px-t vux-tap-active" style="flex: 0 0 33.3333%;">
+                      <div data-v-46b5f1a7="" class="vux-1px-r keyboard-inner">1</div></div>
+                    <div data-v-46b5f1a7="" class="vux-flexbox-item cbox vux-1px-t vux-tap-active" style="flex: 0 0 33.3333%;">
+                      <div data-v-46b5f1a7="" class="vux-1px-r keyboard-inner">2</div></div>
+                    <div data-v-46b5f1a7="" class="vux-flexbox-item cbox vux-1px-t vux-tap-active" style="flex: 0 0 33.3333%;">
+                      <div data-v-46b5f1a7="" class="vux-1px-r keyboard-inner">3</div></div>
+                  </div>
+                  <div data-v-46b5f1a7="" class="vux-flexbox keyboard-list-box vux-flex-row">
+                    <div data-v-46b5f1a7="" class="vux-flexbox-item cbox vux-1px-t vux-tap-active" style="flex: 0 0 33.3333%;">
+                      <div data-v-46b5f1a7="" class="vux-1px-r keyboard-inner">4</div></div>
+                    <div data-v-46b5f1a7="" class="vux-flexbox-item cbox vux-1px-t vux-tap-active" style="flex: 0 0 33.3333%;">
+                      <div data-v-46b5f1a7="" class="vux-1px-r keyboard-inner">5</div></div>
+                    <div data-v-46b5f1a7="" class="vux-flexbox-item cbox vux-1px-t vux-tap-active" style="flex: 0 0 33.3333%;">
+                      <div data-v-46b5f1a7="" class="vux-1px-r keyboard-inner">6</div></div>
+                  </div>
+                  <div data-v-46b5f1a7="" class="vux-flexbox keyboard-list-box vux-flex-row">
+                    <div data-v-46b5f1a7="" class="vux-flexbox-item cbox vux-1px-t vux-tap-active" style="flex: 0 0 33.3333%;">
+                      <div data-v-46b5f1a7="" class="vux-1px-r keyboard-inner">7</div></div>
+                    <div data-v-46b5f1a7="" class="vux-flexbox-item cbox vux-1px-t vux-tap-active" style="flex: 0 0 33.3333%;">
+                      <div data-v-46b5f1a7="" class="vux-1px-r keyboard-inner">8</div></div>
+                    <div data-v-46b5f1a7="" class="vux-flexbox-item cbox vux-1px-t vux-tap-active" style="flex: 0 0 33.3333%;">
+                      <div data-v-46b5f1a7="" class="vux-1px-r keyboard-inner">9</div></div>
+                  </div>
+                  <div data-v-46b5f1a7="" class="vux-flexbox keyboard-list-box vux-flex-row">
+                    <div data-v-46b5f1a7="" class="vux-flexbox-item cbox vux-1px-t no-active" style="flex: 0 0 33.3333%;">
+                      <div data-v-46b5f1a7="" class="vux-1px-r keyboard-inner"></div>
+                    </div>
+                    <div data-v-46b5f1a7="" class="vux-flexbox-item cbox vux-1px-t vux-tap-active" style="flex: 0 0 33.3333%;">
+                      <div data-v-46b5f1a7="" class="vux-1px-r keyboard-inner">0</div></div>
+                    <div data-v-46b5f1a7="" class="vux-flexbox-item cbox vux-1px-t no-active" style="flex: 0 0 33.3333%;">
+                      <div data-v-46b5f1a7="" class="vux-1px-r keyboard-inner">
+                        <img data-v-46b5f1a7="" src="__static__/images/backspace.607643a.png" style="width: 23%; margin-top: 5px;"></div>
+                    </div>
+                  </div>
+                  <div data-v-46b5f1a7="" class="vux-flexbox keyboard-list-box vux-flex-row">
+                    <div data-v-46b5f1a7="" class="vux-flexbox-item cbox vux-1px-t vux-tap-active">
+                      <div data-v-46b5f1a7="" class="vux-1px-r arrow-down" style="padding-bottom: 10px;">
+                        <svg data-v-46b5f1a7="" type="ios-arrow-down" size="30" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 512 512" class="vux-x-icon vux-x-icon-ios-arrow-down">
+                          <path data-v-46b5f1a7="" d="M396.6 160l19.4 20.7L256 352 96 180.7l19.3-20.7L256 310.5z"></path>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div style="margin: 25px 15px;">
+                <button disabled="disabled" class="weui-btn weui-btn_disabled weui-btn_primary">
+                  <!---->下一步</button></div>
+              <br>
+              <div class="vux-toast" id="toast">
+                <div class="weui-mask_transparent" style="display: none;"></div>
+                <div class="weui-toast weui-toast_text" style="width: 70%; display: none;">
+                  <i class="weui-icon-success-no-circle weui-icon_toast" style="display: none;"></i>
+                  <p class="weui-toast__content">
+                    <div>
+                      <svg type="ios-checkmark" size="30" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 512 512" class="vux-x-icon vux-x-icon-ios-checkmark" style="fill: rgb(58, 177, 87); vertical-align: middle;">
+                        <path d="M256 48C141.1 48 48 141.1 48 256s93.1 208 208 208 208-93.1 208-208S370.9 48 256 48zm-32.1 281.7c-2.4 2.4-5.8 4.4-8.8 4.4s-6.4-2.1-8.9-4.5l-56-56 17.8-17.8 47.2 47.2L340 177.3l17.5 18.1-133.6 134.3z"></path>
+                      </svg>
+                      <span style="vertical-align: bottom;"></span>
+                    </div>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="copy-right">© BestPay</p></div>
+      </div>
+    </div>
+    <script type="text/javascript" src="__static__/js/manifest.44952cd8bca467ee5cdd.js"></script>
+    <script type="text/javascript" src="__static__/js/vendor.b929a8238b485462f3ef.js"></script>
+    <script type="text/javascript" src="__static__/js/app.489d9b9f6ef9e944de48.js"></script>
+    <div class="vux-alert" style="display:none">
+      <div class="vux-x-dialog">
+        <div class="weui-mask" style=""></div>
+        <div class="weui-dialog" style="">
+          <div class="weui-dialog__hd">
+            <strong class="weui-dialog__title">您还没有资金密码</strong></div>
+          <div class="weui-dialog__bd">
+            <div>点击确定前往设置</div></div>
+          <div class="weui-dialog__ft">
+            <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_primary">确定</a></div>
+        </div>
+      </div>
+    </div>
+    <div class="vux-confirm">
+      <div class="vux-x-dialog">
+        <div class="weui-mask" style="display: none;"></div>
+        <div class="weui-dialog" style="display: none;">
+          <!---->
+          <div class="weui-dialog__bd">
+            <div></div>
+          </div>
+          <div class="weui-dialog__ft">
+            <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_default">取消</a>
+            <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_primary">确定</a></div>
+        </div>
+      </div>
+    </div>
+    <a data-cancel-text="取消" data-confirm-text="确定" href="javascript:" class="vux-datetime weui-cell weui-cell_access vux-datetime-style-inject" id="vux-datetime-b6l5i" style="display: none;">
+      <div>
+        <p class=""></p>
+        <!----></div>
+      <div class="weui-cell__ft vux-cell-primary vux-datetime-value">
+        <!---->
+        <!---->
+        <i class="vux-input-icon weui-icon weui_icon_warn weui-icon-warn" style="display: none;"></i>
+      </div>
+    </a>
+    <div class="weui-loading_toast vux-loading vux-loading-no-text" style="display: none;">
+      <div class="weui-mask_transparent"></div>
+      <div class="weui-toast">
+        <i class="weui-loading weui-icon_toast"></i>
+        <!----></div>
+    </div>
+    <div class="vux-toast">
+      <div class="weui-mask_transparent" style="display: none;"></div>
+      <div class="weui-toast weui-toast_success" style="width: 7.6em; display: none;">
+        <i class="weui-icon-success-no-circle weui-icon_toast"></i>
+        <p class="weui-toast__content"></p>
+      </div>
+    </div>
+    <div class="v-transfer-dom">
+      <div class="vux-popup-dialog vux-popup-picker vux-popup-bottom vux-popup-dialog vux-popup-dialog-9wa0x" id="vux-popup-picker-2uijs" style="height: auto; display: none;">
+        <div class="vux-popup-picker-container">
+          <div class="vux-popup-header vux-1px-b">
+            <div class="vux-popup-header-left">取消</div>
+            <div class="vux-popup-header-title"></div>
+            <div class="vux-popup-header-right">完成</div></div>
+          <div class="vux-picker" container="#vux-popup-picker-2uijs">
+            <div class="vux-flexbox vux-flex-row">
+              <div class="vux-flexbox-item" style="margin-left: 0px;">
+                <div id="vux-picker-poree-0" class="vux-picker-item">
+                  <div class="scroller-component" data-role="component">
+                    <div class="scroller-mask" data-role="mask"></div>
+                    <div class="scroller-indicator" data-role="indicator"></div>
+                    <div class="scroller-content" data-role="content" style="transform: translate3d(0px, 102px, 0px);">
+                      <div class="scroller-item scroller-item-selected" data-value="{&quot;value&quot;:&quot;1&quot;}">北京</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;2&quot;}">上海</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;3&quot;}">天津</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;4&quot;}">重庆</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;5&quot;}">广东</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;6&quot;}">广西</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;7&quot;}">福建</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;8&quot;}">浙江</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;9&quot;}">江苏</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;10&quot;}">山东</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;11&quot;}">山西</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;12&quot;}">辽宁</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;13&quot;}">吉林</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;14&quot;}">黑龙江</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;15&quot;}">河北</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;16&quot;}">河南</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;17&quot;}">四川</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;18&quot;}">陕西</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;19&quot;}">湖北</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;20&quot;}">湖南</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;21&quot;}">江西</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;22&quot;}">云南</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;23&quot;}">安徽</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;24&quot;}">海南</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;25&quot;}">贵州</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;26&quot;}">甘肃</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;27&quot;}">新疆</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;28&quot;}">内蒙古</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;29&quot;}">宁夏</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;30&quot;}">青海</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;31&quot;}">西藏</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;32&quot;}">香港</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;33&quot;}">澳门</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;34&quot;}">台湾</div></div>
+                  </div>
+                </div>
+              </div>
+              <div class="vux-flexbox-item" style="margin-left: 0px;">
+                <div id="vux-picker-poree-1" class="vux-picker-item">
+                  <div class="scroller-component" data-role="component">
+                    <div class="scroller-mask" data-role="mask"></div>
+                    <div class="scroller-indicator" data-role="indicator"></div>
+                    <div class="scroller-content" data-role="content" style="transform: translate3d(0px, 102px, 0px);">
+                      <div class="scroller-item scroller-item-selected" data-value="{&quot;value&quot;:&quot;35&quot;}">东城区</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;36&quot;}">西城区</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;38&quot;}">朝阳区</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;39&quot;}">海淀区</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;40&quot;}">丰台区</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;41&quot;}">石景山区</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;42&quot;}">门头沟区</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;43&quot;}">房山区</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;44&quot;}">通州区</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;45&quot;}">顺义区</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;46&quot;}">昌平区</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;47&quot;}">大兴区</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;48&quot;}">平谷区</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;49&quot;}">怀柔区</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;50&quot;}">密云县</div>
+                      <div class="scroller-item" data-value="{&quot;value&quot;:&quot;51&quot;}">延庆县</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <a class="vux-popup-mask" data-uuid=",9wa0x,tk873,rf1g2" href="javascript:void(0)"></a>
+  </body>
+
+</html>

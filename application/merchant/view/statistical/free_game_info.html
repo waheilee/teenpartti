@@ -1,0 +1,167 @@
+{extend name="common/base" /}
+{block name="title"}游戏盈亏结算{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+
+<script id="msg-bar" type="text/html">
+    <input type="button" class="layui-btn layui-btn-xs" lay-event="roomInfo" value="查看明细">
+</script>
+<script>
+	url = "{:url('Statistical/FreeGameRecord')}";
+	layui.config({base: '__layui__/'}).extend({
+		index: 'lib/index'
+	}).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
+		var main = {
+			renderData: function () {
+				var cols = [ //表头
+					{field: 'ID', align: "center", title: 'ID', width: 110, sort: true},
+					{field: 'RoundIndex', align: "center", title: 'Index', width: 110},
+					{field: 'RoleID', align: "center", title: '用户ID', width: 110},
+					{field: 'RoomID', align: "center", title: '房间ID', width: 110},
+					{field: 'GameRunning', align: "center", title: '消耗', width: 110,sort: true},
+					{field: 'RoundResult', align: "center", title: '产出', width: 110,sort: true},
+					{
+						field: '', align: "center", title: '盈亏', width: 110, templet: function (d) {
+							return (d.GameRunning * 100 - d.RoundResult * 100) / 100;
+						}
+					},
+					{field: 'AddTime', align: "center", title: '时间', width: 160},
+				];
+				table.render({
+					elem: '#proxylist', url: url, where: {
+						Action: 'list', RoleID: {$RoleID}, strartdate: '{$start}', enddate: '{$end}',
+					}, page: true /*开启分页*/, limit: 15, cols: [cols], sort: true,
+					autoSort: false,
+					done: function (res, curr, count) {
+
+					}
+				});
+			},
+
+			//搜索
+			search: function () {
+				//执行重载
+				table.reload('proxylist', {
+					page: {curr: 1},
+					where: {
+						roleid: $.trim($('#roleid').val()),
+						roomid: $.trim($('#roomid').val()),
+					}
+				});
+			},
+
+			//操作事件
+			extraEvent: function () {
+
+				//排序
+				table.on('sort(proxylist)', function (obj) {
+					var roleid = $.trim($('#roleid').val());
+					//执行重载
+					table.reload('proxylist', {
+						initSort: obj,
+						page: {curr: 1},
+						where: {
+							orderytpe: obj.type,
+							orderby: obj.field,
+						}
+					});
+
+				});
+				//编辑&&删除
+				table.on('tool(proxylist)', function (obj) {
+
+				});
+			},
+
+			init: function () {
+				main.renderData();
+				main.extraEvent();
+				laydate.render({
+					elem: '#LAY-component-form-group-date'
+					, format: 'yyyy-MM-dd'
+					, max: 1
+					, lang:'{$datelang ?: "cn"}'
+					, btns: ['clear', 'confirm']
+					, value: new Date()
+				});
+				laydate.render({
+					elem: '#LAY-component-form-group-date2'
+					, format: 'yyyy-MM-dd'
+					, max: 1
+					, lang:'{$datelang ?: "cn"}'
+					, btns: ['clear', 'confirm']
+					, value: new Date()
+				});
+				$('#search').on('click', function (e) {
+					e.preventDefault();
+					main.search();
+				});
+			}
+		};
+
+		main.init();
+	});
+	$('#output').click(function () {
+		where = {
+			roleid: $.trim($('#roleid').val()),
+			roomid: $.trim($('#roomid').val()),
+			strartdate: $.trim($('#LAY-component-form-group-date').val()),
+			enddate: $.trim($('#LAY-component-form-group-date2').val()),
+			limit: 10000000,
+			Action: 'exec',
+		}
+
+		download();
+
+		function download() {
+			var params = Object.keys(where).map(function (key) {
+				return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+			}).join("&");
+			url = url + "?" + params;
+			$.ajax({
+				type: 'POST',
+				dataType: 'json',
+				async: true,
+				url: url, // 生成文件，保存在服务器
+				success: function (data) {
+					var result = data;
+					// console.info(data);
+					switch (result["code"]) {
+						case 0:
+							parent.parent.open(url + "&exec=1&outall=true");
+							break;
+						case 1:
+							layer.msg(result["message"]);
+							break;
+						case 2:
+							layer.confirm(result['message'], {
+								btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
+							}, function () {
+								parent.parent.open(url + "&exec=1&outall=true");
+								layer.msg('', {icon: 6, time: 1000}, function () {
+									window.location.reload();
+								});
+							});
+					}
+				},
+				error: function (XMLHttpRequest, textStatus, e) {
+					console.log("oilDetection.js  method exportOilDetection" + e);
+				}
+			});
+		}
+	});
+</script>
+{/block}

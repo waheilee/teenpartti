@@ -1,0 +1,150 @@
+{extend name="common/base" /}
+
+{block name="title"}支付通道{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<div class="layui-card">
+
+    <!--<div class="layui-card-header layuiadmin-card-header-auto">-->
+        <!--<h3>微信客服管理</h3>-->
+    <!--</div>-->
+
+
+
+    <div class="layui-card-body">
+        <!--<a style="margin-bottom: 10px;" class="layui-btn" onclick="x_admin_show('新增微信客服','addWeixin.html', '', 500)">-->
+        <a style="margin-bottom: 10px;" class="layui-btn" onclick="x_admin_show('新增排行榜流水配置','addScorelist.html', '', 500)">
+            <i class="layui-icon layui-icon-add-circle"></i>
+        </a>
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script type="text/html" id="msg-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="edit"><i class="layui-icon layui-icon-edit"></i></a>
+    <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete"><i class="layui-icon layui-icon-delete"></i></a>
+    <!--<a class="layui-btn layui-btn-xs" lay-event="open"><i class="layui-icon layui-icon-set-fill"></i></a>-->
+
+</script>
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            renderData : function() {
+                var cols = [ //表头
+
+
+                    {field: 'id', title: 'ID', minWidth:60}
+                    , {field: 'awardid', title: '等级', minWidth:200}
+                    , {field: 'awardmoney', title: '奖励金币', minWidth:200}
+
+                    , {fixed: 'right', title:'操作', align:'center', minWidth:100, toolbar: '#msg-bar'}
+
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('gamemanage/scorelist')}" //数据接口
+                    , page: true //开启分页
+                    , cols: [cols]
+                    , done: function (d) {
+                        tzTbale()
+                    }
+                });
+            },
+
+            //搜索
+            search : function() {
+//                var roleid = $.trim($('#bankname').html());
+                var roleid = $.trim($('#bankname option:selected').text());
+                if(roleid=='请选择渠道'){
+                    roleid='';
+                }
+              
+
+
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'clientidentify':roleid,
+
+                    }
+                });
+            },
+
+
+            //操作事件
+            extraEvent : function () {
+                //编辑&&删除
+                table.on('tool(proxylist)', function(obj) {
+                    var data = obj.data //获得当前行数据
+                        ,layEvent = obj.event; //获得 lay-event 对应的值
+                    if (layEvent === 'edit') {
+                        var id = data.id
+                            ,type = data.type
+
+
+//                        x_admin_show('编辑流水奖励配置', 'editWeixin?id='+id+'&type='+type+'&weixinname='+weixinname+'&noticetip='+noticetip+'&clientidentify='+clientidentify, '', 500);
+                        x_admin_show('编辑排行榜流水配置', 'editScorelist?id='+id+'&awardid='+data.awardid+'&awardmoney='+data.awardmoney, '', 500);
+                    } else if (layEvent === 'delete') {
+                        layer.confirm("{:lang('确认删除这条记录？')}",{btn: ['确认','取消']}, function() {
+                            $.ajax({
+                                type: 'post',
+//                                url: "{:url('gamemanage/deleteWeixin')}",
+                                url: "{:url('gamemanage/deleteScorelist')}",
+                                data: {
+                                    'id': data.id
+                                },
+                                dataType: 'json',
+                                success: function (res) {
+                                    if (res.code === 0) {
+                                        layer.msg(res.msg, {icon: 6,time:1000}, function() {
+                                            window.location.reload();
+                                        });
+                                    } else {
+                                        layer.msg(res.msg, {icon: 5});
+                                    }
+                                }
+                            });
+                        });
+                    }
+                });
+
+
+            },
+
+
+            init : function() {
+                main.renderData();
+                main.extraEvent();
+                $('#search').on('click', function(e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

@@ -1,0 +1,266 @@
+{extend name="common/base" /}
+{block name="title"}客服系统-用户管理{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="RoleID" name="RoleID" placeholder="玩家ID" type="text">
+                    </div>
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="MachineCode" name="MachineCode" placeholder="设备号" type="text">
+                    </div>
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="nickname" name="nickname" placeholder="昵称" type="text">
+                    </div>
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" data-type="reload" id="search">搜索</a>
+                        <button class="layui-btn layui-btn-primary" type="reset">重置</button>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script id="msg-bar" type="text/html">
+    <!--    <a class="layui-btn layui-btn-xs" lay-event="setPwd">密码重置</a>-->
+    <!--    <a class="layui-btn layui-btn-xs" lay-event="setPwd">强制离线</a>-->
+    <!--    <a class="layui-btn layui-btn-xs" lay-event="setPwd">绑定账号</a>-->
+
+    <!--    <a class="layui-btn layui-btn-xs " lay-event="ganme">游戏日志</a>-->
+    <!--    <a class="layui-btn layui-btn-xs" lay-event="cold">金币日志</a>-->
+    <!--<a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">拉黑</a>-->
+</script>
+
+<script>
+
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['table', 'layer', 'element', 'laydate', 'form', 'jquery', 'util'], function () {
+        var element = layui.element, layer = layui.layer, laydate = layui.laydate, util = layui.util, table = layui.table, $ = layui.$, form = layui.form;
+
+        laydate.render({
+            elem: '#regTime',
+            range: true,
+            done: function (value, date, endDate) {
+                dates = value.split(" - ");
+                // console.info(dates[0] +"  "+ dates[1]);
+
+                $("#startTime").val(dates[0]);
+                $("#endTime").val(dates[1]);
+            }
+        });
+        var main = {
+            renderData: function () {
+                var online = {$online};
+
+                var cols = [ //表头
+                    {
+                        field: 'ID', title: '玩家ID', width: 100, templet: function (d) {
+                            return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.ID + "</a>";
+                        }
+                    },
+                    {field: 'MachineCode', title: '设备号', minWidth: 40},
+                    {field: 'countryCode', title: '国籍', width: 60},
+                    {field: 'LoginName', title: '玩家昵称', minWidth: 100},
+
+                    {field: 'Money', title: '金币余额', minWidth: 120, sort: true},
+                    {field: 'Score', title: '钻石余额', minWidth: 100},
+                    {field: 'CouponCount', title: '礼券', minWidth: 100},
+                    {field: 'TotalDeposit', title: '总充值', minWidth: 120, sort: true},
+                    {
+                        field: 'LastLoginTime', title: '登录时间', minWidth: 160, templet: function (d) {
+                            return d.LastLoginTime.substr(0, d.LastLoginTime.length - 4)
+                        }
+                    },
+                    {field: 'LastLoginIP', title: '最后IP', minWidth: 180},
+                    {field: 'Email', title: '邮箱', minWidth: 180},
+                    //{field: 'totalout', title: '总转出', minWidth: 120, sort: true},
+                    //{field: 'totalget', title: '充退差', minWidth: 120,  templet:function (d) {return d.totalin-d.totalout } },
+                    //{field: 'totalwater', title: '总流水', minWidth: 120, sort: true},
+                    //{field: 'lastlogintime', title: '离线天数', minWidth: 100},
+                    //{field: 'huoyue', title: '活跃度', minWidth: 80, templet:function (d) {return  d.totalin!=0? Math.round(d.totalwater/d.totalin*100)/100:0 }},
+                    {
+                        field: 'Locked', width: 110, title: '禁/启用', align: "center", templet: function (d) {
+                            if (d.Locked == 0) {
+                                return "<input type='checkbox' ctrlID = '" + d.ID + "' lay-filter='Disable' lay-skin='switch' lay-text='正常|封号' checked>"
+                            } else {
+                                return "<input type='checkbox' ctrlID = '" + d.ID + "'  lay-filter='Disable' lay-skin='switch' lay-text='正常|封号'>"
+                            }
+                        }
+                    },
+                    {
+                        field: "", width: 110, title: '强退', align: "center", templet: function (d) {
+
+                            for (i = 0; i < online.length; i++) {
+                                if (d.ID == online[i])
+                                    return "<a lay-submit class='layui-btn layui-btn-sm layui-bg-red' ctrlID = '" + d.ID + "' lay-filter='Retreat'>强退</a>";
+                            }
+                            return " ";
+                        }
+                    }
+                    // {fixed: 'right', title: '操作', align: 'center', minWidth: 180, toolbar: '#msg-bar'}
+                ];
+
+                table.render({
+                    elem: '#proxylist',
+                    url: "{:url('CustomerServiceSystem/Index')}", //数据接口
+                    page: true, //开启分页
+                    limit: 15,
+                    sort: true,
+                    autoSort: false,
+                    cols: [cols],
+                    done: function (res) {$(".layui-table-main tr").each(function (index, val) {
+                            $($(".layui-table-fixed-l .layui-table-body tbody tr")[index]).height($(val).height());
+                            $($(".layui-table-fixed-r .layui-table-body tbody tr")[index]).height($(val).height());
+                        });
+                        online = {$online};
+                        console.info(online);
+                        // var orderby = res.orderType;
+                        // if (orderby !== 0) {
+                        //     var fieldval = '', typeval = 'asc';
+                        //     if (asc === 1) {
+                        //         typeval = 'desc';
+                        //     }
+                        //     $('th[data-field=' + fieldval + ']').find('span.layui-table-sort').attr('lay-sort', res.orderType);
+                        // }
+                    }
+                });
+            },
+
+            //搜索
+            search: function () {
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'RoleID': $.trim($('#RoleID').val()),
+                        'nickname': $.trim($('#nickname').val()),
+                        'MachineCode': $.trim($('#MachineCode').val()),
+                    }
+                });
+            },
+
+            //操作事件
+            extraEvent: function () {
+                //开关事件
+                form.on('switch(Disable)', function (data) {
+                    var ID = data.elem.attributes['ctrlID'].nodeValue;
+                    var swtype = data.elem.checked;
+                    var type = 0;
+                    if (swtype) type = 0;
+                    else type = 1;
+                    // layer.msg(data);
+                    //设置开关
+                    $.ajax({
+                        url: "{:url('player/DiasbleByID')}",
+                        type: 'post',
+                        data: {'ID': ID, type: type},
+                        success: function (res) {
+                            if (res.code === 0) {
+                                // layer.msg(res.msg, {icon: 6});
+                                layer.msg('修改成功', {icon: 6});
+                            } else {
+                                // layer.msg(res.msg, {icon: 5});
+                                layer.msg('修改失败', {icon: 5});
+                            }
+                            form.render();
+                        }
+                    })
+
+                });
+                form.on('submit(Retreat)', function (data) {
+                    var ID = data.elem.attributes['ctrlID'].nodeValue;
+                    layer.confirm('真的要强退: ' + ID + ' 吗?', {
+                        btn: ['{:lang("是")}', '{:lang("否")}'] //可以无限个按钮
+                        , btn1: function (index, layero) {
+                            $.ajax({
+                                url: "{:url('player/forceQuit')}",
+                                type: 'post',
+                                data: {'roleid': ID},
+                                success: function (res) {
+                                    if (res.code === 0) layer.msg(res.msg, {icon: 6});               // layer.msg('操作成功', {icon: 6});
+                                    else layer.msg(res.msg, {icon: 5});               // layer.msg('操作失败', {icon: 5});
+                                    form.render();
+                                }
+                            })
+
+                        }
+                    });
+
+
+                });
+                //编辑
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'detail') {
+                        var url = "{:url('player/playerDetail')}?roleid=" + data.ID;
+                        x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.7, $(window).height() * 0.6);
+                    } else if (layEvent === 'ganme') { //游戏日志
+                        //window.location.href =
+                        var url = '/admin/player/gameLog?roleid=' + data.ID;
+                        window.parent.layui.index.openTabsPage(url, data.accountname + "玩家游戏日志");
+                    } else if (layEvent === 'cold') {
+                        var url = '/admin/player/coinLog?roleid=' + data.ID;
+                        window.parent.layui.index.openTabsPage(url, data.accountname + "玩家金币日志");
+                    }
+                });
+
+                //排序
+                table.on('sort(proxylist)', function (obj) {
+                    var roleid = $.trim($('#roleid').val());
+                    var roomid = $.trim($('#roomid').val());
+                    var mobile = $.trim($('#mobile').val());
+                    var usertype = $.trim($('#usertype').val());
+                    //执行重载
+                    table.reload('proxylist', {
+                        page: {
+                            curr: 1 //重新从第 1 页开始
+                        },
+                        where: {
+
+                            'roleid': roleid,
+                            'roomid': roomid,
+                            'mobile': mobile,
+                            'orderfield': obj.field,
+                            'ordertype': obj.type,
+                            'usertype': usertype,
+                        }
+                    });
+
+                });
+            },
+
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

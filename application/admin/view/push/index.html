@@ -1,0 +1,140 @@
+<!--{extend name="common/base" /}-->
+
+<!--{block name="title"}{/block}-->
+<!--{block name="content"}-->
+{extend name="common/base" /}
+
+{block name="title"}信息推送{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form">
+            <div class="layui-form-item">
+				<label class="layui-form-label">推送主题</label>
+				<div class="layui-input-block">
+				  <input type="text" name="topic_name" autocomplete="off" placeholder="请输入推送主题" class="layui-input">
+				</div>
+			  </div>
+			<div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">推送内容</label>
+                <div class="layui-input-block">
+                            <textarea name="desc"  placeholder="请输入内容" class="layui-textarea"
+                                      id="desc"></textarea>
+                </div>
+            </div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">推送链接</label>
+				<div class="layui-input-block">
+				  <input type="text" name="link" autocomplete="off" placeholder="请输入链接地址" class="layui-input">
+				</div>
+			  </div>
+            <div class="layui-form-item" pane="">
+				<label class="layui-form-label">平台</label>
+				<div class="layui-input-block">
+				  <input type="checkbox" name="classid" value='android' lay-skin="primary" title="安卓" checked="">
+				  <input type="checkbox" name="classid" value='ios' lay-skin="primary" title="IOS">
+				</div>
+			  </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-filter="formDemo" id="save">推送</button>
+                    <!--<button type="reset" class="layui-btn layui-btn-primary">重置</button>-->
+                </div>
+            </div>
+        </form>
+        <div id="result" style="color: red;display: none">推送成功!</div>
+    </div>
+</div>
+{/block}
+
+
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+        $('#save').click(function (e) {
+            e.preventDefault();
+			var obj=document.getElementsByName('classid');  
+            var desc = $('#desc').val();
+			var topic_name = $('#topic_name').val();
+			var link = $('#link').val();
+            var vals='';  
+			if(desc==''){
+				alert('推送内容不能为空！');
+				return false;
+			}
+			for(var i=0; i<obj.length; i++){  
+				if(obj[i].checked) {
+					if (vals == '')
+						vals+=obj[i].value;  //如果选中，将value添加到变量中
+					else
+						vals+=','+obj[i].value;  //如果选中，将value添加到变量中  
+				}
+					
+			}  
+			if(vals==''){
+				alert('请勾选推送平台！');
+				return false;
+			}
+            $.ajax({
+                type: 'post',
+                url: "{:url('push/push')}",
+                data: {
+                    'topic_name': topic_name,
+					'desc': desc,
+					'link': link,
+                    'classid':vals,
+                },
+                dataType: 'json',
+                success: function (res) {
+                    if (res.code === 0) {
+                        console.log(res);
+                        $('#desc').html(res.data);
+//                        $('#desc').val(res.data);
+
+                        $('#result').css('display', 'block');
+                    } else {
+                        layer.msg(res.msg, {icon: 2});
+                    }
+                }
+            });
+        });
+
+        form.on("select(languange)",function(data) {
+            $.ajax({
+                type: 'post',
+                url: "{:url('gamemanage/ajaxnotice')}",
+                data: {
+                    'classid': data.value
+                },
+                dataType: 'json',
+                success: function (res) {
+                    if (res.code === 0) {
+                        $('#desc').html(res.data);
+                    } else {
+                        layer.msg(res.msg, {icon: 2});
+                    }
+                }
+            });
+        });
+
+
+});
+</script>
+{/block}
+
+

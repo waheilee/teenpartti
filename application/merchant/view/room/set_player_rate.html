@@ -1,0 +1,121 @@
+{extend name="common/base" /}
+
+{block name="title"}设置玩家胜率{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('room/setPlayerRate')}" method="post" id="addProxy" >
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('玩家ID')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="roleid" name='roleid' value="{$roleid}" {if $read==1} readonly {/if} lay-verify="required|number" placeholder="{:lang('请输入玩家ID')}" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+
+    <!-- <div class="layui-form-item">
+        <label class="layui-form-label">控制时长(秒)：</label>
+        <div class="layui-input-block">
+            <input type="text" id="timelong" name='timelong' value="{$time}"  lay-verify="required|number" placeholder="请输入控制时长" autocomplete="off" class="layui-input">
+        </div>
+    </div> -->
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('玩家胜率')}：</label>
+        <div class="layui-input-block">
+            <input type="number" id="ratio" name="ratio" lay-verify="require|number" value="{if $ratio>0}{$ratio}{/if}" placeholder="{:lang('请输入玩家胜率')}1-200" autocomplete="off" class="layui-input">
+            <!-- <select name="ratio" id="ratio" lay-verify="require|number">
+                {volist name="tigerrate" id="vo"}
+                <option value="{$vo}"  {if ($ratio == $vo)}selected="true" {/if} >{$vo}</option>
+                {/volist}
+            </select> -->
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('单控设置')}：</label>
+        <div class="layui-input-block">
+            <input type="number" id="InitialPersonMoney" name="InitialPersonMoney" lay-verify="require|number" value="{if $InitialPersonMoney>0}{$InitialPersonMoney}{/if}" placeholder="{:lang('请输入玩家单控设置金额')}" autocomplete="off" class="layui-input">
+            <!-- <select name="ratio" id="ratio" lay-verify="require|number">
+                {volist name="tigerrate" id="vo"}
+                <option value="{$vo}"  {if ($ratio == $vo)}selected="true" {/if} >{$vo}</option>
+                {/volist}
+            </select> -->
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >{:lang('确认')}</button>
+            <a class="layui-btn layui-btn-primary layui-btn-radius" id="cancel" >{:lang('取消')}</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var layer = layui.layer
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                var roleid = $.trim(data.field.roleid)
+                    ,ratio = $.trim(data.field.ratio)
+                    ,InitialPersonMoney =$.trim(data.field.InitialPersonMoney);
+                    //,timeinterval = $.trim(data.field.timeinterval);
+
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'roleid' : roleid,
+                        'ratio' : ratio,
+                        'InitialPersonMoney' : InitialPersonMoney,
+                        //'timeinterval' : timeinterval,
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

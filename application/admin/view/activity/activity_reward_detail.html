@@ -1,0 +1,119 @@
+{extend name="common/base" /}
+{block name="title"}奖励详情{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<style type="text/css">
+    header { color: black; }
+</style>
+<div class="x-body">
+    <form action="" class="layui-form" id='mainForm'>
+        
+        <div class="layui-form-item">
+          <div class="layui-inline">
+            <label class="layui-form-label">玩家ID</label>
+            <div class="layui-input-inline">
+               <input  class="layui-input  layui-hide" name="RoleId"  type="text" value="{$data.RoleId}">
+               <input  class="layui-input"  value="{$data.RoleId}" disabled>
+            </div>
+          </div>
+          <div class="layui-inline">
+            <label class="layui-form-label">玩家名称</label>
+            <div class="layui-input-inline">
+               <input  class="layui-input  layui-hide" name="Name"  type="text" value="{$data.Name}">
+               <input  class="layui-input"  value="{$data.Name}" disabled>
+            </div>
+          </div>
+        </div>
+        
+        <div class="layui-form-item">
+          <div class="layui-inline">
+            <label class="layui-form-label">活动排名</label>
+            <div class="layui-input-inline">
+               <input  class="layui-input  layui-hide" name="Rank"  type="text" value="{$data.Rank}">
+               <input  class="layui-input"  value="{$data.Rank}" disabled>
+            </div>
+          </div>
+          <div class="layui-inline">
+            <label class="layui-form-label">玩家电话</label>
+            <div class="layui-input-inline">
+               <input  class="layui-input"  type="text" value="{$data.Phone}" disabled>
+            </div>
+          </div>
+        </div>
+        
+        <div class="layui-form-item">
+            <label class="layui-form-label">发放状态</label>
+             <div class="layui-input-inline">
+                <select id="status" disabled>
+                    <option value="0" {if $data.Status == 0}selected{/if}>待发放</option>
+                    <option value="1" {if $data.Status == 1}selected{/if}>已发放</option>
+                    <option value="2" {if $data.Status == 2}selected{/if}>拒绝发放</option>
+                </select>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">发放时间</label>
+                <div class="layui-input-inline">
+                   <input  class="layui-input"  type="text" value="{$data.GrantTime}" disabled>
+                </div>
+              </div>
+        </div>
+        
+        <div class="layui-form-item">
+            <label class="layui-form-label">玩家地址</label>
+            <div class="layui-input-block">
+                <textarea id="Address" autocomplete="off" class="layui-textarea" disabled>{$data.Address}</textarea>
+            </div>
+        </div>
+        
+        <div class="layui-form-item">
+            <label class="layui-form-label">发放备注</label>
+            <div class="layui-input-block">
+                <textarea id="GrantRemark" autocomplete="off" class="layui-textarea" disabled>{$data.GrantRemark}</textarea>
+            </div>
+        </div>
+        
+    </form>
+</div>
+{/block}
+{block name="script"}
+<script type="text/javascript">
+	var _isClickSave = false;
+        var url = "{:url('Activity/ActivityConfigEdit')}";
+	var main;
+	layui.config({
+		base: '__layui__/'
+	}).extend({
+		index: 'lib/index'
+	}).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+                var element = layui.element
+                    ,layer = layui.layer
+                    ,table = layui.table
+                    ,$ = layui.$
+                    ,form = layui.form;
+                var laydate = layui.laydate;
+		
+                element.render();
+                form.render();
+		main = {
+			bindEvent: function () {
+			},
+			submitForm: function (data) {
+			},
+
+			init: function () {
+                            main.bindEvent();
+			}
+		};
+
+		main.init();
+	});
+	function saveData(callback, layer_index, autoClose) {
+                callback();
+		parent.layer.close(layer_index);
+	}
+
+
+</script>
+{/block}

@@ -1,0 +1,396 @@
+index.html{extend name="common/base" /}
+
+{block name="title"}{:lang('首页')}{/block}
+{block name="css"}{/block}
+{block name="content"}
+<style>
+    .layadmin-dataview { height: 267px !important; }
+
+</style>
+
+<div class="layui-row layui-col-space20">
+    <!-- <div class="layui-col-md4">
+        <div class="layui-card">
+            <div class="layui-carousel layadmin-carousel layadmin-dataview" id="test1" data-anim="fade" lay-filter="LAY-index-dataview">
+                <div carousel-item id="hall">
+                    <div><i class="layui-icon layui-icon-loading1 layadmin-loading"></i></div>
+                    <div></div>
+                </div>
+            </div>
+        </div>
+    </div> -->
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('今日新增用户')}</span>
+                <span class="layuiadmin-badge">{:lang('合计')}:{$Total.TotalReg}人</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="totalReg" style="color: #009688"> {$info.regnew ?? 0} {:lang('人')}</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('今日流水')}</span>
+                <span class="layuiadmin-badge">{:lang('合计')}:{$Total.TotalBet}</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="RuninWater" style="color: #009688">{$info.RoundBets*100/100} </p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('今日活跃用户')}</span>
+                <span class="layuiadmin-badge">{:lang('合计')}:{$Total.TotalGameUser ?? 0}{:lang('人')}</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="active" style="color: #009688">{$info.GameUser}</p>
+            </div>
+        </div>
+    </div>
+   <!--  <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('总在线人数')}</span>
+                                <span class="layuiadmin-badge">合计:xxxxxx</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="online" style="color: #009688">0</p>
+            </div>
+        </div>
+    </div> -->
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('今日总充值')}</span>
+                <span class="layuiadmin-badge">{:lang('合计')}:{$Total.TotalPay}</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="totalPay" style="color: #009688">{$info.totalpayuser}</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('今日充值用户')}</span>
+                <span class="layuiadmin-badge">{:lang('合计')}:{$Total.TotolPayNumber}{:lang('人')}</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="TotolPayNumber" style="color: #009688">{$info.TotalPayNumber}</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('今日总提现')}</span>
+                <span class="layuiadmin-badge">{:lang('合计')}:{$Total.TotalOut*1.00}</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="TotalPayOut" style="color: #009688">{$info.totalpayout*1.00}</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('今日提现用户')}</span>
+                <span class="layuiadmin-badge">{:lang('合计')}:{$Total.TotalOutNum}{:lang('人')}</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="TotalOutNumber" style="color: #009688">{$info.totalpayoutnum}</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('充值营收')}</span>
+                <span class="layuiadmin-badge">{:lang('合计')}:{$Total.TotalPay-$Total.TotalOut*1.00}</span>
+
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="totalPayAout" style="color: #009688">{$info.totalpayuser-$info.totalpayout}</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('流水盈亏')}</span>
+                <span class="layuiadmin-badge">{:lang('合计')}: {$Total.Totalyk}</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="totalWater" style="color: #009688">{$info.totalyk}</p>
+            </div>
+        </div>
+    </div>
+   <!--  <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('今日税收')}</span>
+                <span class="layuiadmin-badge">{:lang('合计')}: 0</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="totalWater" style="color: #009688">0</p>
+            </div>
+        </div>
+    </div> -->
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('回报率')}</span>
+                <span class="layuiadmin-badge">{:lang('合计')}: {$Total.TotalGameRate}</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="totalGameRate" style="color: #009688">{$info.GameRate}</p>
+            </div>
+        </div>
+    </div>
+    <!-- <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('房间在线')}</span>
+                <span class="layuiadmin-badge"></span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="totalRoom" style="color: #009688">0</p>
+            </div>
+        </div>
+    </div> -->
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('游戏局数')}</span>
+                <span class="layuiadmin-badge">{:lang('合计')}:{$Total.TotalGCount}{:lang('局')}</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="totalGCount" style="color: #009688">{$info.GCount}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('日期')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off" class="layui-input">
+                    </div>
+                    <div class="layui-form-mid"> -</div>
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date2" name="end" type="text">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <div class="layui-row layui-col-space30">
+
+            <div id="alllist" class="layui-col-md12">{:lang('明细报表')}
+                <table id="proxylist" lay-filter="proxylist"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+
+
+<script>
+	layui.config({base: '__layui__/'}).extend({
+		index: 'lib/index'
+	}).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
+		var dateTime=new Date();
+		var main = {
+			renderData: function () {
+				var cols = [ //表头
+					{field: 'mydate', align: 'center', title: "{:lang('日期')}", width: 110},
+					{field: 'regnew', align: 'center', title: "{:lang('新增用户')}", minWidth: 80},
+					// {field: 'activenum', align: 'center', title: "{:lang('活跃用户')}", minWidth: 80},
+                    {field: 'GameUser', align: 'center', title: "{:lang('活跃用户')}", minWidth: 80},
+					{field: 'RoundBets', align: 'center', title: "{:lang('当日流水')}", minWidth: 80},
+					{field: 'GameRate', align: 'center', title: "{:lang('回报率')}", minWidth: 60},
+					// {field: 'ALLOnline', align: 'center',title: '峰值在线', minWidth: 150, templet: function (d) { return d.ALLOnline == null ? 0 : d.ALLOnline }},
+					// {
+					// 	field: '', align: 'center', title: "{:lang('在线峰值')}", minWidth: 80, templet: function (d) { return d.highonline == null ? 0 : d.highonline }
+					// },
+					// {
+					// 	field: '', align: 'center', title: "{:lang('房间在线')}", minWidth: 80, templet: function (d) { return d.highroom == null ? 0 : d.highroom }
+					// },
+					// {
+					// 	field: '', align: 'center', title: "{:lang('平均登录次数')}", minWidth: 120, templet: function (d) {
+					// 		if (d.totaLoginCount == 0 || d.totaLoginCount == null) return 0;
+					// 		return Math.floor(d.totaLoginCount / d.totaLoginUser * 100) / 100;
+					// 	}
+					// },
+					{field: 'GCount', align: 'center', title: "{:lang('游戏局数')}", minWidth: 80},
+					{field: 'TotalPayNumber', align: 'center', title: "{:lang('充值用户')}", minWidth: 80},
+
+					{field: 'EmailAmount', align: 'center', title: "{:lang('邮件补偿')}", minWidth: 80},
+					{field: 'totalpayuser', align: 'center', title: "{:lang('充值金额')}", minWidth: 80},
+					{field: 'totalpayoutnum', align: 'center', title: "{:lang('提现用户')}", minWidth: 80},
+					{
+						field: 'totalpayout', align: 'center', title: "{:lang('提现金额')}", minWidth: 80
+						// , templet: function (d) {                            return Math.floor(d.totalpayout * 100) / 100;                        }
+					},
+
+					{
+						field: '', align: "center", title: "{:lang('充值营收')}", minWidth: 80, templet: function (d) {
+                            var score = d.totalpayuser - d.totalpayout;
+                            score =parseFloat(score).toFixed(2);
+                            return "<span style='color: " + (score > 0 ? 'red\'>+' : 'green\'>') + score + "</span>";
+						}
+					},
+					{
+						field: 'totalyk', align: "center", title: '<span lay-tips="含购买免费游戏的盈亏">{:lang("系统盈亏")}</span>', minWidth: 80,  templet: function (d) {
+							return "<span style='color:" + (d.totalyk > 0 ? "red'>+" : "green'>") + d.totalyk + "</span>";
+							// return  "<span style='color:green'>"+d.totalyk+"</span>"
+						}
+					}
+				];
+
+				table.render({
+					elem: '#proxylist', url: "{:url('Linechart/index')}", page: true
+                    ,where: {strartdate:new Date(dateTime.setDate(dateTime.getDate()-7)).format('yyyy-MM-dd'),enddate:new Date().format('yyyy-MM-dd')}
+					, cols: [cols]                    //, where: {'status': -1}
+					, limit: 15, done: function (res) {$(".layui-table-main tr").each(function (index, val) {
+                            $($(".layui-table-fixed-l .layui-table-body tbody tr")[index]).height($(val).height());
+                            $($(".layui-table-fixed-r .layui-table-body tbody tr")[index]).height($(val).height());
+                        });
+						// $('#totalsum').html(res.other.totalsum);
+					}
+				});
+			},
+			//搜索
+			search: function () {
+				var start = $.trim($('#LAY-component-form-group-date').val());
+				var end = $.trim($('#LAY-component-form-group-date2').val());
+				var roleid = $.trim($('#roleid').val());
+				//执行重载
+				table.reload('proxylist', {
+					page: {curr: 1},
+					where: {
+						'roleid': roleid,
+						'strartdate': start,
+						'enddate': end
+					}
+				});
+			},
+			//操作事件
+			extraEvent: function () {
+
+			},
+			init: function () {
+				main.renderData();
+				main.extraEvent();
+				laydate.render({
+					elem: '#LAY-component-form-group-date'
+					, format: 'yyyy-MM-dd'
+					, max: 1
+                    , lang:'{$datelang ?: "cn"}'
+					, btns: ['clear', 'confirm']
+					, value:new Date(dateTime)
+				});
+				laydate.render({
+					elem: '#LAY-component-form-group-date2'
+					, format: 'yyyy-MM-dd'
+					, max: 1
+					, lang:'{$datelang ?: "cn"}'
+					, btns: ['clear', 'confirm']
+					, value: "{:date('Y-m-d')}"
+				});
+				$('#search').on('click', function (e) {
+					e.preventDefault();
+					main.search();
+				});
+			}
+		};
+
+		main.init();
+		layui.use(['admin', 'carousel'], function () {
+			var $ = layui.$, admin = layui.admin, carousel = layui.carousel, element = layui.element, device = layui.device();
+			//轮播切换
+			carousel.render({
+				elem: '#test1', height: '100%', width: '100%', arrow: 'none', interval: 5000, autoplay: false
+			});
+			element.render('progress');
+		});
+		layui.use(['carousel', 'echarts'], function () {
+			var $ = layui.$, carousel = layui.carousel, echarts = layui.echarts;
+			url = "/merchant/Statistical/GetOnlineDatalist";
+			var getData = function () {
+				$.ajax({
+					type: 'post',
+					url: url,
+					data: {Action: 'Graph'},
+					dataType: 'json',
+					async: false,
+					success: function (res) {
+						if (res.code === 0) {
+							//标准折线图
+							var echnormline = [], normline = [
+								{
+									title: {text: "{:lang('在线人数统计')}", x: 'center', textStyle: {fontSize: 16}},
+									tooltip: {trigger: 'axis'},
+									legend: {data: ['', '']},
+									toolbox: {
+										show: true,
+										feature: {mark: {show: true}, dataView: {show: true, readOnly: false}, magicType: {show: true, type: ['line', 'bar']}, restore: {show: true}, saveAsImage: {show: true}}
+									},
+									grid: {height: 'auto', containLabel: true},
+									xAxis: [{type: 'category', boundaryGap: false, data: res.data[0],}],
+									yAxis: [{type: 'value'}],
+									series: [{
+										name: "{:lang('总在线人数')}", type: 'line', data: res.data[1],
+										markPoint: {data: [{type: 'max', name: "{:lang('最大值')}"}, {type: 'min', name: "{:lang('最小值')}"}]},
+										markLine: {data: []}
+									},
+										{
+											name: "{:lang('房间在线人数')}",
+											type: 'line',
+											data: res.data[2],
+											markPoint: {data: [{type: 'max', name: "{:lang('最大值')}"}, {type: 'min', name: "{:lang('最小值')}"}]},
+											markLine: {data: []}
+										}
+									]
+								},
+							]
+								, elemnormline = $('#hall').children('div')
+								, rendernormline = function (index) {
+								echnormline[index] = echarts.init(elemnormline[index], layui.echartsTheme);
+								echnormline[index].setOption(normline[index]);
+								window.onresize = echnormline[index].resize;
+							};
+							if (!elemnormline[0]) return;
+							rendernormline(0);
+						}
+					}
+				});
+			};
+			getData();
+		});
+
+	});
+
+
+</script>
+{/block}

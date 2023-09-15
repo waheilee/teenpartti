@@ -1,0 +1,141 @@
+index.html{extend name="common/base" /}
+
+{block name="title"}充值汇总{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-row layui-col-space20">
+    <div class="layui-col-md3">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('总游戏充值')}</div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="total1">0</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-col-md3">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('总游戏提现')}</div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="total2">0</p>
+            </div>
+        </div>
+    </div>
+
+    <!--<div class="layui-col-md3">-->
+        <!--<div class="layui-card">-->
+            <!--<div class="layui-card-header"> {:lang('总代理提现')}</div>-->
+            <!--<div class="layui-card-body layuiadmin-card-list">-->
+                <!--<p class="layuiadmin-big-font" style="color: #009688" id="total3">0</p>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
+
+    <div class="layui-col-md3">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('总收益盈亏')}</div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="total4">0</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('日期')}</label>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off" class="layui-input">
+                    </div>
+                    <div class="layui-form-mid"> -
+                    </div>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="end" id="LAY-component-form-group-date2" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                        <button type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>
+                    </div>
+                </div>
+                                <div class="layui-inline">
+                                   <!-- <div class="layui-input-inline"> -->
+                                        <a class="layui-btn layui-btn-danger" id="output">{:lang('导出记录')}</a>
+                                    <!-- </div> -->
+                                </div>
+
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <div class="layui-row layui-col-space15">
+            <div id="alllist" class="layui-col-md12">
+                <table id="proxylist" lay-filter="proxylist"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+
+<script>
+
+	url = "{:url('Agent/AgentReport')}";
+	layui.config({base: '__layui__/'}).extend({index: 'lib/index'}).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
+		var cols = [ //表头
+			{field: 'MyDate', align: 'center', title: "{:lang('日期')}", minWidth: 110}
+			// , {field: '', align: 'center', title: "{:lang('代理商转出')}", minWidth: 200, templet: function (d) {return d.Agent / bl }}
+			, {field: 'UserPay', align: 'center', title: "{:lang('代理用户充值')}", minWidth: 200}
+			, {field: '', align: 'center', title: "{:lang('代理用户转出')}", minWidth: 200, templet: function (d) {return d.UserOut / bl }}
+			, {field: '', align: 'center', title: "{:lang('盈亏')}", minWidth: 200, templet: function (d) {return d.UserPay - d.Agent - (d.UserOut / bl)}}
+		];
+		var main = {
+			renderData: function () {
+				table.render({
+					elem: '#proxylist', url: url, page: true, cols: [cols],
+					where: {'status': -1, Action: 'list'},
+					limit: 10, done: function (res) {
+						data = res.other;
+						$('#total1').html(data.TotalPay);
+						$('#total2').html(data.TotalOut / bl);
+						$('#total3').html(data.TotalAgent / bl);
+						$('#total4').html(data.TotalPay - data.TotalOut / bl - data.TotalAgent);
+					}
+				});
+			},
+			//搜索
+			search: function () {
+				table.reload('proxylist', { //执行重载
+					page: {curr: 1},
+					where: {
+						start: $.trim($('#LAY-component-form-group-date').val()),
+						end: $.trim($('#LAY-component-form-group-date2').val()),
+					}
+				});
+			},
+			init: function () {
+				main.renderData();
+				laydate.render({elem: '#LAY-component-form-group-date', format: 'yyyy-MM-dd', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+				laydate.render({elem: '#LAY-component-form-group-date2', format: 'yyyy-MM-dd', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+				$('#search').on('click', function (e) {
+					e.preventDefault();
+					main.search();
+				});
+			}
+		};
+
+		main.init();
+	});
+</script>
+{/block}

@@ -1,0 +1,146 @@
+{extend name="common/base" /}
+
+{block name="title"}{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-card">
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script id="msg-bar" type="text/html">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">{:lang('编辑')}</a>
+</script>
+<script src="__js__/cache.js"></script>
+<script src="__js__/Barrett.js"></script>
+<script src="__js__/BigInt.js"></script>
+<script src="__js__/RSA.js"></script>
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$,
+            form = layui.form;
+        url = "{:url('CustomerServiceSystem/emailquotalist')}"
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'username', align: 'center', title: '{:lang("管理员")}', minWidth: 150},
+                    {field: 'DailyQuota', align: 'center', title: '{:lang("日额度")}', minWidth: 150},
+                    {field: 'hasQuotaToday', align: 'center', title: '{:lang("已用日额度")}', minWidth: 150},
+                    {field: 'TotalQuota', align: 'center', title: '{:lang("总额度")}', minWidth: 150},
+                    {field: 'hasQuotaTotal', align: 'center', title: '{:lang("已用总额度")}', minWidth: 150},
+                    {fixed: 'right', title: '{:lang("操作")}', align: 'center', minWidth: 150, toolbar: '#msg-bar'}
+                ];
+                table.render({
+                    elem: '#proxylist',
+                    url: url,
+                    where: {Action: 'list'},
+                    page: true, limit: 20, cols: [cols],
+                    done: function (d) {
+                        tzTbale()
+                    }
+                });
+                laydate.render({
+                    elem: '#LAY-component-form-group-date'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , lang:'{$datelang ?: "cn"}'
+                    , btns: ['clear', 'confirm']
+                    , value: new Date()
+                });
+                laydate.render({
+                    elem: '#LAY-component-form-group-date2'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , lang:'{$datelang ?: "cn"}'
+                    , btns: ['clear', 'confirm']
+                    , value: new Date()
+                });
+            },
+
+            //搜索
+            search: function () {
+
+                //执行重载
+                table.reload('proxylist', {
+                    page: {curr: 1},
+                    where: {
+
+                    }
+                });
+            },
+
+
+            //操作事件
+            extraEvent: function () {
+
+                //编辑&&删除
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data, layEvent = obj.event, tips = "";
+                    if (layEvent === 'edit') {
+                        var content = '<form class="layui-form" action="">'+
+                        '<div class="layui-form-item">'+
+                        '<label class="layui-form-label" style="width:87px">{:lang("日额度")}</label>'+
+                        '<div class="layui-input-block"><input type="text" name="title" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" value="'+data.DailyQuota+'" id="DailyQuota"></div></div>'+
+                        '<div class="layui-form-item"><label class="layui-form-label" style="width:87px">{:lang("总额度")}</label><div class="layui-input-block"><input type="text" name="title" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" id="TotalQuota" value="'+data.TotalQuota+'" ></div></div>'+
+                        '</form>';
+                        layer.open({
+                          content: content,
+                          area: ['400px', '250px'],
+                          title:'{:lang("编辑账号")}'
+                          ,btn: ['{:lang("确定")}', '{:lang("取消")}']
+                          ,yes: function(index, layero){
+                            //按钮【按钮一】的回调
+                            $.ajax({
+                                type: 'post',
+                                url: "{:url('CustomerServiceSystem/emailquotalist')}",
+                                data: {
+                                    'id':data.id,
+                                    'DailyQuota': $("#DailyQuota").val(),
+                                    'TotalQuota':$("#TotalQuota").val(),
+                                    'Action':'edit'
+                                },
+                                dataType: 'json',
+                                success: function (res) {
+                                    if (res.code == 0) {
+                                        layer.msg("{:lang('设置成功')}", {icon: 1, time: 1000}, function () {
+                                            $(".layui-laypage-btn")[0].click();
+                                            layer.closeAll();
+                                        });
+                                    } else {
+                                        layer.msg(res['msg'], {icon: 5});
+                                    }
+                                }
+                            });
+                          }
+                          ,btn2: function(index, layero){
+                             layer.closeAll();
+                          }
+                        });
+                    }
+                });
+            },
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

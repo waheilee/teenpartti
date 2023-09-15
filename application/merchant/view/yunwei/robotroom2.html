@@ -1,0 +1,163 @@
+{extend name="common/base" /}
+
+{block name="title"}超级玩家列表{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-body">
+        <!--<a style="margin-bottom: 10px;" class="layui-btn" onclick="x_admin_show('添加房间机器人','addRobot.html', $(window).width()*0.5, 760)">-->
+        <a style="margin-bottom: 10px;" class="layui-btn" onclick="x_admin_show('添加房间机器人','addRobot.html', '', 760)">
+            <i class="layui-icon layui-icon-add-circle"></i>
+        </a>
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script type="text/html" id="msg-bar">
+    <!--<a class="layui-btn layui-btn-xs" lay-event="edit"><i class="layui-icon layui-icon-edit"></i></a>-->
+    <!--<a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete"><i class="layui-icon layui-icon-delete"></i></a>-->
+    <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="activity">激活</a>
+    <a class="layui-btn layui-btn-xs" lay-event="edit">修改</a>
+    <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">删除</i></a>
+</script>
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            //渲染数据
+            renderData : function() {
+                var cols = [ //表头
+                    {field: 'roomid', title: '房间ID', minWidth:80}
+                    ,{field: 'roomname', title: '游戏房间名称', minWidth:200}
+                    ,{field: 'maxcount', title: '最大机器人数', minWidth:120}
+                    ,{field: 'robotwinweighted', title: '胜利权值', minWidth:100}
+                    ,{field: 'robotwinmoney', title: '需要赢的钱数', minWidth:120}
+                    ,{field: 'servicetables', title: '服务的桌子数', minWidth:120}
+                    , {fixed: 'right', title:'操作', align:'center', minWidth:100, toolbar: '#msg-bar'}
+                ];
+                table.render({
+                    elem: '#proxylist'
+
+                    , url: "{:url('yunwei/robotroom2')}" //数据接口
+                    , page: true //开启分页
+                    , limit:15
+                    , cols: [cols]
+                    , done: function (d) {
+                        tzTbale()
+                    }
+                });
+            },
+
+            //搜索
+//            search : function() {
+//                var roleid = $.trim($('#roleid').val());
+//                if (isNaN(roleid)) {
+//                    layer.msg('请输入正确的ID', {icon: 5});
+//                    return false;
+//                }
+//                //执行重载
+//                table.reload('proxylist', {
+//                    page: {
+//                        curr: 1 //重新从第 1 页开始
+//                    },
+//                    where: {
+//                        'roleid':roleid
+//                    }
+//                });
+//            },
+
+            //操作事件
+            extraEvent : function () {
+                //编辑
+                table.on('tool(proxylist)', function(obj) {
+                    var data = obj.data //获得当前行数据
+                        ,layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象 activity
+                    if (layEvent === 'edit') {
+//                        x_admin_show('编辑超级玩家', 'editSuper.html?roleid='+data.roleid+'&rate='+data.rate, '', 270);
+                        x_admin_show('编辑房间机器人', 'editRobot.html?roomid='+data.roomid, '', 760);
+                    }else if (layEvent === 'activity'){
+                        layer.confirm("确定激活？",{btn: ['确认','取消']}, function() {
+                            $.ajax({
+                                type: 'post',
+//                                url: "{:url('player/deleteSuper')}",
+                                url: "{:url('yunwei/activeRoomRobot')}",
+                                data: {
+                                    'roomid': data.roomid
+                                },
+                                dataType: 'json',
+                                success: function (res) {
+                                    if (res.code === 0) {
+                                        layer.msg(res.msg, {icon: 6,time:1000}, function() {
+                                            window.location.reload();
+                                        });
+                                    } else {
+                                        layer.msg(res.msg, {icon: 5});
+                                    }
+                                }
+                            });
+                        });
+                    }
+                    else if (layEvent === 'delete') { //删除
+                        layer.confirm("{:lang('确认删除这条记录？')}",{btn: ['确认','取消']}, function() {
+                            $.ajax({
+                                type: 'post',
+//                                url: "{:url('player/deleteSuper')}",
+                                url: "{:url('yunwei/deleteRobot')}",
+                                data: {
+                                    'roomid': data.roomid
+                                },
+                                dataType: 'json',
+                                success: function (res) {
+                                    if (res.code === 0) {
+                                        layer.msg(res.msg, {icon: 6,time:1000}, function() {
+                                            window.location.reload();
+                                        });
+                                    } else {
+                                        layer.msg(res.msg, {icon: 5});
+                                    }
+                                }
+                            });
+                        });
+                    }
+                });
+            },
+
+            //绑定事件
+//            bindEvent : function () {
+//                $('#search').on('click', function(e) {
+//                    e.preventDefault();
+//                    main.search();
+//                });
+//            },
+
+            //初始化
+            init : function() {
+                this.renderData();
+                this.extraEvent();
+//                this.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

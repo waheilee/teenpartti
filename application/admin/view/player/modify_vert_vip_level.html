@@ -1,0 +1,211 @@
+{extend name="common/base" /}
+
+{block name="title"}vip等级修改{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('player/modifyVertVipLevel')}" method="post" id="addProxy" >
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('VIP等级')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="VipLevel" name='VipLevel'  value="{$config.VipLevel}"  autocomplete="off" class="layui-input" readonly="readonly" />
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('需达到的流水')}：</label>
+        <div class="layui-input-block">
+            <input type="number" id="NeedPoint" name='NeedPoint'   value="{$config.NeedPoint}"  autocomplete="off" class="layui-input"
+                   lay-verify="required|number"/>
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('提现手续费')}%：</label>
+        <div class="layui-input-block">
+            <input type="number" id="ServiceFeeRate" name='ServiceFeeRate'   value="{$config.ServiceFeeRate}"  autocomplete="off" class="layui-input"   lay-verify="required|number"/>
+        </div>
+    </div>
+
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('每日可提现次数')}：</label>
+        <div class="layui-input-block">
+            <input type="number" id="DayMaxWithdrawTimes" name='DayMaxWithdrawTimes'   value="{$config.DayMaxWithdrawTimes}"  autocomplete="off" class="layui-input"   lay-verify="required|number"/>
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('提现单笔限额')}：</label>
+        <div class="layui-input-block">
+            <input type="number" id="WithdrawSingleLimit" name='WithdrawSingleLimit'   value="{$config.WithdrawSingleLimit}"  autocomplete="off" class="layui-input"   lay-verify="required|number"/>
+        </div>
+    </div>
+
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('每日提现限额')}：</label>
+        <div class="layui-input-block">
+            <input type="number" id="DayWithdrawLimit" name='DayWithdrawLimit'   value="{$config.DayWithdrawLimit}"  autocomplete="off" class="layui-input"   lay-verify="required|number"/>
+        </div>
+    </div>
+
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('每笔充值赠送')}%：</label>
+        <div class="layui-input-block">
+            <input type="number" id="ChargeExtraAwardRate" name='ChargeExtraAwardRate'   value="{$config.ChargeExtraAwardRate}"  autocomplete="off" class="layui-input"   lay-verify="required|number"/>
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('七日签到奖励(7天奖励用逗号,隔开)')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="DayAward" name='DayAward'  value="{$config.DayAward}"  autocomplete="off" class="layui-input"  />
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('投注流水返利')}%(Orignal,jack,slot,live,sport)：</label>
+        <div class="layui-input-block">
+            <input type="text" id="RunningReturnRate" name='RunningReturnRate'  value="{$config.RunningReturnRate}"  autocomplete="off" class="layui-input"   lay-verify="required"/>
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('每周奖励')}：</label>
+        <div class="layui-input-block">
+            <input type="number" id="WeekAward" name='WeekAward'  value="{$config.WeekAward}"  autocomplete="off" class="layui-input"
+                   lay-verify="required|number"/>
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('每月奖励')}：</label>
+        <div class="layui-input-block">
+            <input type="number" id="MonthAward" name='MonthAward'  value="{$config.MonthAward}"  autocomplete="off" class="layui-input"
+                   lay-verify="required|number"/>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('升级奖励')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="UpLevelAward" name='UpLevelAward'  value="{$config.UpLevelAward}"  autocomplete="off" class="layui-input"
+                   lay-verify="required|number"/>
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('7日内达到充值')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="SevenDaysCharge" name='SevenDaysCharge'  value="{$config.SevenDaysCharge}"  autocomplete="off" class="layui-input"
+                   lay-verify="required|number"/>
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('升级需要充值')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="NeedCharge" name='NeedCharge'  value="{$config.NeedCharge}"  autocomplete="off" class="layui-input"
+                   lay-verify="required|number"/>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('周亏损奖励')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="WeekLossRate" name='WeekLossRate'  value="{$config.WeekLossRate}"  autocomplete="off" class="layui-input"
+                   lay-verify="required|number"/>
+        </div>
+    </div>
+    <!--<div class="layui-form-item">-->
+        <!--<div class="layui-inline">-->
+            <!--<label class="layui-form-label">{:lang('随机值范围')}</label>-->
+            <!--<div class="layui-input-inline" style="width: 100px;">-->
+                <!--<input type="text" name="LimitDown" placeholder="" value="" autocomplete="off" class="layui-input" lay-verify="required|number">-->
+            <!--</div>-->
+            <!--<div class="layui-form-mid">-</div>-->
+            <!--<div class="layui-input-inline" style="width: 100px;">-->
+                <!--<input type="text" name="LimitUp" placeholder="" autocomplete="off" value="" class="layui-input" lay-verify="required|number">-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
+
+
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 30%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >{:lang('保存')}</a>
+            <a class="layui-btn layui-btn-primary layui-btn-radius" id="cancel" >{:lang('取消')}</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var layer = layui.layer
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:data.field,
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

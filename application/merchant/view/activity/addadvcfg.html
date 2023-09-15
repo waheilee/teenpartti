@@ -1,0 +1,182 @@
+{extend name="common/base" /}
+
+{block name="title"}转账{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('activity/addadvcfg')}" method="post" id="addProxy" >
+
+    <input type="hidden" name="id" id="id" value="{$info.ID}" />
+    <input type="hidden" name="AdvUrl" id="AdvUrl" value="{$info.AdvUrl}" />
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('按钮名称')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="AdvTitle" name='AdvTitle' value="{$info.AdvTitle}" lay-verify="required" placeholder="{:lang('请输入按钮名称')}" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('上传类型')}:</label>
+        <div class="layui-input-block">
+            <select name="stype" id="stype">
+                <option value="-1" >{:lang('请选择')}</option>
+                <option value="0"  {if condition="$info.type eq 0"}selected="selected" {/if}>{:lang('Notice')}</option>
+                <option value="1" {if condition="$info.type eq 1"}selected="selected" {/if}>{:lang('通道引导')}</option>
+            </select>
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('排序')}：</label>
+        <div class="layui-input-block">
+            <input type="number" id="SortId" name='SortId' value="{$info.SortId}" lay-verify="required" placeholder="{:lang('请输入排序')}" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('视频地址')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="AdvShareUrl" name='AdvShareUrl' value="{$info.AdvShareUrl}"  placeholder="{:lang('请输入视频地址')}" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('广告图片')}：</label>
+
+        <div class="layui-input-block" id="cutpic">
+            <button type="button" class="layui-btn layui-btn-primary" id="test-upload-type4"><i class="layui-icon"></i>{:lang('上传广告图片')}
+            </button>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label"></label>
+        <div class="layui-inline" id="iconpic"
+             {if condition="$info.ID eq 0" } style="display: none" {/if}>
+        <img src="{$info.AdvUrl}" height="150">
+    </div>
+
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >{:lang('保存')}</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" lay-submit="" lay-filter="cancel" id="cancel" >{:lang('取消')}</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery','upload'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,upload = layui.upload
+            ,$ = layui.$
+            ,form = layui.form;
+
+
+        upload.render({
+            elem: '#test-upload-type4'
+            , url: '{:url("Activity/uploadimg")}'
+            , accept: 'file' //普通文件
+            , exts: 'png|jpg|jpeg'
+            ,data : {'id':$('#id').val()}
+            , before: function (obj) { //obj参数包含的信息，跟 choose回调完全一致，可参见上文。
+            }
+            , done: function (res) {$(".layui-table-main tr").each(function (index, val) {
+                            $($(".layui-table-fixed-l .layui-table-body tbody tr")[index]).height($(val).height());
+                            $($(".layui-table-fixed-r .layui-table-body tbody tr")[index]).height($(val).height());
+                        });
+                //layer.close(loading);
+                if (res.code == 0) {
+                    $('#AdvUrl').val(res.data.path);
+                    $('#iconpic').html('<img src="' + res.data.path + '" width="150" height="150"/>');
+                    $('#iconpic').css('display','block');
+                    $('#iconpath').val(res.data.path);
+                    layer.msg(res.msg, {icon: 1});
+                } else {
+                    layer.msg(res.msg, {icon: 2});
+                }
+            }
+        });
+
+
+        var main = {
+            submitForm : function(data) {
+                var activityid = $.trim(data.field.id);
+                var AdvTitle = $.trim(data.field.AdvTitle);
+                var SortId = $.trim(data.field.SortId);
+                var AdvUrl = $.trim(data.field.AdvUrl);
+                var AdvShareUrl=$.trim(data.field.AdvShareUrl);
+                var stype = $.trim(data.field.stype);
+                if(AdvTitle==''){
+                    layer.alert('{:lang("请输入按钮名称!")}',{icon:5});
+                    return;
+                }
+
+                if(stype=='-1'){
+                    layer.alert('{:lang("请选择上传类型!")}',{icon:5});
+                    return;
+                }
+
+
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'id':activityid,
+                        'AdvTitle' : AdvTitle,
+                        'SortId' : SortId,
+                        'AdvUrl':AdvUrl,
+                        'stype' :stype,
+                        'AdvShareUrl':AdvShareUrl
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        var index = parent.layer.getFrameIndex(window.name); /* 先得到当前iframe层的索引 */
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.layui.table.reload('proxylist',{page:{curr:$(".layui-laypage-em").next().html()}});   //主要代码
+                                parent.layer.close(index);
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

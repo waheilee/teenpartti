@@ -1,0 +1,233 @@
+{extend name="common/base" /}
+
+{block name="title"}支付通道{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <div class="layui-card-body" >
+        <!--<a style="margin-bottom: 10px;" class="layui-btn" onclick="x_admin_show('新增微信客服','addWeixin.html', '', 500)">-->
+            <!--<i class="layui-icon layui-icon-add-circle"></i>-->
+        <!--</a>-->
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script type="text/html" id="msg-bar">
+    <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="fishrate">{:lang('比率设置')}</a>
+
+</script>
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            renderData : function() {
+                var cols = [ //表头
+                    {field: 'nRoomId', title: "{:lang('房间ID')}", minWidth:60}
+                    , {field: 'roomname', title: "{:lang('房间名称')}", minWidth:200}
+                    , {field: 'lMinStorage', title: "{:lang('系统税率')}(‰)", minWidth:200}
+                    , {field: 'lMaxStorage', title: "{:lang('彩金比率')}(‰)", minWidth:200}
+                    /*, {field: 'lHistorySumRunning', title: '总流水', minWidth:120}
+                    , {field: 'lHistorySumProfile', title: '总盈利', minWidth:120}
+                    , {field: 'lHistorySumTax', title: '总税收', minWidth:120}
+                    , {field: 'win', title: '游戏输赢', minWidth:120}*/
+                    , {field: 'nProfitPercent', title: "{:lang('难度系数')}", minWidth:200}
+
+                    ,{fixed: 'right', title:"{:lang('操作')}", align:'center', minWidth:300, toolbar: '#msg-bar'}
+                ];
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('gamectrl/fishroom')}" //数据接口
+                    , page: true //开启分页
+                    , sort: true
+                    , cols: [cols]
+                    ,done: function(res) {
+                        $('th[data-field="nCtrlValue"] span').css('color', '#FF5722');
+                        $('th[data-field="lTotalProfit"] span').css('color', '#FF5722');
+                        var orderby = res.other.orderby,
+                            asc = res.other.asc;
+                        if (orderby !== 0) {
+
+                            var fieldval = '', typeval = 'asc';
+                            if (asc === 1) {
+                                typeval = 'desc';
+                            }
+                            if (orderby === 1) {
+                                fieldval = 'nCtrlValue';
+                            } else if (orderby === 2) {
+                                fieldval = 'lTotalProfit';
+                            } else if (orderby === 3) {
+                                fieldval = 'lHistorySumTax';
+                            } else if (orderby === 4) {
+                                fieldval = 'lTotalBlackTax';
+                            }
+                            $('th[data-field='+fieldval+']').find('span.layui-table-sort').attr('lay-sort', typeval);
+                        }
+                        tzTbale();
+                    }
+                });
+            },
+
+            submitForm : function(data) {
+                var setrange = $.trim(data.field.setrange),
+                    ajustvalue = $.trim(data.field.ajustvalue),
+                    minstorage = $.trim(data.field.minstorage),
+                    maxstorage = $.trim(data.field.maxstorage),
+                    curstorage = $.trim(data.field.curstorage),
+                    percent = $.trim(data.field.percent);
+                var id=0;
+                if (setrange == 1) {
+                    id = 0;
+                } else if (setrange == 2) {
+                    id = $('#kindid').val();
+                } else if (setrange == 3) {
+                    id = $('#roomid').val();
+                }
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'setrange' : setrange,
+                        'id' : id,
+                        'percent' : percent,
+                        'ajustvalue' : ajustvalue,
+                        'curstorage' : curstorage,
+                        'minstorage' : minstorage,
+                        'maxstorage' : maxstorage,
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg("{:lang('设置成功')}",{icon:1,time:1000}, function () {
+                                window.location.reload();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            //搜索
+            search : function() {
+                var roomid = $.trim($('#roomid2').val());
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'roomId':roomid,
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                $('#search').on('click', function(e) {
+                    e.preventDefault();
+                    main.search();
+                });
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                });
+                //监听等待开始游戏点击事件
+                form.on('select(setrange)', function (data) {
+                    var value = data.value;
+                    if (value == 1) {
+                        $('#showkindidname').hide();
+                        $('#showroomidname').hide();
+                    } else if (value==2){
+                        $('#showroomidname').hide();
+                        $('#showkindidname').show();
+                    } else if (value==3){
+                        $('#showroomidname').show();
+                        $('#showkindidname').hide();
+                    } else {
+                        $('#showkindidname').hide();
+                        $('#showroomidname').hide();
+                    }
+                });
+            },
+
+
+            //操作事件
+            extraEvent : function () {
+                //编辑
+                table.on('tool(proxylist)', function(obj) {
+                    var data = obj.data //获得当前行数据
+                        ,layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                     if (layEvent === 'fishrate') {
+                        x_admin_show("{:lang('捕鱼比率设置')}",'fishrate?id='+data.nRoomId+'&roomname='+data.roomname+'&nSysTaxRatio='+data.lMinStorage+'&nCaiJinRatio='+data.lMaxStorage+'&nExplicitTaxRatio='+data.lTotalBlackTax,'',500);
+                    }
+                });
+
+                //排序
+                table.on('sort(proxylist)', function(obj) {
+                    var field = obj.field;
+                    var type  = obj.type;
+                    var fieldval = 0, typeval = 0;
+                    if (type === 'desc') {
+                        typeval = 1;
+                    }
+                    if (field === 'nCtrlValue') {
+                        fieldval = 1;
+                    } else if (field === 'lTotalProfit') {
+                        fieldval = 2;
+                    } else if (field === 'lHistorySumTax') {
+                        fieldval = 3;
+                    } else if (field === 'lTotalBlackTax') {
+                        fieldval = 4;
+                    }
+
+                    var roomid = $.trim($('#roomid2').val());
+
+                    //执行重载
+                    table.reload('proxylist', {
+                        page: {
+                            curr: 1 //重新从第 1 页开始
+                        },
+                        where: {
+                            'asc':typeval,
+                            'roomid':roomid,
+                            'orderby':fieldval,
+                        }
+                    });
+
+                });
+            },
+
+            init : function() {
+                main.renderData();
+                main.bindEvent();
+                main.extraEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

@@ -1,0 +1,265 @@
+{extend name="common/base" /}
+{block name="title"}购买免费游戏明细{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-row layui-col-space20">
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> 总消耗</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="total_Water" style="color: #009688">0</p></div>
+        </div>
+    </div>
+
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> 总产出</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="totalResult" style="color: #009688">0</p></div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> 总盈亏</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="total_SGD" style="color: #009688">0</p></div>
+        </div>
+    </div>
+
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> 游戏总局数</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="total_gcount" style="color: #009688">0</p></div>
+        </div>
+    </div>
+
+</div>
+
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">玩家ID</label>
+                    <div class="layui-input-inline"><input autocomplete="off" class="layui-input" id="RoleID" lay-verify="number" name="RoleID" type="text"></div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">房间</label>
+                    <div class="layui-input-inline">
+                        <select id="RoomID" name="RoomID">
+                            <option value="0">所有</option>
+                            <!-- foreach循环 -->
+                            {foreach name="selectData" item="vo"}
+                            <option value="{$vo.RoomID}">{$vo.RoomName}</option>
+                            {/foreach}
+                            <!-- for循环 -->
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">日期</label>
+                    <div class="layui-input-inline" style="width: 150px;">
+                        <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date" name="start" type="text">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date2" name="end" type="text">
+                    </div>
+                </div>
+
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" data-type="reload" id="search">搜索</a>
+                        <!--                        <a class="layui-btn" id="output">导出记录</a>-->
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+
+<script id="msg-bar" type="text/html">
+    <input type="button" class="layui-btn layui-btn-xs" lay-event="roomInfo" value="查看明细">
+</script>
+<script>
+
+	url = "{:url('Statistical/FreeGameRecord')}";
+	layui.config({
+		base: '__layui__/' //静态资源所在路径
+	}).extend({
+		index: 'lib/index' //主入口模块
+	}).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
+		var main = {
+			renderData: function () {
+				var cols = [ //表头
+					{field: 'ID', align: "center", title: 'ID', width: 110, sort: true},
+					{field: 'RoundIndex', align: "center", title: 'Index', width: 110},
+					{field: 'RoleID', align: "center", title: '用户ID', width: 110},
+					{field: 'RoomID', align: "center", title: '房间ID', width: 110},
+					{field: 'GameRunning', align: "center", title: '消耗', width: 110,sort: true},
+					{field: 'RoundResult', align: "center", title: '产出', width: 110,sort: true},
+					{
+						field: '', align: "center", title: '盈亏', width: 110, templet: function (d) {
+							return (d.GameRunning * 100 - d.RoundResult * 100) / 100;
+						}
+					},
+					{field: 'AddTime', align: "center", title: '时间', width: 160},
+					{fixed: 'right', align: "center", title: '操作', align: 'center', width: 100, toolbar: '#msg-bar'},
+				];
+				table.render({
+					elem: '#proxylist', url: url, where: {
+						Action: 'list'
+					}, page: true, limit: 15, cols: [cols], sort: true, autoSort: false,
+					done: function (res, curr, count) {
+						$('#total_Water').html(res.other.TotalWater);
+						$('#totalResult').html(res.other.Result);
+						$('#total_SGD').html( (res.other.TotalWater - res.other.Result ).toFixed(2));
+						$('#total_gcount').html(res.count);
+						tzTbale()
+
+					}
+				});
+			},
+
+			//搜索
+			search: function () {
+				//执行重载
+				table.reload('proxylist', {
+					page: {curr: 1},
+					where: {
+						RoleID: $.trim($('#RoleID').val()),
+						RoomID: $.trim($('#RoomID').val()),
+						strartdate: $.trim($('#LAY-component-form-group-date').val()),
+						enddate: $.trim($('#LAY-component-form-group-date2').val()),
+					},
+					done: function (res, curr, count) {
+						$('#total_Water').html(res.other.TotalWater);
+						$('#totalResult').html(res.other.Result);
+						$('#total_SGD').html( (res.other.TotalWater - res.other.Result ).toFixed(2));
+						$('#total_gcount').html(res.count);
+
+					}
+				});
+			},
+
+			//操作事件
+			extraEvent: function () {
+
+				//排序
+				table.on('sort(proxylist)', function (obj) {
+					//执行重载
+					table.reload('proxylist', {
+						initSort: obj,
+						page: {curr: 1},
+						where: {
+							RoleID: $.trim($('#RoleID').val()),
+							RoomID: $.trim($('#RoomID').val()),
+							orderytpe: obj.type,
+							orderby: obj.field,
+						}
+					});
+
+				});
+				//编辑&&删除
+				table.on('tool(proxylist)', function (obj) {
+					var data = obj.data, layEvent = obj.event;
+					if (layEvent === 'roomInfo') {
+						// console.info(data);
+						title = data.RoleID + "-明细";
+						url = "{:url('Statistical/FreeGameRecord')}" + "?Action=infoView" + "&RoleID=" + data.RoleID + "&start=" + $.trim($('#LAY-component-form-group-date').val()) + "&end=" + $.trim($('#LAY-component-form-group-date2').val());
+						x_admin_show(title, url, 1000, 768);
+					}
+
+				});
+			},
+
+			init: function () {
+				main.renderData();
+				main.extraEvent();
+				laydate.render({
+					elem: '#LAY-component-form-group-date'
+					, format: 'yyyy-MM-dd'
+					, max: 1
+					, lang:'{$datelang ?: "cn"}'
+					, btns: ['clear', 'confirm']
+					, value: new Date()
+				});
+				laydate.render({
+					elem: '#LAY-component-form-group-date2'
+					, format: 'yyyy-MM-dd'
+					, max: 1
+					, lang:'{$datelang ?: "cn"}'
+					, btns: ['clear', 'confirm']
+					, value: new Date()
+				});
+				$('#search').on('click', function (e) {
+					e.preventDefault();
+					main.search();
+				});
+			}
+		};
+
+		main.init();
+	});
+	$('#output').click(function () {
+		where = {
+			roleid: $.trim($('#roleid').val()),
+			roomid: $.trim($('#roomid').val()),
+			strartdate: $.trim($('#LAY-component-form-group-date').val()),
+			enddate: $.trim($('#LAY-component-form-group-date2').val()),
+			limit: 10000000,
+			Action: 'exec',
+		}
+
+		download();
+
+		function download() {
+			var params = Object.keys(where).map(function (key) {
+				return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+			}).join("&");
+			url = url + "?" + params;
+			$.ajax({
+				type: 'POST',
+				dataType: 'json',
+				async: true,
+				url: url, // 生成文件，保存在服务器
+				success: function (data) {
+					var result = data;
+					// console.info(data);
+					switch (result["code"]) {
+						case 0:
+							parent.parent.open(url + "&exec=1&outall=true");
+							break;
+						case 1:
+							layer.msg(result["message"]);
+							break;
+						case 2:
+							layer.confirm(result['message'], {
+								btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
+							}, function () {
+								parent.parent.open(url + "&exec=1&outall=true");
+								layer.msg('', {icon: 6, time: 1000}, function () {
+									window.location.reload();
+								});
+							});
+					}
+				},
+				error: function (XMLHttpRequest, textStatus, e) {
+					console.log("oilDetection.js  method exportOilDetection" + e);
+				}
+			});
+		}
+	});
+</script>
+{/block}

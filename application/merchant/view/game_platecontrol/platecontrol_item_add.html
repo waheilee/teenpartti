@@ -1,0 +1,87 @@
+{extend name="common/base" /}
+
+{block name="title"}新增超级玩家{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<style type="text/css" media="screen">
+    header {
+        color: black;
+    }
+</style>
+<!-- LimitDown	LimitUp	WinRate -->
+<div class="x-body">
+    <form class="layui-form" id='mainForm' method="post" action="">
+        <div class="layui-form-item">
+            <label class="layui-form-label">{:lang('盘控类型')}</label>
+            <div class="layui-input-block">
+                <select name="Watertype" lay-verify="">
+                    <option value="0">{:lang('收水')}</option>
+                    <option value="1">{:lang('放水')}</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">{:lang('盘控值')}</label>
+            <div class="layui-input-block">
+                <input type="text" name="Water" lay-verify="required|number" autocomplete="off" placeholder="" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button style="margin-left: 15%" class="layui-btn" lay-submit="" lay-filter="toSubmit">{:lang('提交')}</button>
+                <button id="reset" type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+{/block}
+{block name="script"}
+<script type="text/javascript">
+	layui.config({base: '__layui__/'}).extend({
+		index: 'lib/index'
+	}).use(['table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+		var form = layui.form, $ = layui.$, layer = layui.layer;
+		var main = {
+			submitForm: function (data) {
+				console.info(data);
+				$.ajax({
+					type: 'post',
+					url: data.form.action,
+					data: data.field,
+					dataType: 'json',
+					success: function (res) {
+						if (res.code === 0) {
+							layer.msg(res.msg, {icon: 1, time: 1000}, function () {
+								x_admin_close();
+								parent.location.reload();
+							});
+						} else {
+							layer.msg(res.msg, {icon: 2});
+						}
+					}
+				});
+			},
+			bindEvent: function () {
+				form.on('submit(toSubmit)', function (data) {
+					main.submitForm(data);
+					return false;
+				});
+				$('#cancel').on('click', function (e) {
+					e.preventDefault();
+					x_admin_close();
+				})
+			},
+			init: function () {
+				main.bindEvent();
+			}
+		};
+		main.init();
+	});
+
+
+</script>
+{/block}

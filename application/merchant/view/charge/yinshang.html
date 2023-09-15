@@ -1,0 +1,171 @@
+{extend name="common/base" /}
+
+{block name="title"}金币日志{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<div class="layui-card">
+    <div class="layui-card-header">
+        总金额
+        <span class="layui-badge layui-bg-blue layuiadmin-badge">总</span>
+    </div>
+    <div class="layui-card-body layuiadmin-card-list">
+        <p class="layuiadmin-big-font" style="color:#009688" id="totalmoney">0</p>
+
+    </div>
+</div>
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">玩家ID</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="roleid" name="roleid" lay-verify="number" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">日期</label>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="end" id="LAY-component-form-group-date2" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">搜索</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <div class ="layui-row layui-col-space30">
+        <!--<div class="layui-col-md12">-->
+            <!--<div class="layui-card">-->
+                <!--<div class="layui-card-body">-->
+                    <!--<fieldset class="layui-elem-field">-->
+                        <!--<legend>总金额</legend>-->
+                        <!--<div class="layui-field-box">-->
+                            <!--<div class="layadmin-backlog" lay-anim="" lay-indicator="inside" lay-arrow="none" style="width: 100%; height: auto;">-->
+                                <!--<ul class="layui-row layui-col-space10 layui-this">-->
+                                    <!--<li class="layui-col-xs12">-->
+                                        <!--<a href="javascript:;" class="layadmin-backlog-body">-->
+                                            <!--<h3></h3>-->
+                                            <!--<p>-->
+                                                <!--<cite id="totalmoney"></cite></p>-->
+                                        <!--</a>-->
+                                    <!--</li>-->
+                                <!--</ul>-->
+                            <!--</div>-->
+                        <!--</div>-->
+                    <!--</fieldset>-->
+                <!--</div>-->
+            <!--</div>-->
+        <!--</div>-->
+
+        <div id="alllist" class="layui-col-md12">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'roleid', title: '用户ID', minWidth:100}
+                    ,{field: 'rolename', title: '角色名字', minWidth: 120}
+                    , {field: 'changemoney', title: '金额', minWidth: 120}
+                    , {field: 'balance', title: '余额', minWidth: 120}
+                    , {field: 'addtime', title: '时间', minWidth: 120}
+                    , {field: 'description', title: '备注', minWidth:250}
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('charge/yinshang')}" //数据接口
+                    , page: true //开启分页
+                    , limit:15
+                    , cols: [cols]
+                    ,done : function(res) {
+                        $('#totalmoney').html(res.other)
+                    }
+                });
+            },
+
+            //搜索
+            search: function () {
+                var roleid = $.trim($('#roleid').val());
+                var strartdate = $.trim($('#LAY-component-form-group-date').val());
+                var enddate = $.trim($('#LAY-component-form-group-date2').val());
+
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'roleid': roleid,
+                        'strartdate': strartdate,
+                        'enddate': enddate,
+                    }
+                });
+            },
+
+            //操作事件
+            extraEvent: function () {},
+
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+                laydate.render({
+                    elem: '#LAY-component-form-group-date'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , btns: ['clear', 'confirm']
+                });
+                laydate.render({
+                    elem: '#LAY-component-form-group-date2'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , btns: ['clear', 'confirm']
+                });
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

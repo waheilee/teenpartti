@@ -1,0 +1,417 @@
+{extend name="common/base" /}
+
+{block name="title"}向玩家转账{/block}
+{block name="css"}
+<style type="text/css">
+    .layui-table-cell {
+        height: auto;
+    }
+</style>
+{/block}
+{block name="content"}
+<div class="layui-row layui-col-space20" style="display: none">
+    <div class="layui-col-md6">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                {:lang('总转入')}
+                <span class="layui-badge layui-bg-blue layuiadmin-badge">{:lang('转入')}</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #ff0000;" id="total">0</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-col-md6">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                {:lang('总转出')}
+                <span class="layui-badge layui-bg-blue layuiadmin-badge">{:lang('转出')}</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: red" id="totalout">0</p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('玩家ID')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="roleid" name="roleid" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">
+                        {:lang('时间')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                    <div class="layui-form-mid"> -</div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="end" id="LAY-component-form-group-date2" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('支付通道')}</label>
+                    <div class="layui-input-inline">
+                        <select name="condition" id="operorid" name="classid">
+                            <option value="0" selected>{:lang('全部')}</option>
+                            {if !empty($channellist)}
+                            {foreach $channellist as $k => $v}
+                            <option value="{$v.ChannelId}">{$v.ChannelName}</option>
+                            {/foreach}
+                            {/if}
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('操作人')}</label>
+                    <div class="layui-input-inline">
+                        <select name="condition" id="checkUser" name="checkUser">
+                            <option value="0" selected>{:lang('全部')}</option>
+                            {if !empty($checkUser)}
+                            {foreach $checkUser as $k => $v}
+                            {if ($v==$adminuser)}<option value="{$v}" selected>{$v}</option>
+                            {else}<option value="{$v}">{$v}</option>
+                            {/if}
+                            {/foreach}
+                            {/if}
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                        <button type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+
+        <div class="layui-card-body">
+            <div id="alllist">
+                <table id="proxylist" lay-filter="proxylist"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+
+<script type="text/html" id="msg-bar">
+    <!--    <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="detail">{:lang('详情')}</a>-->
+    <a class="layui-btn layui-btn-xs" lay-event="edit">{:lang('同意')}</a>
+    <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="refuse">{:lang('拒绝')}</a>
+    <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="freeze">{:lang('没收')}</a>
+</script>
+<script type="text/html" id="comment">
+    <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="comment">{:lang('查看')}</a>
+</script>
+<script>
+    url = "{:url('playertrans/applyPass')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$,
+            form = layui.form;
+        var main = {
+            renderData: function () {
+                //设置表头
+                var cols = [
+                    {field: 'OrderNo', align: 'center', title: "{:lang('订单号')}", minWidth: 200},
+                    {
+                        field: 'AccountID', align: 'center', title: "{:lang('玩家ID')}", minWidth: 100, templet: function (d) {
+                            return " <a class=\"layui-bg-green\" lay-event=\"info\">" + d.AccountID + "</a>";
+                        }
+                    },
+                    {
+                        field: 'cheatLevelDesc', align: 'center', title: "{:lang('异常状态')}", width: 150, templet: function (d) {
+                            var url = '{"player/gamelog2"}?roleid=' + d.AccountID;
+                            if (d.cheatLevelDesc != '') {
+                                return "<a  class=\"layui-btn layui-btn-xs layui-bg-red\" lay-event=\"gamelog\">" + d.cheatLevelDesc + "</a>";
+                            }
+                            else {
+                                return '<span style="color:green">{:lang(\'未标记\')}</span>';
+                            }
+                        }
+                    },
+                    {
+                        field: 'iMoney', align: 'center', title: "{:lang('提现金额')}", minWidth: 150, templet: function (d) {
+                            return Math.floor(d.iMoney * 100) / 100;
+                        }
+                    },
+                    {field: 'comment', align: 'center', title: "{:lang('备注')}", minWidth: 200},
+                    // {field: 'Descript', align: 'center', title: "{:lang('备注')}", minWidth: 100, templet: function (d) {
+                    //         return "<a class=\"layui-btn layui-btn-xs\" lay-event=\"comment\">{:lang('查看')}</a>";
+                    //     }
+                    // },
+                    {
+                        field: 'Tax', align: 'center', title: "{:lang('税收')}", minWidth: 150, templet: function (d) {
+                            return Math.floor(d.Tax * 100) / 100;
+                        }
+                    },
+                    {field: 'RealPay', align: 'center', title: "{:lang('打款金额')}", minWidth: 150},
+                    {field: 'totalPay', align: 'center', title: "{:lang('总充值')}", minWidth: 150},
+                    {field: 'TotalDS', align: 'center', title: "{:lang('总提现')}", minWidth: 150},
+                    {field: 'EamilMoney', align: 'center', title: "{:lang('邮件补偿')}", minWidth: 150},
+                    {
+                        field: 'status', align: 'center', title: "{:lang('订单状态')}", minWidth: 200, templet: function (d) {
+                            switch (Number(d.status)) {
+                                case 0:
+                                    return '<span style="color: red">' + d.orderType + '</span>';
+                                case 1:
+                                    return '<span style="color:yellowgreen">' + d.orderType + '</span>';
+                                case 100:
+                                    return '<span style="color: red">' + d.orderType + '</span>';
+                                default:
+                                    return d.orderType;
+                            }
+                        }
+                    },
+                    {field: 'checkUser', align: 'center', title: "{:lang('操作人')}", minWidth: 150},
+                    {
+                        field: 'PayWay', align: 'center', title: "{:lang('代付类型')}", minWidth: 150, templet: function (d) {
+                            if (d.PayWay == 1) {
+                                return '<span style="color: #e60000">{:lang("UPI代付")}</span>';
+                            }
+                            else if (d.PayWay == 2) {
+                                return '<span style="color: #e60000">IMPS</span>';
+                            }
+                        }
+                    },
+                    {
+                        field: '', align: 'left', title: "{:lang('账号详情')}", width: 250, templet: function (d) {
+                            if (d.PayWay == 1) {
+                                var html = "{:lang('UPI账号')}：" + d.CardNo;
+                                return html;
+                            }
+                            else if (d.PayWay == 2) {
+                                var html = "{:lang('姓名')}：" + d.RealName + '<br/>';
+                                html += "{:lang('账号')}：" + d.CardNo + '<br/>';
+                                html += "{:lang('开户行')}：" + d.BankName + '<br/>';
+                                html += "{:lang('IFSC码')}：" + d.Province + '<br/>';
+                                return html;
+                            }
+                        }
+                    },
+                    {field: 'AddTime', align: 'center', title: "{:lang('申请时间')}", minWidth: 180},
+                    {field: 'TransactionNo', align: 'center', title: "{:lang('三方单号')}", minWidth: 200},
+                    {field: 'countryCode', align: 'center', title: "{:lang('国家代码')}", minWidth: 120},
+
+                    {
+                        fixed: 'right', title: '操作', align: 'center', minWidth: 350, templet: function (d) {
+                            status = Number(d.status);
+                            str = "";
+                            if (status == 0) {
+                                str += "<a class=\"layui-btn layui-btn-xs\" lay-event=\"edit\">{:lang('审核通过')}</a>" +
+                                    "<a class=\"layui-btn layui-btn-xs layui-btn-danger \" lay-event=\"refuse\">{:lang('审拒绝核通过')}</a>" +
+                                    "    <a class=\"layui-btn layui-btn-xs layui-btn-warm \" lay-event=\"freeze\">{:lang('没收')}</a>";
+                            } else if (status == 1 ) {
+                                str += "<a class=\"layui-btn layui-btn-xs \" lay-event=\"fininsh\">{:lang('提交并完成订单')}</a>" +
+                                    "<a class=\"layui-btn layui-btn-xs layui-btn-danger \" lay-event=\"refuse\">{:lang('拒绝')}</a>" +
+                                    "    <a class=\"layui-btn layui-btn-xs layui-btn-warm \" lay-event=\"freeze\">{:lang('没收')}</a>";
+                            } else {
+
+                            }
+                            return str;
+                            // if (status > 0) {
+                            //     str +=
+                            //         "    <a class=\"layui-btn layui-btn-xs layui-btn-danger layui-disabled\" >拒绝</a>" +
+                            //         "    <a class=\"layui-btn layui-btn-xs layui-btn-warm layui-disabled\">没收</a>";
+                            //     return str;
+                            // } else
+                            //     return str +=
+                            //         "    <a class=\"layui-btn layui-btn-xs layui-btn-danger \" lay-event=\"refuse\">拒绝</a>\n" +
+                            //         "    <a class=\"layui-btn layui-btn-xs layui-btn-warm\" lay-event=\"freeze\">没收</a>";
+
+                        }
+                    }
+                ];
+                table.render({
+                    elem: '#proxylist', url: url, page: true, limit: 15, cols: [cols], where: {Status: 1}
+                    , done: function (res, curr, count) {
+                        $('#total').html(res.other.alltotal);
+                        $('#totalout').html(res.other.alltotalout);
+                        var wrong = $('td[data-field="wrong"]');
+                        for (var i = 0; i < wrong.length; i++) {
+                            if ($(wrong[i]).find('div').html() != '') {
+                                $(wrong[i]).parent().css('color', '#FF5722');
+                            } else {
+                            }
+                        }
+
+                        //表头部分
+                        //动态监听表头高度变化，冻结行跟着改变高度
+                        $(".layui-table-header  tr").resize(function () {
+                            $(".layui-table-header  tr").each(function (index, val) {
+                                $($(".layui-table-fixed .layui-table-header table tr")[index]).height($(val).height());
+                            });
+                        });
+                        //初始化高度，使得冻结行表头高度一致
+                        $(".layui-table-header  tr").each(function (index, val) {
+                            $($(".layui-table-fixed .layui-table-header table tr")[index]).height($(val).height());
+                        });
+
+                        //表体部分
+                        //动态监听表体高度变化，冻结行跟着改变高度
+                        $(".layui-table-body  tr").resize(function () {
+                            $(".layui-table-body  tr").each(function (index, val) {
+                                $($(".layui-table-fixed .layui-table-body table tr")[index]).height($(val).height());
+                            });
+                        });
+                        //初始化高度，使得冻结行表体高度一致
+                        $(".layui-table-body  tr").each(function (index, val) {
+                            $($(".layui-table-fixed .layui-table-body table tr")[index]).height($(val).height());
+                        });
+                    }
+                });
+            },
+            //搜索
+            search: function () {
+                var roleid = $.trim($('#roleid').val());
+                var start = $.trim($('#LAY-component-form-group-date').val());
+                var end = $.trim($('#LAY-component-form-group-date2').val());
+                var payway = $.trim($('#operorid').val());
+                var checkUser = $.trim($('#checkUser').val());
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'roleid': roleid,//AccountID
+                        'start': start, //AddTime
+                        'end': end,
+                        'payway': payway,//支付方式
+                        'checkUser': checkUser,
+                    }
+                });
+            },
+
+            //操作事件
+            extraEvent: function () {
+                //编辑
+                table.on('tool(proxylist)', function (obj) {
+                    //获得当前行数据
+                    // console.info(obj.data)
+                    if (obj.event === 'info') {
+                        var url = "{:url('player/playerDetail')}" + '?roleid=' + obj.data.AccountID;
+                        x_admin_show('{:lang(\'玩家详情\')}', url, $(window).width() * 0.7, $(window).height() * 0.6);
+                        return;
+                    }
+                    if (obj.event === 'detail') {
+                        var url = 'basePlayer?roleid=' + obj.data.AccountID;
+                        x_admin_show('{:lang("玩家详情")}', url, $(window).width() * 0.5, ($(window).height() * 0.5));
+                    } else if (obj.event === 'refuse') {
+                        x_admin_show('{:lang("拒绝提现")}', 'refuse?UserID=' + obj.data.AccountID + '&OrderNo=' + obj.data.OrderNo + '&status=' + obj.data.status + '&description=' + obj.data.Descript, '', 250);
+                    } else if (obj.event === 'freeze') {
+                        x_admin_show('{:lang("没收")}', 'freeze?UserID=' + obj.data.AccountID + '&OrderNo=' + obj.data.OrderNo + '&status=' + obj.data.status + '&description=' + obj.data.Descript, '', 250);
+                    } else if (obj.event === 'edit') {
+                        x_admin_show('{:lang("同意")}', 'agree?UserID=' + obj.data.AccountID + '&OrderNo=' + obj.data.OrderNo + '&status=' + obj.data.status + '&description=' + obj.data.Descript, '', 250);
+                    } else if (obj.event === 'third') {
+                        x_admin_show('{:lang("选择提现通道")}', 'thirdpay?UserID=' + obj.data.AccountID + '&OrderNo=' + obj.data.OrderNo + '&status=' + obj.data.status + '&description=' + obj.data.Descript, '', 300);
+                    }
+                    else if (obj.event === 'gamelog') {
+                        var url = "{:url('player/gamelog2')}?roleid=" + obj.data.AccountID;
+                        window.parent.layui.index.openTabsPage(url, obj.data.AccountID + "-{:lang('玩家游戏日志')}");
+                    }
+                    else if (obj.event === 'comment') {
+
+                        $.ajax({
+                            url:'/admin/player/getCommentList',
+                            async: true,
+                            type:"POST",
+                            dataType:'json',
+                            data:{roleid:obj.data.AccountID,page:1,limit:999,type:1},
+                            success:function(ret){
+                                var html = '<div style="padding:10px"><table class="layui-table"><colgroup><col width="200"></colgroup><thead></thead><tbody>';
+                                for (var i =0 ; i <=ret.data.length-1; i++) {
+                                    var j = i+1;
+                                    console.log(ret.data[i].comment)
+                                    html += '<tr><td>'+ret.data[i].comment+'</td></tr>'
+                                }
+                                html += '</tbody></table></div>';
+                                layer.open({
+                                    type: 1,
+                                    content: html //这里content是一个普通的String
+                                });
+                            }
+                        });
+
+                    }
+                    else if(obj.event=='fininsh') {
+                        layer.confirm('确认要完成吗?', {
+                            btn: ['{:lang("是")}', '{:lang("否")}'] //可以无限个按钮
+                            , btn1: function (index, layero) {
+                                $.ajax({
+                                    url: '/admin/Playertrans/testfinish',
+                                    async: true,
+                                    type: "POST",
+                                    dataType: 'json',
+                                    data: {roleid: obj.data.AccountID, orderno: obj.data.OrderNo},
+                                    success: function (res) {
+                                        if (res.code == 0) {
+                                            layer.msg("{:lang('操作成功')}", {icon: 1, time: 1000}, function () {
+                                                //window.location.reload();
+                                                table.reload("proxylist", {page: {curr: $(".layui-laypage-em").next().html()}});
+                                                layer.closeAll();
+                                            });
+                                        } else {
+                                            layer.msg(res['msg'], {icon: 5});
+                                        }
+
+
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            },
+
+
+            init: function () {
+                form.render(null, 'component-form-group');
+                laydate.render({
+                    elem: '#LAY-component-form-group-date'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , btns: ['clear', 'confirm']
+                    , type: 'datetime'
+                    // , value: new Date()
+                });
+
+                laydate.render({
+                    elem: '#LAY-component-form-group-date2'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    // , type: 'datetime'
+                    , btns: ['clear', 'confirm']
+                    , type: 'datetime'
+                    // , value: new Date()
+                });
+                main.extraEvent();
+                main.renderData();
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+        main.init();
+    });
+</script>
+{/block}

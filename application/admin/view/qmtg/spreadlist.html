@@ -1,0 +1,232 @@
+{extend name="common/base" /}
+
+{block name="title"}向玩家转账{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<div class="layui-card">
+    <div class="layui-card-header">
+        总奖励金额
+        <span class="layui-badge layui-bg-blue layuiadmin-badge">金额</span>
+    </div>
+    <div class="layui-card-body layuiadmin-card-list">
+        <p class="layuiadmin-big-font" style="color:#009688" id="lirun">0</p>
+
+    </div>
+</div>
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">玩家ID</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="roleid" name="roleid" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">搜索</a>
+                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    </div>
+                </div>
+
+
+
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <div class="layui-card-body">
+            <div class="layui-row layui-col-space15">
+                <!--<div class="layui-col-md12">-->
+                    <!--<div class="layui-card layui-carousel x-admin-carousel x-admin-backlog">-->
+                        <!--<div class="layui-card-header">-->
+                            <!--总充值-->
+                            <!--<span class="layui-badge layui-bg-blue layuiadmin-badge">金额</span>-->
+                        <!--</div>-->
+                        <!--<div class="layui-card-body layuiadmin-card-list">-->
+                            <!--<p class="layuiadmin-big-font" id="lirun" style="color:#009688">0</p>-->
+
+                        <!--</div>-->
+                    <!--</div>-->
+                <!--</div>-->
+
+                <div id="alllist" class="layui-col-md12">
+                    <table id="proxylist" lay-filter="proxylist"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+
+<script type="text/html" id="msg-bar">
+
+    <a class="layui-btn layui-btn-xs" lay-event="edit">补发</a>
+</script>
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+        var main = {
+            renderData: function () {
+                var cz = {fixed: 'right', title: '操作', align: 'center', minWidth: 200};
+                var cols = [ //表头
+
+//                    {field: 'orderno', title: '订单号', minWidth: 200}
+                     {field: 'id', title: '玩家姓名', minWidth: 80 ,hide:true}
+                     ,{field: 'roleid', title: '玩家ID', minWidth: 80}
+                    , {field: 'nickname', title: '玩家昵称', minWidth: 150}
+                    , {field: 'amount', title: '奖励金额', minWidth: 120}
+//                    , {field: 'status', title: '状态', minWidth: 120}
+                    , {
+                        field: 'status', title: '领取状态', minWidth: 120, templet: function (d) {
+                            var classname = '';
+                            if (d.status == 0) {
+//                                classname = '失败';
+                                classname = '未领取';
+                            } else if (d.status == 1) {
+//                                classname = '成功';
+                                classname = '已领取';
+                            }
+
+                            return classname;
+                        }
+                    }
+                    , {field: 'addtime', title: '添加时间', minWidth: 80}
+//                    , {fixed: 'right', title: '操作', align: 'center', minWidth: 200, toolbar: '#msg-bar'}
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+//                    , url: "{:url('charge/transfer')}" //数据接口
+                    , url: "{:url('qmtg/spreadlist')}" //数据接口
+                    , page: true //开启分页
+//                    , limit: 15
+                    , where: {'status': -1}
+                    , cols: [cols]
+                    , done: function (res) {$(".layui-table-main tr").each(function (index, val) {
+                            $($(".layui-table-fixed-l .layui-table-body tbody tr")[index]).height($(val).height());
+                            $($(".layui-table-fixed-r .layui-table-body tbody tr")[index]).height($(val).height());
+                        });
+                        console.log(res.other);
+                        $('#lirun').html(res.other);
+//                        $('#paynum').html(res.other.paynum);
+//                        $('#paysum').html(res.other.paysum);
+//                        $('#unpaynum').html(res.other.unpaynum);
+//                        $('#unpaysum').html(res.other.unpaysum);
+//                        $('#ordernum').html(res.other.ordernum);
+
+                        for (var i = 0; i < res.data.length; i++) {
+                            if (res.data[i].status == 1) {
+                                $('tr[data-index=' + i + '] .laytable-cell-1-0-6').html('');
+                            }
+                        }
+                        tzTbale()
+                    }
+                });
+            },
+
+
+            //搜索
+            search: function () {
+                var roleid = $.trim($('#roleid').val());
+
+
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'roleid': roleid,
+
+
+                    }
+                });
+            },
+
+            //操作事件
+            extraEvent: function () {
+                //编辑
+                //编辑
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data //获得当前行数据
+
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+
+                    if (layEvent === 'edit') {
+                        layer.confirm('确定进行补发吗', function (index) {
+                            $.ajax({
+                                url: 'bufa2',
+                                type: 'post',
+                                dataType: 'json',
+                                data: {
+                                    roleid: data.roleid,
+                                    orderno: data.id,
+                                    amount: data.amount,
+                                },
+                                success: function (res) {
+                                    if (res.code === 0) {
+                                        layer.msg(res.msg, {icon: 6, time: 1000}, function () {
+                                            window.location.reload();
+                                        });
+                                    } else {
+                                        layer.msg(res.msg, {icon: 5});
+                                    }
+                                }
+                            })
+                        });
+                    }
+                });
+            },
+
+
+            init: function () {
+                form.render(null, 'component-form-group');
+                laydate.render({
+                    elem: '#LAY-component-form-group-date'
+                    , format: 'yyyy-MM-dd'
+                    , max: 0
+                    , btns: ['clear', 'confirm']
+                });
+                laydate.render({
+                    elem: '#LAY-component-form-group-date2'
+                    , format: 'yyyy-MM-dd'
+                    , max: 0
+                    , btns: ['clear', 'confirm']
+                });
+                main.extraEvent();
+                main.renderData();
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

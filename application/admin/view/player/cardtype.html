@@ -1,0 +1,195 @@
+{extend name="common/base" /}
+
+{block name="title"}支付通道{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <label class="layui-form-label">游戏类型</label>
+                <div class="layui-input-inline">
+                    <select name="roomid" id="roomid2">
+                        <option value="0">所有</option>
+                        {foreach $kindlist as $k2 => $v2}
+                        <option value="{$v2.kindid}">{$v2.kindname}({$v2.kindid})</option>
+                        {/foreach}
+                    </select>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">搜索</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body" >
+        <!--<a style="margin-bottom: 10px;" class="layui-btn" onclick="x_admin_show('新增微信客服','addWeixin.html', '', 600)">-->
+        <!--<i class="layui-icon layui-icon-add-circle"></i>-->
+        <!--</a>-->
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script type="text/html" id="desc-bar">
+    {{#  if($.inArray(d.roomid, [1200, 1201, 1202, 1203, 2001, 2002, 2003, 2004, 2200, 2201]) == -1){ }}
+    <a class="layui-btn layui-btn-xs " lay-event="desc">查看伙牌</a>
+    {{#  } }}
+
+</script>
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            renderData : function() {
+                var cols = [ //表头
+                    {field: 'roomid', title: '房间ID', minWidth:60}
+                    , {field: 'roomname', title: '房间名称', minWidth:120}
+                    ,{fixed: 'right', title:'备注', align:'center', minWidth:100, toolbar: '#desc-bar'}
+                ];
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('player/cardtype')}" //数据接口
+                    , page: true //开启分页
+                    , cols: [cols]
+                });
+            },
+
+
+            //搜索
+            search : function() {
+                var roomid = $.trim($('#roomid2').val());
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'roomId':roomid,
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                $('#search').on('click', function(e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            },
+
+            //操作事件
+            extraEvent : function () {
+                //编辑
+                table.on('tool(proxylist)', function(obj) {
+                    var data = obj.data //获得当前行数据
+                        ,layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'desc') {
+
+                        var roomname = data.roomname;
+                        var brnn= RegExp(/百人/);
+                        var doudizhu= RegExp(/斗地主/);
+                        var bcbm= RegExp(/奔驰宝马/);
+                        var bjl= RegExp(/百家乐/);
+                        var dzpk= RegExp(/德州扑克/);
+                        var hlsb= RegExp(/欢乐骰宝/);
+                        var lhd= RegExp(/龙虎斗/);
+                        var mj= RegExp(/二人麻将/);
+                        var zjh= RegExp(/炸金花/);
+                        var jdnn= RegExp(/抢庄牛牛/);
+                        var fqzs= RegExp(/飞禽走兽/);
+                        var hhdz= RegExp(/红黑大战/);
+                        if(brnn.exec(roomname)){
+                            console.log('baire');
+                            var url = 'lookPartnerCardBrnn.html?roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 600);
+                        } else if(doudizhu.exec(roomname)){
+                            var url = 'lookPartnerCard.html?roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 600);
+
+                        }else if(bcbm.exec(roomname)){
+                            var url = 'lookPartnerCardBcbm.html?roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 600);
+
+                        }else if(bjl.exec(roomname)){
+                            var url = 'lookPartnerCardBjl.html?roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 600);
+
+                        }else if(dzpk.exec(roomname)){
+                            var url = 'lookPartnerCardDzpk.html?roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 600);
+
+                        }else if(hlsb.exec(roomname)){
+                            var url = 'lookPartnerCardHlsb.html?roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 600);
+
+                        }else if(hlsb.exec(roomname)){
+                            var url = 'lookPartnerCardHlsb.html?roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 600);
+
+                        }else if(lhd.exec(roomname)){
+                            var url = 'lookPartnerCardLonghudou.html?roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 600);
+
+                        }else if(mj.exec(roomname)){
+                            var url = 'lookPartnerCardMj.html?roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 600);
+
+                        }else if(jdnn.exec(roomname)){
+                            var url = 'lookPartnerCardMpqz.html?roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 600);
+
+                        }else if(fqzs.exec(roomname)){
+                            var url = 'lookPartnerCardBcbm.html?roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 600);
+
+                        }else if(hhdz.exec(roomname)){
+                            var url = 'lookPartnerCardLonghudou.html?roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 600);
+
+                        }else if(zjh.exec(roomname)){
+                            var url = 'lookPartnerCardZjh.html?roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 600);
+
+                        }else{
+                            var url = 'lookPartnerCardMpqz.html?roomid='+data.roomid;
+                            x_admin_show('查看伙牌', url, $(window).width()*0.7, 600);
+                        }
+
+
+//                        x_admin_show('备注详情', 'descript.html?orderno='+data.orderno, $(window).width()*0.7, 350);
+                    }
+                });
+
+            },
+
+            init : function() {
+                main.renderData();
+                main.bindEvent();
+                main.extraEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

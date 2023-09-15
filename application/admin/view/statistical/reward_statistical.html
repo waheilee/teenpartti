@@ -1,0 +1,586 @@
+{extend name="common/base" /}
+{block name="title"}团队列表{/block}
+{block name="css"}{/block}
+{block name="content"}
+<style type="text/css">
+    .layui-col-md2 {
+          width: 14.2857143% !important;
+        }
+        tr,td{
+            text-align: center;
+        }
+        thead tr{
+            background-color:white !important;
+        }
+        tbody tr{
+            background-color:#f2f2f2 !important;
+        }
+        td{
+            height: 2rem;
+            /*background-color:#f2f2f2 !important;*/
+        }
+</style>
+
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('日期')}：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="start_date" id="LAY-component-form-group-date1" autocomplete="off"
+                               class="layui-input" value="{:date('Y-m-d')}">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="end_date" id="LAY-component-form-group-date2" autocomplete="off"
+                               class="layui-input" value="{:date('Y-m-d')}">
+                    </div>
+                </div>
+                <input type="hidden" name="tab" id="searchtab" value="total">
+                <div class="layui-inline">
+                    <!-- <div class="layui-input-inline"> -->
+                    <a class="layui-btn" id="search">{:lang('搜索')}</a>
+
+                    <a class="layui-btn" id="today">{:lang('今日')}</a>
+                    <a class="layui-btn" id="yestoday">{:lang('昨日')}</a>
+                    <a class="layui-btn" id="q_day">{:lang('前一天')}</a>
+                    <a class="layui-btn" id="h_day">{:lang('后一天')}</a>
+                    <a class="layui-btn" id="week">{:lang('本周')}</a>
+                    <a class="layui-btn" id="lastweek">{:lang('上周')}</a>
+                    <a class="layui-btn" id="month">{:lang('本月')}</a>
+                    <a class="layui-btn" id="lastmonth">{:lang('上个月')}</a>
+                    <!-- </div> -->
+                </div>
+                
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <div class="layui-row layui-col-space20">
+                <div class="layui-col-md4">
+                    <table class="layui-table">
+                      <colgroup>
+                        <col width="200">
+                        <col width="200">
+                        <col width="200">
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th colspan="3" style="text-align: center;">{:lang('代理佣金 / 人数 / 平均')}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td id="RunningBonus">0</td>
+                          <td id="RunningBonus_count">0</td>
+                          <td id="RunningBonus_avr">0</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                </div>   
+                <div class="layui-col-md4">
+                    <table class="layui-table">
+                      <colgroup>
+                        <col width="200">
+                        <col width="200">
+                        <col width="200">
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th colspan="3" style="text-align: center;">{:lang('成就奖励 / 人数 / 平均')}</th>
+                        </tr> 
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td id="InviteBonus">0</td>
+                          <td id="InviteBonus_count">0</td>
+                          <td id="InviteBonus_avr">0</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                </div> 
+                <div class="layui-col-md4">
+                    <table class="layui-table">
+                      <colgroup>
+                        <col width="200">
+                        <col width="200">
+                        <col width="200">
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th colspan="3" style="text-align: center;">{:lang('邀请奖励 / 人数 / 平均')}</th>
+                        </tr> 
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td id="FirstChargeBonus">0</td>
+                          <td id="FirstChargeBonus_count">0</td>
+                          <td id="FirstChargeBonus_avr">0</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                </div>
+                <div class="layui-col-md4">
+                    <table class="layui-table">
+                      <colgroup>
+                        <col width="200">
+                        <col width="200">
+                        <col width="200">
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th colspan="3" style="text-align: center;">{:lang('首充奖励 / 人数 / 平均')}</th>
+                        </tr> 
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td id="UserFirstReChargeBonus">0</td>
+                          <td id="UserFirstReChargeBonus_count">0</td>
+                          <td id="UserFirstReChargeBonus_avr">0</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                </div> 
+                <div class="layui-col-md4">
+                    <table class="layui-table">
+                      <colgroup>
+                        <col width="200">
+                        <col width="200">
+                        <col width="200">
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th colspan="3" style="text-align: center;">{:lang('单笔充值奖励 / 人数 / 平均')}</th>
+                        </tr> 
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td id="ReChargeBonus">0</td>
+                          <td id="ReChargeBonus_count">0</td>
+                          <td id="ReChargeBonus_avr">0</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                </div> 
+                <div class="layui-col-md4">
+                    <table class="layui-table">
+                      <colgroup>
+                        <col width="200">
+                        <col width="200">
+                        <col width="200">
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th colspan="3" style="text-align: center;">{:lang('每日充值奖励 / 人数 / 平均')}</th>
+                        </tr> 
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td id="DailyChargeBonus">0</td>
+                          <td id="DailyChargeBonus_count">0</td>
+                          <td id="DailyChargeBonus_avr">0</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                </div> 
+                <div class="layui-col-md4">
+                    <table class="layui-table">
+                      <colgroup>
+                        <col width="200">
+                        <col width="200">
+                        <col width="200">
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th colspan="3" style="text-align: center;">{:lang('每日签到 / 人数 / 平均')}</th>
+                        </tr> 
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td id="VipDailySignBonus">0</td>
+                          <td id="VipDailySignBonus_count">0</td>
+                          <td id="VipDailySignBonus_avr">0</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                </div> 
+                <div class="layui-col-md4">
+                    <table class="layui-table">
+                      <colgroup>
+                        <col width="200">
+                        <col width="200">
+                        <col width="200">
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th colspan="3" style="text-align: center;">{:lang('每周签到 / 人数 / 平均')}</th>
+                        </tr> 
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td id="VipWeeklySignBonus">0</td>
+                          <td id="VipWeeklySignBonus_count">0</td>
+                          <td id="VipWeeklySignBonus_avr">0</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                </div> 
+                <div class="layui-col-md4">
+                    <table class="layui-table">
+                      <colgroup>
+                        <col width="200">
+                        <col width="200">
+                        <col width="200">
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th colspan="3" style="text-align: center;">{:lang('每月签到 / 人数 / 平均')}</th>
+                        </tr> 
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td id="VipMonthlySignBonus">0</td>
+                          <td id="VipMonthlySignBonus_count">0</td>
+                          <td id="VipMonthlySignBonus_avr">0</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                </div> 
+                <div class="layui-col-md4">
+                    <table class="layui-table">
+                      <colgroup>
+                        <col width="200">
+                        <col width="200">
+                        <col width="200">
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th colspan="3" style="text-align: center;">{:lang('vip充值奖励 / 人数 / 平均')}</th>
+                        </tr> 
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td id="VipRechargeBonus">0</td>
+                          <td id="VipRechargeBonus_ount">0</td>
+                          <td id="VipRechargeBonus_avr">0</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                </div> 
+                <div class="layui-col-md4">
+                    <table class="layui-table">
+                      <colgroup>
+                        <col width="200">
+                        <col width="200">
+                        <col width="200">
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th colspan="3" style="text-align: center;">{:lang('vip升级奖励 / 人数 / 平均')}</th>
+                        </tr> 
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td id="VipUpBonus">0</td>
+                          <td id="VipUpBonus_count">0</td>
+                          <td id="VipUpBonus_avr">0</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                </div> 
+                <div class="layui-col-md4">
+                    <table class="layui-table">
+                      <colgroup>
+                        <col width="200">
+                        <col width="200">
+                        <col width="200">
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th colspan="3" style="text-align: center;">{:lang('轮盘奖励 / 人数 / 平均')}</th>
+                        </tr> 
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td id="LotteryBonus">0</td>
+                          <td id="LotteryBonus_count">0</td>
+                          <td id="LotteryBonus_avr">0</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                </div> 
+                <div class="layui-col-md4">
+                    <table class="layui-table">
+                      <colgroup>
+                        <col width="200">
+                        <col width="200">
+                        <col width="200">
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th colspan="3" style="text-align: center;">{:lang('流水返利 / 人数 / 平均')}</th>
+                        </tr> 
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td id="UserBetBonus">0</td>
+                          <td id="UserBetBonus_count">0</td>
+                          <td id="UserBetBonus_avr">0</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                </div> 
+                <div class="layui-col-md4">
+                    <table class="layui-table">
+                      <colgroup>
+                        <col width="200">
+                        <col width="200">
+                        <col width="200">
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th colspan="3" style="text-align: center;">{:lang('邮件赠送（无打码）/ 人数 / 平均')}</th>
+                        </tr> 
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td id="MailNoWageBonus">0</td>
+                          <td id="MailNoWageBonus_count">0</td>
+                          <td id="MailNoWageBonus_avr">0</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                </div> 
+                <div class="layui-col-md4">
+                    <table class="layui-table">
+                      <colgroup>
+                        <col width="200">
+                        <col width="200">
+                        <col width="200">
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th colspan="3" style="text-align: center;">{:lang('邮件赠送（有打码）/ 人数 / 平均')}</th>
+                        </tr> 
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td id="MailWithWageBonus">0</td>
+                          <td id="MailWithWageBonus_count">0</td>
+                          <td id="MailWithWageBonus_avr">0</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                </div>
+
+                <div class="layui-col-md4">
+                    <table class="layui-table">
+                        <colgroup>
+                            <col width="200">
+                            <col width="200">
+                            <col width="200">
+                        </colgroup>
+                        <thead>
+                        <tr>
+                            <th colspan="3" style="text-align: center;">{:lang('礼品卡领取/ 人数 / 平均')}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td id="GiftCardBonus">0</td>
+                            <td id="GiftCardBonus_count">0</td>
+                            <td id="GiftCardBonus_avr">0</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+
+<script>
+
+    url = "{:url('Statistical/RewardStatistical')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
+        var main = {
+            //搜索
+            search: function (e) {
+                if (e <= 0) {
+                    $('#searchtab').val('');
+                    $('.layui-btn-danger').removeClass('layui-btn-danger');
+                }
+                //执行重载
+                //
+                $.ajax({
+                    type:'post',
+                    url:url+'?action=list',
+                    data:{
+                        startdate: $.trim($('#LAY-component-form-group-date1').val()),
+                        enddate: $.trim($('#LAY-component-form-group-date2').val()),
+                        tab:$.trim($('#searchtab').val()),
+                    },
+                    dataType:'json',
+                    success: function(ret) {
+                        if (ret.code === 0) {
+                            $('#LAY-component-form-group-date1').val(ret['data']['startdate']);
+                            $('#LAY-component-form-group-date2').val(ret['data']['enddate']);
+
+                            $("#RunningBonus").html(ret.data.RunningBonus);
+                            $("#RunningBonus_count").html(ret.data.RunningBonus_count);
+                            $("#RunningBonus_avr").html(ret.data.RunningBonus_avr);
+
+                            $("#InviteBonus").html(ret.data.InviteBonus);
+                            $("#InviteBonus_count").html(ret.data.InviteBonus_count);
+                            $("#InviteBonus_avr").html(ret.data.InviteBonus_avr);
+
+                            $("#FirstChargeBonus").html(ret.data.FirstChargeBonus);
+                            $("#FirstChargeBonus_count").html(ret.data.FirstChargeBonus_count);
+                            $("#FirstChargeBonus_avr").html(ret.data.FirstChargeBonus_avr);
+
+                            $("#UserFirstReChargeBonus").html(ret.data.UserFirstReChargeBonus);
+                            $("#UserFirstReChargeBonus_count").html(ret.data.UserFirstReChargeBonus_count);
+                            $("#UserFirstReChargeBonus_avr").html(ret.data.UserFirstReChargeBonus_avr);
+
+                            $("#ReChargeBonus").html(ret.data.ReChargeBonus);
+                            $("#ReChargeBonus_count").html(ret.data.ReChargeBonus_count);
+                            $("#ReChargeBonus_avr").html(ret.data.ReChargeBonus_avr);
+
+                            $("#DailyChargeBonus").html(ret.data.DailyChargeBonus);
+                            $("#DailyChargeBonus_count").html(ret.data.DailyChargeBonus_count);
+                            $("#DailyChargeBonus_avr").html(ret.data.DailyChargeBonus_avr);
+
+                            $("#VipRechargeBonus").html(ret.data.VipRechargeBonus);
+                            $("#VipRechargeBonus_count").html(ret.data.VipRechargeBonus_count);
+                            $("#VipRechargeBonus_avr").html(ret.data.VipRechargeBonus_avr);
+
+                            $("#VipUpBonus").html(ret.data.VipUpBonus);
+                            $("#VipUpBonus_count").html(ret.data.VipUpBonus_count);
+                            $("#VipUpBonus_avr").html(ret.data.VipUpBonus_avr);
+
+                            $("#VipDailySignBonus").html(ret.data.VipDailySignBonus);
+                            $("#VipDailySignBonus_count").html(ret.data.VipDailySignBonus_count);
+                            $("#VipDailySignBonus_avr").html(ret.data.VipDailySignBonus_avr);
+
+                            $("#VipWeeklySignBonus").html(ret.data.VipWeeklySignBonus);
+                            $("#VipWeeklySignBonus_count").html(ret.data.VipWeeklySignBonus_count);
+                            $("#VipWeeklySignBonus_avr").html(ret.data.VipWeeklySignBonus_avr);
+
+                            $("#VipMonthlySignBonus").html(ret.data.VipMonthlySignBonus);
+                            $("#VipMonthlySignBonus_count").html(ret.data.VipMonthlySignBonus_count);
+                            $("#VipMonthlySignBonus_avr").html(ret.data.VipMonthlySignBonus_avr);
+
+                            $("#UserBetBonus").html(ret.data.UserBetBonus);
+                            $("#UserBetBonus_count").html(ret.data.UserBetBonus_count);
+                            $("#UserBetBonus_avr").html(ret.data.UserBetBonus_avr);
+
+                            $("#MailWithWageBonus").html(ret.data.MailWithWageBonus);
+                            $("#MailWithWageBonus_count").html(ret.data.MailWithWageBonus_count);
+                            $("#MailWithWageBonus_avr").html(ret.data.MailWithWageBonus_avr);
+
+                            $("#MailNoWageBonus").html(ret.data.MailNoWageBonus);
+                            $("#MailNoWageBonus_count").html(ret.data.MailNoWageBonus_count);
+                            $("#MailNoWageBonus_avr").html(ret.data.MailNoWageBonus_avr);
+
+                            $("#LotteryBonus").html(ret.data.LotteryBonus);
+                            $("#LotteryBonus_count").html(ret.data.LotteryBonus_count);
+                            $("#LotteryBonus_avr").html(ret.data.LotteryBonus_avr);
+
+                            $("#GiftCardBonus").html(ret.data.GiftCardBonus);
+                            $("#GiftCardBonus_count").html(ret.data.GiftCardBonus_count);
+                            $("#GiftCardBonus_avr").html(ret.data.GiftCardBonus_avr);
+                        } else {
+                            
+                        }
+                    }
+                });
+            },
+
+
+            init: function () {
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search(0);
+                });
+                laydate.render({
+                    elem: '#LAY-component-form-group-date1'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , btns: ['clear', 'confirm']
+                });
+                laydate.render({
+                    elem: '#LAY-component-form-group-date2'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , btns: ['clear', 'confirm']
+                });
+            }
+        };
+
+        main.init();
+        main.search(0);
+        $('#today').click(function () {
+            $('#searchtab').val('today');
+            $('.layui-btn-danger').removeClass('layui-btn-danger');
+            $('#today').addClass('layui-btn-danger');
+            main.search(1);
+        });
+        $('#yestoday').click(function () {
+            $('#searchtab').val('yestoday');
+            $('.layui-btn-danger').removeClass('layui-btn-danger');
+            $('#yestoday').addClass('layui-btn-danger');
+            main.search(2);
+        });
+        $('#q_day').click(function () {
+            $('#searchtab').val('q_day');
+            $('.layui-btn-danger').removeClass('layui-btn-danger');
+            $('#q_day').addClass('layui-btn-danger');
+            main.search(3);
+        });
+        $('#h_day').click(function () {
+            $('#searchtab').val('h_day');
+            $('.layui-btn-danger').removeClass('layui-btn-danger');
+            $('#h_day').addClass('layui-btn-danger');
+            main.search(4);
+        });
+        $('#month').click(function () {
+            $('#searchtab').val('month');
+            $('.layui-btn-danger').removeClass('layui-btn-danger');
+            $('#month').addClass('layui-btn-danger');
+            main.search(5);
+        });
+        $('#lastmonth').click(function () {
+            $('#searchtab').val('lastmonth');
+            $('.layui-btn-danger').removeClass('layui-btn-danger');
+            $('#lastmonth').addClass('layui-btn-danger');
+            main.search(6);
+        });
+        $('#week').click(function () {
+            $('#searchtab').val('week');
+            $('.layui-btn-danger').removeClass('layui-btn-danger');
+            $('#week').addClass('layui-btn-danger');
+            main.search(7);
+        });
+        $('#lastweek').click(function () {
+            $('#searchtab').val('lastweek');
+            $('.layui-btn-danger').removeClass('layui-btn-danger');
+            $('#lastweek').addClass('layui-btn-danger');
+            main.search(8);
+        });
+    });
+</script>
+{/block}

@@ -1,0 +1,221 @@
+{extend name="common/base" /}
+
+{block name="title"}转账{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('merchant/edit')}" method="post" id="addProxy" >
+    <input type="hidden" name="OperatorId" id="OperatorId" value="{$data['OperatorId'] ?? ''}" />
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('渠道名称')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="OperatorName" name='OperatorName' lay-verify="required" placeholder="{:lang('请输入渠道名称')}" autocomplete="off" class="layui-input"  value="{$data['OperatorName'] ?? ''}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('登录密码')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="PassWord" name='PassWord' placeholder="{:lang('请输入密码')}" autocomplete="off" class="layui-input"  value="">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('全民代理推广链接')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="ProxyExtendLink" name='ProxyExtendLink' lay-verify="required" placeholder="{:lang('全民代理推广链接')}" autocomplete="off" class="layui-input" value="{$data['ProxyExtendLink'] ?? ''}">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('充值手续费比例')}：</label>
+        <div class="layui-input-block">
+            <input type="number" id="RechargeFee" name='RechargeFee' lay-verify="required" placeholder="{:lang('充值手续费比例')}" autocomplete="off" class="layui-input" value="{$data['RechargeFee'] ?? 0}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('提现手续费比例')}：</label>
+        <div class="layui-input-block">
+            <input type="number" id="WithdrawalFee" name='WithdrawalFee' lay-verify="required" placeholder="{:lang('提现手续费比例')}" autocomplete="off" class="layui-input" value="{$data['WithdrawalFee'] ?? 0}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{$APIFee}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="APIFee" name='APIFee' lay-verify="required" placeholder="{:lang('API费用')},逗号隔开" autocomplete="off" class="layui-input" value="{$data['APIFee'] ?? ''}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('独立域名')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="SingleUrl" name='SingleUrl' placeholder="{:lang('独立域名')}" autocomplete="off" class="layui-input" value="{$data['SingleUrl'] ?? config('platform_domain')}">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('YouTube分享链接')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="YouTubeShareLink" name='YouTubeShareLink' placeholder="{:lang('YouTube分享链接')}" autocomplete="off" class="layui-input" value="{$data['YouTubeShareLink'] ?? ''}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('Twitter分享链接')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="TwitterShareLink" name='TwitterShareLink' placeholder="{:lang('Twitter分享链接')}" autocomplete="off" class="layui-input" value="{$data['TwitterShareLink'] ?? ''}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('Telegram分享链接')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="TelegramShareLink" name='TelegramShareLink' placeholder="{:lang('Telegram分享链接')}" autocomplete="off" class="layui-input" value="{$data['TelegramShareLink'] ?? ''}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('Instagram分享链接')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="InstagramShareLink" name='InstagramShareLink' placeholder="{:lang('Instagram分享链接')}" autocomplete="off" class="layui-input" value="{$data['InstagramShareLink'] ?? ''}">
+        </div>
+    </div>
+   <!--  <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('代理邀请WhatsApp分享链接')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="WhatsAppShareLink" name='WhatsAppShareLink' lay-verify="required" placeholder="{:lang('请输入代理邀请WhatsApp分享链接')}" autocomplete="off" class="layui-input"  value="{$data['WhatsAppShareLink'] ?? ''}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('代理邀请FaceBook分享链接')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="FBShareLink" name='FBShareLink' lay-verify="required" placeholder="{:lang('请输入代理邀请FaceBook分享链接')}" autocomplete="off" class="layui-input" value="{$data['FBShareLink'] ?? ''}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('渠道额度')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="WithdrawRemain" name='WithdrawRemain' lay-verify="required" placeholder="{:lang('请输入渠道额度')}" autocomplete="off" class="layui-input"   value="{$data['WithdrawRemain'] ?? ''}">
+        </div>
+    </div> -->
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >{:lang('保存')}</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" lay-submit="" lay-filter="cancel" id="cancel" >{:lang('取消')}</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery','upload'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,upload = layui.upload
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                var OperatorId      = $.trim(data.field.OperatorId);
+                var PassWord        = $.trim(data.field.PassWord);
+                var OperatorName    = $.trim(data.field.OperatorName);
+                var ProxyExtendLink = $.trim(data.field.ProxyExtendLink);
+                var RechargeFee     = $.trim(data.field.RechargeFee);
+                var WithdrawalFee   = $.trim(data.field.WithdrawalFee);
+                var APIFee          = $.trim(data.field.APIFee);
+                var SingleUrl       = $.trim(data.field.SingleUrl);
+
+                var YouTubeShareLink       = $.trim(data.field.YouTubeShareLink);
+                var TwitterShareLink       = $.trim(data.field.TwitterShareLink);
+                var TelegramShareLink       = $.trim(data.field.TelegramShareLink);
+                var InstagramShareLink       = $.trim(data.field.InstagramShareLink);
+                // var WhatsAppShareLink = $.trim(data.field.WhatsAppShareLink);
+                // var FBShareLink = $.trim(data.field.FBShareLink);
+                // var WithdrawRemain = $.trim(data.field.WithdrawRemain);
+
+                if(OperatorName==''){
+                    layer.alert('{:lang("请输入渠道名称")}！',{icon:5});
+                    return;
+                }
+                if(ProxyExtendLink==''){
+                    layer.alert('{:lang("全民代理推广链接")}！',{icon:5});
+                    return;
+                }
+                // if(WhatsAppShareLink==''){
+                //     layer.alert('{:lang("代理邀请WhatsApp分享链接")}！',{icon:5});
+                //     return;
+                // }if(FBShareLink==''){
+                //     layer.alert('{:lang("请输入代理邀请FaceBook分享链接")}！',{icon:5});
+                //     return;
+                // }
+                // if(WithdrawRemain==''){
+                //     layer.alert('{:lang("请输入渠道额度")}！',{icon:5});
+                //     return;
+                // }
+
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'OperatorId':OperatorId,
+                        'OperatorName' : OperatorName,
+                        'ProxyExtendLink' : ProxyExtendLink,
+
+                        'RechargeFee':RechargeFee,
+                        'WithdrawalFee':WithdrawalFee,
+                        'APIFee':APIFee,
+                        'SingleUrl':SingleUrl,
+                        // 'WhatsAppShareLink' : WhatsAppShareLink,
+                        // 'FBShareLink' : FBShareLink,
+                        // 'WithdrawRemain' : WithdrawRemain,
+                        'PassWord':PassWord,
+                        'YouTubeShareLink':YouTubeShareLink,
+                        'TwitterShareLink':TwitterShareLink,
+                        'TelegramShareLink':TelegramShareLink,
+                        'InstagramShareLink':InstagramShareLink,
+
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        var index = parent.layer.getFrameIndex(window.name); /* 先得到当前iframe层的索引 */
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.layui.table.reload('proxylist',{page:{curr:$(".layui-laypage-em").next().html()}});   //主要代码
+                                parent.layer.close(index);
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

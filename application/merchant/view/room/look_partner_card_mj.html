@@ -1,0 +1,210 @@
+{extend name="common/base" /}
+
+{block name="title"}所有玩家{/block}
+{block name="css"}
+<style>
+    .layui-table-cell{
+        height:70px;
+        line-height: 70px;
+    }
+</style>
+
+{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <div class="layui-card-header">
+        伙牌详情
+    </div>
+    <div class="layui-card-body">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">玩家ID</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="roleid" name="roleid" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">牌局ID</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="uniqueid" name="uniqueid" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn search" myid="fdsafdf"  data-type="reload" id="search">搜索</a>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+<input value="{$roomid}" id="roomid" type="text" hidden>
+
+{/block}
+{block name="script"}
+<script type="text/html" id="msg-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="detail">牌局详情</a>
+    <!--<a class="layui-btn layui-btn-xs " lay-event="ganme">游戏日志</a>-->
+    <!--<a class="layui-btn layui-btn-xs" lay-event="cold">金币日志</a>-->
+    <!--<a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">拉黑</a>-->
+</script>
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            renderData : function() {
+                var cols = [ //表头
+
+                    {field: 'uniqueid', title: '牌局ID', minWidth:180}
+                    ,{field: 'player', title: '玩家ID', minWidth: 100}
+
+                    , {
+                        field: 'card', title: '手牌', minWidth: 180, templet: function (d) {
+                            console.log(d.card);
+                            var res = '';
+                            if(d.card.length>1){
+                                for (var i = 0; i < d.card.length; i++) {
+
+                                    if(i==0 ){
+                                        d.card[0]= d.card[0].replace('[','');
+                                    }
+                                    if(i==d.card.length-1 ){
+                                        d.card[d.card.length-1]= d.card[d.card.length-1].replace(']','');
+                                    }
+                                    res += ' <image src="__static__/majiang/'+d.card[i]+'.png" width="25" height="50">';
+                                }
+
+                                return res;
+                            }else{
+                                res='';
+                                return res;
+                            }
+
+                        }
+                    }
+                    , {
+                        field: 'card', title: '胡牌', minWidth: 240, templet: function (d) {
+                            var res = '';
+                            if(d.tablecard.length>1){
+                                for (var i = 0; i < d.tablecard.length; i++) {
+
+                                    if(i==0 ){
+                                        d.tablecard[0]= d.tablecard[0].replace('[','');
+                                    }
+                                    if(i==d.tablecard.length-1 ){
+                                        d.tablecard[d.tablecard.length-1]= d.tablecard[d.tablecard.length-1].replace(']','');
+                                    }
+                                    res += ' <image src="__static__/majiang/'+d.tablecard[i]+'.png" width="25" height="50">';
+                                }
+
+                                return res;
+                            }else{
+                                res='';
+                                return res;
+                            }
+
+                        }
+                    }
+                    , {
+                        field: 'changetype', title: '输赢情况', minWidth: 80,  templet: function (d) {
+                            var res = '';
+                            if (d.changemoney > 0) {
+                                res = '赢';
+                            } else  {
+                                res = '输';
+                            }
+                            return res;
+                        }
+                    }
+                    , {field: 'coinbefore', title: '游戏前金币', minWidth: 120}
+//                    , {field: 'changemoney', title: '开奖结果', minWidth: 120}
+                    , {field: 'changemoney', title: '本局战绩', minWidth: 120}
+                    , {field: 'coinafter', title: '游戏后金币', minWidth: 120}
+                    , {field: 'addtime', title: '时间', minWidth: 160}
+                    ,{fixed: 'right', title:'操作', align:'center', minWidth:80, toolbar: '#msg-bar'}
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+//                    , url: "{:url('player/all')}" //数据接口
+                    , url: "{:url('room/lookPartnerCardMj')}" //数据接口
+                    , page: true //开启分页
+                    , limit:5
+                    ,where:{'roomid':$('#roomid').val()}
+                    , cols: [cols]
+                    , done: function (d) {
+                        tzTbale()
+                    }
+                });
+            },
+
+            //搜索
+            search : function() {
+                var roleid = $.trim($('#roleid').val());
+                var roomid = $.trim($('#roomid').val());
+                var uniqueid = $.trim($('#uniqueid').val());
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'roleid':roleid,
+                        'roomid':roomid,
+                        'uniqueid':uniqueid,
+
+                    }
+                });
+            },
+
+            //操作事件
+            extraEvent : function () {
+                //编辑
+                table.on('tool(proxylist)', function(obj) {
+                    var data = obj.data //获得当前行数据
+                        ,layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+
+                    if (layEvent === 'detail') {
+                        var roomid = $('#roomid').val();
+                        var url='detailMj.html?uniqueid='+data.uniqueid+'&roomid='+roomid+'&aa=1';
+                        var url='detailMj.html?roomid='+roomid+'&uniqueid='+data.uniqueid;
+                        //x_admin_show('查看伙牌', '{:url(\'room/detailMj\')}?roomid='+roomid+'&uniqueid='+data.uniqueid, $(window).width()*0.85, 750);
+                        window.location.href='detailMj.html?roomid='+roomid+'&uniqueid='+data.uniqueid;
+                    }
+                });
+            },
+
+            init : function() {
+                main.renderData();
+                main.extraEvent();
+                $('#search').on('click', function(e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

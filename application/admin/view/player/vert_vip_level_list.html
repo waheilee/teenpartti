@@ -1,0 +1,160 @@
+{extend name="common/base" /}
+
+{block name="title"}vip等级配置{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <div class="layui-card-body">
+        <!--<a style="margin-bottom: 10px;" class="layui-btn" onclick="x_admin_show('添加等级','addSuper.html', 500,260)">-->
+        <!--<i class="layui-icon layui-icon-add-circle"></i>-->
+        <!--</a>-->
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script type="text/html" id="msg-bar">
+    <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="modify">{:lang('修改')}</a>
+</script>
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'VipLevel', title: "{:lang('VIP等级')}", minWidth: 100}
+                    ,{field: 'NeedPoint', title: "{:lang('需达到的流水')}", minWidth: 150}
+                    ,{field:  'ServiceFeeRate', title: "{:lang('提现手续费')}%", minWidth: 100}
+                    , {field: 'DayMaxWithdrawTimes', title: "{:lang('每日可提现次数')}", minWidth: 100}
+                    , {field: 'WithdrawSingleLimit', title: "{:lang('提现单笔限额')}", minWidth: 100}
+                    , {field: 'DayWithdrawLimit', title: "{:lang('每日提现限额')}", minWidth: 100}
+                    , {field: 'RunningReturnRate', title: "{:lang('投注流水返利(Orignal,jack,slot,live,sport)')}%", minWidth: 240}
+                    , {field: 'ChargeExtraAwardRate', title: "{:lang('每笔充值赠送')}%", minWidth: 100}
+                    , {field: 'DayAward', title: "{:lang('每日签到')}", minWidth: 280}
+                    , {field: 'UpLevelAward', title: "{:lang('升级奖励')}", minWidth: 100}
+                    , {field: 'WeekAward', title: "{:lang('周奖励')}", minWidth: 100}
+                    , {field: 'MonthAward', title: "{:lang('月奖励')}", minWidth: 100}
+                    , {field: 'SevenDaysCharge', title: "{:lang('7日内达到充值')}", minWidth: 100}
+                    , {field: 'NeedCharge', title: "{:lang('升级需要充值')}", minWidth: 100}
+                    // , {field: 'LimitDown', title: "{:lang('随机值下限')}", minWidth: 200}
+                    , {field: 'WeekLossRate', title: "{:lang('周亏损奖励')}", minWidth: 200}
+                    , {fixed: 'right', title: "{:lang('操作')}", align: 'center', minWidth: 150, toolbar: '#msg-bar'}
+                ];
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('player/VertVipLevelList')}" //数据接口
+                    , page: true //开启分页
+                    , limit: 15
+                    , sort: true
+                    , cols: [cols]
+                    , done: function (res) {
+                        tzTbale()
+                        var orderby = res.other.orderby,
+                            asc = res.other.asc;
+                        if (orderby !== 0) {
+
+                            var fieldval = '', typeval = 'asc';
+                            if (asc === 1) {
+                                typeval = 'desc';
+                            }
+                            if (orderby === 1) {
+                                fieldval = 'totalin';
+                            } else if (orderby === 2) {
+                                fieldval = 'totalout';
+                            } else if (orderby === 3) {
+                                fieldval = 'totalget';
+                            } else if (orderby === 4) {
+                                fieldval = 'totalwater';
+                            } else if (orderby === 5) {
+                                fieldval = 'balance';
+                            } else if (orderby === 6) {
+                                fieldval = 'gamebalance';
+                            }
+                            $('th[data-field=' + fieldval + ']').find('span.layui-table-sort').attr('lay-sort', typeval);
+                        }
+                    }
+                });
+            },
+
+            //搜索
+            search: function () {
+                var roleid = $.trim($('#roleid').val());
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'roleid': roleid
+                    }
+                });
+            },
+
+            //操作事件
+            extraEvent: function () {
+                //编辑
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'modify') {
+                        var url = '{:url("player/modifyVertVipLevel")}?VipLevel='+ data.VipLevel;
+                        x_admin_show("{:lang('Vip等级配置')}",url,800,750);
+                    }
+                    else if(layEvent === 'delete'){
+                        // layer.confirm("确认删除该玩家？", {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
+                        //     $.ajax({
+                        //         type: 'post',
+                        //         url: "{:url('player/delSuperUser')}",
+                        //         data: {
+                        //             'roleid': data.id
+                        //         },
+                        //         dataType: 'json',
+                        //         success: function (res) {
+                        //             if (res.code === 0) {
+                        //                 layer.msg(res.msg, {icon: 1});
+                        //                 location.reload();
+                        //             } else {
+                        //                 layer.msg(res.msg, {icon: 2});
+                        //             }
+                        //         }
+                        //     });
+                        // });
+                    }
+                });
+
+            },
+
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    //main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

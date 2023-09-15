@@ -1,0 +1,195 @@
+{extend name="common/base" /}
+
+{block name="title"}转账{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('activity/addstagegft')}" method="post" id="addProxy" >
+
+    <input type="hidden" name="Id" id="Id" value="{$info.Id}" />
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('充值类型')}：</label>
+        <div class="layui-input-block">
+            <select name="ChargeType" id="ChargeType">
+               <option value="1" {if($info.ChargeType==1)}selected='selected'{/if}>{:lang('首充礼包')}</option>
+                <option value="2" {if($info.ChargeType==2)}selected='selected'{/if}>{:lang('充值返利')}</option>
+                <option value="3" {if($info.ChargeType==3)}selected='selected'{/if}>{:lang('商店充值')}</option>
+                <option value="4" {if($info.ChargeType==4)}selected='selected'{/if}>{:lang('客服充值')}</option>
+                <option value="5" {if($info.ChargeType==5)}selected='selected'{/if}>{:lang('周卡')}</option>
+                <option value="6" {if($info.ChargeType==6)}selected='selected'{/if}>{:lang('月卡')}</option>
+            </select>
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('充值金额')}：</label>
+        <div class="layui-input-block">
+            <input type="number" id="ChargeMoney" name='ChargeMoney' value="{$info.ChargeMoney}"  placeholder="{:lang('请输入充值金额')}"  class="layui-input">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('对应虚拟币')}：</label>
+        <div class="layui-input-block">
+            <input type="number" id="OriginalVirtualMoney" name='OriginalVirtualMoney' value="{$info.OriginalVirtualMoney}"  placeholder="{:lang('请输入对应虚拟币')}"  class="layui-input">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('对应奖励金币')}：</label>
+        <div class="layui-input-block">
+            <input type="number" id="GitfVirtualMoney" name='GitfVirtualMoney' value="{$info.GitfVirtualMoney}"  placeholder="{:lang('请输入对应奖励金币')}"  class="layui-input">
+        </div>
+    </div>
+
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('上级奖励金币')}：</label>
+        <div class="layui-input-block">
+            <input type="number" id="parentAward" name='parentAward' value="{$info.parentAward}"  placeholder="{:lang('请输入上级奖励金币')}"  class="layui-input">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('开始时间')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="BeginTime" value="{$info.BeginTime}" name='BeginTime'  placeholder="{:lang('请输入开始时间')}"  class="layui-input">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('结束时间')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="EndTime" name='EndTime' value="{$info.EndTime}"  placeholder="{:lang('请输入结束时间')}"  class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('打码倍数')}：</label>
+        <div class="layui-input-block">
+            <input type="number" id="WageRequiredMul" name='WageRequiredMul' value="{$info.WageRequiredMul}"  placeholder="{:lang('请输入打码倍数')}"  class="layui-input">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >{:lang('保存')}</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" lay-submit="" lay-filter="cancel" id="cancel" >{:lang('取消')}</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                var Id = $.trim(data.field.Id);
+                var ChargeMoney = $.trim(data.field.ChargeMoney);
+                var ChargeType = $.trim(data.field.ChargeType);
+                var BeginTime = $.trim(data.field.BeginTime);
+                var EndTime = $.trim(data.field.EndTime);
+                var OriginalVirtualMoney = $.trim(data.field.OriginalVirtualMoney);
+                var GitfVirtualMoney = $.trim(data.field.GitfVirtualMoney);
+                var WageRequiredMul = $.trim(data.field.WageRequiredMul);
+                var parentAward = $.trim(data.field.parentAward);
+
+                if(ChargeMoney==''){
+                    layer.alert("{:lang('请输入活动名称')}",{icon:5});
+                    return;
+                }
+
+                if($.trim(BeginTime)=='' || $.trim(EndTime)==''){
+                    layer.alert("{:lang('请输入活动开始时间和结束时间')}",{icon:5});
+                    return;
+                }
+
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'Id':Id,
+                        'ChargeMoney' : ChargeMoney,
+                        'ChargeType' : ChargeType,
+                        'BeginTime' : BeginTime,
+                        'EndTime' : EndTime,
+                        'OriginalVirtualMoney' : OriginalVirtualMoney,
+                        'GitfVirtualMoney':GitfVirtualMoney,
+                        'WageRequiredMul' :WageRequiredMul,
+                        'parentAward':parentAward
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        var index = parent.layer.getFrameIndex(window.name); /* 先得到当前iframe层的索引 */
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.layui.table.reload('proxylist',{page:{curr:$(".layui-laypage-em").next().html()}});   //主要代码
+                                parent.layer.close(index);
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                laydate.render({
+                    elem: '#BeginTime'
+                    ,type: 'datetime'
+                    ,lang: '{$datelang}'
+                    //,format:'yyyy-MM-dd HH:mm:ss'
+                   // ,btns: ['clear', 'confirm']
+                });
+
+                laydate.render({
+                    elem: '#EndTime'
+                    ,type: 'datetime'
+                    ,lang: '{$datelang}'
+                   // ,format:'yyyy-MM-dd HH:mm:ss'
+                    //,btns: ['clear', 'confirm']
+                });
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

@@ -1,0 +1,84 @@
+{extend name="common/base" /}
+
+{block name="title"}在线玩家列表{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<div class="layui-card" >
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+    <input type="hidden" id="roleid" value="{$roleid}">
+</div>
+
+
+{/block}
+{block name="script"}
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            renderData : function() {
+                var cols = [ //表头
+
+                    {field: 'roleid', title: '玩家ID', minWidth:100}
+                    ,{field: 'rolename', title: '玩家昵称', minWidth:100}
+                    , {field: 'changemoney', title: '充值金额', minWidth:120}
+                    , {field: 'balance', title: '玩家余额', minWidth:120}
+                    , {field: 'addtime', title: '时间', minWidth:150}
+                    , {field: 'descript', title: '备注', minWidth:120}
+                ];
+                var roleid = $('#roleid').val();
+
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('playertrans/chargelog')}" //数据接口
+                    , page: true //开启分页
+                    , limit:10
+                    , where: {
+                        roleid: roleid
+                    }
+                    , cols: [cols]
+                });
+            },
+
+            //搜索
+            search : function() {
+                var roleid = $.trim($('#roleid').val());
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'roleid':roleid,
+                    }
+                });
+            },
+
+            init : function() {
+                main.renderData();
+                $('#search').on('click', function(e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

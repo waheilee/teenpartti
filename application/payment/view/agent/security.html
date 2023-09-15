@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+    <title>BestPay</title>
+    <link href="__static__/css/app.css" rel="stylesheet">
+    <style type="text/css">html {
+        -ms-text-size-adjust: 100%;
+        -webkit-text-size-adjust: 100%
+    }
+
+    * {
+        margin: 0;
+        padding: 0
+    }
+
+    a img {
+        border: 0
+    }
+
+    a {
+        text-decoration: none;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0)
+    }
+
+    ::-webkit-input-placeholder {
+        font-family: -apple-system-font, Helvetica Neue, sans-serif
+    }
+
+    a {
+        -webkit-touch-callout: none
+    }
+
+    body {
+        line-height: 1.6;
+        font-family: -apple-system-font, Helvetica Neue, sans-serif
+    }
+
+    .weui-loadmore_line {
+        border-top: 1px solid #e5e5e5;
+        margin-top: 2.4em
+    }
+
+    .weui-loadmore_line .weui-loadmore__tips {
+        position: relative;
+        top: -.9em;
+        padding: 0 .55em;
+        background-color: #fbf9fe;
+        color: #999
+    }
+
+    .weui-btn {
+        background: -webkit-linear-gradient(left, #22a639, #4bcd63);
+        background: linear-gradient(90deg, #22a639, #4bcd63);
+        border-radius: 20px
+    }
+
+    .weui-btn_disabled {
+        opacity: .3
+    }
+
+    ::-webkit-input-placeholder {
+        color: #ccc
+    }
+
+    :-moz-placeholder, ::-moz-placeholder {
+        color: #ccc
+    }
+
+    :-ms-input-placeholder {
+        color: #ccc
+    }
+
+    body {
+        background-color: #fbf9fe
+    }
+
+    @media only screen and (min-width: 769px) {
+        body {
+            width: 480px !important;
+            margin: 0 auto
+        }
+    }
+    </style>
+    <style type="text/css">body, html {
+        height: 100%;
+        width: 100%;
+        overflow-x: hidden
+    }
+
+    .circular-shape {
+        border-radius: 50%
+    }
+
+    .block {
+        display: block
+    }
+
+    .rmargin-5px {
+        margin-right: 5px
+    }
+
+    .rmargin-10px {
+        margin-right: 10px
+    }
+
+    .rmargin-20px {
+        margin-right: 20px
+    }
+    </style>
+    <style type="text/css">.default-color {
+        color: #999
+    }
+
+    .warning-color {
+        color: #f93
+    }
+
+    .success-color {
+        color: #0c0
+    }
+
+    .danger-color {
+        color: #c33
+    }
+
+    .info-color {
+        color: #69f
+    }
+
+    .font-red {
+        color: #ff5e54
+    }
+
+    .font-green {
+        color: #3ab157
+    }
+
+    .font-grey {
+        color: #b3b3b3
+    }
+
+    .copy-right {
+        text-align: center;
+        font-size: 12px;
+        color: #ccc;
+        width: 100%;
+        position: absolute;
+        bottom: 5px;
+        z-index: -999
+    }
+    </style>
+    <style type="text/css"></style>
+
+    <style type="text/css">img[data-v-b6416234] {
+        width: 100%;
+        height: 100%
+    }
+
+    .container[data-v-b6416234] {
+        position: absolute;
+        top: 4rem;
+        margin: 5%;
+        padding-bottom: .266667rem;
+        width: 90%
+    }
+
+    .grid-label[data-v-b6416234] {
+        display: block;
+        text-align: center;
+        line-height: 100%;
+        vertical-align: middle;
+        color: #666;
+        width: 100%
+    }
+
+    .grid-badge[data-v-b6416234] {
+        text-align: center;
+        line-height: 100%;
+        margin-bottom: 10px;
+        background-color: #000
+    }
+
+    .weui-grids[data-v-b6416234]:before {
+        content: " ";
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        height: 1px;
+        border-top: 1px solid #999;
+        color: #d9d9d9;
+        -webkit-transform-origin: 0 0;
+        transform-origin: 0 0;
+        -webkit-transform: scaleY(.5);
+        transform: scaleY(.5)
+    }
+
+    .weui-grids[data-v-b6416234]:after {
+        content: " ";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1px;
+        bottom: 0;
+        border-left: 1px solid #999;
+        color: #d9d9d9;
+        -webkit-transform-origin: 0 0;
+        transform-origin: 0 0;
+        -webkit-transform: scaleX(.5);
+        transform: scaleX(.5)
+    }
+
+    .weui-grid[data-v-b6416234]:before {
+        content: " ";
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 1px;
+        bottom: 0;
+        border-right: 1px solid #999;
+        color: #d9d9d9;
+        -webkit-transform-origin: 100% 0;
+        transform-origin: 100% 0;
+        -webkit-transform: scaleX(.5);
+        transform: scaleX(.5)
+    }
+
+    .weui-grid[data-v-b6416234]:after {
+        content: " ";
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        height: 1px;
+        border-bottom: 1px solid #999;
+        color: #d9d9d9;
+        -webkit-transform-origin: 0 100%;
+        transform-origin: 0 100%;
+        -webkit-transform: scaleY(.5);
+        transform: scaleY(.5)
+    }
+
+    .vux-badge-dot[data-v-b6416234] {
+        height: auto;
+        padding: 7px
+    }
+    </style>
+    <style type="text/css">.cbox[data-v-46b5f1a7] {
+        text-align: center
+    }
+
+    .keyboard-inner[data-v-46b5f1a7] {
+        padding: 5px 0;
+        width: 100%;
+        height: 38px;
+        font-size: 1.5rem
+    }
+
+    .keyboard-list-box[data-v-46b5f1a7] {
+        background-color: #fff;
+        width: 100%;
+        overflow: scroll;
+        -webkit-overflow-scrolling: touch
+    }
+
+    .no-active[data-v-46b5f1a7] {
+        background-color: #d4d8db
+    }
+
+    .arrow-down[data-v-46b5f1a7] {
+        padding: 5px 0;
+        width: 100%;
+        height: 20px;
+        font-size: 1.5rem
+    }
+    </style>
+    <style type="text/css">.verification[data-v-a356296e] {
+        background-color: #fff
+    }
+
+    .weui-btn[data-v-a356296e] {
+        background: none;
+        background-color: #fff;
+        border-radius: 20px;
+        border: 1px solid #4dcc63;
+        color: #4dcc63
+    }
+    </style>
+</head>
+<body>
+<div id="app" style="height: 100%;">
+    <div class="funds">
+        <div class="funds-reset" style="height: 100%;">
+            <div class="weui-tab" slot="default">
+                <div class="vux-header" style="width: 100%; position: absolute; left: 0px; top: 0px; z-index: 100;">
+                    <div class="vux-header-left">
+                        <a class="vux-header-back"></a>
+                        <div class="left-arrow" onclick="javascript:history.back();"></div>
+                    </div>
+                    <h1 class="vux-header-title"><span>设置资金密码</span></h1> <!---->
+                    <div class="vux-header-right">
+                        <!----></div>
+                </div>
+                <div id="vux_view_box_body" class="weui-tab__panel vux-fix-safari-overflow-scrolling"
+                     style="padding-top: 50px; padding-bottom: 50px;">
+                    <div>
+                        <!---->
+                        <div class="weui-cells vux-no-group-title">
+                            <div data-v-a356296e="" class="vux-x-input weui-cell active" placeholder_align="left">
+                                <div class="weui-cell__hd">
+                                    <!---->
+                                    <label for="vux-x-input-nqh62" class="weui-label" style="width: 80px;">资金密码</label>
+                                    <!----></div>
+                                <div class="weui-cell__bd weui-cell__primary">
+                                    <!---->
+                                    <!---->
+                                    <!---->
+                                    <input id="vux-x-input-nqh62" maxlength="6" autocomplete="off" autocapitalize="off"
+                                           autocorrect="off" spellcheck="false" type="password"
+                                           placeholder="请为帐号设置6位数字资金密码" readonly="readonly" class="weui-input"
+                                           style="text-align: left;">
+                                    <!----></div>
+                                <div class="weui-cell__ft">
+                                    <i class="weui-icon weui_icon_clear weui-icon-clear" style="display: none;"></i>
+                                    <i class="vux-input-icon weui-icon weui_icon_warn weui-icon-warn" title=""
+                                       style="display: none;"></i>
+                                    <!---->
+                                    <i class="weui-icon weui_icon_success weui-icon-success" style="display: none;"></i>
+                                    <i class="vux-input-icon weui-icon weui_icon_success weui-icon-success"
+                                       style="display: none;"></i>
+                                    <i class="vux-input-icon weui-icon weui_icon_warn weui-icon-warn"
+                                       style="display: none;"></i>
+                                    <button data-v-a356296e="" class="weui-btn weui-btn_mini weui-btn_primary"
+                                            style="margin-left: 0px; background-color: rgb(255, 255, 255); padding-left: 10px; padding-right: 10px; display: none;">
+                                        <!----></button>
+                                    <!----></div>
+                                <div class="vux-toast">
+                                    <div class="weui-mask_transparent" style="display: none;"></div>
+                                    <div class="weui-toast weui-toast_text" style="width: auto; display: none;">
+                                        <i class="weui-icon-success-no-circle weui-icon_toast"
+                                           style="display: none;"></i>
+                                        <p class="weui-toast__content" style="padding: 10px;"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div data-v-a356296e="" class="vux-x-input weui-cell" placeholder_align="left">
+                                <div class="weui-cell__hd">
+                                    <!---->
+                                    <label for="vux-x-input-yhgw1" class="weui-label" style="width: 80px;">确认密码</label>
+                                    <!----></div>
+                                <div class="weui-cell__bd weui-cell__primary">
+                                    <!---->
+                                    <!---->
+                                    <!---->
+                                    <input id="vux-x-input-yhgw1" maxlength="6" autocomplete="off" autocapitalize="off"
+                                           autocorrect="off" spellcheck="false" type="password"
+                                           placeholder="请再次输入新设置的资金密码" readonly="readonly" class="weui-input"
+                                           style="text-align: left;">
+                                    <!----></div>
+                                <div class="weui-cell__ft">
+                                    <i class="weui-icon weui_icon_clear weui-icon-clear" style="display: none;"></i>
+                                    <i class="vux-input-icon weui-icon weui_icon_warn weui-icon-warn" title=""
+                                       style="display: none;"></i>
+                                    <!---->
+                                    <i class="weui-icon weui_icon_success weui-icon-success" style="display: none;"></i>
+                                    <i class="vux-input-icon weui-icon weui_icon_success weui-icon-success"
+                                       style="display: none;"></i>
+                                    <i class="vux-input-icon weui-icon weui_icon_warn weui-icon-warn"
+                                       style="display: none;"></i>
+                                    <button data-v-a356296e="" class="weui-btn weui-btn_mini weui-btn_primary"
+                                            style="margin-left: 0px; background-color: rgb(255, 255, 255); padding-left: 10px; padding-right: 10px; display: none;">
+                                        <!----></button>
+                                    <!----></div>
+                                <div class="vux-toast">
+                                    <div class="weui-mask_transparent" style="display: none;"></div>
+                                    <div class="weui-toast weui-toast_text" style="width: auto; display: none;">
+                                        <i class="weui-icon-success-no-circle weui-icon_toast"
+                                           style="display: none;"></i>
+                                        <p class="weui-toast__content" style="padding: 10px;"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="vux-x-input weui-cell" style="display: none;">
+                                <div class="weui-cell__hd">
+                                    <!---->
+                                    <label for="vux-x-input-m7wyl" class="weui-label" style="width: 80px;">手机号</label>
+                                    <!----></div>
+                                <div class="weui-cell__bd weui-cell__primary">
+                                    <input id="vux-x-input-m7wyl" autocomplete="off" autocapitalize="off"
+                                           autocorrect="off" spellcheck="false" type="text" readonly="readonly"
+                                           class="weui-input">
+                                    <!---->
+                                    <!---->
+                                    <!---->
+                                    <!----></div>
+                                <div class="weui-cell__ft">
+                                    <i class="weui-icon weui_icon_clear weui-icon-clear" style="display: none;"></i>
+                                    <i class="vux-input-icon weui-icon weui_icon_warn weui-icon-warn" title=""
+                                       style="display: none;"></i>
+                                    <!---->
+                                    <i class="weui-icon weui_icon_success weui-icon-success" style="display: none;"></i>
+                                    <i class="vux-input-icon weui-icon weui_icon_success weui-icon-success"
+                                       style="display: none;"></i>
+                                    <i class="vux-input-icon weui-icon weui_icon_warn weui-icon-warn"
+                                       style="display: none;"></i>
+                                    <!----></div>
+                                <div class="vux-toast">
+                                    <div class="weui-mask_transparent" style="display: none;"></div>
+                                    <div class="weui-toast weui-toast_text" style="width: auto; display: none;">
+                                        <i class="weui-icon-success-no-circle weui-icon_toast"
+                                           style="display: none;"></i>
+                                        <p class="weui-toast__content" style="padding: 10px;"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div data-v-a356296e="" class="vux-x-input weui-cell" placeholder-align="left">
+                                <div class="weui-cell__hd">
+                                    <!---->
+                                    <label for="vux-x-input-3e1cx" class="weui-label" style="width: 80px;">手机号</label>
+                                    <!----></div>
+                                <div class="weui-cell__bd weui-cell__primary">
+                                    <input id="vux-x-input-3e1cx" maxlength="11" autocomplete="off" autocapitalize="off"
+                                           autocorrect="off" spellcheck="false" type="text" placeholder="请输入绑定手机号"
+                                           readonly="readonly" class="weui-input" style="text-align: left;">
+                                    <!---->
+                                    <!---->
+                                    <!---->
+                                    <!----></div>
+                                <div class="weui-cell__ft">
+                                    <i class="weui-icon weui_icon_clear weui-icon-clear" style="display: none;"></i>
+                                    <i class="vux-input-icon weui-icon weui_icon_warn weui-icon-warn" title=""
+                                       style="display: none;"></i>
+                                    <!---->
+                                    <i class="weui-icon weui_icon_success weui-icon-success" style="display: none;"></i>
+                                    <i class="vux-input-icon weui-icon weui_icon_success weui-icon-success"
+                                       style="display: none;"></i>
+                                    <i class="vux-input-icon weui-icon weui_icon_warn weui-icon-warn"
+                                       style="display: none;"></i>
+                                    <button data-v-a356296e="" class="weui-btn weui-btn_mini weui-btn_primary"
+                                            style="margin-left: 0px; background-color: rgb(255, 255, 255); padding-left: 10px; padding-right: 10px; display: none;">
+                                        <!----></button>
+                                    <!----></div>
+                                <div class="vux-toast">
+                                    <div class="weui-mask_transparent" style="display: none;"></div>
+                                    <div class="weui-toast weui-toast_text" style="width: auto; display: none;">
+                                        <i class="weui-icon-success-no-circle weui-icon_toast"
+                                           style="display: none;"></i>
+                                        <p class="weui-toast__content" style="padding: 10px;"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div data-v-a356296e="" class="vux-x-input weui-cell" placeholder_align="left">
+                                <div class="weui-cell__hd">
+                                    <!---->
+                                    <label for="vux-x-input-sqeul" class="weui-label" style="width: 80px;">验证码</label>
+                                    <!----></div>
+                                <div class="weui-cell__bd weui-cell__primary">
+                                    <!---->
+                                    <!---->
+                                    <!---->
+                                    <!---->
+                                    <input id="vux-x-input-sqeul" maxlength="6" autocomplete="off" autocapitalize="off"
+                                           autocorrect="off" spellcheck="false" type="tel" placeholder="请填写验证码"
+                                           readonly="readonly" class="weui-input" style="text-align: left;"></div>
+                                <div class="weui-cell__ft">
+                                    <i class="weui-icon weui_icon_clear weui-icon-clear" style="display: none;"></i>
+                                    <i class="vux-input-icon weui-icon weui_icon_warn weui-icon-warn" title=""
+                                       style="display: none;"></i>
+                                    <!---->
+                                    <i class="weui-icon weui_icon_success weui-icon-success" style="display: none;"></i>
+                                    <i class="vux-input-icon weui-icon weui_icon_success weui-icon-success"
+                                       style="display: none;"></i>
+                                    <i class="vux-input-icon weui-icon weui_icon_warn weui-icon-warn"
+                                       style="display: none;"></i>
+                                    <button data-v-a356296e="" class="weui-btn weui-btn_mini weui-btn_primary"
+                                            style="margin-left: 0px; background-color: rgb(255, 255, 255); padding-left: 10px; padding-right: 10px;">
+                                        <!---->发送验证码
+                                    </button>
+                                    <!----></div>
+                                <div class="vux-toast">
+                                    <div class="weui-mask_transparent" style="display: none;"></div>
+                                    <div class="weui-toast weui-toast_text" style="width: auto; display: none;">
+                                        <i class="weui-icon-success-no-circle weui-icon_toast"
+                                           style="display: none;"></i>
+                                        <p class="weui-toast__content" style="padding: 10px;"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <span style="display: none;"></span>
+                        </div>
+                        <!----></div>
+                    <!---->
+                    <div style="margin: 25px 15px;">
+                        <button disabled="disabled" class="weui-btn weui-btn_disabled weui-btn_primary">
+                            <!---->提交
+                        </button>
+                        <button class="weui-btn weui-btn_primary" style="display: none;">
+                            <!---->提交
+                        </button>
+                    </div>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <div class="vux-toast" id="toast">
+                        <div class="weui-mask_transparent" style="display: none;"></div>
+                        <div class="weui-toast weui-toast_text" style="width: 70%; display: none;">
+                            <i class="weui-icon-success-no-circle weui-icon_toast" style="display: none;"></i>
+                            <p class="weui-toast__content">
+                            <div>
+                                <svg type="ios-checkmark" size="30" xmlns="http://www.w3.org/2000/svg" width="30"
+                                     height="30" viewBox="0 0 512 512" class="vux-x-icon vux-x-icon-ios-checkmark"
+                                     style="fill: rgb(58, 177, 87); vertical-align: middle;">
+                                    <path d="M256 48C141.1 48 48 141.1 48 256s93.1 208 208 208 208-93.1 208-208S370.9 48 256 48zm-32.1 281.7c-2.4 2.4-5.8 4.4-8.8 4.4s-6.4-2.1-8.9-4.5l-56-56 17.8-17.8 47.2 47.2L340 177.3l17.5 18.1-133.6 134.3z"></path>
+                                </svg>
+                                <span style="vertical-align: bottom;"></span>
+                            </div>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="vux-popup-dialog vux-popup-bottom vux-popup-show" style="height: 227px;">
+                        <div>
+                            <div class="weui-tabbar">
+                                <div data-v-46b5f1a7="" style="width: 100%;">
+                                    <div data-v-46b5f1a7="" class="vux-flexbox keyboard-list-box vux-flex-row">
+                                        <div data-v-46b5f1a7="" class="vux-flexbox-item cbox vux-1px-t vux-tap-active"
+                                             style="flex: 0 0 33.3333%;">
+                                            <div data-v-46b5f1a7="" class="vux-1px-r keyboard-inner">1</div>
+                                        </div>
+                                        <div data-v-46b5f1a7="" class="vux-flexbox-item cbox vux-1px-t vux-tap-active"
+                                             style="flex: 0 0 33.3333%;">
+                                            <div data-v-46b5f1a7="" class="vux-1px-r keyboard-inner">2</div>
+                                        </div>
+                                        <div data-v-46b5f1a7="" class="vux-flexbox-item cbox vux-1px-t vux-tap-active"
+                                             style="flex: 0 0 33.3333%;">
+                                            <div data-v-46b5f1a7="" class="vux-1px-r keyboard-inner">3</div>
+                                        </div>
+                                    </div>
+                                    <div data-v-46b5f1a7="" class="vux-flexbox keyboard-list-box vux-flex-row">
+                                        <div data-v-46b5f1a7="" class="vux-flexbox-item cbox vux-1px-t vux-tap-active"
+                                             style="flex: 0 0 33.3333%;">
+                                            <div data-v-46b5f1a7="" class="vux-1px-r keyboard-inner">4</div>
+                                        </div>
+                                        <div data-v-46b5f1a7="" class="vux-flexbox-item cbox vux-1px-t vux-tap-active"
+                                             style="flex: 0 0 33.3333%;">
+                                            <div data-v-46b5f1a7="" class="vux-1px-r keyboard-inner">5</div>
+                                        </div>
+                                        <div data-v-46b5f1a7="" class="vux-flexbox-item cbox vux-1px-t vux-tap-active"
+                                             style="flex: 0 0 33.3333%;">
+                                            <div data-v-46b5f1a7="" class="vux-1px-r keyboard-inner">6</div>
+                                        </div>
+                                    </div>
+                                    <div data-v-46b5f1a7="" class="vux-flexbox keyboard-list-box vux-flex-row">
+                                        <div data-v-46b5f1a7="" class="vux-flexbox-item cbox vux-1px-t vux-tap-active"
+                                             style="flex: 0 0 33.3333%;">
+                                            <div data-v-46b5f1a7="" class="vux-1px-r keyboard-inner">7</div>
+                                        </div>
+                                        <div data-v-46b5f1a7="" class="vux-flexbox-item cbox vux-1px-t vux-tap-active"
+                                             style="flex: 0 0 33.3333%;">
+                                            <div data-v-46b5f1a7="" class="vux-1px-r keyboard-inner">8</div>
+                                        </div>
+                                        <div data-v-46b5f1a7="" class="vux-flexbox-item cbox vux-1px-t vux-tap-active"
+                                             style="flex: 0 0 33.3333%;">
+                                            <div data-v-46b5f1a7="" class="vux-1px-r keyboard-inner">9</div>
+                                        </div>
+                                    </div>
+                                    <div data-v-46b5f1a7="" class="vux-flexbox keyboard-list-box vux-flex-row">
+                                        <div data-v-46b5f1a7="" class="vux-flexbox-item cbox vux-1px-t no-active"
+                                             style="flex: 0 0 33.3333%;">
+                                            <div data-v-46b5f1a7="" class="vux-1px-r keyboard-inner"></div>
+                                        </div>
+                                        <div data-v-46b5f1a7="" class="vux-flexbox-item cbox vux-1px-t vux-tap-active"
+                                             style="flex: 0 0 33.3333%;">
+                                            <div data-v-46b5f1a7="" class="vux-1px-r keyboard-inner">0</div>
+                                        </div>
+                                        <div data-v-46b5f1a7="" class="vux-flexbox-item cbox vux-1px-t no-active"
+                                             style="flex: 0 0 33.3333%;">
+                                            <div data-v-46b5f1a7="" class="vux-1px-r keyboard-inner">
+                                                <img data-v-46b5f1a7="" src="__static__/images/backspace.607643a.png"
+                                                     style="width: 23%; margin-top: 5px;"></div>
+                                        </div>
+                                    </div>
+                                    <div data-v-46b5f1a7="" class="vux-flexbox keyboard-list-box vux-flex-row">
+                                        <div data-v-46b5f1a7="" class="vux-flexbox-item cbox vux-1px-t vux-tap-active">
+                                            <div data-v-46b5f1a7="" class="vux-1px-r arrow-down"
+                                                 style="padding-bottom: 10px;">
+                                                <svg data-v-46b5f1a7="" type="ios-arrow-down" size="30"
+                                                     xmlns="http://www.w3.org/2000/svg" width="30" height="30"
+                                                     viewBox="0 0 512 512" class="vux-x-icon vux-x-icon-ios-arrow-down">
+                                                    <path data-v-46b5f1a7=""
+                                                          d="M396.6 160l19.4 20.7L256 352 96 180.7l19.3-20.7L256 310.5z"></path>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="copy-right">© BestPay</p></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="__static__/js/manifest.44952cd8bca467ee5cdd.js"></script>
+<script type="text/javascript" src="__static__/js/vendor.b929a8238b485462f3ef.js"></script>
+<script type="text/javascript" src="__static__/js/app.489d9b9f6ef9e944de48.js"></script>
+<div class="vux-alert">
+    <div class="vux-x-dialog">
+        <div class="weui-mask" style="display: none;"></div>
+        <div class="weui-dialog" style="display: none;">
+            <div class="weui-dialog__hd">
+                <strong class="weui-dialog__title">您还没有资金密码</strong></div>
+            <div class="weui-dialog__bd">
+                <div>点击确定前往设置</div>
+            </div>
+            <div class="weui-dialog__ft">
+                <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_primary">确定</a></div>
+        </div>
+    </div>
+</div>
+<div class="vux-confirm">
+    <div class="vux-x-dialog">
+        <div class="weui-mask" style="display: none;"></div>
+        <div class="weui-dialog" style="display: none;">
+            <!---->
+            <div class="weui-dialog__bd">
+                <div></div>
+            </div>
+            <div class="weui-dialog__ft">
+                <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_default">取消</a>
+                <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_primary">确定</a></div>
+        </div>
+    </div>
+</div>
+<a data-cancel-text="取消" data-confirm-text="确定" href="javascript:"
+   class="vux-datetime weui-cell weui-cell_access vux-datetime-style-inject" id="vux-datetime-po1bc"
+   style="display: none;">
+    <div>
+        <p class=""></p>
+        <!----></div>
+    <div class="weui-cell__ft vux-cell-primary vux-datetime-value">
+        <!---->
+        <!---->
+        <i class="vux-input-icon weui-icon weui_icon_warn weui-icon-warn" style="display: none;"></i>
+    </div>
+</a>
+<div class="weui-loading_toast vux-loading vux-loading-no-text" style="display: none;">
+    <div class="weui-mask_transparent"></div>
+    <div class="weui-toast">
+        <i class="weui-loading weui-icon_toast"></i>
+        <!----></div>
+</div>
+<div class="vux-toast">
+    <div class="weui-mask_transparent" style="display: none;"></div>
+    <div class="weui-toast weui-toast_success" style="width: 7.6em; display: none;">
+        <i class="weui-icon-success-no-circle weui-icon_toast"></i>
+        <p class="weui-toast__content"></p>
+    </div>
+</div>
+<a class="vux-popup-mask" data-uuid=",nvi1i" href="javascript:void(0)" style="z-index: -1;"></a>
+</body>
+
+</html>

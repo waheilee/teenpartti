@@ -1,0 +1,257 @@
+{extend name="common/base" /}
+{block name="title"}代理汇总{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-row layui-col-space20" style="display: none">
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('团队总数')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="total_Water" style="color: #009688"></p></div>
+        </div>
+    </div>
+
+    <!--<div class="layui-col-md2">-->
+    <!--<div class="layui-card">-->
+    <!--<div class="layui-card-header"> 总收益</div>-->
+    <!--<div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="totalResult" style="color: #009688">{$data.total_reward}</p></div>-->
+    <!--</div>-->
+    <!--</div>-->
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('总流水')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="total_SGD" style="color: #009688"></p></div>
+        </div>
+    </div>
+
+
+</div>
+
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('代理ID')}</label>
+                    <div class="layui-input-inline"><input autocomplete="off" class="layui-input" id="RoleID" lay-verify="number" name="RoleID" type="text">
+                    </div>
+                </div>
+
+
+                <div class="layui-inline">
+                    <!-- <div class="layui-input-inline"> -->
+                    <a class="layui-btn" data-type="reload" id="search">{:lang('搜索')}</a>
+                    <a class="layui-btn layui-btn-danger" id="output">{:lang('导出记录')}</a>
+                    <!-- </div> -->
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        {if($parentid>0)}
+        <a class="layui-btn layui-btn-primary" style="margin-bottom: 10px;">{$parentid}{:lang('的子代理')}</a>
+        <a style="margin-bottom: 10px;" class="layui-btn" onclick="window.history.go(-1);">
+            {:lang('后退')}
+        </a>
+        {/if}
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+
+<script id="msg-bar" type="text/html">
+    <input type="button" class="layui-btn layui-btn-xs" lay-event="lookteam" value="{:lang('查看下级成员')}">
+</script>
+<script>
+
+    url = "{:url('agent/AgentWaterSum',['parentid'=>$parentid])}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'ProxyId', title: "{:lang('代理ID')}", width: 150,fixed:'left', align: 'center',templet:function (d) {
+                            return d.ProxyId;
+                        }, sort: true},
+                    {
+                        field: 'MobileBackgroundSwitch', width: 120, title: "{:lang('开通手机版')}", align: "center", templet: function (d) {
+                            var normal ="{:lang('开启|关闭')}"
+                            if (d.MobileBackgroundSwitch == 1) {
+                                return "<input type='checkbox' ctrlID = '" + d.ProxyId + "' lay-filter='Disable' lay-skin='switch' lay-text='"+normal+"' checked>"
+                            } else {
+                                return "<input type='checkbox' ctrlID = '" + d.ProxyId + "'  lay-filter='Disable' lay-skin='switch' lay-text='"+normal+"'>"
+                            }
+                        }
+                    },   
+                    {field: 'ReceivedIncome', title: "{:lang('个人收益')}", width: 200, align: 'center'},
+                    {field: 'TotalDeposit', title: "{:lang('个人充值')}", width: 200, align: 'center', sort: true},
+                    {field: 'TotalRunning', title: "{:lang('个人流水')}", width: 200, align: 'center', sort: true},
+                    {field: 'Lv1PersonCount', title: "{:lang('一级人数')}", width: 200, align: 'center', sort: true},
+                    {field: 'Lv1Deposit', title: "{:lang('一级充值')}", width: 200, align: 'center', sort: true},
+                    {field: 'Lv1Running', title: "{:lang('一级流水')}", width: 200, align: 'center', sort: true},
+                    {field: 'Lv2PersonCount', title: "{:lang('二级人数')}", width: 200, align: 'center', sort: true},
+                    {field: 'Lv2Deposit', title: "{:lang('二级充值')}", width: 200, align: 'center', sort: true},
+                    {field: 'Lv2Running', title: "{:lang('二级流水')}", width: 200, align: 'center', sort: true},
+                    {field: 'Lv3PersonCount', title: "{:lang('三级人数')}", minWidth: 200, align: 'center'},
+                    {field: 'Lv3Deposit', title: "{:lang('三级充值')}", width: 200, align: 'center', sort: true},
+                    {field: 'Lv3Running', title:"{:lang('三级流水')}", width: 150, align: 'center'},
+                    {fixed: 'right', align: "center", title: "{:lang('操作')}", align: 'center', width: 200, toolbar: '#msg-bar'},
+                ];
+                table.render({
+                    elem: '#proxylist', url: url, where: {
+                        Action:'list'
+                    }, page: true, limit: 15, cols: [cols], sort: true, autoSort: false,
+                    done: function (res, curr, count) {
+                        tzTbale();
+                    }
+                });
+            },
+
+            //搜索
+            search: function () {
+                //执行重载
+                table.reload('proxylist', {
+                    page: {curr: 1},
+                    where: {
+                        RoleID: $.trim($('#RoleID').val()),
+                        todaywater: $.trim($('#todaywater').val()),
+                        teamnum: $.trim($('#teamnum').val())
+                    },
+                    done: function (res, curr, count) {
+
+                    }
+                });
+            },
+
+            //操作事件
+            extraEvent: function () {
+
+                //排序
+                table.on('sort(proxylist)', function (obj) {
+                    //执行重载
+                    table.reload('proxylist', {
+                        initSort: obj,
+                        page: {curr: 1},
+                        where: {
+                            RoleID: $.trim($('#RoleID').val()),
+                            RoomID: $.trim($('#RoomID').val()),
+                            orderytpe: obj.type,
+                            orderby: obj.field,
+                        }
+                    });
+
+                });
+                //编辑&&删除
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data, layEvent = obj.event;
+                    if (layEvent === 'lookteam') {
+                        url = "{:url('agent/agentwatersum')}" + "?parentid=" +data.ProxyId;
+                        location.href=url;
+                    }
+
+                });
+                form.on('switch(Disable)', function (data) {
+                    var ID = data.elem.attributes['ctrlID'].nodeValue;
+                    var swtype = data.elem.checked;
+                    var type = 0;
+                    if (swtype) type = 1;
+                    else type = 0;
+                    // layer.msg(data);
+                    //设置开关
+                    $.ajax({
+                        url: "{:url('agent/updateMobileBackgroundSwitch')}",
+                        type: 'post',
+                        data: {'roleid': ID, type: type},
+                        success: function (res) {
+                            if (res.code === 0) {
+                                // layer.msg(res.msg, {icon: 6});
+                                layer.msg(res.msg, {icon: 6});
+                            } else {
+                                // layer.msg(res.msg, {icon: 5});
+                                layer.msg("{:lang('修改失败')}", {icon: 5});
+                            }
+                            form.render();
+                        }
+                    })
+
+                });
+            },
+
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+
+    function formatNumber(val){
+        if(val>0){
+            return val;
+        }else{
+            return 0;
+        }
+    }
+
+    $('#output').click(function () {
+        where = {
+            RoleID: $.trim($('#RoleID').val()),
+            limit: 10000000,
+            output: 'exec',
+            Action:'list'
+        }
+
+        download();
+
+        function download() {
+            var params = Object.keys(where).map(function (key) {
+                return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+            }).join("&");
+            url = url + "?" + params;
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                async: true,
+                url: url, // 生成文件，保存在服务器
+                success: function (data) {
+                    var result = data;
+                    console.info(data);
+                    switch (result["code"]) {
+                        case 0:
+                            parent.parent.open(url + "&exec=1&outall=true");
+                            break;
+                        case 1:
+                            layer.msg(result["message"]);
+                            break;
+                        case 2:
+                            layer.confirm(result['message'], {
+                                btn: ["{:lang('是')}", "{:lang('否')}"] //按钮
+                            }, function () {
+                                parent.parent.open(url + "&exec=1&outall=true");
+                                layer.msg('', {icon: 6, time: 1000}, function () {
+                                    window.location.reload();
+                                });
+                            });
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, e) {
+                    console.log("oilDetection.js  method exportOilDetection" + e);
+                }
+            });
+        }
+    });
+</script>
+{/block}

@@ -1,0 +1,664 @@
+{extend name="common/base" /}
+
+{block name="title"}向玩家转账{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<div class="layui-row layui-col-space30">
+    <div class="layui-col-md12 layui-col-lg12 layui-col-xs12 layui-col-sm12">
+        <div class="layui-card">
+            <div class="layui-card-body">
+            	<form class="layui-form" lay-filter="component-form-group">
+                    <div class="layui-form-item">
+                    	<div class="layui-inline" style="padding-left: 20px;padding-top: 10px">
+                        	<span style="font-size: 25px"><b>{:lang('在线人数统计')}</b></span>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">{:lang('日期')}</label>
+                            <div class="layui-input-inline">
+                                <input type="text" id="date1" autocomplete="off"
+                                       class="layui-input" value="{:date('Y-m-d')}">
+                            </div>
+                        </div>
+
+                        <div class="layui-inline">
+                            <div class="layui-input-inline">
+                                <a class="layui-btn"  onclick="f1(1)">{:lang('搜索')}</a>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    
+                </form>
+                <div class="layui-carousel layadmin-carousel layadmin-dataview" id="elem1" data-anim="fade"
+                     lay-filter="LAY-index-dataview" style="margin-top: 16px">
+                    <div carousel-item id="hall1">
+                        <div><i class="layui-icon layui-icon-loading2 layadmin-loading"></i></div>
+                        <div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md12 layui-col-lg12 layui-col-xs12 layui-col-sm12">
+        <div class="layui-card">
+            <div class="layui-card-body">
+            	<form class="layui-form" lay-filter="component-form-group">
+                    <div class="layui-form-item">
+                    	<div class="layui-inline" style="padding-left: 20px;padding-top: 10px">
+                        	<span style="font-size: 25px"><b>{:lang('充值统计')}</b></span>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">{:lang('日期')}</label>
+                            <div class="layui-input-inline">
+                                <input type="text" id="date2" autocomplete="off"
+                                       class="layui-input" value="{:date('Y-m-d')}">
+                            </div>
+                        </div>
+
+                        <div class="layui-inline">
+                            <div class="layui-input-inline">
+                                <a class="layui-btn"  onclick="f2(1)">{:lang('搜索')}</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </form>
+                <div class="layui-carousel layadmin-carousel layadmin-dataview" id="elem2" data-anim="fade"
+                     lay-filter="LAY-index-dataview" style="margin-top: 16px">
+                    <div carousel-item id="hall2">
+                        <div><i class="layui-icon layui-icon-loading2 layadmin-loading"></i></div>
+                        <div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md12 layui-col-lg12 layui-col-xs12 layui-col-sm12">
+        <div class="layui-card">
+            <div class="layui-card-body">
+            	<form class="layui-form" lay-filter="component-form-group">
+                    <div class="layui-form-item">
+                    	<div class="layui-inline" style="padding-left: 20px;padding-top: 10px">
+                        	<span style="font-size: 25px"><b>{:lang('每日首充统计')}</b></span>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">{:lang('日期')}</label>
+                            <div class="layui-input-inline">
+                                <input type="text" id="date3" autocomplete="off"
+                                       class="layui-input" value="{:date('Y-m-d')}">
+                            </div>
+                        </div>
+
+                        <div class="layui-inline">
+                            <div class="layui-input-inline">
+                                <a class="layui-btn"  onclick="f3(1)">{:lang('搜索')}</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </form>
+                <div class="layui-carousel layadmin-carousel layadmin-dataview" id="elem3" data-anim="fade"
+                     lay-filter="LAY-index-dataview" style="margin-top: 16px">
+                    <div carousel-item id="hall3">
+                        <div><i class="layui-icon layui-icon-loading2 layadmin-loading"></i></div>
+                        <div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md12 layui-col-lg12 layui-col-xs12 layui-col-sm12">
+        <div class="layui-card">
+            <div class="layui-card-body">
+            	<form class="layui-form" lay-filter="component-form-group">
+                    <div class="layui-form-item">
+                    	<div class="layui-inline" style="padding-left: 20px;padding-top: 10px">
+                        	<span style="font-size: 25px"><b>{:lang('新增注册人数统计')}</b></span>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">{:lang('日期')}</label>
+                            <div class="layui-input-inline">
+                                <input type="text" id="date4" autocomplete="off"
+                                       class="layui-input" value="{:date('Y-m-d')}">
+                            </div>
+                        </div>
+
+                        <div class="layui-inline">
+                            <div class="layui-input-inline">
+                                <a class="layui-btn"  onclick="f4(1)">{:lang('搜索')}</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </form>
+                <div class="layui-carousel layadmin-carousel layadmin-dataview" id="elem4" data-anim="fade"
+                     lay-filter="LAY-index-dataview" style="margin-top: 16px">
+                    <div carousel-item id="hall4">
+                        <div><i class="layui-icon layui-icon-loading2 layadmin-loading"></i></div>
+                        <div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+
+	url = "{:url('statistical/GetOnlineDatalist')}";
+	layui.config({
+		base: '__layui__/' //静态资源所在路径
+	}).extend({
+		index: 'lib/index' //主入口模块
+	}).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+		//隐藏轮播
+		var element = layui.element
+			, layer = layui.layer
+			, laydate = layui.laydate
+			, table = layui.table
+			, $ = layui.$
+			, form = layui.form;
+		laydate.render({
+			elem: '#date1'
+			, format: 'yyyy-MM-dd'
+			, type: 'date'
+			, max: 0
+			, lang:'{$datelang ?: "cn"}'
+			, btns: ['clear', 'confirm']
+			// , value: new Date()
+		});
+		laydate.render({
+			elem: '#date2'
+			, format: 'yyyy-MM-dd'
+			, type: 'date'
+			, max: 0
+			, lang:'{$datelang ?: "cn"}'
+			, btns: ['clear', 'confirm']
+			// , value: new Date()
+		});
+		laydate.render({
+			elem: '#date3'
+			, format: 'yyyy-MM-dd'
+			, type: 'date'
+			, max: 0
+			, lang:'{$datelang ?: "cn"}'
+			, btns: ['clear', 'confirm']
+			// , value: new Date()
+		});
+		laydate.render({
+			elem: '#date4'
+			, format: 'yyyy-MM-dd'
+			, type: 'date'
+			, max: 0
+			, lang:'{$datelang ?: "cn"}'
+			, btns: ['clear', 'confirm']
+			// , value: new Date()
+		});
+		window.f1 = function(e){
+			var date = $("#date1").val();
+			var num  = e;
+			var url  = "/admin/Statistical/GetOnlineDatalist2?date="+date+"&num="+e;
+			var elem  = "#elem1";
+			var hall  = "#hall1";
+			var interval = 11;
+			layui.define(function (exports) {
+				//区块轮播切换
+				layui.use(['admin', 'carousel'], function () {
+					var $ = layui.$
+						, admin = layui.admin, carousel = layui.carousel, element = layui.element, device = layui.device();
+					//轮播切换
+					
+					carousel.render({
+						elem: elem
+						, width: '100%'
+						, arrow: 'none'
+						, interval: 5000
+						, autoplay: false
+					});
+					element.render('progress');
+				});
+				exports('', {})
+			});
+			layui.use(['carousel', 'echarts'], function () {
+				var $ = layui.$, carousel = layui.carousel, echarts = layui.echarts;
+				$.ajax({
+					type: 'post',
+					url: url,
+					data: {Action: 'Graph'},
+					dataType: 'json',
+					async: false,
+					success: function (res) {
+						if (res.code === 0) {
+							var names = [];
+							var series = [];
+							var selected = {};
+							for (var i=0; i < res.other.length; i++) {
+								names.push(res.other[i]);
+								selected[res.other[i]] = true;
+								var addData = {
+									name: res.other[i],
+									type: 'line',
+									showSymbol:false,
+									symbol:'circle',
+									symbolSize:8,
+									data: res.data[i+1],
+									markPoint: {data: [{type: 'max', name: "{:lang('最大值')}"}, {type: 'min', name: "{:lang('最小值')}"}]},
+									markLine: {data: []}
+								}
+								if (i == 0) {
+									addData['itemStyle'] =  {
+								        normal: {
+								            color: "red",
+								            lineStyle: {
+								                color: "red"
+								            }
+								        }
+								    }
+								}
+								series.push(addData);
+							}
+							//标准折线图
+							var echnormline = [], normline = [
+								{
+									//title: {text: "{:lang('在线人数统计')}", x: 'center', textStyle: {fontSize: 16}},
+									tooltip: {trigger: 'axis',backgroundColor:'rgba(255,255,255,1)',//通过设置rgba调节背景颜色与透明度
+						                color:'black',
+						                // borderWidth:'1',
+						                // borderColor:'gray',
+						                textStyle:{
+						                	color:'black',
+						                }
+						            },
+									legend: {
+										data: names,
+										selected:selected
+									},
+									toolbox: {
+										// show: true,
+										// feature: {mark: {show: true}, dataView: {show: true, readOnly: false}, magicType: {show: true, type: ['line', 'bar']}, restore: {show: true}, saveAsImage: {show: true}}
+									},
+									grid: {
+										height: 'auto', 
+										containLabel: true,
+										x:20,
+										x2:20,
+										y2:20
+									},
+									xAxis: [{type: 'category', boundaryGap: false, data: res.data[0],axisLabel:{interval:interval}}],
+									yAxis: [{
+										type: 'value',
+			                            splitArea:{
+			                            	show: false,
+			                            }
+									}],
+									series: series
+								},
+							]
+							
+							var elemnormline = $(hall).children('div');
+							
+							var rendernormline = function (index) {
+								echnormline[index] = echarts.init(elemnormline[index], layui.echartsTheme);
+								echnormline[index].setOption(normline[index],true);
+								window.onresize = echnormline[index].resize;
+							};
+							if (!elemnormline[0]) return;
+							rendernormline(0);
+							$('.layui-carousel-ind').hide();
+						}
+					}
+				});
+			});
+		}
+		window.f2 = function(e){
+			var date = $("#date2").val();
+			var num  = e;
+			var url  = "/admin/Statistical/GetRechargeDatalist?date="+date+"&num="+e;
+			var elem  = "#elem2";
+			var hall  = "#hall2";
+			var interval = 3;
+			layui.define(function (exports) {
+				//区块轮播切换
+				layui.use(['admin', 'carousel'], function () {
+					var $ = layui.$
+						, admin = layui.admin, carousel = layui.carousel, element = layui.element, device = layui.device();
+					//轮播切换
+					
+					carousel.render({
+						elem: elem
+						, width: '100%'
+						, arrow: 'none'
+						, interval: 5000
+						, autoplay: false
+					});
+					element.render('progress');
+				});
+				exports('', {})
+			});
+			layui.use(['carousel', 'echarts'], function () {
+				var $ = layui.$, carousel = layui.carousel, echarts = layui.echarts;
+				$.ajax({
+					type: 'post',
+					url: url,
+					data: {Action: 'Graph'},
+					dataType: 'json',
+					async: false,
+					success: function (res) {
+						if (res.code === 0) {
+							var names = [];
+							var series = [];
+							var selected = {};
+							for (var i=0; i < res.other.length; i++) {
+								names.push(res.other[i]);
+								selected[res.other[i]] = true;
+								var addData = {
+									name: res.other[i],
+									type: 'line',
+									showSymbol:false,
+									symbol:'circle',
+									symbolSize:8,
+									data: res.data[i+1],
+									markPoint: {data: [{type: 'max', name: "{:lang('最大值')}"}, {type: 'min', name: "{:lang('最小值')}"}]},
+									markLine: {data: []}
+								}
+								if (i == 0) {
+									addData['itemStyle'] =  {
+								        normal: {
+								            color: "red",
+								            lineStyle: {
+								                color: "red"
+								            }
+								        }
+								    }
+								}
+								series.push(addData);
+							}
+							//标准折线图
+							var echnormline = [], normline = [
+								{
+									//title: {text: "{:lang('在线人数统计')}", x: 'center', textStyle: {fontSize: 16}},
+									tooltip: {trigger: 'axis',backgroundColor:'rgba(255,255,255,1)',//通过设置rgba调节背景颜色与透明度
+						                color:'black',
+						                // borderWidth:'1',
+						                // borderColor:'gray',
+						                textStyle:{
+						                	color:'black',
+						                }
+						            },
+									legend: {
+										data: names,
+										selected:selected
+									},
+									toolbox: {
+										// show: true,
+										// feature: {mark: {show: true}, dataView: {show: true, readOnly: false}, magicType: {show: true, type: ['line', 'bar']}, restore: {show: true}, saveAsImage: {show: true}}
+									},
+			
+									grid: {
+										height: 'auto', 
+										containLabel: true,
+										x:20,
+										x2:20
+									},
+									xAxis: [{type: 'category', boundaryGap: false, data: res.data[0],axisLabel:{interval:interval}}],
+									yAxis: [{
+										type: 'value',
+			                            splitArea:{
+			                            	show: false,
+			                            }
+									}],
+									series: series
+								},
+							]
+								, elemnormline = $(hall).children('div')
+								, rendernormline = function (index) {
+								echnormline[index] = echarts.init(elemnormline[index], layui.echartsTheme);
+								echnormline[index].setOption(normline[index],true);
+								window.onresize = echnormline[index].resize;
+							};
+							if (!elemnormline[0]) return;
+							rendernormline(0);
+							$('.layui-carousel-ind').hide();
+						}
+					}
+				});
+			});
+		}
+		window.f3 = function(e){
+			var date = $("#date3").val();
+			var num  = e;
+			var url  = "/admin/Statistical/GetDailyRechargelist?date="+date+"&num="+e;
+			var elem  = "#elem3";
+			var hall  = "#hall3";
+			var interval = 3;
+			layui.define(function (exports) {
+				//区块轮播切换
+				layui.use(['admin', 'carousel'], function () {
+					var $ = layui.$
+						, admin = layui.admin, carousel = layui.carousel, element = layui.element, device = layui.device();
+					//轮播切换
+					
+					carousel.render({
+						elem: elem
+						, width: '100%'
+						, arrow: 'none'
+						, interval: 5000
+						, autoplay: false
+					});
+					element.render('progress');
+				});
+				exports('', {})
+			});
+			layui.use(['carousel', 'echarts'], function () {
+				var $ = layui.$, carousel = layui.carousel, echarts = layui.echarts;
+				$.ajax({
+					type: 'post',
+					url: url,
+					data: {Action: 'Graph'},
+					dataType: 'json',
+					async: false,
+					success: function (res) {
+						if (res.code === 0) {
+							var names = [];
+							var series = [];
+							var selected = {};
+							for (var i=0; i < res.other.length; i++) {
+								names.push(res.other[i]);
+								selected[res.other[i]] = true;
+								var addData = {
+									name: res.other[i],
+									type: 'line',
+									showSymbol:false,
+									symbol:'circle',
+									symbolSize:8,
+									data: res.data[i+1],
+									markPoint: {data: [{type: 'max', name: "{:lang('最大值')}"}, {type: 'min', name: "{:lang('最小值')}"}]},
+									markLine: {data: []}
+								}
+								if (i == 0) {
+									addData['itemStyle'] =  {
+								        normal: {
+								            color: "red",
+								            lineStyle: {
+								                color: "red"
+								            }
+								        }
+								    }
+								}
+								series.push(addData);
+							}
+							//标准折线图
+							var echnormline = [], normline = [
+								{
+									//title: {text: "{:lang('在线人数统计')}", x: 'center', textStyle: {fontSize: 16}},
+									tooltip: {trigger: 'axis',backgroundColor:'rgba(255,255,255,1)',//通过设置rgba调节背景颜色与透明度
+						                color:'black',
+						                // borderWidth:'1',
+						                // borderColor:'gray',
+						                textStyle:{
+						                	color:'black',
+						                }
+						            },
+						            legend: {
+										data: names,
+										selected:selected
+									},
+									toolbox: {
+										// show: true,
+										// feature: {mark: {show: true}, dataView: {show: true, readOnly: false}, magicType: {show: true, type: ['line', 'bar']}, restore: {show: true}, saveAsImage: {show: true}}
+									},
+									grid: {
+										height: 'auto', 
+										containLabel: true,
+										x:20,
+										x2:20
+									},
+									xAxis: [{type: 'category', boundaryGap: false, data: res.data[0],axisLabel:{interval:interval}}],
+									yAxis: [{
+										type: 'value',
+			                            splitArea:{
+			                            	show: false,
+			                            }
+									}],
+									series: series
+								},
+							]
+								, elemnormline = $(hall).children('div')
+								, rendernormline = function (index) {
+								echnormline[index] = echarts.init(elemnormline[index], layui.echartsTheme);
+								echnormline[index].setOption(normline[index],true);
+								window.onresize = echnormline[index].resize;
+							};
+							if (!elemnormline[0]) return;
+							rendernormline(0);
+							$('.layui-carousel-ind').hide();
+						}
+					}
+				});
+			});
+		}
+		window.f4 = function(e){
+			var date = $("#date4").val();
+			var num  = e;
+			var url  = "/admin/Statistical/GetDailyRegisterUsers?date="+date+"&num="+e;
+			var elem  = "#elem4";
+			var hall  = "#hall4";
+			var interval = 3;
+			layui.define(function (exports) {
+				//区块轮播切换
+				layui.use(['admin', 'carousel'], function () {
+					var $ = layui.$
+						, admin = layui.admin, carousel = layui.carousel, element = layui.element, device = layui.device();
+					//轮播切换
+					
+					carousel.render({
+						elem: elem
+						, width: '100%'
+						, arrow: 'none'
+						, interval: 5000
+						, autoplay: false
+					});
+					element.render('progress');
+				});
+				exports('', {})
+			});
+			layui.use(['carousel', 'echarts'], function () {
+				var $ = layui.$, carousel = layui.carousel, echarts = layui.echarts;
+				$.ajax({
+					type: 'post',
+					url: url,
+					data: {Action: 'Graph'},
+					dataType: 'json',
+					async: false,
+					success: function (res) {
+						if (res.code === 0) {
+							var names = [];
+							var series = [];
+							var selected = {};
+							for (var i=0; i < res.other.length; i++) {
+								names.push(res.other[i]);
+								selected[res.other[i]] = true;
+								var addData = {
+									name: res.other[i],
+									type: 'line',
+									showSymbol:false,
+									symbol:'circle',
+									symbolSize:8,
+									data: res.data[i+1],
+									markPoint: {data: [{type: 'max', name: "{:lang('最大值')}"}, {type: 'min', name: "{:lang('最小值')}"}]},
+									markLine: {data: []}
+								}
+								if (i == 0) {
+									addData['itemStyle'] =  {
+								        normal: {
+								            color: "red",
+								            lineStyle: {
+								                color: "red"
+								            }
+								        }
+								    }
+								}
+								series.push(addData);
+							}
+							//标准折线图
+							var echnormline = [], normline = [
+								{
+									//title: {text: "{:lang('在线人数统计')}", x: 'center', textStyle: {fontSize: 16}},
+									tooltip: {trigger: 'axis',backgroundColor:'rgba(255,255,255,1)',//通过设置rgba调节背景颜色与透明度
+						                color:'black',
+						                // borderWidth:'1',
+						                // borderColor:'gray',
+						                textStyle:{
+						                	color:'black',
+						                }
+						            },
+									legend: {
+										data: names,
+										selected:selected
+									},
+									toolbox: {
+										// show: true,
+										// feature: {mark: {show: true}, dataView: {show: true, readOnly: false}, magicType: {show: true, type: ['line', 'bar']}, restore: {show: true}, saveAsImage: {show: true}}
+									},
+									grid: {
+										height: 'auto', 
+										containLabel: true,
+										x:20,
+										x2:20
+									},
+									xAxis: [{type: 'category', boundaryGap: false, data: res.data[0],axisLabel:{interval:interval}}],
+									yAxis: [{
+										type: 'value',
+			                            splitArea:{
+			                            	show: false,
+			                            }
+									}],
+									series: series
+								},
+							]
+								, elemnormline = $(hall).children('div')
+								, rendernormline = function (index) {
+								echnormline[index] = echarts.init(elemnormline[index], layui.echartsTheme);
+								echnormline[index].setOption(normline[index],true);
+								window.onresize = echnormline[index].resize;
+							};
+							if (!elemnormline[0]) return;
+							rendernormline(0);
+							$('.layui-carousel-ind').hide();
+						}
+					}
+				});
+			});
+		}
+		f1(2);
+		f2(2);
+		f3(2);
+		f4(2);
+	});
+	
+</script>
+{/block}
+

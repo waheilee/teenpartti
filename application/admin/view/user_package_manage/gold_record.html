@@ -1,0 +1,258 @@
+{extend name="common/base" /}
+
+{block name="title"}金币日志{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<!--<div class="layui-card">-->
+<!--<div class="layui-card-header">-->
+<!--总金额-->
+<!--<span class="layui-badge layui-bg-blue layuiadmin-badge">总</span>-->
+<!--</div>-->
+<!--<div class="layui-card-body layuiadmin-card-list">-->
+<!--<p class="layuiadmin-big-font" style="color:#009688" id="totalmoney">0</p>-->
+
+<!--</div>-->
+<!--</div>-->
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <select id="PackID" name="PackID">
+                            <option value="{$PackIDS}">可用分包</option>
+                            {foreach $PackID as $k1 => $v1}
+                            <option value="{$v1['OperatorId']}">{$v1['PackageName']}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="roleid" lay-verify="number" name="roleid" placeholder="玩家ID" type="text">
+                    </div>
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="AccountName" name="AccountName" placeholder="账号" type="text">
+                    </div>
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="NickName" name="NickName" placeholder="昵称" type="text">
+                    </div>
+                    <div class="layui-input-inline">
+                        <select id="usertype" name="usertype">
+                            <option value="-1">渠道</option>
+                            {foreach $usertype as $k1 => $v1}
+                            <option value="{$k1}">{$v1}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                    <div class="layui-inline">
+                        <!--        <label class="layui-form-label">日期</label>-->
+                        <div class="layui-input-inline" style="width: 100px;">
+                            <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date" name="start" type="text">
+                        </div>
+                        <div class="layui-form-mid"> -</div>
+                        <div class="layui-input-inline" style="width: 100px;">
+                            <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date2" name="end" type="text">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">类型</label>
+                        <div class="layui-input-inline">
+                            <select id="changetype" name="changetype">
+                                <option value="0">所有</option>
+                                {foreach $changeType as $k => $v}
+                                <option value="{$k}">{$v}</option>
+                                {/foreach}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <div class="layui-input-inline">
+                            <a class="layui-btn" data-type="reload" id="search">搜索</a>
+                            <a class="layui-btn" id="output">导出记录</a>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <table id="proxylist" lay-filter="proxylist"></table>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+
+
+<script>
+	layui.config({
+		base: '__layui__/' //静态资源所在路径
+	}).extend({
+		index: 'lib/index' //主入口模块
+
+	}).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
+		var RoomList = {$RoomList};
+		var main = {
+			renderData: function () {
+				var cols = [ //表头
+					{field: 'PackageName', title: '包名', minWidth: 80},
+					{field: 'RoleID', title: '用户ID', minWidth: 100, templet: function (d) {return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.RoleID + "</a>";}},
+					{field: 'AccountName', title: '账号名称', minWidth: 120},
+					{field: 'MachineCode', title: '机器码', minWidth: 100},
+					{field: 'LoginName', title: '昵称', minWidth: 100},
+					{field: 'ServerID', title: '房间ID', minWidth: 100},
+					{
+						field: '', title: '房间名', minWidth: 100, templet: function (d) {
+							for (x in RoomList) { if (RoomList[x].RoomID == d.ServerID) return RoomList[x].RoomName; }
+							return '';
+						}
+					},
+					{field: 'ChangeType', title: '类型', minWidth: 120,},
+					{
+						field: 'changemoney', title: '操作金币', minWidth: 120, templet: function (d) {
+							Money = (parseFloat(d.Money).toFixed(2) / 1000).toFixed(2);
+							return Money > 0 ? "<span style='color: red'>+" + Money + "</span>" : (d.changemoney == 0 ? Money : "<span style='color: green'>" + Money + "</span>");
+						}
+					},
+					{field: 'LastMoney', title: '操作后金币数', minWidth: 120, templet: function (d) {return (parseFloat(d.LastMoney).toFixed(2) / 1000).toFixed(2);}},
+					{field: 'AddTime', title: '时间', minWidth: 180, templet: function (d) {return d.AddTime.substr(0, d.AddTime.length - 4)}},
+				];
+				table.render({
+					elem: '#proxylist',
+					url: "{:url('UserPackageManage/GoldRecord')}", //数据接口
+					page: true,
+					limit: 15,
+					cols: [cols],
+					where: {
+						Action: 'list',
+						// PackID: $("#PackID").val()
+					},
+					done: function (res) {$(".layui-table-main tr").each(function (index, val) {
+                            $($(".layui-table-fixed-l .layui-table-body tbody tr")[index]).height($(val).height());
+                            $($(".layui-table-fixed-r .layui-table-body tbody tr")[index]).height($(val).height());
+                        });
+						// $('#totalmoney').html(res.other)
+					}
+				});
+			},
+			//搜索
+			search: function () {
+				//执行重载
+				table.reload('proxylist', {
+					page: {
+						curr: 1 //重新从第 1 页开始
+					},
+					where: {
+						roleid: $.trim($('#roleid').val()),
+						strartdate: $.trim($('#LAY-component-form-group-date').val()),
+						enddate: $.trim($('#LAY-component-form-group-date2').val()),
+						changetype: $.trim($('#changetype').val()),
+						AccountName: $.trim($('#AccountName').val()),
+						NickName: $.trim($('#NickName').val()),
+						usertype: $.trim($('#usertype').val()),
+						PackID: $("#PackID").val()
+					}
+				});
+			},
+			//操作事件
+			extraEvent: function () {
+				//编辑
+				table.on('tool(proxylist)', function (obj) {
+					var data = obj.data //获得当前行数据
+						, layEvent = obj.event; //获得 lay-event 对应的值
+					tr = obj.tr; //获得当前行 tr 的DOM对象
+					if (layEvent === 'detail') {
+						var url = 'UserInfo?roleid=' + data.RoleID;
+						x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.7, $(window).height() * 0.6);
+					}
+				});
+			},
+			init: function () {
+				main.renderData();
+				main.extraEvent();
+				laydate.render({
+					elem: '#LAY-component-form-group-date'
+					, format: 'yyyy-MM-dd'
+					, max: 1
+					, lang:'{$datelang ?: "cn"}'
+					, btns: ['clear', 'confirm']
+					, value: new Date()
+				});
+				laydate.render({
+					elem: '#LAY-component-form-group-date2'
+					, format: 'yyyy-MM-dd'
+					, max: 1
+					, lang:'{$datelang ?: "cn"}'
+					, btns: ['clear', 'confirm']
+					, value: new Date()
+				});
+				$('#search').on('click', function (e) {
+					e.preventDefault();
+					main.search();
+				});
+			}
+		};
+
+		main.init();
+	});
+
+	$('#output').click(function () {
+		where = {
+			roleid: $.trim($('#roleid').val()),
+			strartdate: $.trim($('#LAY-component-form-group-date').val()),
+			enddate: $.trim($('#LAY-component-form-group-date2').val()),
+			changetype: $.trim($('#changetype').val()),
+			AccountName: $.trim($('#AccountName').val()),
+			NickName: $.trim($('#NickName').val()),
+			usertype: $.trim($('#usertype').val()),
+			PackID: $("#PackID").val(),
+			limit: 100000,
+			Action: 'exec',
+		}
+
+		download();
+
+		function download() {
+			var params = Object.keys(where).map(function (key) {
+				return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+			}).join("&");
+			url = "{:url('UserPackageManage/GoldRecord')}?" + params;
+			$.ajax({
+				type: 'POST',
+				dataType: 'json',
+				async: true,
+				url: url, // 生成文件，保存在服务器
+				success: function (data) {
+					var result = data;
+					console.info(data);
+					switch (result["code"]) {
+						case 0:
+							parent.parent.open(url + "&exec=1&outall=true");
+							break;
+						case 1:
+							layer.msg(result["message"]);
+							break;
+						case 2:
+							layer.confirm(result['message'], {
+								btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
+							}, function () {
+								parent.parent.open(url + "&exec=1&outall=true");
+								layer.msg('', {icon: 6, time: 1000}, function () {
+									window.location.reload();
+								});
+							});
+					}
+
+				},
+				error: function (XMLHttpRequest, textStatus, e) {
+					console.log("oilDetection.js  method exportOilDetection" + e);
+				}
+			});
+		}
+	});
+
+</script>
+{/block}

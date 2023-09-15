@@ -1,0 +1,86 @@
+{extend name="common/base" /}
+
+{block name="title"}备注{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <h3>{:lang('备注详情')}</h3>
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <input type="text" name="orderno" id="orderno" value="{$orderno}" hidden>
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            renderData : function() {
+                var cols = [ //表头
+                    {field: 'checkUser', title: "{:lang('操作人')}", minWidth: 120},
+                    {field: 'checkTime', title: "{:lang('操作时间')}", minWidth: 180},
+                    {field: 'status', title: "{:lang('订单状态')}", minWidth: 120, templet: function (d) {
+                            switch (Number(d.status)) {
+                                case 0:
+                                    return '<span style="color: red">{:lang(\'未审核\')}</span>';
+                                case 1:
+                                    return '<span style="color:yellowgreen">{:lang(\'备注详情\')}"</span>';
+                                case 2:
+                                    return '<span style="color:yellowgreen">{:lang(\'拒绝并退金币\')}</span>';
+                                case 4:
+                                    return '<span style="color:yellowgreen">{:lang(\'第三方处理中\')}</span>';
+                                case 100:
+                                    return '<span style="color: gold">{:lang(\'已打款\')}</span>';
+                                case 5:
+                                    return '<span style="color: red">{:lang(\'处理失败并退金币\')}</span>';
+                                default:
+                                    return "{:lang('未配置')}";
+                            }
+                        }
+                    },
+                    {field: 'Descript', title: "{:lang('备注')}", minWidth: 300}
+                ];
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('playertrans/descript')}" //数据接口
+                    , where :{
+                        'orderno' :  $('#orderno').val()
+                    }
+                    , page: false //开启分页
+                    , cols: [cols]
+                    , done: function (d) {
+                        tzTbale()
+                    }
+                });
+            },
+
+            init : function() {
+                main.renderData();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

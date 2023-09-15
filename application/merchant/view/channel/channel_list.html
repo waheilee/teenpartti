@@ -1,0 +1,228 @@
+{extend name="common/base" /}
+{block name="title"}关系列表{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <!-- <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('渠道ID')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="ProxyId" autocomplete="off" class="layui-input" id='ProxyId'>
+                    </div>
+                </div> -->
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('推广ID')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="ChannelID" autocomplete="off" class="layui-input" id='ChannelID'>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('推广名称')}</label>
+                    <div class="layui-input-inline">
+                        <select name="RoleID" id="RoleID" class="layui-input">
+                              <option value="">{:lang('全部')}</option>
+                                {if(!empty($oplist))}
+                                {volist id='vo' name='oplist'}
+                                <option value="{$vo.ProxyChannelId}" >{$vo.AccountName}</option>
+                                {/volist}
+                                {/if}
+                          </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <a class="layui-btn" data-type="reload" id="search">{:lang('搜索')}</a>
+                    <a class="layui-btn layui-btn-normal" onclick="add()">{:lang('新增推广')}</a>
+                    <!-- <a class="layui-btn layui-btn-normal" id="bind">{:lang('绑定')}</a>
+                    <a class="layui-btn layui-btn-danger" id="output">{:lang('导出记录')}</a> -->
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+      <script type="text/html" id="toolbar">
+       <a class="layui-btn layui-btn-xs" lay-event="edit">{:lang('编辑')}</a>
+       <a class="layui-btn layui-btn-xs" lay-event="remain">{:lang('首充留存')}</a>
+       <a class="layui-btn layui-btn-xs" lay-event="report">{:lang('财务报表')}</a>
+  </script>
+</div>
+<script type="text/html" id="is_default">
+    {{#  if(d.isDefault == 1){ }}
+      <input type="checkbox" checked="" name="is_default" lay-skin="switch" lay-filter="is_default" lay-text="是|否">
+    {{#  } else { }}
+       <input type="checkbox" name="is_default" lay-skin="switch" lay-filter="is_default" lay-text="是|否">
+    {{#  } }}
+  </script>
+{/block}
+{block name="script"}
+
+<script>
+    url = "{:url('channel/channelList')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var table = layui.table;
+        var form  = layui.form;
+        var $ = layui.$;
+        var element  = layui.element;
+          table.render({
+            elem: '#proxylist'
+            ,height: 'full-180'
+            ,url: url+'?action=list'//数据接口
+            ,limit:20
+            ,page: true //开启分页
+            ,id:'proxylist'
+            ,autoSort:false
+            ,cols: [[ //表头
+                // {field: 'ProxyId', title: "{:lang('渠道ID')}", minWidth: 100,  align: 'center', templet: function(d){
+                //     return d.ProxyId
+                // }},
+               {field: 'ProxyChannelId', title: "{:lang('推广ID')}", minWidth: 100,  align: 'center', templet: function(d){
+                    return d.ProxyChannelId
+                    // return '<a class="font-primary layui-btn  layui-btn-xs  layui-btn-primary" lay-event="copy1" data-clipboard-text="">'+d.ProxyChannelId+'</a>'
+                }},
+               {field: 'AccountName', title: "{:lang('推广名称')}", minWidth: 200,  align: 'center', templet: function(d){
+                    return d.AccountName;
+                    // return '<a class="font-primary layui-btn  layui-btn-xs  layui-btn-primary" lay-event="toIndex">'+d.AccountName+'</a>'
+                }},
+                {field: 'InviteUrl', title: "{:lang('推广链接')}", minWidth: 400,  align: 'center', templet: function(d){
+                    return '<a class="font-primary layui-btn  layui-btn-xs  layui-btn-primary" href="'+d.InviteUrl+'" target="_blank">'+d.InviteUrl+'</a>'
+                }},
+                // {field: '', title: "{:lang('是否默认')}", minWidth: 200,  align: 'center', templet: function(d){
+                //     if (d.isDefault == 1)
+                //         return "<input type='checkbox' RoleID = '" + d.ProxyChannelId + "' lay-filter='Disable' lay-skin='switch' lay-text='{:lang('开')}|{:lang('关')}' checked>"
+                //     else
+                //         return "<input type='checkbox' RoleID = '" + d.ProxyChannelId + "'  lay-filter='Disable' lay-skin='switch' lay-text='{:lang('开')}|{:lang('关')}'>"
+                // }},
+                {title:'操作', toolbar: '#toolbar',minWidth: 180,  align: 'center'}
+            ]]
+          });
+          // 搜索 
+          $("#search").on('click', function(){
+             table.reload('proxylist', {
+              page:{
+                  curr:1 
+              },
+              where: {
+                  ProxyId: $('#ProxyId').val(),
+                  RoleID: $('#RoleID').val(),
+                  ChannelID:$('#ChannelID').val(),
+              }
+            })
+          });
+          //监听单元格switch
+          form.on('switch(Disable)', function (data) {
+            var RoleID = data.elem.attributes['RoleID'].nodeValue;
+            var swtype = data.elem.checked;
+            var type = 0;
+            if (swtype) type = 1;
+            else type = 0;
+            // layer.msg(data);
+            //设置开关
+            $.ajax({
+                url: "{:url('setDefaultChannel')}",
+                type: 'post',
+                data: {'RoleID': RoleID, type: type},
+                success: function (res) {
+                    if (res.code === 0) {
+                        $(".layui-laypage-btn")[0].click();
+                        layer.msg("{:lang('修改成功')}", {icon: 6});
+                    } else {
+                        $(".layui-laypage-btn")[0].click();
+                        layer.msg("{:lang('修改失败')}", {icon: 5});
+                    }
+                    form.render();
+                }
+            })
+
+        });
+        table.on('tool(proxylist)', function(obj){
+            var data = obj.data;
+            if(obj.event === 'copy1'){
+                copy(data.RoleID)
+            }
+
+            if (obj.event === 'edit') {
+                x_admin_show('{:lang(\'编辑推广\')}', "{:url('/merchant/channel/channelEdit')}?RoleID="+data.ProxyChannelId, 600, 500);
+            }
+
+            if (obj.event === 'remain') {
+                x_admin_show('{:lang(\'首充留存\')}', "{:url('/merchant/channel/remainFirstCharge')}?RoleID="+data.ProxyChannelId, 1300, 700);
+            }
+            if (obj.event === 'report') {
+                x_admin_show('{:lang(\'财务报表\')}', "{:url('/merchant/channel/proxyChannelStatic')}?RoleID="+data.ProxyChannelId, 1300, 700);
+            }
+          });
+          $('#output').click(function () {
+            where = {
+                ProxyId: $('#ProxyId').val(),
+                RoleID: $('#RoleID').val(),
+                ChannelID:$('#ChannelID').val(),
+                action: 'output',
+            }
+            download();
+            function download() {
+                var params = Object.keys(where).map(function (key) {
+                    return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+                }).join("&");
+                var output_url = url + "?" + params;
+                $.ajax({
+                    type: 'POST',
+                    dataType: 'json',
+                    async: true,
+                    url: output_url, // 生成文件，保存在服务器
+                    success: function (data) {
+                        var result = data;
+                        console.info(data);
+                        switch (result["code"]) {
+                            case 0:
+                                parent.parent.open(output_url + "&exec=1&outall=true");
+                                break;
+                            case 1:
+                                layer.msg(result["message"]);
+                                break;
+                            case 2:
+                                layer.confirm(result['message'], {
+                                    btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
+                                }, function () {
+                                    parent.parent.open(output_url + "&exec=1&outall=true");
+                                    layer.msg('', {icon: 6, time: 1000}, function () {
+                                        window.location.reload();
+                                    });
+                                });
+                        }
+                    },
+                    error: function (XMLHttpRequest, textStatus, e) {
+                        console.log("oilDetection.js  method exportOilDetection" + e);
+                    }
+                });
+            }
+        });
+
+    });
+
+    function copy(value) {
+        var oInput = document.createElement('input');
+        oInput.value = value;
+        document.body.appendChild(oInput);
+        oInput.select(); // 选择对象
+        document.execCommand("Copy"); // 执行浏览器复制命令
+        oInput.className = 'oInput';
+        oInput.style.display='none';
+        layer.msg("复制成功");
+    }
+
+    function add(){
+        x_admin_show('{:lang(\'新增推广\')}', "{:url('/merchant/channel/channelEdit')}", 600, 500);
+    }
+</script>
+{/block}

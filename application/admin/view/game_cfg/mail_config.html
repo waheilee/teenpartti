@@ -1,0 +1,140 @@
+{extend name="common/base" /}
+
+{block name="title"}邮箱配置{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('gameCfg/mailConfig')}" method="post" id="addProxy" >
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('服务器')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="Host" name='Host' lay-verify="required" value="{$mail.Host}" placeholder="{:lang('请输入邮箱服务器')}" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('端口')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="Port" name='Port' lay-verify="required" value="{$mail.Port}" placeholder="{:lang('请输入端口')}" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('协议')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="ssl" name='ssl' lay-verify="required" value="{$mail.ssl}" placeholder="{:lang('请输入协议')}" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('发送人')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="FromName" name='FromName' lay-verify="required" value="{$mail.FromName}" placeholder="{:lang('请输入发送人')}" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('邮箱账号')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="Username" name='Username' lay-verify="required" value="{$mail.Username}" placeholder="{:lang('请输入邮箱账号')}" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('密码')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="Password" name='Password' lay-verify="required" value="{$mail.Password}" placeholder="{:lang('请输入密码')}" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('邮件主题')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="Subject" name='Subject' lay-verify="required" value="{$mail.Subject}" placeholder="{:lang('请输入邮件主题')}" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('邮件内容')}：</label>
+        <div class="layui-input-block">
+
+            <textarea id="Body" name='Body' lay-verify="required" placeholder="{:lang('请输入邮件内容')}" autocomplete="off"  class="layui-textarea">{$mail.Body}</textarea>
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >{:lang('保存')}</a>
+            <a class="layui-btn layui-btn-primary layui-btn-radius" id="cancel" >{:lang('取消')}</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var layer = layui.layer
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                var Host = $.trim(data.field.Host)
+                    ,Port = $.trim(data.field.Port),
+                    ssl = $.trim(data.field.ssl),
+                    FromName = $.trim(data.field.FromName),
+                    Username = $.trim(data.field.Username),
+                    Password = $.trim(data.field.Password),
+                    Subject = $.trim(data.field.Subject),
+                    Body = $.trim(data.field.Body);
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:data.field,
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                location.reload();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

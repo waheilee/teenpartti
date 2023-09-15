@@ -1,0 +1,507 @@
+{extend name="common/base" /}
+
+{block name="title"}游戏日志{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-card">
+    <!--<button class="layui-btn layui-btn-sm layui-btn-radius"-->
+    <!--onclick="window.history.back()" style="margin-top: 10px;margin-left: 20px;">返回-->
+    <!--</button>-->
+    <div class="layui-card-body">
+        <div class="layui-tab layui-tab-brief" lay-filter="test">
+            <ul class="layui-tab-title">
+                <!--<li class="layui-this">玩家详情</li>-->
+
+                <!--<li class="layui-this"></li>-->
+
+
+            </ul>
+            <div class="layui-tab-content" style="background-color: #f2f2f2">
+
+                <div class="layui-tab-item layui-show">
+                    <!--<div class="layui-tab-item ">-->
+                    <div class="layui-row layui-col-space30">
+                        <div class="layui-col-md12">
+                            <div class="layui-card">
+                                <div class="layui-card-header layuiadmin-card-header-auto">
+                                    <h3>汇总信息</h3>
+
+
+                                </div>
+                                <div class="layui-card-body">
+                                    <div class="layui-card-body">
+                                        <div class="layadmin-backlog" lay-anim="" lay-indicator="inside"
+                                             lay-arrow="none" style="width: 100%; height: auto;">
+                                            <div carousel-item="">
+                                                <ul class="layui-row layui-col-space10 layui-this">
+                                                    <li class="layui-col-xs3">
+                                                        <a href="javascript:;" class="layadmin-backlog-body">
+                                                            <h3>地主ID</h3>
+                                                            <p>
+                                                                <cite id="history3" style="font-size: 15px">{$dizhu}</cite></p>
+                                                        </a>
+                                                    </li>
+                                                    <li class="layui-col-xs3">
+                                                        <a href="javascript:;" class="layadmin-backlog-body">
+                                                            <h3>地主赢</h3>
+                                                            <p>
+                                                                <cite id="onlinenum" style="font-size: 15px">{$win}</cite></p>
+                                                        </a>
+                                                    </li>
+                                                    <li class="layui-col-xs3">
+                                                        <a href="javascript:;" class="layadmin-backlog-body">
+                                                            <h3>底分</h3>
+                                                            <p>
+                                                                <cite id="history" style="font-size: 15px">{$basescore}</cite></p>
+                                                        </a>
+                                                    </li>
+                                                    <li class="layui-col-xs3">
+                                                        <a href="javascript:;" class="layadmin-backlog-body">
+                                                            <h3>春天</h3>
+                                                            <p>
+                                                                <cite id="currentjj" style="font-size: 15px">{$chuntian}</cite></p>
+                                                        </a>
+                                                    </li>
+                                                    <li class="layui-col-xs3">
+                                                        <a href="javascript:;" class="layadmin-backlog-body">
+                                                            <h3>叫分</h3>
+                                                            <p>
+                                                                <cite id="currentjj2" style="font-size: 15px">{$callscore}</cite></p>
+                                                        </a>
+                                                    </li>
+                                                    <li class="layui-col-xs3">
+                                                        <a href="javascript:;" class="layadmin-backlog-body">
+                                                            <h3>抢倍数</h3>
+                                                            <p>
+                                                                <cite id="currentjj22" style="font-size: 15px">{$qiangscore}</cite></p>
+                                                        </a>
+                                                    </li>
+                                                    <li class="layui-col-xs3">
+                                                        <a href="javascript:;" class="layadmin-backlog-body">
+                                                            <h3>农民1</h3>
+                                                            <p>
+                                                                <cite id="currentjj23" style="font-size: 15px">{$nplay0}</cite></p>
+                                                        </a>
+                                                    </li>
+                                                    <li class="layui-col-xs3">
+                                                        <a href="javascript:;" class="layadmin-backlog-body">
+                                                            <h3>农民2</h3>
+                                                            <p>
+                                                                <cite id="currentjj24" style="font-size: 15px">{$nplay2}</cite></p>
+                                                        </a>
+                                                    </li>
+                                                    <li class="layui-col-xs3">
+                                                        <a href="javascript:;" class="layadmin-backlog-body">
+                                                            <h3>炸倍数</h3>
+                                                            <p>
+                                                                <cite id="winrate2" style="font-size: 15px">{$boomtime}</cite></p>
+                                                        </a>
+                                                    </li>
+                                                    <li class="layui-col-xs3">
+                                                        <a href="javascript:;" class="layadmin-backlog-body">
+                                                            <h3>总倍数</h3>
+                                                            <p>
+                                                                <cite id="winrate" style="font-size: 15px">{$totaltime}</cite></p>
+                                                        </a>
+                                                    </li>
+
+
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                    <div class="layui-row layui-col-space30">
+                        <div class="layui-col-md12">
+                            <div class="layui-card">
+                                <div class="layui-card-header layuiadmin-card-header-auto">
+                                    <h3>{$hostname}牌型</h3>
+
+
+                                </div>
+                                <div class="layui-card-body">
+                                    <div class="layui-card-body">
+                                        <div class="layadmin-backlog" lay-anim="" lay-indicator="inside"
+                                             lay-arrow="none" style="width: 100%; height: auto;">
+                                            <div carousel-item="">
+                                                <ul class="layui-row layui-col-space10 layui-this">
+                                                    {foreach $host1 as $k => $room}
+                                                    <li class="layui-col-xs1">
+                                                        <!--<h3>{$room}</h3>-->
+                                                        <image src="__static__/poker/{$room}.png" widht="45" height="70"></image>
+
+                                                    </li>
+                                                    {/foreach}
+
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                    {if condition="$vich neq 'vic'  "}
+                    <!--<div class="layui-row layui-col-space30">-->
+                        <!--<div class="layui-col-md12">-->
+                            <div class="layui-card">
+                                <div class="layui-card-header layuiadmin-card-header-auto">
+                                    <h3>剩余牌</h3>
+
+
+                                </div>
+                                <div class="layui-card-body">
+                                    <div class="layui-card-body">
+                                        <div class="layadmin-backlog" lay-anim="" lay-indicator="inside"
+                                             lay-arrow="none" style="width: 100%; height: auto;">
+                                            <div carousel-item="">
+                                                <ul class="layui-row layui-col-space10 layui-this">
+                                                    {foreach $rehost1 as $k => $room}
+
+                                                    <li class="layui-col-xs1">
+                                                        <!--<h3>{$room}</h3>-->
+                                                        <image src="__static__/poker/{$room}.png" widht="45" height="70"></image>
+
+                                                    </li>
+
+                                                    {/foreach}
+
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <!--</div>-->
+
+
+                    <!--</div>-->
+                    {/if}
+
+
+                    <div class="layui-row layui-col-space30">
+                        <div class="layui-col-md12">
+                            <div class="layui-card">
+                                <div class="layui-card-header layuiadmin-card-header-auto">
+                                    <h3>{$player0name}牌型</h3>
+
+
+                                </div>
+                                <div class="layui-card-body">
+                                    <div class="layui-card-body">
+                                        <div class="layadmin-backlog" lay-anim="" lay-indicator="inside"
+                                             lay-arrow="none" style="width: 100%; height: auto;">
+                                            <div carousel-item="">
+                                                <ul class="layui-row layui-col-space10 layui-this">
+                                                    {foreach $player0 as $k => $room}
+                                                    <li class="layui-col-xs1">
+                                                        <!--<h3>{$room}</h3>-->
+                                                        <image src="__static__/poker/{$room}.png" widht="45" height="70"></image>
+
+                                                    </li>
+                                                    {/foreach}
+
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                    {if condition="$vic0 neq 'vic'  "}
+                    <!--<div class="layui-row layui-col-space30">-->
+                        <!--<div class="layui-col-md12">-->
+                            <div class="layui-card">
+                                <div class="layui-card-header layuiadmin-card-header-auto">
+                                    <h3>剩余的牌</h3>
+
+
+                                </div>
+                                <div class="layui-card-body">
+                                    <div class="layui-card-body">
+                                        <div class="layadmin-backlog" lay-anim="" lay-indicator="inside"
+                                             lay-arrow="none" style="width: 100%; height: auto;">
+                                            <div carousel-item="">
+                                                <ul class="layui-row layui-col-space10 layui-this">
+                                                    {foreach $replayer0 as $k => $room}
+                                                    <li class="layui-col-xs1">
+                                                        <!--<h3>{$room}</h3>-->
+                                                        <image src="__static__/poker/{$room}.png" widht="45" height="70"></image>
+
+                                                    </li>
+                                                    {/foreach}
+
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <!--</div>-->
+
+
+                    <!--</div>-->
+                    {/if}
+
+
+                    <div class="layui-row layui-col-space30">
+                        <div class="layui-col-md12">
+                            <div class="layui-card">
+                                <div class="layui-card-header layuiadmin-card-header-auto">
+                                    <h3>{$player2name}牌型</h3>
+
+
+                                </div>
+                                <div class="layui-card-body">
+                                    <div class="layui-card-body">
+                                        <div class="layadmin-backlog" lay-anim="" lay-indicator="inside"
+                                             lay-arrow="none" style="width: 100%; height: auto;">
+                                            <div carousel-item="">
+                                                <ul class="layui-row layui-col-space10 layui-this">
+                                                    {foreach $player2 as $k => $room}
+                                                    <li class="layui-col-xs1">
+                                                        <!--<h3>{$room}</h3>-->
+                                                        <image src="__static__/poker/{$room}.png" widht="45" height="70"></image>
+
+                                                    </li>
+                                                    {/foreach}
+
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                    {if condition="$vic2 neq 'vic'  "}
+                    <!--<div class="layui-row layui-col-space30">-->
+                        <!--<div class="layui-col-md12">-->
+                            <div class="layui-card">
+                                <div class="layui-card-header layuiadmin-card-header-auto">
+                                    <h3>剩余牌</h3>
+
+
+                                </div>
+                                <div class="layui-card-body">
+                                    <div class="layui-card-body">
+                                        <div class="layadmin-backlog" lay-anim="" lay-indicator="inside"
+                                             lay-arrow="none" style="width: 100%; height: auto;">
+                                            <div carousel-item="">
+                                                <ul class="layui-row layui-col-space10 layui-this">
+                                                    {foreach $replayer2 as $k => $room}
+
+                                                    <li class="layui-col-xs1">
+                                                        <!--<h3>{$room}</h3>-->
+                                                        <image src="__static__/poker/{$room}.png" widht="45" height="70"></image>
+
+                                                    </li>
+
+                                                    {/foreach}
+
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <!--</div>-->
+
+
+                    <!--</div>-->
+                    {/if}
+
+
+
+                </div>
+
+
+            </div>
+            <!--<div class="layui-tab-item">操作</div>-->
+
+        </div>
+    </div>
+
+
+    {/block}
+    {block name="script"}
+    <script>
+        layui.config({
+            base: '__layui__/' //静态资源所在路径
+        }).extend({
+            index: 'lib/index' //主入口模块
+
+        }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+            var element = layui.element
+                , layer = layui.layer
+                , laydate = layui.laydate
+                , table = layui.table
+                , $ = layui.$
+                , form = layui.form;
+            form.render('select');
+//        form.render('checkbox');
+
+            var main = {
+                bindEvent: function () {
+                    //保存银行卡信息
+                    $('#save').on('click', function (e) {
+//                    e.preventDefault();
+                        var username = $('#username').val();
+                        var bankname2 = $('#bankname').val();
+                        var bankname = $('#bankname option:selected').text();
+                        var bankcardno = $('#bankcardno').val();
+                        var roleid = $('#roleid').val();
+                        if (username && bankname2 && bankcardno) {
+                            $.ajax({
+                                type: 'post',
+                                url: "updateSocketBank",
+                                data: {
+                                    'roleid': roleid,
+                                    'bankcardno': bankcardno,
+                                    'bankname': bankname,
+                                    'username': username,
+                                },
+                                dataType: 'json',
+                                success: function (res) {
+                                    console.log(res);
+                                    if (res.code === 0) {
+                                        layer.msg(res.msg, {icon: 1});
+                                    } else if (res.code === 1) {
+                                        layer.msg(res.msg, {icon: 1});
+                                    } else if (res.code === 3) {
+                                        layer.msg(res.msg, {icon: 2});
+                                    }
+                                }
+                            });
+                        } else {
+                            layer.msg('输入不能为空', {icon: 2});
+                        }
+                    });
+
+                    //重置密码
+                    $('#savepwd').on('click', function (e) {
+                        e.preventDefault();
+                        var roleid = $('#roleid').val();
+                        var pwd = $('#pwd').val();
+                        var pwd2 = $('#pwd2').val();
+
+
+                        $.ajax({
+                            type: 'post',
+                            url: "resetPwd",
+                            data: {
+                                'roleid': roleid,
+                                'pwd': pwd,
+                                'pwd2': pwd2
+                            },
+                            dataType: 'json',
+                            success: function (res) {
+                                if (res.code === 0) {
+                                    layer.msg(res.msg, {icon: 1});
+                                } else {
+                                    layer.msg(res.msg, {icon: 2});
+                                }
+                            }
+                        });
+
+                    });
+
+                    //监听开关
+                    form.on('switch(autoplay)', function () {
+                        ins3.reload({
+                            autoplay: this.checked
+                        });
+                    });
+
+                    element.on('tab(test)', function (data) {
+                        var roleid = $('#roleid').val();
+                        console.log(roleid);
+                        console.log(data.index);
+                        console.log('ffff');
+                        if (data.index === 2) {
+                            $.ajax({
+                                url: "getRoleStatus",
+                                type: 'post',
+                                data: {
+//                            'id': id,
+                                    'roleid': roleid
+                                },
+                                success: function (res) {
+
+
+                                    console.log(res.code);
+
+
+                                    if (res.code === 4) {
+                                        var html2 = '<input type="checkbox"  name="open" lay-filter="switchTest" lay-skin="switch" checked lay-text="解锁|锁定" >';
+//                                var html2= '<input type="checkbox"  name="close" lay-filter="switchTest" lay-skin="switch" checked lay-text="解锁|锁定" >';
+                                        $('#myswitch').html(html2);
+                                        form.render();
+                                    } else if (res.code === 3) {
+                                        console.log(666);
+//                                var html2= '<input type="checkbox"  name="close" lay-filter="switchTest" lay-skin="switch" checked lay-text="解锁|锁定" >';
+                                        var html2 = '<input type="checkbox" name="close" lay-skin="switch" lay-filter="switchTest" lay-text="解锁|锁定" >';
+//                                var html2= '<input type="checkbox"  name="open" lay-filter="switchTest" lay-skin="switch" checked lay-text="解锁|锁定" >';
+                                        $('#myswitch').html(html2);
+                                        form.render();
+
+                                    }
+                                }
+
+                            })
+                        }
+
+                    });
+
+
+                    form.on('switch(switchTest)', function (data) {
+                        var roleid = $('#roleid').val();
+                        //设置开关
+                        $.ajax({
+                            url: "{:url('player/updateRoleStatus')}",
+                            type: 'post',
+                            data: {
+
+//
+                                'roleid': roleid
+                            },
+                            success: function (res) {
+                                if (res.code === 0) {
+//                                layer.msg(res.msg, {icon: 6});
+                                    layer.msg('修改成功', {icon: 6});
+                                } else {
+//                                layer.msg(res.msg, {icon: 5});
+                                    layer.msg('修改失败', {icon: 5});
+
+                                }
+                                form.render();
+                            }
+
+                        })
+
+                    });
+
+                },
+
+                init: function () {
+                    main.bindEvent();
+                }
+            };
+
+            main.init();
+        });
+    </script>
+    {/block}

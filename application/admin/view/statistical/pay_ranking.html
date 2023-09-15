@@ -1,0 +1,602 @@
+{extend name="common/base" /}
+{block name="title"}功能配置开关{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<div class="layui-card">
+	
+    <div class="layui-tab layui-tab-brief" lay-filter="test">
+        <ul class="layui-tab-title">
+            <li class="layui-this">{:lang('今日注册')}</li>
+            <li class="">{:lang('今日首充')}</li>
+            <li class="">{:lang('支付排行榜')}</li>
+            <li class="">{:lang('日充值排行榜')}</li>
+        </ul>
+        <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('玩家ID')}：</label>
+                    <div class="layui-input-inline">
+                        <input type="number" id="RoleId" name="RoleId" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline" id='divParentId'>
+                    <label class="layui-form-label">{:lang('上级代理')}：</label>
+                    <div class="layui-input-inline">
+                        <input type="number" id="ParentId" name="ParentId" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline" id='divParentId'>
+                    <label class="layui-form-label">{if(config('is_portrait')==1)}{:lang('推广ID')}{else/}{:lang('渠道ID')}{/if}：</label>
+                    <div class="layui-input-inline">
+                        <input type="number" id="proxyId" name="proxyId" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline" id='ddate'>
+                    <label class="layui-form-label">{:lang('首充日期')}：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="start_date" id="LAY-component-form-group-date" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline" id='recharge_num'>
+                    <label class="layui-form-label">{:lang('充值金额')}：</label>
+                    <div class="layui-input-inline">
+                        <input type="min_recharge_num" id="min_recharge_num" name="min_recharge_num" autocomplete="off" class="layui-input">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="max_recharge_num" id="max_recharge_num" name="max_recharge_num" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                 <div class="layui-inline" id='register_date'>
+                    <label class="layui-form-label">{:lang('注册时间')}：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="start_register_date" id="LAY-component-form-group-date1" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="end_register_date" id="LAY-component-form-group-date2" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline" id='register_date'>
+                    <label class="layui-form-label">{:lang('登陆时间')}：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="start_login_date" id="LAY-component-form-group-date3" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="end_login_date" id="LAY-component-form-group-date4" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+                
+                <div class="layui-inline">
+                    <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                    <button type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>
+                    <a class="layui-btn layui-btn-danger" id="output" onclick="output(this)">{:lang('导出记录')}</a>
+                </div>
+            </div>
+        </form>
+    </div>
+        <div class="layui-tab-content" id="TabItem" style="background-color: #f2f2f2">
+
+
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script>
+	var tabitem = 4, html = ""; //页签数量
+	layui.use(['jquery'], function () {
+		var $ = layui.jquery;
+		for (var i = 0; i <= tabitem; i++) {
+			if (i == 0) {
+
+				html += "<div class='layui-tab-item layui-show'><table id='Table" + i + "'lay-filter='Table" + i + "'></table> </div>";
+			} else{
+				html += "<div class='layui-tab-item'><table id='Table" + i + "'lay-filter='Table" + i + "'></table> </div>";
+			}
+		}
+		$().ready(function () {
+			$("#TabItem").html(html);
+			// $("#Table1").click();
+		});
+	});
+</script>
+<script>
+
+	var cols = [
+		{field: 'AccountID', align: "center", title: "{:lang('玩家ID')}", minWidth: 120, templet: function (d) {
+				return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.AccountID + "</a>";
+			}
+		},
+        // {field: 'ParentID', align: "center", title: "{:lang('代理ID')}", minWidth: 100 },
+        {field: 'proxyId', align: "center", title: "{if(config('is_portrait')==1)}{:lang('推广ID')}{else/}{:lang('渠道ID')}{/if}", minWidth: 120},
+		{field: 'PayMoney', align: "center", title: "{:lang('充值金额')}",  minWidth: 120},
+		{field: 'PayTimes', align: "center", title: "{:lang('充值次数')}", minWidth: 120},
+        // {field: 'Mobile', align: "center", title: "{:lang('电话号码')}", minWidth: 120},
+        {field: 'PayOut', align: "center", title: "{:lang('提现金额')}", minWidth: 120},
+        {field: 'PayOutTimes', align: "center", title: "{:lang('提现次数')}", minWidth: 120},
+        {field: 'TotalRunning', align: "center", title: "{:lang('流水')}", minWidth: 120},
+        {field: 'TotalBet', align: "center", title: "{:lang('累计流水')}", minWidth: 120, sort: true},
+        {field: 'TotalWage', align: "center", title: "{:lang('累计打码量')}", minWidth: 120, sort: true},
+        {field: 'TotalTax', align: "center", title: "{:lang('税收')}", minWidth: 120},
+        // {field: 'TotalWin', align: "center", title: "{:lang('游戏盈亏')}", minWidth: 120, sort: true, templet: function (d) {
+        //         if (d.TotalWin>0) {
+        //             return "<span style='color:red'>"+d.TotalWin+"</span>"
+        //         } else if(d.TotalWin<0) {
+        //             return "<span style='color:green'>"+d.TotalWin+"</span>"
+        //         } else {
+        //             return d.TotalWin;
+        //         }
+        //     }
+        // },
+        {field: 'PlatformProfit', align: "center", title: "{:lang('玩家盈亏')}", minWidth: 120, sort: true, templet: function (d) {
+                if (d.PlatformProfit>0) {
+                    return "<span style='color:red'>"+d.PlatformProfit+"</span>"
+                } else if(d.PlatformProfit<0) {
+                    return "<span style='color:green'>"+d.PlatformProfit+"</span>"
+                } else {
+                    return d.PlatformProfit;
+                }
+            }
+        },
+        {field: 'LastLoginTime', align: "center", title: "{:lang('最后登陆时间')}", minWidth: 200,sort:true},
+        {field: 'RegisterTime', align: "center", title: "{:lang('注册时间')}", minWidth: 200,sort:true}
+	];
+    var cols1 = [
+        {field: 'AccountID', align: "center", title: "{:lang('玩家ID')}", minWidth: 120, templet: function (d) {
+                return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.AccountID + "</a>";
+            }
+        },
+        {field: 'ParentID', align: "center", title: "{:lang('代理ID')}", minWidth: 100 },
+        {field: 'proxyId', align: "center", title: "{:lang('渠道ID')}", minWidth: 120},
+        {field: 'adddate', align: "center", title: "{:lang('首充日期')}",  minWidth: 200},
+        {field: 'PayMoney', align: "center", title: "{:lang('充值金额')}",  minWidth: 120, sort: true},
+        {field: 'PayTimes', align: "center", title: "{:lang('充值次数')}", minWidth: 120, sort: true},
+        {field: 'PayOut', align: "center", title: "{:lang('提现金额')}", minWidth: 120, sort: true},
+        {field: 'PayOutTimes', align: "center", title: "{:lang('提现次数')}", minWidth: 120, sort: true},
+        {field: 'TotalRunning', align: "center", title: "{:lang('流水')}", minWidth: 120, sort: true},
+        {field: 'TotalBet', align: "center", title: "{:lang('累计流水')}", minWidth: 120, sort: true},
+        {field: 'TotalWage', align: "center", title: "{:lang('累计打码量')}", minWidth: 120, sort: true},
+        {field: 'TotalTax', align: "center", title: "{:lang('税收')}", minWidth: 120, sort: true},
+        // {field: 'TotalWin', align: "center", title: "{:lang('游戏盈亏')}", minWidth: 120, sort: true, templet: function (d) {
+        //         if (d.TotalWin>0) {
+        //             return "<span style='color:red'>"+d.TotalWin+"</span>"
+        //         } else if(d.TotalWin<0) {
+        //             return "<span style='color:green'>"+d.TotalWin+"</span>"
+        //         } else {
+        //             return d.TotalWin;
+        //         }
+        //     }
+        // },
+        {field: 'PlatformProfit', align: "center", title: "{:lang('玩家盈亏')}", minWidth: 120, sort: true, templet: function (d) {
+                if (d.PlatformProfit>0) {
+                    return "<span style='color:red'>"+d.PlatformProfit+"</span>"
+                } else if(d.PlatformProfit<0) {
+                    return "<span style='color:green'>"+d.PlatformProfit+"</span>"
+                } else {
+                    return d.PlatformProfit;
+                }
+            }
+        },
+        {field: 'LastLoginTime', align: "center", title: "{:lang('最后登陆时间')}", minWidth: 200,sort:true},
+        {field: 'RegisterTime', align: "center", title: "{:lang('注册时间')}", minWidth: 200,sort:true}
+    ];
+    var cols2 = [
+        {field: 'AccountID', align: "center", title: "{:lang('玩家ID')}", minWidth: 120, templet: function (d) {
+                return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.AccountID + "</a>";
+            }
+        },
+        // {field: 'ParentID', align: "center", title: "{:lang('代理ID')}", minWidth: 100 },
+        {field: 'proxyId', align: "center", title: "{:lang('渠道ID')}", minWidth: 120},
+        {field: 'PayMoney', align: "center", title: "{:lang('充值金额')}",  minWidth: 120, sort: true},
+        {field: 'PayTimes', align: "center", title: "{:lang('充值次数')}", minWidth: 120, sort: true},
+        {field: 'PayOut', align: "center", title: "{:lang('提现金额')}", minWidth: 120, sort: true},
+        {field: 'PayOutTimes', align: "center", title: "{:lang('提现次数')}", minWidth: 120, sort: true},
+        {field: 'TotalBet', align: "center", title: "{:lang('累计流水')}", minWidth: 120, sort: true},
+        {field: 'TotalWage', align: "center", title: "{:lang('累计打码量')}", minWidth: 120, sort: true},
+        // {field: 'TotalRunning', align: "center", title: "{:lang('流水')}", minWidth: 120, sort: true},
+        {field: 'TotalTax', align: "center", title: "{:lang('税收')}", minWidth: 120, sort: true},
+        // {field: 'TotalWin', align: "center", title: "{:lang('游戏盈亏')}", minWidth: 120, sort: true, templet: function (d) {
+        //         if (d.TotalWin>0) {
+        //             return "<span style='color:red'>"+d.TotalWin+"</span>"
+        //         } else if(d.TotalWin<0) {
+        //             return "<span style='color:green'>"+d.TotalWin+"</span>"
+        //         } else {
+        //             return d.TotalWin;
+        //         }
+        //     }
+        // },
+        {field: 'PlatformProfit', align: "center", title: "{:lang('玩家盈亏')}", minWidth: 120, sort: true, templet: function (d) {
+                if (d.PlatformProfit>0) {
+                    return "<span style='color:red'>"+d.PlatformProfit+"</span>"
+                } else if(d.PlatformProfit<0) {
+                    return "<span style='color:green'>"+d.PlatformProfit+"</span>"
+                } else {
+                    return d.PlatformProfit;
+                }
+            }
+        },
+        {field: 'LastLoginTime', align: "center", title: "{:lang('最后登陆时间')}", minWidth: 200,sort:true},
+        {field: 'RegisterTime', align: "center", title: "{:lang('注册时间')}", minWidth: 200,sort:true}
+    ];
+    var cols3 = [
+        {field: 'AccountID', align: "center", title: "{:lang('玩家ID')}", minWidth: 120, templet: function (d) {
+                return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.AccountID + "</a>";
+            }
+        },
+        // {field: 'ParentID', align: "center", title: "{:lang('代理ID')}", minWidth: 100 },
+        {field: 'proxyId', align: "center", title: "{:lang('渠道ID')}", minWidth: 120},
+        {field: 'PayMoney', align: "center", title: "{:lang('充值金额')}",  minWidth: 120, sort: true},
+        {field: 'PayTimes', align: "center", title: "{:lang('充值次数')}", minWidth: 120, sort: true},
+        {field: 'PayOut', align: "center", title: "{:lang('提现金额')}", minWidth: 120, sort: true},
+        {field: 'PayOutTimes', align: "center", title: "{:lang('提现次数')}", minWidth: 120, sort: true},
+        {field: 'TotalRunning', align: "center", title: "{:lang('流水')}", minWidth: 120, sort: true},
+        {field: 'TotalBet', align: "center", title: "{:lang('累计流水')}", minWidth: 120, sort: true},
+        {field: 'TodayWage', align: "center", title: "{:lang('打码')}", minWidth: 120, sort: true},
+        {field: 'TotalWage', align: "center", title: "{:lang('累计打码量')}", minWidth: 120, sort: true},
+        {field: 'TotalTax', align: "center", title: "{:lang('税收')}", minWidth: 120, sort: true},
+        {field: 'TotalWin', align: "center", title: "{:lang('游戏盈亏')}", minWidth: 120, sort: true, templet: function (d) {
+                if (d.TotalWin>0) {
+                    return "<span style='color:red'>"+d.TotalWin+"</span>"
+                } else if(d.TotalWin<0) {
+                    return "<span style='color:green'>"+d.TotalWin+"</span>"
+                } else {
+                    return d.TotalWin;
+                }
+            }
+        },
+        {field: 'PlatformProfit', align: "center", title: "{:lang('玩家盈亏')}", minWidth: 120, sort: true, templet: function (d) {
+                if (d.PlatformProfit>0) {
+                    return "<span style='color:red'>"+d.PlatformProfit+"</span>"
+                } else if(d.PlatformProfit<0) {
+                    return "<span style='color:green'>"+d.PlatformProfit+"</span>"
+                } else {
+                    return d.PlatformProfit;
+                }
+            }
+        },
+        {field: 'LastLoginTime', align: "center", title: "{:lang('最后登陆时间')}", minWidth: 200,sort:true},
+        {field: 'RegisterTime', align: "center", title: "{:lang('注册时间')}", minWidth: 200,sort:true}
+    ];
+	layui.config({
+		base: '__layui__/' //静态资源所在路径
+	}).extend({
+		index: 'lib/index' //主入口模块
+	}).use(['table', 'layer', 'element', 'laydate', 'form', 'jquery', 'util'], function () {
+		// ID=table0
+		//每个页签的独立变量 增加页签的时候 手动增加
+		var tb0 = 'Table0', tb1 = 'Table1', tb2 = 'Table2', tb3 = 'Table3', tb4 = 'Table4';
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, util = layui.util,
+			table = layui.table, $ = layui.$, form = layui.form;
+		//增加页签  闭包增加 TabxxxxEvn
+		//闭包   表格 排序 编辑
+		Wheres = [
+			{action: 'list', type: 1},
+			{action: 'list', type: 2},
+			{action: 'list', type: 3},
+			{action: 'list', type: 4},
+		]
+
+        laydate.render({elem: '#LAY-component-form-group-date', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+        laydate.render({elem: '#LAY-component-form-group-date1', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+        laydate.render({elem: '#LAY-component-form-group-date2', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+        laydate.render({elem: '#LAY-component-form-group-date3',format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+        laydate.render({elem: '#LAY-component-form-group-date4', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+
+		Tabs = {
+			tab0Evn: function () { table.render({elem: '#' + tb0, where: Wheres[0], url: "{:url('Statistical/payRanking')}", page: true, cols: [cols], autoSort: false,});$("#ddate").css('display','none');$("#divParentId").css('display','none');$("#output").attr('data_val','1');},
+			tab1Evn: function () { table.render({elem: '#' + tb1, where: Wheres[1], url: "{:url('Statistical/payRanking')}", page: true, cols: [cols1], autoSort: false,}); $("#ddate").css('display','inline-block');$("#divParentId").css('display','none');$("#output").attr('data_val','2');},
+			tab2Evn: function () { table.render({elem: '#' + tb2, where: Wheres[2], url: "{:url('Statistical/payRanking')}", page: true, cols: [cols2], autoSort: false,}); $("#ddate").css('display','none');$("#divParentId").css('display','none');$("#output").attr('data_val','3');},
+			tab3Evn: function () { table.render({elem: '#' + tb3, where: Wheres[3], url: "{:url('Statistical/payRanking')}", page: true, cols: [cols3], autoSort: false,}); $("#ddate").css('display','inline-block');$("#divParentId").css('display','none');$("#output").attr('data_val','4');},
+		};
+		TabReload = {
+			tab0: function () {table.reload(tb0, {page: {curr: 1}});},
+			tab1: function () {table.reload(tb1, {page: {curr: 1}});},
+			tab2: function () {table.reload(tb2, {page: {curr: 1}});},
+			tab3: function () {table.reload(tb3, {page: {curr: 1}});}
+		}
+		TBinit = {
+			searchEvn: function () {
+				var strartdate = $.trim($('#LAY-component-form-group-date').val());
+                var start_register_date = $.trim($('#LAY-component-form-group-date1').val());
+                var end_register_date = $.trim($('#LAY-component-form-group-date2').val());
+                var start_login_date = $.trim($('#LAY-component-form-group-date3').val());
+                var end_login_date = $.trim($('#LAY-component-form-group-date4').val());
+                var min_recharge_num = $.trim($('#min_recharge_num').val());
+                var max_recharge_num = $.trim($('#max_recharge_num').val());
+                var RoleId = $.trim($('#RoleId').val());
+                var ParentId = $.trim($('#ParentId').val());
+                var proxyId = $.trim($('#proxyId').val());
+                var where = {
+                    'start_date':strartdate,
+                    'roleid': RoleId,
+                    'ParentId':ParentId,
+                    'proxyId':proxyId,
+                    'start_register_date':start_register_date,
+                    'end_register_date':end_register_date,
+                    'start_login_date':start_login_date,
+                    'end_login_date':end_login_date,
+                    'min_recharge_num':min_recharge_num,
+                    'max_recharge_num':max_recharge_num,
+                }
+                //执行重载
+                table.reload(tb0, {page: {curr: 1},where: where});
+                table.reload(tb1, {page: {curr: 1},where: where});
+                table.reload(tb2, {page: {curr: 1},where: where});
+                table.reload(tb3, {page: {curr: 1},where: where});
+			},
+			sortEvn: function () {
+                table.on('sort(Table0)', function (obj) {
+                    //执行重载
+                    table.reload('Table0', {
+                        initSort: obj,
+                        page: {curr: 1},
+                        where:{
+                            'start_date':$.trim($('#LAY-component-form-group-date').val()),
+                            'roleid': $.trim($('#RoleId').val()),
+                            'ParentId':$.trim($('#ParentId').val()),
+                            'proxyId':$.trim($('#proxyId').val()),
+                            'start_register_date':$.trim($('#LAY-component-form-group-date1').val()),
+                            'end_register_date':$.trim($('#LAY-component-form-group-date2').val()),
+                            'start_login_date':$.trim($('#LAY-component-form-group-date3').val()),
+                            'end_login_date':$.trim($('#LAY-component-form-group-date4').val()),
+                            'min_recharge_num':$.trim($('#min_recharge_num').val()),
+                            'max_recharge_num':$.trim($('#max_recharge_num').val()),
+                            'orderytpe':obj.type,
+                            'orderby':obj.field
+                        },
+                        parseData:function(res){
+                          if(res.data.length==0){
+                            return{
+                              'code':'201',
+                              'msg':"{:lang('无数据')}"
+                            };
+                          };
+                        }
+                    });
+                });
+                table.on('sort(Table1)', function (obj) {
+                    //执行重载
+                    table.reload('Table1', {
+                        initSort: obj,
+                        page: {curr: 1},
+                        where:{
+                            'start_date':$.trim($('#LAY-component-form-group-date').val()),
+                            'roleid': $.trim($('#RoleId').val()),
+                            'ParentId':$.trim($('#ParentId').val()),
+                            'proxyId':$.trim($('#proxyId').val()),
+                            'start_register_date':$.trim($('#LAY-component-form-group-date1').val()),
+                            'end_register_date':$.trim($('#LAY-component-form-group-date2').val()),
+                            'start_login_date':$.trim($('#LAY-component-form-group-date3').val()),
+                            'end_login_date':$.trim($('#LAY-component-form-group-date4').val()),
+                            'min_recharge_num':$.trim($('#min_recharge_num').val()),
+                            'max_recharge_num':$.trim($('#max_recharge_num').val()),
+                            'orderytpe':obj.type,
+                            'orderby':obj.field
+                        },
+                        parseData:function(res){
+                          if(res.data.length==0){
+                            return{
+                              'code':'201',
+                              'msg':"{:lang('无数据')}"
+                            };
+                          };
+                        }
+                    });
+                });
+                table.on('sort(Table2)', function (obj) {
+                    //执行重载
+                    table.reload('Table2', {
+                        initSort: obj,
+                        page: {curr: 1},
+                        where:{
+                            'start_date':$.trim($('#LAY-component-form-group-date').val()),
+                            'roleid': $.trim($('#RoleId').val()),
+                            'ParentId':$.trim($('#ParentId').val()),
+                            'proxyId':$.trim($('#proxyId').val()),
+                            'start_register_date':$.trim($('#LAY-component-form-group-date1').val()),
+                            'end_register_date':$.trim($('#LAY-component-form-group-date2').val()),
+                            'start_login_date':$.trim($('#LAY-component-form-group-date3').val()),
+                            'end_login_date':$.trim($('#LAY-component-form-group-date4').val()),
+                            'min_recharge_num':$.trim($('#min_recharge_num').val()),
+                            'max_recharge_num':$.trim($('#max_recharge_num').val()),
+                            'orderytpe':obj.type,
+                            'orderby':obj.field
+                        },
+                        parseData:function(res){
+                          if(res.data.length==0){
+                            return{
+                              'code':'201',
+                              'msg':"{:lang('无数据')}"
+                            };
+                          };
+                        }
+                    });
+                });
+                table.on('sort(Table3)', function (obj) {
+                    //执行重载
+                    table.reload('Table3', {
+                        initSort: obj,
+                        page: {curr: 1},
+                        where:{
+                            'start_date':$.trim($('#LAY-component-form-group-date').val()),
+                            'roleid': $.trim($('#RoleId').val()),
+                            'ParentId':$.trim($('#ParentId').val()),
+                            'proxyId':$.trim($('#proxyId').val()),
+                            'start_register_date':$.trim($('#LAY-component-form-group-date1').val()),
+                            'end_register_date':$.trim($('#LAY-component-form-group-date2').val()),
+                            'start_login_date':$.trim($('#LAY-component-form-group-date3').val()),
+                            'end_login_date':$.trim($('#LAY-component-form-group-date4').val()),
+                            'min_recharge_num':$.trim($('#min_recharge_num').val()),
+                            'max_recharge_num':$.trim($('#max_recharge_num').val()),
+                            'orderytpe':obj.type,
+                            'orderby':obj.field
+                        },
+                        parseData:function(res){
+                          if(res.data.length==0){
+                            return{
+                              'code':'201',
+                              'msg':"{:lang('无数据')}"
+                            };
+                          };
+                        }
+                    });
+                });
+			},
+			editEvn: function () {
+
+			},
+			//页签 切换事件
+			TabEvn: function () {
+				element.on('tab(test)', function (data) {
+					switch (data.index) {
+						case 0:
+							return Tabs.tab0Evn();
+						case 1:
+							return Tabs.tab1Evn();
+						case 2:
+							return Tabs.tab2Evn();
+						case 3:
+							return Tabs.tab3Evn();
+						case 4:
+							return Tabs.tab4Evn();
+					}
+				});
+				//编辑
+                table.on('tool(Table0)', function (obj) {
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'detail') {
+                        var url = '/admin/player/playerDetail?roleid=' + data.AccountID;
+                        x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.6);
+                    }
+                });
+                table.on('tool(Table1)', function (obj) {
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'detail') {
+                        var url = '/admin/player/playerDetail?roleid=' + data.AccountID;
+                        x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.6);
+                    }
+                });
+                table.on('tool(Table2)', function (obj) {
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'detail') {
+                        var url = '/admin/player/playerDetail?roleid=' + data.AccountID;
+                        x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.6);
+                    }
+                });
+                table.on('tool(Table3)', function (obj) {
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'detail') {
+                        var url = '/admin/player/playerDetail?roleid=' + data.AccountID;
+                        x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.6);
+                    }
+                });
+
+			},
+			SwitchEvn: function () {
+
+			},
+			init: function () {
+				Tabs.tab0Evn();
+				this.sortEvn();
+				this.editEvn();
+				this.TabEvn();
+				this.SwitchEvn();
+				$('#search').on('click', function (e) {
+					e.preventDefault();
+					TBinit.searchEvn();
+				});
+			}
+		}
+		TBinit.init();
+	});
+    
+    function output(el){
+        // alert($(el).attr('data_val'));
+        var strartdate = $.trim($('#LAY-component-form-group-date').val());
+        var start_register_date = $.trim($('#LAY-component-form-group-date1').val());
+        var end_register_date = $.trim($('#LAY-component-form-group-date2').val());
+        var start_login_date = $.trim($('#LAY-component-form-group-date3').val());
+        var end_login_date = $.trim($('#LAY-component-form-group-date4').val());
+        var min_recharge_num = $.trim($('#min_recharge_num').val());
+        var max_recharge_num = $.trim($('#max_recharge_num').val());
+        var RoleId = $.trim($('#RoleId').val());
+        var ParentId = $.trim($('#ParentId').val());
+        var proxyId = $.trim($('#proxyId').val());
+        var where = {
+            'start_date':strartdate,
+            'roleid': RoleId,
+            'ParentId':ParentId,
+            'proxyId':proxyId,
+            'start_register_date':start_register_date,
+            'end_register_date':end_register_date,
+            'start_login_date':start_login_date,
+            'end_login_date':end_login_date,
+            'min_recharge_num':min_recharge_num,
+            'max_recharge_num':max_recharge_num,
+            'action': 'output',
+            'type':$(el).attr('data_val'),
+            'limit':99999
+        }
+            var params = Object.keys(where).map(function (key) {
+                return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+            }).join("&");
+            url = "{:url('Statistical/payRanking')}?" + params;
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                async: true,
+                url: url, // 生成文件，保存在服务器
+                success: function (data) {
+                    var result = data;
+                    console.info(data);
+                    switch (result["code"]) {
+                        case 0:
+                            parent.parent.open(url + "&exec=1&outall=true");
+                            break;
+                        case 1:
+                            layer.msg(result["message"]);
+                            break;
+                        case 2:
+                            layer.confirm(result['message'], {
+                                btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
+                            }, function () {
+                                parent.parent.open(url + "&exec=1&outall=true");
+                                layer.msg('', {icon: 6, time: 1000}, function () {
+                                    window.location.reload();
+                                });
+                            });
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, e) {
+                    console.log("oilDetection.js  method exportOilDetection" + e);
+                }
+            });
+    }
+</script>
+{/block}

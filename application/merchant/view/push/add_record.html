@@ -1,0 +1,227 @@
+{extend name="common/base" /}
+{block name="title"}添加邮件发送{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+<style>
+    .layui-form-item .layui-input-inline {width: 130px}
+</style>
+ 
+<form class="layui-form" action="">
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">推送对象：</label>
+        <div class="layui-input-block">
+            <input autocomplete="off" class="layui-input" id="RoleId" lay-verify="required" name='RoleId' placeholder="0为全部用户，多个用户请用英文字符,拼接ID，如1,3,8,15" type="text" value="{$data['RoleId'] ?: ''}">
+        </div>
+    </div>
+    
+    <div class="layui-form-item">
+        <label class="layui-form-label">推送标题：</label>
+        <div class="layui-input-block">
+        	<input type="text" name="Title" lay-verify="Title" autocomplete="off" placeholder="请输入标题" class="layui-input" value="{$data['title'] ?: ''}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">推送内容：</label>
+        <div class="layui-input-block">
+            <textarea class="layui-textarea" id="Message" lay-verify="content" name="Message" placeholder="请输入内容">{$data['Message'] ?: ''}</textarea>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">推送备注：</label>
+        <div class="layui-input-block">
+            <textarea class="layui-textarea" id="Descript" lay-verify="content" name="Descript" placeholder="请输入备注">{$data['Message'] ?: ''}</textarea>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">活跃用户：</label>
+        <label class="layui-form-label" style="text-align: left;width: 20px;padding-left: 0px">近</label>
+        <div class="layui-input-inline">
+            <input autocomplete="off" class="layui-input" id="LoginDays" lay-verify="required" name='LoginDays' placeholder="请输入天数" type="text" value="{$data['LoginDays'] ?: 0}">
+        </div>
+        <!-- <label class="layui-form-label" style="text-align: left;width: 40px;padding-left: 0px">到 </label> -->
+        <!-- <label class="layui-form-label">天-</label> -->
+        <!-- <div class="layui-input-inline">
+            <input autocomplete="off" class="layui-input" id="LoginEndDays" lay-verify="required" name='LoginEndDays' placeholder="请输入天数" type="text" value="{$data['LoginEndDays'] ?: 0}">
+        </div> -->
+        <label class="layui-form-label" style="text-align: left;;width: 40px;padding-left: 0px">天内</label>
+        <div class="layui-inline">
+            <div class="layui-input-inline">
+                <select id="LoginType" name="LoginType">
+                	<!-- <option value="0">全部</option> -->
+                    <option value="1">未登录</option>
+                    <option value="2">登陆过</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">设备类型：</label>
+        <div class="layui-input-block">
+        	<input checked=""  name="SendType" title="安卓设备" type="radio" value="1">
+            <input name="SendType" title="IOS设备" type="radio" value="2">
+            <input name="SendType" title="安卓设备+IOS设备" type="radio" value="3">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">推送类型：</label>
+        <div class="layui-input-block">
+            <input checked="" lay-filter="sendtype" name="pushtype" title="即时推送" type="radio" value="0">
+            <input lay-filter="sendtype" name="pushtype" title="定时推送" type="radio" value="1">
+        </div>
+    </div>
+
+    <div class="layui-form-item" id="showsend" style="display: none">
+        <label class="layui-form-label">定时推送时间：</label>
+        <div class="layui-input-block">
+            <input autocomplete="off" class="layui-input" id="SendTime" name='SendTime' placeholder="yyyy-MM-dd HH:mm:ss" type="text" value="{$data['SendTime'] ?: ''}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >设置</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" lay-submit="" lay-filter="cancel" id="cancel" >取消</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+	var _isClickSave = false;
+	var _callback;
+	var _layer_index;
+
+	var main;
+	layui.config({base: '__layui__/'}).extend({index: 'lib/index'}).use(['table', 'layer', 'element', 'layedit', 'laydate', 'form', 'jquery'], function () {
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, layedit = layui.layedit, table = layui.table, $ = layui.$, form = layui.form;
+		laydate.render({
+            elem: '#SendTime'
+            ,type: 'datetime'
+        });
+		main = {
+			submitForm: function () {
+				data = getSerializeFormData($("form").serializeArray());
+                var chargeorder = 0;
+                if($("#chargeorder").is(':checked')){
+                    chargeorder =1;
+                }
+				console.info(data);
+				var
+					RoleId = $.trim(data.RoleId),
+					Title = $.trim(data.Title),
+					Message = $.trim(data.Message),
+					Descript = $.trim(data.Descript),
+					SendType = $.trim(data.SendType),
+					SendTime = $.trim(data.SendTime),
+					LoginDays = $.trim(data.LoginDays),
+					LoginType = $.trim(data.LoginType),
+					pushtype = $.trim(data.pushtype)
+				if(pushtype == 1) {
+					if (SendTime == '') {
+						layer.msg('请输入推送时间', {icon: 2});
+						return;
+					}
+				}
+				if (RoleId == '') {
+					layer.msg('请输入推送对象', {icon: 2});
+					return;
+				}
+				if (Title == '') {
+					layer.msg('请输入推送标题', {icon: 2});
+					return;
+				}
+				if (Message == '') {
+					layer.msg('请输入推送内容', {icon: 2});
+					return;
+				}
+				if (Descript == '') {
+					layer.msg('请输入推送备注', {icon: 2});
+					return;
+				}
+				$.ajax({
+					type: 'post',
+//                    type:'get',
+					url: "{:url('Push/addRecord')}",
+					data: {
+						RoleId:RoleId,
+						Title:Title,
+						Message:Message,
+						Descript:Descript,
+						SendType:SendType,
+						SendTime:SendTime,
+						LoginDays:LoginDays,
+						LoginType:LoginType,
+					},
+					dataType: 'json',
+					success: function (res) {
+						if (res.code === 1) {
+							layer.msg(res.msg, {icon: 1, time: 1000}, function () {
+								x_admin_close();
+                                parent.location.reload();
+							});
+						} else {
+							layer.msg(res.msg, {icon: 2});
+						}
+					}
+				});
+
+			},
+
+			bindEvent: function () {
+				form.on('submit(addit)', function (data) {
+					main.submitForm(data);
+					return false;
+				});
+
+				$('#cancel').on('click', function (e) {
+					e.preventDefault();
+					x_admin_close();
+				})
+			},
+			formreader: function () {
+				form.render('select');
+			},
+
+			init: function () {
+				$('#all').next().hide();
+				$("#fj").hide();
+				$("#sendobj").hide();
+
+				table.render();
+				laydate.render({
+					elem: '#sendtime'
+					, type: 'datetime'
+					, format: 'yyyy-MM-dd HH:mm:ss'
+					, btns: ['clear', 'confirm']
+				});
+				main.bindEvent();
+			}
+		};
+
+		form.on('radio(sendtype)', function (data) {
+			if (data.value == 1) {
+				$("#showsend").show();
+			} else {
+				$("#showsend").hide();
+			}
+
+		});
+
+		main.init();
+
+	});
+
+	function saveData(callback, layer_index, autoClose) {
+        if (_isClickSave) return;
+        _isClickSave = true;
+        _layer_index = layer_index;
+        _callback = callback
+        main.submitForm();
+	}
+
+
+</script>
+{/block}

@@ -1,0 +1,181 @@
+{extend name="common/base" /}
+{block name="title"}{:lang("功能配置开关")}{/block}
+{block name="css"}{/block}
+{block name="content"}
+<script id="msg-bar" type="text/html">
+	{{#  if(d.Status == 1){ }}
+      	<input type="checkbox" checked="" name="Status" lay-skin="switch" lay-filter="demo" lay-text="{:lang('开启')}|{:lang('关闭')}" value="{{d.Id}}">
+    {{#  } else { }}
+    	<input type="checkbox" name="Status" lay-skin="switch" lay-filter="demo" lay-text="{:lang('开启')}|{:lang('关闭')}" value="{{d.Id}}">
+    {{#  } }}
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <a class='layui-btn layui-btn-sm layui-btn-normal' lay-event='edit'>{:lang("编辑")}</a>
+    <a class='layui-btn layui-btn-sm layui-btn-normal layui-bg-red' lay-event='del'>{:lang("删除")}</a>
+	
+</script>
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto"></div>
+    <div class="layui-tab layui-tab-brief" lay-filter="test">
+        <ul class="layui-tab-title">
+            <li class="layui-this" lay-id="1">{:lang("客服配置")}</li>
+            <!--            <li class="" lay-id="2">未分类配置</li>-->
+            <!--            <li class="" lay-id="3">盘控配置</li>-->
+            <!--            <li class="" lay-id="3">客户端配置</li>-->
+        </ul>
+        <div class="layui-tab-content" id="TabItem" style="background-color: #f2f2f2">
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script id="toolbar" type="text/html">
+    <div class="layui-btn-container">
+        <button class="layui-btn " lay-event="additem"><i class="layui-icon">&#xe608;</i> {:lang("添加")}</button>
+    </div>
+</script>
+<script>
+	var tabitem = 0, html = ""; //页签总下标+1
+	layui.use(['jquery'], function () {
+		var $ = layui.jquery;
+		for (var i = 0; i <= tabitem; i++) {
+			if (i == 0)
+				html +=
+					"<div class='layui-tab-item layui-show'><table id='Table" + i + "'lay-filter='Table" + i + "'></table> </div>";
+		}
+		$().ready(function () {
+			$("#TabItem").html(html);
+		});
+	});
+</script>
+<script>
+
+	var cols0 = [
+		{field: 'Id', align: 'center', title: 'ID', width: 100},
+		{field: 'CustomName', align: 'center', title: '{:lang("客服名称")}', width: 200},
+        {field: 'CustomTitle', align: 'center', title: '{:lang("标题")}', width: 200},
+        {field: 'VipLabel', align: 'center', title: '{:lang("客服类型")}', width: 180,templet:function(d) {
+            if(d.VipLabel==1){
+                return '{:lang("Vip客服")}';
+            }
+            else if(d.VipLabel==2){
+                return '{:lang("登录页客服")}';
+            }
+            else
+                return '{:lang("运营客服")}';
+        }},
+		{field: 'Phone', align: 'center', title: '{:lang("客服链接")}', minWidth: 350},
+		{field: 'FaceId', align: 'center', title: 'FaceID', width: 120},
+		{fixed: 'right', title: '{:lang("操作")}', align: 'center', minWidth: 300, toolbar: '#msg-bar'}
+
+	]; //分包管理配置
+	layui.config({
+		base: '__layui__/' //静态资源所在路径
+	}).extend({
+		index: 'lib/index' //主入口模块
+	}).use(['table', 'layer', 'element', 'laydate', 'form', 'jquery', 'util'], function () {
+		//ID=table0
+		//每个页签的独立变量 增加页签的时候 手动增加
+		var tb0 = 'Table0', tb1 = 'Table1', tb2 = 'Table2', tb3 = 'Table3';
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, util = layui.util,
+			table = layui.table, $ = layui.$, form = layui.form;
+		Tabs = {
+			tab0Evn: function () {
+				table.render({
+					elem: '#' + tb0,
+					toolbar: '#toolbar',
+					// where: Wheres[0],
+					url: "{:url('CustomerServiceSystem/CustomerServiceConfig')}?action=list",
+					page: true, cols: [cols0], autoSort: false,
+					done: function (d) {
+                        tzTbale()
+                    }
+				});
+			},
+
+		};
+		TBinit = {
+			// sortEvn: function () {            },
+			editEvn: function () {
+				//工具栏
+				table.on('tool(' + tb0 + ')', function (obj) {
+					if (obj.event == 'edit') {
+						data = obj.data;
+						url = "{:url('CustomerServiceSystem/CustomerServiceConfig')}?action=edit";
+						parms = "&ID=" + data.Id + "&CustomName=" + data.CustomName + "&Phone=" + data.Phone + "&FaceID=" + data.FaceId + "&CountryCode=" + data.CountryCode+"&VipLabel="+data.VipLabel;
+						x_admin_show('{:lang("编辑")}', url + parms, $(window).width() * 0.4, $(window).height() * 0.5);
+					}
+					if (obj.event == 'del') {
+						data = obj.data;
+						url = "{:url('CustomerServiceSystem/CustomerServiceConfig')}?action=del";
+						layer.confirm("{:lang('确认要删除这条记录吗？')}", {btn: ['{:lang("确认")}', '{:lang("取消")}']}, function () {
+							$.ajax({
+								type: 'post', url: url, data: {'ID': data.Id},
+								dataType: 'json',
+								success: function (res) {
+									if (res.code === 1)
+                                    {
+                                        layer.msg(res.msg, {icon: 1, time: 500}, function ()
+                                        {
+                                            window.location.reload();
+                                        });
+                                    }
+                                    else {
+                                        layer.msg(res.msg, {icon: 2});
+                                    }
+
+								}
+							});
+						});
+					}
+
+
+				});
+				//添加按钮
+				table.on('toolbar(' + tb0 + ')', function (obj) {
+					// console.info(obj);
+					if (obj.event == "additem") {
+						url = "{:url('CustomerServiceSystem/CustomerServiceConfig')}?action=add";
+						x_admin_show('{:lang("新增")}', url, $(window).width() * 0.3, $(window).height() * 0.5);
+					}
+				});
+				//监听单元格switch
+				  form.on('switch(demo)', function(obj){
+				  	var id = this.value;
+				  	if (obj.elem.checked) {
+				  		var status = 1;
+				  	} else {
+				  		var status = 0;
+				  	}
+						$.ajax({
+				            url:"{:url('CustomerServiceSystem/CustomerServiceConfig')}?action=editStatus",
+				            type:"POST",
+				            dataType: 'json',
+				            async: true,
+				            data:{id:id,status:status},
+				            success:function(ret){
+				            	layer.msg(ret.msg);
+				            }
+				        });
+				  });
+			},
+			//页签 切换事件
+			TabEvn: function () {
+				element.on('tab(test)', function (data) {
+					switch (data.index) {
+						case 0:
+							return Tabs.tab0Evn();
+					}
+				});
+			},
+
+			init: function () {
+				Tabs.tab0Evn();
+				this.editEvn();
+				this.TabEvn();
+
+			}
+		}
+		TBinit.init();
+	});
+</script>
+{/block}

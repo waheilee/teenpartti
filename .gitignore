@@ -1,0 +1,37 @@
+# Build and Release Folders
+bin-debug/
+bin-release/
+[Oo]bj/
+[Bb]in/
+
+# Other files and folders
+.settings/
+
+# Executables
+*.swf
+*.air
+*.ipa
+*.apk
+
+# Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`
+# should NOT be excluded as they contain compiler settings and other important
+# information for Eclipse / Flash Builder.
+/application/extra/site.php
+/doc
+/git_sql
+/application/config.php
+/application/product.php
+/application/dev.php
+/application/database.php
+.htaccess
+nginx.htaccess
+/runtime
+.idea
+/log
+/yd-bx
+/vendor
+/public
+/thinkphp
+.user.ini
+.well-known/
+

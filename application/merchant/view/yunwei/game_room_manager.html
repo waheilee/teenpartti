@@ -1,0 +1,167 @@
+{extend name="common/base" /}
+
+{block name="title"}房间配置{/block}
+{block name="css"}{/block}
+{block name="content"}
+<style>
+.layui-anim{
+        max-height: 500px !important;
+    }</style>
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('游戏种类')}</label>
+                    <div class="layui-input-inline">
+                        <select id="kindid" name="kindid" lay-search>
+                            <option value="0">{:lang('所有')}</option>
+                            {foreach $kindlist as $k => $v}
+                            <option value="{$v.KindID}">{$v.KindName}({$v.KindID})</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('房间名称')}</label>
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="roomname" name="roomname" type="text">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline"><a class="layui-btn" data-type="reload" id="search">{:lang('搜索')}</a></div>
+                    <div class="layui-input-inline"><a class="layui-btn layui-bg-blue" data-type="reload" onclick="ViproomSet()" >{:lang('充值开放房间配置')}</a></div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <!--        <a style="margin-bottom: 10px;" class="layui-btn" onclick="x_admin_show('添加房间','addroom.html',800, 700)">-->
+        <!--            &lt;!&ndash;<i class="layui-icon layui-icon-add-circle"></i>&ndash;&gt;-->
+        <!--            添加房间-->
+        <!--        </a>-->
+        <div class="layui-row layui-col-space30">
+            <div class="layui-col-md12" id="alllist">
+                <table id="proxylist" lay-filter="proxylist"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script id="msg-bar" type="text/html">
+    <!--    <a class="layui-btn layui-btn-xs" lay-event="copy">复制</a>-->
+    <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="edit">{:lang('修改')}</a>
+    <!--    <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">删除</a>-->
+    <!--<a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">拉黑</a>-->
+</script>
+
+<script>function ViproomSet() {
+	url="{:url('Game_cfg/VipGameListTree')}?Action=list";
+    x_admin_show("{:lang('充值开放房间配置')}",url,400,600);
+}
+
+layui.config({
+		base: '__layui__/' //静态资源所在路径
+	}).extend({
+		index: 'lib/index' //主入口模块
+
+	}).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
+		var main = {
+			renderData: function () {
+				var cols = [ //表头
+					{field: 'RoomID', align: "center", title: "{:lang('房间ID')}", minWidth: 90}
+					, {field: 'KindName', align: "center", title: "{:lang('游戏标识')}", minWidth: 180}
+					, {field: 'RoomName', align: "center", title: "{:lang('房间名称')}", minWidth: 120}
+					, {field: 'RoomType', align: "center", title: "{:lang('房间类型')}", minWidth: 120}
+					, {field: 'MaxTableCount', align: "center", title: "{:lang('桌子数')}", minWidth: 200}
+					, {field: 'MaxPlayerCount', align: "center", title: "{:lang('最大人数')}", minWidth: 200}
+//                    , {field: 'serverip', title: '链接地址', minWidth: 180}
+					, {field: 'SChemeName', align: "center", title: "{:lang('房间布局')}", minWidth: 180}
+					, {fixed: 'right', title: "{:lang('操作')}", align: 'center', width: 150, toolbar: '#msg-bar'}
+				];
+
+				table.render({
+					elem: '#proxylist'
+					, url: "{:url('yunwei/GameRoomManager')}?Action=list"
+					, page: true //开启分页
+					, limit: 15
+					, cols: [cols]
+					,done: function (d) {
+                        tzTbale()
+                    }
+				});
+			},
+
+			//搜索
+			search: function () {
+				var kindid = $.trim($('#kindid').val());
+				var roomname = $.trim($('#roomname').val());
+
+				//执行重载
+				table.reload('proxylist', {
+					page: {
+						curr: 1 //重新从第 1 页开始
+					},
+					where: {
+						'kindid': kindid,
+						'roomname': roomname,
+					}
+				});
+			},
+
+			//操作事件
+			extraEvent: function () {
+				//编辑
+				table.on('tool(proxylist)', function (obj) {
+					var data = obj.data //获得当前行数据
+						, layEvent = obj.event; //获得 lay-event 对应的值
+					tr = obj.tr; //获得当前行 tr 的DOM对象
+					if (layEvent === 'copy') {
+						x_admin_show("{:lang('复制房间')}", "{:url('yunwei/GameRoomManager')}?Action=copy&RoomID=" + data.RoomID, 900, 700)
+					}
+					if (layEvent === 'edit') {
+						// console.info(data.RoomID);
+						x_admin_show("{:lang('编辑房间')}", "{:url('yunwei/GameRoomManager')}?Action=edit&RoomID=" + data.RoomID, 900, 700)
+					}
+					if (layEvent === 'delete') {
+						layer.confirm("{:lang('确认删除这条记录？')}", {btn: ["{:lang('确认')}", "{:lang('取消')}"]}, function () {
+							$.ajax({
+								type: 'post',
+								url: "{:url('yunwei/deleteroom')}",
+								data: {
+									'RoomID': data.RoomID
+								},
+								dataType: 'json',
+								success: function (res) {
+									if (res.code === 0) {
+										layer.msg(res.msg, {icon: 6, time: 1000}, function () {
+											window.location.reload();
+										});
+									} else {
+										layer.msg(res.msg, {icon: 5});
+									}
+								}
+							});
+						});
+					}
+				});
+			},
+
+			init: function () {
+				main.renderData();
+				main.extraEvent();
+				$('#search').on('click', function (e) {
+					e.preventDefault();
+					main.search();
+				});
+			}
+		};
+
+		main.init();
+	});
+</script>
+{/block}

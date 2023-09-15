@@ -1,0 +1,123 @@
+{extend name="common/base" /}
+
+{block name="title"}国家列表{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<div class="layui-card">
+    <div class="layui-card-body">
+        <a style="margin-bottom: 10px;" class="layui-btn" onclick="x_admin_show('添加区域','addcountry.html', 450,200)">
+            <i class="layui-icon layui-icon-add-circle"></i>
+        </a>
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'Code', title: '国家代码', minWidth: 150}
+                    , {field: 'Country', title: '国家名称', minWidth: 200}
+                    , {
+                        field: 'AreaMsgRight', title: '状态', minWidth: 120, templet: function (d) {
+                            var myid = d.Code;
+                            if (d.AreaMsgRight == 0) {
+                                return '<a class="myopen"  lay-event="open"><input type="checkbox" ' +
+                                    'name="state" lay-filter="state" lay-skin="switch" lay-text="开启|关闭" value="' + myid + '" ></a>';
+                            } else {
+                                return '<a class="myopen"  lay-event="open"><input type="checkbox"  ' +
+                                    'name="state" lay-filter="state" lay-skin="switch" checked lay-text="开启|关闭" value="' + myid + '" ></a>';
+                            }
+                        }
+                    }
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('gamemanage/countrylist')}" //数据接口
+                    , page: true //开启分页
+                    , cols: [cols]
+                });
+            },
+
+            //搜索
+            search: function () {
+//                var roleid = $.trim($('#bankname').html());
+                var roleid = $.trim($('#bankname option:selected').text());
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {}
+                });
+            },
+
+
+            //操作事件
+            extraEvent: function () {
+                //编辑&&删除
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+                    if (layEvent === 'edit') {
+
+                    } else if (layEvent === 'delete') {
+                    }
+                });
+
+                form.on('switch(state)', function (obj) {
+                    $.ajax({
+                        type: 'post',
+                        url: "{:url('setareastate')}",
+                        data: {
+                            'id': this.value,
+                            'state': obj.elem.checked
+                        },
+                        dataType: 'json',
+                        success: function (res) {
+                            if (res.code === 0) {
+                                layer.msg(res.msg, {icon: 1, time: 1000}, function () {
+                                    //window.location.reload();
+                                });
+                            } else {
+                                layer.msg(res.msg, {icon: 2});
+                            }
+                        }
+                    })
+                });
+
+            },
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

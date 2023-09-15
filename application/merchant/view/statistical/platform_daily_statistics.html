@@ -1,0 +1,243 @@
+{extend name="common/base" /}
+
+{block name="title"}游戏日志{/block}
+{block name="css"}
+<style>
+    /* 这段样式只是用于演示 */
+    #LAY-component-grid-list .demo-list .layui-card {
+        height: 600px;
+        border: solid 1px #e6e6e6;
+        padding: 15px
+    }
+</style>
+{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <div class="layui-card-header" style="padding: 20px">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">日期</label>
+                    <div class="layui-input-inline" style="width: 150px;">
+                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">搜索</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body layuiadmin-card-list">
+        <div class="layui-fluid" id="LAY-component-grid-list">
+            <div class="layui-row layui-col-space1 demo-list" id="myform">
+                <div class="layui-col-sm3 layui-col-md3 layui-col-lg3">
+                    <div class="layui-card">
+                        <div>新增注册：{$data.regnew}</div>
+                        <div>新增注册IP：{$data.regnewip}</div>
+                        <div>绑定手机：{$data.bindphone}</div>
+                        <div>注充比率：{$data.zcbl? $data.zcbl :0}</div>
+                        <div>注绑比率（手机）：{$data.zbbl}</div>
+                        <div>登录用户数：{$data.loginnum}</div>
+                        <div>ios登录数：{$data.ioslogin}</div>
+                        <div>android登录数：{$data.androidlogin}</div>
+                        <div>最高在线人数（大厅）：{$data.highonline}</div>
+                        <div>最高在线人数（游戏中）：{$data.highroom}</div>
+                        <div>平均在线人数（大厅）：{$data.averageonline}</div>
+                        <div>平均在线人数（游戏中）：{$data.averageroom}</div>
+                    </div>
+                </div>
+                <div class="layui-col-sm2 layui-col-md2 layui-col-lg2">
+                    <div class="layui-card">
+                        <div>总充值：{$data.totalpay}</div>
+                        <div>新用户充值：{$data.newuserpay}</div>
+                        <div>老用户充值：{$data.olduserpay}</div>
+                        <div>总充值人数：{$data.totaluserpaynum}</div>
+                        <div>新用户充值人数：{$data.newuserpaynum}</div>
+                        <div>老用户充值人数：{$data.olduserpaynum}</div>
+                        <div>代理充值占比：{$data.agentczzb}</div>
+                        <div>代理充值：{$data.agentpay}</div>
+                        <div>iOS充值人数：{$data.ioschargenum}</div>
+                        <div>iOS充值金额：{$data.ioschargemoney}</div>
+                        <div>安卓充值人数：{$data.androidchargenum}</div>
+                        <div>安卓充值金额：{$data.androidchargemoney}</div>
+                    </div>
+                </div>
+                <div class="layui-col-sm2 layui-col-md2 layui-col-lg2">
+                    <div class="layui-card">
+                        <div>总兑换：{$data.totalpayout}</div>
+                        <div>兑换笔数：{$data.allpayoutnum}</div>
+                        <div>兑换人数：{$data.totalpayoutnum}</div>
+                        <div>兑换人次：{$data.totalpayouttimes*100/100}%</div>
+                        <div>总盈亏：{$data.totalyk}</div>
+                        <div>兑换比率：{$data.chargeoutrate}</div>
+                        <div>新增兑换人数：{$data.payoutnewnum}</div>
+                        <div>新增兑换金额：{$data.payoutnew}</div>
+                        <div>老用户兑换人数：{$data.payoutoldnum}</div>
+                        <div>老用户兑换金额：{$data.payoutold}</div>
+                        <div>新玩家充兑比：{$data.chontibinew}</div>
+                        <div>老玩家充兑比：{$data.chontibiold}</div>
+                        <div>玩家充兑比：{$data.chongduibi}</div>
+                    </div>
+                </div>
+
+                <div class="layui-col-sm2 layui-col-md2 layui-col-lg2">
+                    <div class="layui-card">
+                        <div>系统税收：{$data.totaltax}</div>
+                        <div>游戏输赢：{$data.totalwin}</div>
+                        <div>总流水：{$data.totalwater}</div>
+                    </div>
+                </div>
+                <!--                <div class="layui-col-sm3 layui-col-md3 layui-col-lg3">-->
+                <!--                    <div class="layui-card">-->
+                <!--                        <div>历史总充值金额：{//$data.historytotalin}</div>-->
+                <!--                        <div>历史充值人数：{//$data.historyinnum}</div>-->
+                <!--                        <div>历史转出金额：{//$data.historytotalout}</div>-->
+                <!--                        <div>历史转出人数：{//$data.historyoutnum}</div>-->
+                <!--                    </div>-->
+                <!--                </div>-->
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery', 'carousel'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+        var carousel = layui.carousel;
+        var element = layui.element;
+        var main = {
+            //搜索
+            search: function () {
+                // zcbl={$data.zcbl?  $data.zcbl : 0 };
+                // console.info(zcbl);
+                // zcbl=Math.floor(data.zcbl  * 100) / 100 ;
+
+                var strartdate = $.trim($('#LAY-component-form-group-date').val());
+                $.ajax({
+                    type: 'post',
+                    url: "{:url('statistical/platformDailyStatistics')}",
+                    data: {
+                        'strartdate': strartdate
+                    },
+                    dataType: 'json',
+                    success: function (res) {
+                        var data = res.data;
+                        if (res.code === 3) {
+                            $('#myform').html(`
+                <div class="layui-col-sm3 layui-col-md3 layui-col-lg3">
+                    <div class="layui-card">
+                        <div>新增注册：${data.regnew}</div>
+                        <div>新增注册IP：${data.regnewip}</div>
+                        <div>绑定手机：${data.bindphone}</div>
+                        <div>注充比率：${data.zcbl}</div>
+                        <div>注绑比率（手机）：${data.zbbl}</div>
+                        <div>登录用户数：${data.loginnum}</div>
+                        <div>ios登录数：${data.ioslogin}</div>
+                        <div>android登录数：${data.androidlogin}</div>
+                        <div>最高在线人数（大厅）：${data.highonline}</div>
+                        <div>最高在线人数（游戏中）：${data.highroom}</div>
+                        <div>平均在线人数（大厅）：${data.averageonline}</div>
+                        <div>平均在线人数（游戏中）：${data.averageroom}</div>
+
+                    </div>
+                </div>
+                <div class="layui-col-sm2 layui-col-md2 layui-col-lg2">
+                    <div class="layui-card">
+                        <div>总充值：${data.totalpay}</div>
+                        <div>新用户充值：${data.newuserpay}</div>
+                        <div>老用户充值：${data.olduserpay}</div>
+                        <div>总充值人数：${data.totaluserpaynum}</div>
+                        <div>新用户充值人数：${data.newuserpaynum}</div>
+                        <div>老用户充值人数：${data.olduserpaynum}</div>
+                        <div>代理充值占比：${data.agentczzb}</div>
+                        <div>代理充值：${data.agentpay}</div>
+                        <div>iOS充值人数：${data.ioschargenum}</div>
+                        <div>iOS充值金额：${data.ioschargemoney}</div>
+                        <div>安卓充值人数：${data.androidchargenum}</div>
+                        <div>安卓充值金额：${data.androidchargemoney}</div>
+                    </div>
+                </div>
+                <div class="layui-col-sm2 layui-col-md2 layui-col-lg2">
+                    <div class="layui-card">
+                        <div>总兑换：${data.totalpayout}</div>
+                        <div>兑换笔数：${data.allpayoutnum ? data.allpayoutnum : 0}</div>
+                        <div>兑换人数：${data.totalpayoutnum}</div>
+                        <div>兑换人次：${Math.floor(data.totalpayouttimes)}%</div>
+                        <div>总盈亏：${data.totalyk}</div>
+                        <div>兑换比率：${data.chargeoutrate}</div>
+                        <div>新增兑换人数：${data.payoutnewnum}</div>
+                        <div>新增兑换金额：${data.payoutnew}</div>
+                        <div>老用户兑换人数：${data.payoutoldnum}</div>
+                        <div>老用户兑换金额：${data.payoutold}</div>
+                         <div>新玩家充兑比：${data.chontibinew}</div>
+                        <div>老玩家充兑比：${data.chontibiold}</div>
+                        <div>玩家充兑比：${data.chongduibi}</div>
+                    </div>
+                </div>
+
+                <div class="layui-col-sm2 layui-col-md2 layui-col-lg2">
+                    <div class="layui-card">
+                        <div>系统税收：${data.totaltax}</div>
+                        <div>游戏输赢：${data.totalwin}</div>
+                        <div>总流水：${data.totalwater}</div>
+
+                    </div>
+                </div>`
+
+                                // <div class="layui-col-sm3 layui-col-md3 layui-col-lg3">
+                                //     <div class="layui-card">
+                                //         <div>历史总充值金额：${data.historytotalin}</div>
+                                //         <div>历史充值人数：${data.historyinnum}</div>
+                                //         <div>历史转出金额：${data.historytotalout}</div>
+                                //         <div>历史转出人数：${data.historyoutnum}</div>
+                                //     </div>
+                                // </div>
+                            );
+                        }
+
+                    }
+                });
+            },
+
+            init: function () {
+                laydate.render({
+                    elem: '#LAY-component-form-group-date'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , btns: ['clear', 'confirm']
+                    , value: new Date()
+                });
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            },
+        };
+
+        main.init();
+//                var t1 = window.setInterval(main.search,1000*60*60);
+    });
+</script>
+{/block}

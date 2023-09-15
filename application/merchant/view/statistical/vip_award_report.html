@@ -1,0 +1,135 @@
+{extend name="common/base" /}
+
+{block name="title"}在线玩家列表{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('玩家ID')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="roleid" name="roleid" lay-verify="number" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">搜索</a>
+                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <div class="layui-row layui-col-space30">
+
+            <div id="alllist" class="layui-col-md12">
+                <table id="proxylist" lay-filter="proxylist"></table>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            renderData : function() {
+                var cols = [ //表头
+                    {field: 'accountid', title: '{:lang('玩家ID')}', minWidth:120, templet: function (d) {
+                            return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.accountid + "</a>";
+                        }
+                    }
+                    ,{field: 'viplv', title: "{:lang('VIP等级')}", minWidth:100,sort:true, align:'center'}
+                    , {field: 'signaward', title: "{:lang('累计签到奖励')}", minWidth:240,sort:true, align:'center'}
+                    , {field: 'weekaward', title: "{:lang('累计领取周奖励')}", minWidth:280,sort:true, align:'center'}
+                    , {field: 'monthaward', title: "{:lang('累计领取月奖励')}", minWidth:300,sort:true, align:'center'}
+                    , {field: 'uplevelaward', title: "{:lang('累计领取升级奖励')}", minWidth:300,sort:true, align:'center'}
+                ];
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('Statistical/VipAwardReport')}" //数据接口
+                    , page: true //开启分页
+                    , cols: [cols]
+                    ,sort: true
+                    ,autoSort: false
+                    , done: function (res, curr, count) {
+
+                    }
+                });
+            },
+
+
+            //搜索
+            search : function() {
+                var roleid = $.trim($('#roleid').val());
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'roleid':roleid
+                    }
+                });
+            },
+            extraEvent: function () {
+                var roleid = $.trim($('#roleid').val());
+                table.on('sort(proxylist)', function (obj) {
+                    //执行重载
+                    table.reload('proxylist', {
+                        page: {curr: 1},
+                        initSort: obj,
+                        where: {
+                            'roleid':roleid,
+                            'orderytpe': obj.type,
+                            'orderby': obj.field,
+                        }
+                    });
+                });
+
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'detail') {
+                        var url = '/admin/player/playerDetail?roleid=' + data.accountid;
+                        x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.6);
+                    }
+                });
+            },
+            init : function() {
+                main.renderData();
+                main.extraEvent();
+                $('#search').on('click', function(e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

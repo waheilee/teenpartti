@@ -1,0 +1,160 @@
+------.创建T_GameRoomSort
+
+--------.表T_GamePlayerWin 加Tax 字段
+ALTER TABLE [CD_UserDB].[dbo].[T_GamePlayerWin] ADD [Tax] bigint NULL DEFAULT 0 
+-------- 添加主键
+CREATE INDEX [RoleID] ON [dbo].[T_UserPayWay]
+([RoleID] ASC) 
+GO
+CREATE UNIQUE INDEX [RoleID] ON [dbo].[T_UserGameWealth]
+([RoleID] ASC) 
+WITH (IGNORE_DUP_KEY = ON)
+GO
+
+--------.视图View_GameWinLose
+SELECT 
+ID,RoleID
+,A.RoomID,B.RoomName
+,Water
+,(0-WinNum)+WipFG WinScore  --总盈亏=游戏输赢22类型+购买FG消耗
+,adddate
+,(WinCount+LoseCount+DrawCount)GCount
+,BuyFG
+,WipFG
+,Tax
+FROM T_GamePlayerWin A WITH (NOLOCK)
+LEFT OUTER JOIN OM_MasterDB.dbo.T_GameRoomInfo AS B WITH (NOLOCK) ON B.RoomID = A.RoomId
+--------.视图View_TotalDayScore
+SELECT   A.addDate, A.RoleId, ISNULL(B.Water, 0) AS TotalWater, ISNULL(B.WinScore, 0) AS SGD, 
+                CASE WHEN b.Water > 0 THEN (b.Water * 1.00 - B.WinScore) / b.Water * 100 ELSE 0 END AS ROA, ISNULL(C.payMoney, 
+                0) + ISNULL(g.paymoney, 0) AS payMoney, ISNULL(D.outMoney, 0) AS outMoney, ISNULL(D.outMoney / 1000, 0)-(ISNULL(C.payMoney, 0) 
+                + ISNULL(g.paymoney, 0)) AS PlateYk, F.Money, 0 AS TotalCaiJin, F.OperatorId, 
+                F.ParentIds, F.ParentID, ISNULL(B.Tax, 0) AS Tax
+FROM      (SELECT   addDate, RoleId
+                 FROM      dbo.T_UserTotalWater WITH (nolock)
+                 GROUP BY RoleId, addDate) AS A LEFT OUTER JOIN
+                    (SELECT   adddate, RoleID, SUM(Water) AS Water, SUM(WinScore) AS WinScore, ISNULL(SUM(Tax), 0) AS Tax
+                     FROM      dbo.View_GameWinLose
+                     GROUP BY adddate, RoleID) AS B ON A.RoleId = B.RoleID AND A.addDate = B.adddate LEFT OUTER JOIN
+                    (SELECT   AccountID, SUM(RealMoney) AS payMoney, CONVERT(DATE, AddTime) AS MyDate
+                     FROM      CD_UserDB.dbo.T_UserTransactionChannel WITH (nolock)
+                     GROUP BY AccountID, CONVERT(DATE, AddTime)) AS C ON C.MyDate = A.addDate AND 
+                C.AccountID = A.RoleId LEFT OUTER JOIN
+                    (SELECT   AccountID, SUM(iMoney) AS outMoney, CONVERT(DATE, AddTime) AS MyDate
+                     FROM      OM_BankDB.dbo.UserDrawBack WITH (nolock)
+                     WHERE   (status = 100)
+                     GROUP BY AccountID, CONVERT(DATE, AddTime)) AS D ON D.MyDate = A.addDate AND 
+                D.AccountID = A.RoleId LEFT OUTER JOIN
+                CD_UserDB.dbo.View_Accountinfo AS F ON A.RoleId = F.AccountID LEFT OUTER JOIN
+                    (SELECT   RoleId, SUM(Amount) / 1000 AS paymoney, CONVERT(DATE, addtime) AS MyDate
+                     FROM      CD_DataChangelogsDB.dbo.T_ProxyMsgLog WITH (nolock)
+                     WHERE   (PayOrder = 1)
+                     GROUP BY RoleId, CONVERT(DATE, addtime)) AS g ON A.RoleId = g.RoleId AND A.addDate = g.MyDate
+
+--------.视图View_RoomTax
+SELECT   A.RoomID, A.WinScore, A.adddate AS AddTime, A.GCount, A.Water, A.Tax, 
+                CASE WHEN Water > 0 THEN (Water * 1.00 - WinScore) / Water * 100 ELSE 0 END AS GameRate, B.KindID, 
+                B.RoomName, C.KindName, 0 AS DailyEggTax, (CASE WHEN D .WinNum IS NULL THEN 0 ELSE D .WinNum END) 
+                AS WinNum, D.TotalNum, aa.SortID
+FROM      dbo.T_GameRoomSort AS aa LEFT OUTER JOIN
+                dbo.View_RoomGameWin AS A ON A.RoomID = aa.RoomID LEFT OUTER JOIN
+                OM_MasterDB.dbo.T_GameRoomInfo AS B ON B.RoomID = A.RoomID LEFT OUTER JOIN
+                OM_MasterDB.dbo.T_GameKind AS C ON B.KindID = C.KindID LEFT OUTER JOIN
+                dbo.View_WinPlayer AS D ON A.RoomID = D.RoomID AND DATEDIFF(d, A.adddate, D.adddate) = 0 AND B.Nullity = 0
+--------.视图View_RoomGameWin
+SELECT	adddate,
+RoomID,
+SUM(WinScore)WinScore,
+SUM(Water)Water,
+SUM(BuyFG)BuyFreeGame,
+SUM(WipFG)WipFG,
+SUM(GCount)GCount,
+SUM(Tax)Tax
+FROM	
+View_GameWinLose  GROUP BY	adddate,RoomID
+--------.视图View_PaymentDailyRank
+WITH a AS (SELECT   AccountID, SUM(RealMoney) * 1000 AS PayMoney, COUNT(1) AS PayTimes, CONVERT(date, AddTime) 
+                                   AS Adddate
+                   FROM      CD_UserDB.dbo.T_UserTransactionChannel WITH (nolock)
+                   GROUP BY AccountID, CONVERT(date, AddTime)), b AS
+    (SELECT   AccountID, SUM(iMoney) AS PayOut, COUNT(1) AS PayOutTimes, CONVERT(date, AddTime) AS Adddate
+     FROM      OM_BankDB.dbo.UserDrawBack WITH (nolock)
+     WHERE   (status = 100)
+     GROUP BY AccountID, CONVERT(date, AddTime)), c AS
+    (SELECT   AccountID, RegisterTime, OperatorId
+     FROM      CD_Account.dbo.T_Accounts WITH (nolock)),g AS
+    (SELECT   RoleID, ParentID,ParentIDs
+     FROM      CD_UserDB.dbo.T_UserProxyInfo WITH (nolock))
+    SELECT   a_1.AccountID, a_1.PayMoney, a_1.PayTimes, a_1.Adddate, ISNULL(b_1.PayOut, 0) AS PayOut, 
+                    ISNULL(b_1.PayOutTimes, 0) AS PayOutTimes, c_1.RegisterTime, c_1.OperatorId, g_1.ParentID, g_1.ParentIDs
+    FROM      a AS a_1 LEFT OUTER JOIN
+                    b AS b_1 ON a_1.AccountID = b_1.AccountID AND a_1.Adddate = b_1.Adddate LEFT OUTER JOIN
+                    c AS c_1 ON a_1.AccountID = c_1.AccountID LEFT OUTER JOIN
+										g AS g_1 ON a_1.AccountID = g_1.RoleID
+--------.视图View_PaymentFirstRank
+WITH b AS (SELECT   AccountID, SUM(iMoney) AS PayOut, COUNT(DISTINCT AccountID) AS PayOutTimes, CONVERT(DATE, 
+                                   AddTime) AS Adddate
+                   FROM      OM_BankDB.dbo.UserDrawBack
+                   WHERE   (status = 100)
+                   GROUP BY AccountID, CONVERT(DATE, AddTime)), g AS
+    (SELECT   RoleID, ParentID,ParentIDs
+     FROM      CD_UserDB.dbo.T_UserProxyInfo WITH (nolock)), c AS
+    (SELECT   AccountID, RegisterTime, OperatorId
+     FROM      CD_Account.dbo.T_Accounts WITH (nolock)), dd AS
+    (SELECT   RoleID AS AccountID, CONVERT(date, AddTime) AS AddTime
+     FROM      CD_DataChangelogsDB.dbo.T_UserTransactionLogs WITH (nolock)
+     WHERE   (IfFirstCharge = 1))
+    SELECT   a_1.AccountID, a_1.PayMoney, a_1.PayTimes, a_1.adddate, ISNULL(b_1.PayOut, 0) AS PayOut, 
+                    ISNULL(b_1.PayOutTimes, 0) AS PayOutTimes, c_1.RegisterTime, g_1.ParentID, g_1.ParentIDs, c_1.OperatorId
+    FROM      (SELECT   ust_1.AccountID, SUM(ust_1.RealMoney) * 1000 AS PayMoney, CONVERT(DATE, ust_1.AddTime) 
+                                     AS adddate, COUNT(1) AS PayTimes
+                     FROM      CD_UserDB.dbo.T_UserTransactionChannel AS ust_1 WITH (nolock) RIGHT OUTER JOIN
+                                     dd AS dd_1 ON ust_1.AccountID = dd_1.AccountID AND CONVERT(DATE, ust_1.AddTime) 
+                                     = dd_1.AddTime
+                     GROUP BY ust_1.AccountID, CONVERT(DATE, ust_1.AddTime)) AS a_1 LEFT OUTER JOIN
+                    b AS b_1 ON a_1.AccountID = b_1.AccountID AND b_1.Adddate = a_1.adddate LEFT OUTER JOIN
+                    c AS c_1 ON a_1.AccountID = c_1.AccountID LEFT OUTER JOIN
+                    g AS g_1 ON a_1.AccountID = g_1.RoleID
+--------.视图View_PaymentTotalRank 
+WITH a AS (SELECT   AccountID, SUM(RealMoney) * 1000 AS PayMoney, COUNT(1) AS PayTimes
+                   FROM      CD_UserDB.dbo.T_UserTransactionChannel
+                   GROUP BY AccountID), b AS
+    (SELECT   AccountID, SUM(iMoney) AS PayOut, COUNT(1) AS PayOutTimes
+     FROM      OM_BankDB.dbo.UserDrawBack
+     WHERE   (status = 100)
+     GROUP BY AccountID), c AS
+    (SELECT   AccountID, RegisterTime, OperatorId, Mobile
+     FROM      CD_Account.dbo.T_Accounts WITH (nolock)), g AS
+    (SELECT   RoleID, ParentID, ParentIds
+     FROM      CD_UserDB.dbo.T_UserProxyInfo WITH (nolock))
+    SELECT   a_1.AccountID, a_1.PayMoney, a_1.PayTimes, ISNULL(b_1.PayOut, 0) AS PayOut, ISNULL(b_1.PayOutTimes, 0) 
+                    AS PayOutTimes, c_1.RegisterTime, c_1.OperatorId, g_1.ParentID, g_1.ParentIds, c_1.Mobile
+    FROM      a AS a_1 LEFT OUTER JOIN
+                    b AS b_1 ON a_1.AccountID = b_1.AccountID LEFT OUTER JOIN
+                    c AS c_1 ON a_1.AccountID = c_1.AccountID LEFT OUTER JOIN
+                    g AS g_1 ON a_1.AccountID = g_1.RoleID
+--------.T_GamePayChannel
+ALTER TABLE [OM_MasterDB].[dbo].[T_GamePayChannel] ADD [AwardRate] int NOT NULL DEFAULT 0
+ALTER TABLE [OM_MasterDB].[dbo].[T_GamePayChannel] ADD [VipLevel] int NOT NULL DEFAULT 0 
+ALTER TABLE [OM_MasterDB].[dbo].[T_GamePayChannel] ADD [ChannelType] int NOT NULL DEFAULT 0 
+ALTER TABLE [OM_MasterDB].[dbo].[T_GamePayChannel] ADD [FirstChargeAwardRate] int NOT NULL DEFAULT 0 
+ALTER TABLE [OM_MasterDB].[dbo].[T_GamePayChannel] ADD [parentAwardRate] int NOT NULL DEFAULT 0 
+
+--------.T_ShopItem
+ALTER TABLE [OM_MasterDB].[dbo].[T_ShopItem] ADD [Vip11GoodsValue] int NOT NULL DEFAULT 0
+ALTER TABLE [OM_MasterDB].[dbo].[T_ShopItem] ADD [Vip12GoodsValue] int NOT NULL DEFAULT 0
+ALTER TABLE [OM_MasterDB].[dbo].[T_ShopItem] ADD [Vip13GoodsValue] int NOT NULL DEFAULT 0
+ALTER TABLE [OM_MasterDB].[dbo].[T_ShopItem] ADD [Vip14GoodsValue] int NOT NULL DEFAULT 0
+ALTER TABLE [OM_MasterDB].[dbo].[T_ShopItem] ADD [Vip15GoodsValue] int NOT NULL DEFAULT 0
+ALTER TABLE [OM_MasterDB].[dbo].[T_ShopItem] ADD [Vip16GoodsValue] int NOT NULL DEFAULT 0
+ALTER TABLE [OM_MasterDB].[dbo].[T_ShopItem] ADD [Vip17GoodsValue] int NOT NULL DEFAULT 0
+ALTER TABLE [OM_MasterDB].[dbo].[T_ShopItem] ADD [Vip18GoodsValue] int NOT NULL DEFAULT 0
+ALTER TABLE [OM_MasterDB].[dbo].[T_ShopItem] ADD [Vip19GoodsValue] int NOT NULL DEFAULT 0
+ALTER TABLE [OM_MasterDB].[dbo].[T_ShopItem] ADD [Vip20GoodsValue] int NOT NULL DEFAULT 0
+
+--------.T_GiftCardActive
+--------.T_upgradeverconfig
+
+
+--------.T_GMSendMoney
+ALTER TABLE [OM_GameOC].[dbo].[T_GMSendMoney] ADD [OperateType] int NULL DEFAULT 0

@@ -1,0 +1,394 @@
+{extend name="common/base" /}
+{block name="title"}PK赛配置{/block}
+{block name="css"}{/block}
+{block name="content"}
+<script id="msg-bar" type="text/html">
+    <a class='layui-btn layui-btn-sm layui-btn-normal' lay-event='edit'>编辑</a>
+</script>
+<div class="layui-card">
+    <div class="layui-tab layui-tab-brief" lay-filter="test">
+        <ul class="layui-tab-title">
+            <li class="layui-this" lay-id="1">开关</li>
+            <li class="" lay-id="2">配置</li>
+            <li class="" lay-id="3">比赛场配置</li>
+            <li class="" lay-id="4">连胜配置</li>
+            <li class="" lay-id="5">底注配置</li>
+            <li class="" lay-id="6">连胜防刷</li>
+        </ul>
+        <div class="layui-tab-content" id="TabItem" style="background-color: #f2f2f2">
+            <!-- 开关配置-->
+            <div class='layui-tab-item layui-show'>
+                <table id='Table0' lay-filter='Table0'></table>
+            </div>
+            <!-- GameCfg 相关配置 -->
+            <div class='layui-tab-item'>
+                <table id='Table1' lay-filter='Table1'></table>
+            </div>
+
+            <div class='layui-tab-item'>
+                <a style="margin-bottom: 10px;" class="layui-btn" onclick="add(1)"> <i class="layui-icon layui-icon-add-circle"></i> </a>
+                <table id='Table2' lay-filter='Table2'></table>
+            </div>
+            <!--连胜奖励配置-->
+            <div class='layui-tab-item'>
+                <a style="margin-bottom: 10px;" class="layui-btn" onclick="add(2)"> <i class="layui-icon layui-icon-add-circle"></i> </a>
+                <table id='Table3' lay-filter='Table3'></table>
+            </div>
+
+            <div class='layui-tab-item'>
+                <table id='Table4' lay-filter='Table4'></table>
+            </div>
+            <div class='layui-tab-item'>
+                <table id='Table5' lay-filter='Table5'></table>
+            </div>
+
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+
+<script>
+	bl = 1000;
+	var cols = [
+			{field: 'CfgType', align: "center", title: 'CfgType', sort: true, width: 100},
+			{field: 'CfgValue', align: "center", title: 'CfgValue', sort: true, width: 200},
+			{field: 'Description', align: "center", title: '功能描述', sort: true, width: 200},
+			{
+				field: 'Switch', width: 110, title: '禁/启用', align: "center", templet: function (d) {
+					if (d.Switch == 1) {
+						if (d.CfgValue == 1)
+							return "<input type='checkbox' ctrlID = '" + d.CfgType + "' lay-filter='Disable' lay-skin='switch' lay-text='开|关' checked>"
+						else
+							return "<input type='checkbox' ctrlID = '" + d.CfgType + "'  lay-filter='Disable' lay-skin='switch' lay-text='开|关'>"
+
+					} else
+						return "<a class='layui-btn layui-btn-sm layui-btn-normal' lay-event='edit'>编辑</a>"
+
+				}
+			},
+			// {fixed: 'right', title: '操作', align: 'center', minWidth: 100, toolbar: '#msg-bar'}
+		],
+		cols2 = [
+			{field: 'RoomId', align: "center", title: '房间ID', width: 100},
+			{field: 'JoinFree', align: "center", title: '报名费', width: 100, templet: function (d) { return formatDecimal(d.JoinFree / bl, 0); }},
+			{field: 'MatchTimes', align: "center", title: '比赛时间', width: 100},
+			{field: 'JoinPlayers', align: "center", title: '加入玩家', width: 100},
+			{field: 'WinAward', align: "center", title: '得奖', width: 100, templet: function (d) { return formatDecimal(d.WinAward / bl, 0); }},
+			{field: 'AutoRellMaxTimes', align: "center", title: 'AutoRellMaxTimes', width: 200},
+			{field: 'InitGold', align: "center", title: '初始金币', width: 100, templet: function (d) { return formatDecimal(d.InitGold / bl, 0); }},
+			{fixed: 'right', title: '操作', align: 'center', width: 100, toolbar: '#msg-bar'}
+		];
+	//连胜奖励
+	cols3 = [
+		{field: 'ID', align: "center", title: 'ID', sort: true, width: 100},
+		{field: 'RoomLevel', align: "center", title: '房间等级', sort: true, width: 120},
+		{field: 'WinCount', align: "center", title: '连胜次数', sort: true, width: 120},
+		{field: 'Money', align: "center", title: '连胜奖励', sort: true, width: 120, templet: function (d) { return formatDecimal(d.Money / bl, 0); }},
+		{fixed: '', title: '操作', align: 'center', width: 100, toolbar: '#msg-bar'}
+	];
+	//低注配置
+	cols4 = [
+		{field: 'KindId', align: "center", title: 'ID', sort: true, width: 100},
+		{field: 'SingleBetValue', align: "center", title: 'SingleBetValue', sort: true, width: 300},
+		{fixed: '', title: '操作', align: 'center', width: 100, toolbar: '#msg-bar'}
+	];
+	cols5 = [
+		{field: 'ID', align: "center", title: 'ID', sort: true, width: 100},
+		{field: 'ContinusWins', align: "center", title: '连胜次数', sort: true, width: 120},
+		{field: 'MatchRobotRate', align: "center", title: '机器人概率', sort: true, width: 120},
+		{field: 'RobotRell', align: "center", title: 'RTP', sort: true, width: 100},
+		{
+			field: 'Switch', width: 110, title: '禁/启用', align: "center", templet: function (d) {
+				if (d.Switch == 1)
+					return "<input type='checkbox' ctrlID = '" + d.ID + "' lay-filter='Disable5' lay-skin='switch' lay-text='开|关' checked>"
+				else
+					return "<input type='checkbox' ctrlID = '" + d.ID + "'  lay-filter='Disable5' lay-skin='switch' lay-text='开|关'>"
+			}
+		},
+		{fixed: '', title: '操作', align: 'center', width: 100, toolbar: '#msg-bar'}
+	];
+
+
+	layui.config({base: '__layui__/'}).extend({index: 'lib/index'}).use(['table', 'layer', 'element', 'laydate', 'form', 'jquery', 'util'], function () {
+		// ID=table0
+		//每个页签的独立变量 增加页签的时候 手动增加
+		var tb = 'Table';
+		var tb0 = tb + '0', tb1 = tb + '1', tb2 = tb + '2', tb3 = tb + '3', tb4 = tb + '4', tb5 = tb + '5';
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, util = layui.util,
+			table = layui.table, $ = layui.$, form = layui.form;
+		//增加页签  闭包增加 TabxxxxEvn
+		//闭包   表格 排序 编辑
+		Wheres = [
+			{Action: 'list', Switch: 1, IDS: '109'},
+			{Action: 'config'},
+			{Action: 'list', IDS: '110'},
+		]
+		Tabs = {
+			// 开关
+			tab0Evn: function () {
+				table.render({
+					elem: '#' + tb0,
+					where: Wheres[0],
+					url: "{:url('game_cfg/functionSwitch')}",
+					page: true, cols: [cols], autoSort: false,done: function (d) {
+						tzTbale()
+					}
+				});
+			},
+			// 配置
+			tab1Evn: function () {
+				table.render({
+					elem: '#' + tb1,
+					where: Wheres[2],
+					url: "{:url('game_cfg/functionSwitch')}",
+					page: true, cols: [cols], autoSort: false,done: function (d) {
+						tzTbale()
+					}
+				});
+			},
+			// 比赛场配置
+			tab2Evn: function () {
+				table.render({
+					elem: '#' + tb2,
+					where: Wheres[1],
+					url: "{:url('PkMatch/PkConfig')}",
+					page: true, cols: [cols2],done: function (d) {
+						tzTbale()
+					}
+				});
+			},
+			// 连胜奖励配置
+			tab3Evn: function () {
+				table.render({
+					elem: '#' + tb3,
+					where: Wheres[1],
+					url: "{:url('PkMatch/PKContinueWinConfig')}",
+					page: true, cols: [cols3],done: function (d) {
+						tzTbale()
+					}
+				});
+			},
+			tab4Evn: function () {
+				table.render({
+					elem: '#' + tb4,
+					where: Wheres[1],
+					url: "{:url('PkMatch/PKBetValueConfig')}",
+					page: true, cols: [cols4],done: function (d) {
+						tzTbale()
+					}
+				});
+			},
+			tab5Evn: function () {
+				table.render({
+					elem: '#' + tb5,
+					where: Wheres[1],
+					url: "{:url('PkMatch/PKWinRobotConfig')}",
+					page: true, cols: [cols5],done: function (d) {
+						tzTbale()
+					}
+				});
+			},
+
+
+		};
+		TabReload = {
+			tab0: function () {table.reload(tb0, {page: {curr: 1}});},
+			tab1: function () {table.reload(tb1, {page: {curr: 1}});},
+			tab2: function () {table.reload(tb2, {page: {curr: 1}});},
+			tab3: function () {table.reload(tb3, {page: {curr: 1}});},
+			tab4: function () {table.reload(tb4, {page: {curr: 1}});},
+			tab5: function () {table.reload(tb5, {page: {curr: 1}});}
+		}
+		TBinit = {
+			searchEvn: function () {
+				table.reload(tb1, {page: {curr: 1}});
+			},
+			sortEvn: function () {
+				table.on('sort(' + tb0 + ')', function (obj) {
+					table.reload(tb0, {
+						initSort: obj,
+						page: {curr: 1},
+						where: {
+							orderfield: obj.field //排序字段
+							, ordertype: obj.type //排序方式
+						}
+					});
+				});
+				table.on('sort(' + tb1 + ')', function (obj) {
+					table.reload(tb1, {
+						initSort: obj,
+						page: {curr: 1},
+						where: {
+							orderfield: obj.field //排序字段
+							, ordertype: obj.type //排序方式
+						}
+					});
+				});
+
+			},
+			editEvn: function () {
+				table.on('tool(' + tb1 + ')', function (obj) {
+					if (obj.event === 'edit') {
+						var url = "{:url('game_cfg/FunctionItemEdit')}?ID=" + obj.data.CfgType + "&Value=" + obj.data.CfgValue + "&Msg=" + obj.data.Description;
+						x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.4, $(window).height() * 0.35);
+					}
+				});
+				table.on('tool(' + tb2 + ')', function (obj) {
+					if (obj.event === 'edit') {
+						data = obj.data;
+						var url = "{:url('PkMatch/PkConfig')}?Action=editView&RoomId=" + data.RoomId
+							+ "&JoinFree=" + data.JoinFree / bl + "&MatchTimes=" + data.MatchTimes
+							+ "&JoinPlayers=" + data.JoinPlayers + "&WinAward=" + data.WinAward / bl
+							+ "&AutoRellMaxTimes=" + data.AutoRellMaxTimes + "&InitGold=" + data.InitGold / bl;
+						edit(url, 400, 500, TabReload.tab2);
+					}
+				});
+				table.on('tool(' + tb3 + ')', function (obj) {
+					if (obj.event === 'edit') {
+						data = obj.data;
+						var url = "{:url('PkMatch/PKContinueWinConfig')}?Action=editView&ID=" + data.ID +
+							"&WinCount=" + data.WinCount +
+							"&Money=" + data.Money / bl
+						edit(url, 400, 290, TabReload.tab3);
+					}
+				});
+
+				table.on('tool(' + tb4 + ')', function (obj) {
+					if (obj.event === 'edit') {
+						data = obj.data;
+						layer.prompt({
+							formType: 0, area: '550px', value: data.SingleBetValue, title: '底注配置',
+						}, function (value, index, elem) {
+							$.ajax({
+								type: 'post',
+								url: "{:url('PkMatch/PKBetValueConfig')}",
+								data: {Action: 'edit', KindId: data.KindId, SingleBetValue: value},
+								success: function (res) {
+									if (res.code === 1) {
+										layer.msg(res.msg, {icon: 6, time: 1000}, function () { });
+									} else {
+										layer.msg(res.msg, {icon: 5, time: 1000});
+									}
+									layer.close(index);
+									TabReload.tab4();
+								}
+							})
+						});
+					}
+				});
+				table.on('tool(' + tb5 + ')', function (obj) {
+					if (obj.event === 'edit') {
+						data = obj.data;
+						var url = "{:url('PkMatch/PKWinRobotConfig')}?Action=editView&ID=" + data.ID +
+							"&ContinusWins=" + data.ContinusWins +
+							"&MatchRobotRate=" + data.MatchRobotRate+
+							"&RobotRell=" + data.RobotRell
+						edit(url, 400, 350, TabReload.tab5);
+					}
+				});
+
+			},
+			//页签 切换事件
+			TabEvn: function () {
+				element.on('tab(test)', function (data) {
+					switch (data.index) {
+						case 0:
+							return Tabs.tab0Evn();
+						case 1:
+							return Tabs.tab1Evn();
+						case 2:
+							return Tabs.tab2Evn();
+						case 3:
+							return Tabs.tab3Evn();
+						case 4:
+							return Tabs.tab4Evn();
+						case 5:
+							return Tabs.tab5Evn();
+					}
+				});
+			},
+			SwitchEvn: function () {
+				form.on('switch(Disable)', function (data) {
+					var ID = data.elem.attributes['ctrlID'].nodeValue;
+					var swtype = data.elem.checked;
+					var type = 0;
+					if (swtype) type = 1;
+					else type = 0;
+					$.ajax({
+						url: "{:url('game_cfg/FunctionItemEdit')}",
+						type: 'post',
+						data: {'ID': ID, type: type},
+						success: function (res) {
+							if (res.code === 0) {
+								layer.msg('修改成功', {icon: 6});
+							} else {
+								layer.msg('修改失败', {icon: 5});
+							}
+							form.render();
+						}
+					})
+
+				});
+				form.on('switch(Disable5)', function (data) {
+					var ID = data.elem.attributes['ctrlID'].nodeValue;
+					var swtype = data.elem.checked;
+					var type = 0;
+					if (swtype) type = 1;
+					else type = 0;
+					$.ajax({
+						url: "{:url('PkMatch/PKWinRobotConfig')}",
+						type: 'post',
+						data: {Action: 'edit', 'ID': ID, Switch: type},
+						success: function (res) {
+							if (res.code === 1) {
+								layer.msg('修改成功', {icon: 6});
+							} else {
+								layer.msg('修改失败', {icon: 5});
+							}
+							form.render();
+						}
+					})
+
+				});
+
+			},
+			init: function () {
+				Tabs.tab0Evn();
+				this.sortEvn();
+				this.editEvn();
+				this.TabEvn();
+				this.SwitchEvn();
+				$('#search').on('click', function (e) {
+					e.preventDefault();
+					this.searchEvn();
+				});
+			}
+		}
+		TBinit.init();
+
+	});
+
+	function edit(url, width, high, callback) {
+		openBarWinParent('{:lang("编辑配置")}', width, high, url, callback, ['保存', '取消']);
+	}
+
+	function add(type) {
+		var __callback = '';
+		var width, high;
+		switch (type) {
+			case 1:
+				url = "{:url('PkMatch/PkConfig')}?Action=addView&RoomId=&JoinFree=&MatchTimes=&JoinPlayers=&WinAward=&AutoRellMaxTimes=&InitGold=";
+				width = 400, high = 500;
+				__callback = TabReload.tab2;
+				break;
+			case 2:
+				url = "{:url('PkMatch/PKContinueWinConfig')}?Action=addView";
+				width = 400, high = 240;
+				__callback = TabReload.tab3;
+				break;
+		}
+		openBarWinParent('{:lang("编辑配置")}', width, high, url, __callback, ['保存', '取消']);
+	}
+</script>
+{/block}

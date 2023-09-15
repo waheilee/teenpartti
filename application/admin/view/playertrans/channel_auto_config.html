@@ -1,0 +1,199 @@
+{extend name="common/base" /}
+{block name="title"}关系列表{/block}
+{block name="css"}
+<style type="text/css">
+    .layui-form-label{
+        width: 180px !important;
+    }
+    .layui-input-block{
+        margin-left: 200px !important;
+    }
+</style>
+{/block}
+{block name="content"}
+<div class="layui-card">
+     <div class="layui-card-body" style="border-bottom: 1px solid #e6e6e6;padding-left: 16px">
+        <form class="layui-form  layui-form-pane" id='edit_form' onsubmit="return false">
+          <div class="layui-form-item">
+            <label class="layui-form-label">自动代付开关：</label>
+            <div class="layui-input-block">
+              <input type="radio" name="Enable" value="0" title="关闭" {php} if($risk_config['Enable']==0){echo 'checked';} {/php}>
+              <input type="radio" name="Enable" value="1" title="开启" {php} if($risk_config['Enable']==1){echo 'checked';} {/php}>
+            </div>
+          </div>
+           <div class="layui-form-item">
+                <label class="layui-form-label">自动代付风险等级<=</label>
+                <div class="layui-input-inline">
+                  <input type="text" name="RiskLevel" lay-verify="required" placeholder="请输入自动代付风险等级" autocomplete="off" class="layui-input" value="{$risk_config['RiskLevel'] ?? 0}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">每日自动代付上限：</label>
+                <div class="layui-input-inline">
+                  <input type="text" name="MaxDailyQuote" lay-verify="required" placeholder="请输入每日自动代付上限" autocomplete="off" class="layui-input" value="{$risk_config['MaxDailyQuote'] ?? 0}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">每日单人提款上限：</label>
+                <div class="layui-input-inline">
+                  <input type="text" name="UserDailyQuote" lay-verify="required" placeholder="请输入自动代付风险等级" autocomplete="off" class="layui-input" value="{$risk_config['UserDailyQuote'] ?? 0}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">代付通道设置：</label>
+                <div class="layui-input-inline">
+                  <select name="PayChannel" id="PayChannel">
+                        {foreach $channeInfo as $k1 => $v1}
+                            {if $v1['ChannelId'] == $risk_config['PayChannel']}
+                            <option value="{$v1['ChannelId']}" selected="">{$v1['ChannelName']}</option>
+                            {else /}
+                            <option value="{$v1['ChannelId']}">{$v1['ChannelName']}</option>
+                            {/if}
+                        {/foreach}
+                    </select>
+                </div>
+            </div>
+            <!-- <div class="layui-form-item">
+                <label class="layui-form-label">代付订单时间间隔(秒)</label>
+                <div class="layui-input-inline">
+                  <input type="text" name="Interval" lay-verify="required" placeholder="请输入自动代付风险等级" autocomplete="off" class="layui-input" value="{$risk_config['Interval'] ?? 0}">
+                </div>
+            </div> -->
+            <div class="layui-form-item">
+                <button class="layui-btn" lay-submit lay-filter="formDemo" style="width: 370px">保存</button>
+            </div>
+        </form>
+    </div>
+    <!-- <hr /> -->
+    <div class="layui-card-body">
+        <div class="layui-inline" style="margin-bottom: 10px">
+            <div class="demoTable">
+              <button class="layui-btn layui-btn-normal" onclick="add()">添加</button>
+            </div>
+        </div>
+        <table id="proxylist" lay-filter="proxylist"></table>
+    </div>
+</div>
+{/block}
+{block name="script"}
+
+<script>
+    url = "{:url('Playertrans/ChannelAutoConfig')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var table = layui.table;
+        var form = layui.form;
+        var $ = layui.$;
+        var element = layui.element;
+        table.render({
+            elem: '#proxylist'
+            , height: 'full-450'
+            , url: url + '?action=list'//数据接口
+            , limit: 20
+            , page: true //开启分页
+            , id: 'proxylist'
+            , autoSort: false
+            , cols: [[ //表头
+                {field: 'Id', title: "ID", minWidth: 200, align: 'center'},
+                {field: '', title: "{:lang('风险类型')}", minWidth: 200, align: 'center',templet: function(d){
+                    return "最近"+d.Days+"天下注盈利高于"+d.TotalWin
+                }},
+                {field: 'RiskLevel', title: "{:lang('风险系数')}", width: 200, align: 'center'},
+                // {field:'Status', title: '状态',align:'center', width: 200,templet: function(d){
+                //     if(d.Status == 1){
+                //       return '<input type="checkbox" checked="" value="'+d.Id+'" lay-skin="switch" lay-filter="changeStatus" lay-text="启用|禁用">';
+                //     } else if(d.Status == 0){
+                //       return '<input type="checkbox"  lay-skin="switch" value="'+d.Id+'" lay-filter="changeStatus" lay-text="启用|禁用">';
+                //     }
+                // }},
+                {title:'操作',align:'center', width: 200,templet: function(d){
+                    var html = '';
+                    html +=  '<a class="layui-btn layui-btn-xs layui-btn-primary" lay-event="edit">编辑</a>';
+                    html +=  '<a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">删除</a>';
+                    return html;
+                }}
+            ]]
+        });
+
+        table.on('tool(proxylist)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'edit') {
+                layer.open({
+                    type: 2 ,
+                    title: '编辑配置',   //标题
+                    area: ['500px', '600px'],   //宽高
+                    shade: 0.4,   //遮罩透明度
+                    content: "{:url('Playertrans/editPayRiskConfig')}?id="+data.Id,//支持获取DOM元素
+                    // end:function(){
+                    //   $(".layui-laypage-btn")[0].click();
+                    // }
+                    });
+            }
+            if (obj.event === 'delete') {
+                layer.confirm('确定删除？', function(index){
+                    $.ajax({
+                      url:"{:url('Playertrans/deletePayRiskConfig')}",
+                      type:'POST',
+                      data:{id:data.Id},
+                      dataType:'json',
+                      success:function(ret){
+                        if(ret.code == 0) {
+                          layer.msg(ret.msg);
+                          $(".layui-laypage-btn")[0].click();
+                        } else {
+                          layer.msg(ret.msg);
+                        }
+                      }
+                    });
+                });
+            }
+        });
+         //监听单元格switch
+        form.on('switch(changeStatus)', function(obj){
+            if (obj.elem.checked) {
+              var status = 1;
+            } else {
+              var status = 0;
+            }
+            $.ajax({
+              url:"{:url('Playertrans/updatePayRiskConfigStatus')}",
+              type:'POST',
+              data:{id:this.value,status:status},
+              dataType:'json',
+              success:function(ret){
+                layer.msg(ret.msg);
+              }
+            });
+        });
+
+        form.on('submit(formDemo)', function(data){
+            $.ajax({
+              url:"{:url('Playertrans/updatePayAutoConfig')}",
+              type:'POST',
+              data:data.field,
+              dataType:'json',
+              success:function(ret){
+                layer.msg(ret.msg);
+              }
+            });
+        });
+    });
+
+
+    function add() {
+        layer.open({
+            type: 2 ,
+            title: '添加配置',   //标题
+            area: ['500px', '600px'],   //宽高
+            shade: 0.4,   //遮罩透明度
+            content: "{:url('Playertrans/editPayRiskConfig')}",//支持获取DOM元素
+            // end:function(){
+            //   $(".layui-laypage-btn")[0].click();
+            // }
+            });
+    }
+</script>
+{/block}

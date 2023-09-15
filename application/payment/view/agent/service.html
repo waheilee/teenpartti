@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0" />
+<title>CF支付系统</title>
+<link rel="stylesheet" href="__static__/css/weui.css" />
+<link rel="stylesheet" href="__static__/css/example.css" />
+<link rel="stylesheet" href="__static__/css/iconfont.css" />
+<link rel="stylesheet" href="__static__/css/is.css" />
+<link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico" media="screen" />
+</head>
+<body ontouchstart="">
+<div class="container" id="container"></div>
+<div class="weui-toptips weui-toptips_warn js_tooltips"></div>
+<template id="tpl_login">
+<div class="page proxy-login" id="login">
+<div class="page__bd">
+<div class="weui-cells weui-cells_form">
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">账号</label>
+</div>
+<div class="weui-cell__bd">
+<input class="weui-input" type="text" name="account" />
+</div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">密码</label>
+</div>
+<div class="weui-cell__bd">
+<input class="weui-input" type="password" name="password" />
+</div>
+</div>
+<div class="weui-cell weui-cell_vcode">
+<div class="weui-cell__hd">
+<label class="weui-label">验证码</label>
+</div>
+<div class="weui-cell__bd">
+<input class="weui-input" type="text" maxlength="4" name="code" />
+</div>
+<div class="weui-cell__ft">
+<img class="weui-vcode-img img-code" />
+</div>
+</div>
+</div>
+<div class="weui-btn-area">
+<a class="weui-btn weui-btn_primary login-btn" href="javascript:">确定</a>
+</div>
+</div>
+<div class="page__ft">
+<a href="javascript:"></a>
+</div>
+</div>
+<script>var loginPage=function(n){return{init:function(){function i(){$(n).find("input[name='code']").val(""),$(n).find(".img-code").attr("src",window.paths.imageCode+"?t="+(new Date).getTime()+"&key=login")}i(),$(n).find(".img-code").on("click",function(){i()}),$(n).find(".login-btn").on("click",function(){if(isTipHide()){var e=$(n).find("input[name='account']").val(),o=$(n).find("input[name='password']").val(),t=$("input[name='code']").val();if(regs.account.reg.test(e))if(regs.password.reg.test(o))if(regs.imgCode.reg.test(t)){openLoading(n);var a={account:e,password:o,code:t};$post(window.paths.login,a,function(i){$(n).find("input[name='account']").val(""),$(n).find("input[name='password']").val(""),$(n).find("input[name='code']").val(""),proxy=i.result,set("proxy",i.result),window.pageManager.go("home")},function(n){i(),tip(n.message)})}else tip(regs.imgCode.msg);else tip(regs.password.msg);else tip("账号"+regs.account.msg)}})}}}("#login");loginPage.init()</script>
+</template>
+<template id="tpl_home">
+<div class="page home-proxy" id="home">
+<div class="home-proxy-info weui-grids">
+<a href="javascript:" data-id="proxy_list" class="weui-grid">
+<div class="weui-grid__icon">
+<i class="iconfont icon-proxy-sum"></i>
+</div><p class="weui-grid__label">账户余额</p><p class="weui-grid__label" id="home-next-proxy-count">1111</p></a>
+<a href="javascript:" data-id="room_record" class="weui-grid">
+<div class="weui-grid__icon">
+<i class="iconfont icon-room-card"></i>
+</div><p class="weui-grid__label">可用积分</p><p class="weui-grid__label" id="home-room-card">2222</p></a>
+<a href="javascript:" data-id="proxy_info" class="weui-grid">
+<div class="weui-grid__icon">
+<i class="iconfont icon-level"></i>
+</div><p class="weui-grid__label">冻结积分</p><p class="weui-grid__label" id="home-proxy-level">3333</p></a>
+</div>
+<p class="home-proxy-title"></p>
+<div class="weui-grids home-proxy-menu">
+<a href="javascript:" data-id="add_proxy" class="weui-grid">
+<div class="weui-grid__icon">
+<i class="iconfont icon-add-proxy is-color-red"></i>
+</div><p class="weui-grid__label">充值</p>
+</a>
+<a href="javascript:" data-id="proxy_recharge" class="weui-grid">
+<div class="weui-grid__icon">
+<i class="iconfont icon-proxy-recharge is-color-5798b6"></i>
+</div><p class="weui-grid__label">充值记录</p>
+</a>
+<a href="javascript:" data-id="player_recharge" class="weui-grid">
+<div class="weui-grid__icon">
+<i class="iconfont icon-player-recharge is-color-5798b6"></i>
+</div><p class="weui-grid__label">银行卡</p>
+</a>
+<a href="javascript:" data-id="player_recharge" class="weui-grid">
+<div class="weui-grid__icon">
+<i class="iconfont icon-player-recharge is-color-5798b6"></i>
+</div><p class="weui-grid__label">安全</p>
+</a>
+<a href="javascript:" data-id="player_recharge" class="weui-grid">
+<div class="weui-grid__icon">
+<i class="iconfont icon-player-recharge is-color-5798b6"></i>
+</div><p class="weui-grid__label">在线客服</p>
+</a>
+<a href="javascript:" class="weui-grid esc">
+<div class="weui-grid__icon">
+<i class="iconfont icon-esc"></i>
+</div><p class="weui-grid__label">退出</p>
+</a>
+</div>
+<div class="page__ft">
+</div>
+</div>
+<script>isLogin(homePage.init)</script>
+</template>
+<template id="tpl_proxy_list">
+<div class="page proxy-list">
+<div class="page__bd">
+<div class="weui-cells" id="proxy-list-range"></div>
+</div>
+</div>
+<template id="proxy-list-template">
+<a class="weui-cell weui-cell_access" href="javascript:" data-id="{id}">
+<div class="weui-cell__hd">
+<p>{name}</p>
+<p>{mobile}</p>
+</div>
+<div class="weui-cell__bd is-text-center">
+{status}
+</div>
+<div class="weui-cell__ft">
+{room_card}
+</div></a>
+</template>
+</template>
+<template id="tpl_room_record">
+<div class="page proxy-room-list">
+<div class="page__bd">
+<div class="weui-cells" id="room-record-list-range"></div>
+</div>
+</div>
+<template id="room-record-list-template">
+<div class="weui-cell">
+<div class="weui-cell__bd">
+<p>{type}-{remarks}</p>
+<p>{create_date}</p>
+</div>
+<div class="weui-cell__ft">
+{roomCard}
+</div>
+</div>
+</template>
+<script>var roomRecord=function(o){var r=0,e=function(){var a={limit:20};a.offset=20*(++r-1),loadMoreBegin(o),$get(window.paths.roomCardRecordPage,a,function(r){$("#load-more-begin").remove();for(var a=0;a<r.rows.length;a++){var t=r.rows[a],c=$("#room-record-list-template").html();c=c.replace(/{type}/g,window.syscode.type[t.type]),c=c.replace(/{create_date}/g,t.create_date);var d=t.player_id,n="";0==t.type||1==t.type?t.create_id===proxy.id?(d=t.next_proxy_name,n=0==t.type?"-"+t.room_card_count:"+"+t.room_card_count):(d="购卡",n=0==t.type?"+"+t.room_card_count:"-"+t.room_card_count):n="-"+t.room_card_count,c=c.replace(/{remarks}/g,d),c=c.replace(/{roomCard}/g,n),$(o).append(c)}r.rows.length<20?loadMoreNo(o):loadMore(o,function(){e()})})};return{load:e}}("#room-record-list-range");isLogin(roomRecord.load)</script>
+</template>
+<template id="tpl_proxy_info">
+<div class="page" id="proxy-detail">
+<div class="page__bd">
+<div class="weui-cells weui-cells_form">
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">编号</label>
+</div>
+<div class="weui-cell__bd id"></div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">类型</label>
+</div>
+<div class="weui-cell__bd game-type"></div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">账号</label>
+</div>
+<div class="weui-cell__bd account"></div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">姓名</label>
+</div>
+<div class="weui-cell__bd realname"></div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">等级</label>
+</div>
+<div class="weui-cell__bd level"></div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">房卡</label>
+</div>
+<div class="weui-cell__bd room-card"></div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">加入</label>
+</div>
+<div class="weui-cell__bd create-date"></div>
+</div>
+</div>
+<div class="weui-btn-area">
+<a class="weui-btn weui-btn_primary" href="#reset_pwd">修改密码</a>
+</div>
+</div>
+</div>
+<script>var proxyDetail=function(e){return{init:function(){$(e).find(".id").html(proxy.id),$(e).find(".game-type").html(syscode.gameType[proxy.game_type]),$(e).find(".account").html(proxy.account),$(e).find(".realname").html(proxy.realname),$(e).find(".level").html(getLevel()),$(e).find(".room-card").html(getRoomCard()),$(e).find(".create-date").html(proxy.create_date)}}}("#proxy-detail");isLogin(proxyDetail.init)</script>
+</template>
+<template id="tpl_reset_pwd">
+<div class="page" id="reset-pwd">
+<div class="page__bd">
+<div class="weui-cells weui-cells_form">
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">原密码</label>
+</div>
+<div class="weui-cell__bd">
+<input class="weui-input" id="source-pwd" type="password" />
+</div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">新密码</label>
+</div>
+<div class="weui-cell__bd">
+<input class="weui-input" id="new-pwd" type="password" />
+</div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">确认密码</label>
+</div>
+<div class="weui-cell__bd">
+<input class="weui-input" id="new-confirm-pwd" type="password" />
+</div>
+</div>
+</div>
+<div class="weui-btn-area">
+<a class="weui-btn weui-btn_primary" href="javascript:" id="reset-pwd-btn">确认</a>
+</div>
+</div>
+</div>
+<script>isLogin(function(){$("#reset-pwd-btn").on("click",function(){if(isTipHide()){var s=$("#source-pwd"),e=$("#new-pwd"),r=$("#new-confirm-pwd");if(regs.password.reg.test(s.val()))if(regs.password.reg.test(e.val()))if(regs.password.reg.test(r.val()))if(e.val()===r.val()){openLoading("#reset-pwd");var a={sourcePwd:s.val(),newPwd:e.val()};$post(window.paths.resetPwd,a,function(a){showSuccess("#reset-pwd",function(){window.pageManager.back(),s.val(""),e.val(""),r.val("")})})}else tip("亲,新密码与确认密码必须一致！");else tip("确认"+regs.password.msg);else tip("新"+regs.password.msg);else tip("原"+regs.password.msg)}})})</script>
+</template>
+<template id="tpl_add_proxy">
+<div class="page" id="add-proxy">
+<div class="page__bd">
+<div class="weui-cells weui-cells_form">
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">真实姓名</label>
+</div>
+<div class="weui-cell__bd">
+<input class="weui-input" name="realname" type="text" />
+</div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">微信号</label>
+</div>
+<div class="weui-cell__bd">
+<input class="weui-input" name="wechat-number" type="text" placeholder="可选" />
+</div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">登录账号</label>
+</div>
+<div class="weui-cell__bd">
+<input class="weui-input" name="account" type="text" />
+</div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">手机号码</label>
+</div>
+<div class="weui-cell__bd">
+<input class="weui-input" name="mobile" type="text" />
+</div>
+</div>
+</div>
+<div class="weui-btn-area">
+<a class="weui-btn weui-btn_primary confirm" href="javascript:;">确认</a>
+</div>
+</div>
+</div>
+<script>var addProxy=function(e){return{init:function(){$(e).find(".confirm").on("click",function(){var n=$(e).find('input[name="realname"]'),a=$(e).find('input[name="wechat-number"]'),t=$(e).find('input[name="account"]'),i=$(e).find('input[name="mobile"]');if(regs.realname.reg.test(n.val()))if(""==a.val()||regs.account.reg.test(a.val()))if(regs.account.reg.test(t.val()))if(regs.mobile.reg.test(i.val())){var r={realname:n.val(),wechat_number:a.val(),account:t.val(),mobile:i.val()};openLoading(e),$post(window.paths.addProxy,r,function(r){n.val(""),a.val(""),t.val(""),i.val(""),proxy.next_proxy_count+=1,set("proxy",proxy),showSuccess(e)})}else tip(regs.mobile.msg);else tip("账号仅"+regs.account.msg);else tip("微信号"+regs.account.msg);else tip(regs.realname.msg)})}}}("#add-proxy");isLogin(addProxy.init)</script>
+</template>
+<template id="tpl_proxy_recharge">
+<div class="page input" id="proxy-recharge-page">
+<div class="page__bd">
+<div class="weui-cells weui-cells_radio weui-cells_form">
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">我的房卡</label>
+</div>
+<div class="weui-cell__bd" id="recharge-current-room-card"></div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">代理编号</label>
+</div>
+<div class="weui-cell__bd">
+<input class="weui-input" id="recharge-proxy-id" type="number" />
+</div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">操作房卡</label>
+</div>
+<div class="weui-cell__bd">
+<input class="weui-input" id="recharge-room-card" type="number" />
+</div>
+</div>
+<label class="weui-cell weui-check__label" for="x11">
+<div class="weui-cell__bd">
+<p>上卡</p>
+</div>
+<div class="weui-cell__ft">
+<input type="radio" class="weui-check" name="type" id="x11" checked="" value="0" /> 
+<span class="weui-icon-checked"></span>
+</div></label>
+<label class="weui-cell weui-check__label" for="x12">
+<div class="weui-cell__bd">
+<p>下卡</p>
+</div>
+<div class="weui-cell__ft">
+<input type="radio" class="weui-check" name="type" id="x12" value="1" /> 
+<span class="weui-icon-checked"></span>
+</div></label>
+</div>
+<div class="weui-btn-area">
+<a class="weui-btn weui-btn_primary" href="javascript:" id="proxy-recharge-confirm">确认</a>
+</div>
+</div>
+<div class="js_dialog" id="proxy-recharge-confirm-dialog" style="display:none">
+<div class="weui-mask"></div>
+<div class="weui-dialog">
+<div class="weui-dialog__hd">
+<strong class="weui-dialog__title">操作</strong>
+</div>
+<div class="weui-dialog__bd">
+<div class="is-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">代理编号</label>
+</div>
+<div class="weui-cell__bd" id="dialog-proxy-recharge-id"></div>
+</div>
+<div class="is-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">操作房卡</label>
+</div>
+<div class="weui-cell__bd" id="dialog-proxy-recharge-room-card"></div>
+</div>
+<div class="is-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">操作类型</label>
+</div>
+<div class="weui-cell__bd" id="dialog-proxy-recharge-type"></div>
+</div>
+</div>
+<div class="weui-dialog__ft">
+<a href="javascript:" class="weui-dialog__btn weui-dialog__btn_primary" id="proxy-recharge-confirm-last">确认</a> 
+<a href="javascript:" class="weui-dialog__btn weui-dialog__btn_default" id="proxy-recharge-cancel">取消</a>
+</div>
+</div>
+</div>
+</div>
+<script>var proxyRecharge=function(r){var o,e,a;return{init:function(){$("#recharge-current-room-card").html(getRoomCard()),$("#proxy-recharge-confirm").on("click",function(){o=$("#recharge-proxy-id").val(),e=$("#recharge-room-card").val(),a=$(r).find('input[name="type"]:checked').val(),isManager()||proxy.room_card>0?o>0?e>0?($("#dialog-proxy-recharge-id").html(o),$("#dialog-proxy-recharge-room-card").html(e),$("#dialog-proxy-recharge-type").html(window.syscode.type[a]),$("#proxy-recharge-confirm-dialog").fadeIn(200)):tip("操作房卡必须大于0"):tip("代理编号必须大于0"):tip("亲您当前房卡为0")}),$("#proxy-recharge-cancel").on("click",function(){$("#proxy-recharge-confirm-dialog").fadeOut(200)}),$("#proxy-recharge-confirm-last").on("click",function(){$("#proxy-recharge-confirm-dialog").fadeOut(100);var c=0==a?window.paths.upCard:window.paths.downCard,i={room_card_count:e,next_proxy_id:o};openLoading(r),$post(c,i,function(o){setRoomCard(e*(0==a?-1:1)),showSuccess(r)})})}}}("#proxy-recharge-page");isLogin(proxyRecharge.init)</script>
+</template>
+<template id="tpl_player_recharge">
+<div class="page input" id="player-recharge-page">
+<div class="page__bd">
+<div class="weui-cells weui-cells_radio weui-cells_form">
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">我的房卡</label>
+</div>
+<div class="weui-cell__bd room-card"></div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">玩家编号</label>
+</div>
+<div class="weui-cell__bd">
+<input class="weui-input player-id" type="number" />
+</div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">充值房卡</label>
+</div>
+<div class="weui-cell__bd">
+<input class="weui-input room-card-count" type="number" />
+</div>
+</div>
+</div>
+<div class="weui-btn-area">
+<a class="weui-btn weui-btn_primary confirm" href="javascript:">确认</a>
+</div>
+</div>
+<div class="js_dialog" style="display:none">
+<div class="weui-mask"></div>
+<div class="weui-dialog">
+<div class="weui-dialog__hd">
+<strong class="weui-dialog__title">充值</strong>
+</div>
+<div class="weui-dialog__bd">
+<div class="is-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">玩家编号</label>
+</div>
+<div class="weui-cell__bd player-id"></div>
+</div>
+<div class="is-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">充值房卡</label>
+</div>
+<div class="weui-cell__bd room-card"></div>
+</div>
+</div>
+<div class="weui-dialog__ft">
+<a href="javascript:" class="weui-dialog__btn weui-dialog__btn_primary confirm-last">确认</a> 
+<a href="javascript:" class="weui-dialog__btn weui-dialog__btn_default cancel">取消</a>
+</div>
+</div>
+</div>
+</div>
+<script>var playerRecharge=function(i){var n,a;return{init:function(){$(i).find(".room-card").html(getRoomCard()),$(i).find(".confirm").on("click",function(){isManager()||proxy.room_card>0?(n=$(i).find(".player-id").val(),a=$(i).find(".room-card-count").val(),n>0?a>0?($(i).find(".js_dialog .player-id").html(n),$(i).find(".js_dialog .room-card").html(a),$(i).find(".js_dialog").fadeIn(200)):tip("操作房卡必须大于0"):tip("玩家编号必须大于0")):tip("亲您当前房卡为0")}),$(i).find(".cancel").on("click",function(){$(i).find(".js_dialog").fadeOut(200)}),$(i).find(".confirm-last").on("click",function(){$(i).find(".js_dialog").fadeOut(200);var o={room_card_count:a,player_id:n};openLoading(i),$post(window.paths.playerRecharge,o,function(n){setRoomCard(a*-1),showSuccess(i),$(i).find(".player-id").val(""),$(i).find(".room-card-count").val("")})})}}}("#player-recharge-page");isLogin(playerRecharge.init)</script>
+</template>
+<template id="tpl_request_proxy_list">
+<div class="page proxy-list">
+<div class="page__bd">
+<div class="weui-cells" id="request-list"></div>
+</div>
+</div>
+<template id="request-list-template">
+<a class="weui-cell weui-cell_access" href="javascript:" data-id="{id}">
+<div class="weui-cell__hd">
+<p>{realname}</p>
+<p>{create_date}</p>
+</div>
+<div class="weui-cell__bd is-text-center">
+{mobile}
+</div>
+<div class="weui-cell__ft">
+{status}
+</div></a>
+</template>
+</template>
+<template id="tpl_request_proxy_detail">
+<div class="page" id="request-detail">
+<div class="page__bd">
+<div class="weui-cells weui-cells_form">
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">真实姓名</label>
+</div>
+<div class="weui-cell__bd realname"></div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">微信号</label>
+</div>
+<div class="weui-cell__bd wechat-number"></div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">账号</label>
+</div>
+<div class="weui-cell__bd account"></div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">手机号码</label>
+</div>
+<div class="weui-cell__bd mobile"></div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">申请时间</label>
+</div>
+<div class="weui-cell__bd create-date"></div>
+</div>
+</div>
+<div class="weui-btn-area">
+<a class="weui-btn weui-btn_primary confirm" href="javascript:">通过</a>
+</div>
+<div class="weui-btn-area">
+<a class="weui-btn weui-btn_warn reject" href="javascript:">拒绝</a>
+</div>
+</div>
+</div>
+<script>var requseDetail=function(e){return{init:function(){function t(t){openLoading(e),$get(paths.updateStatus,{id:requestId,status:t},function(e){dialog("操作成功",function(){window.pageManager.back()})})}m(requestId),$get(paths.requestDetail,{id:requestId},function(t){var n=t.result;$(e).find(".realname").html(n.realname),$(e).find(".wechat-number").html(n.wechat_number),$(e).find(".account").html(n.account),$(e).find(".mobile").html(n.mobile),$(e).find(".create-date").html(n.create_date)}),$(e).find(".confirm").on("click",function(){t(1)}),$(e).find(".reject").on("click",function(){t(3)})}}}("#request-detail");isLogin(requseDetail.init)</script>
+</template>
+<template id="tpl_proxy_detail">
+<div class="page" id="next-proxy-detail">
+<div class="page__bd">
+<div class="weui-cells weui-cells_form">
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">代理编号</label>
+</div>
+<div class="weui-cell__bd id"></div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">代理状态</label>
+</div>
+<div class="weui-cell__bd status"></div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">代理等级</label>
+</div>
+<div class="weui-cell__bd level"></div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">代理房卡</label>
+</div>
+<div class="weui-cell__bd room-card"></div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">游戏类型</label>
+</div>
+<div class="weui-cell__bd game-type"></div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">登录账号</label>
+</div>
+<div class="weui-cell__bd account"></div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">真实姓名</label>
+</div>
+<div class="weui-cell__bd realname"></div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">下级人数</label>
+</div>
+<div class="weui-cell__bd next-proxy-count"></div>
+</div>
+<div class="weui-cell">
+<div class="weui-cell__hd">
+<label class="weui-label">加入时间</label>
+</div>
+<div class="weui-cell__bd create-date"></div>
+</div>
+</div>
+</div>
+</div>
+<script>var nextProxyDetail=function(t){return{init:function(){$get(paths.detail,{id:nextProxyId},function(e){function a(t){$get(paths.updateStatus,{id:nextProxyId,status:t},function(){dialog("操作成功",function(){pageManager.back()})})}var n=e.result;$(t).find(".id").html(n.id),$(t).find(".game-type").html(syscode.gameType[n.game_type]),$(t).find(".account").html(n.account),$(t).find(".realname").html(n.realname),$(t).find(".level").html(syscode.level[n.level]),$(t).find(".room-card").html(n.room_card),$(t).find(".create-date").html(n.create_date),$(t).find(".status").html(syscode.status[n.status]),$(t).find(".next-proxy-count").html(n.next_proxy_count);var i="";switch(n.status){case"0":i='<div class="weui-btn-area"><a class="weui-btn weui-btn_primary open" href="javascript:">正常</a></div>';break;case"1":i='<div class="weui-btn-area"><a class="weui-btn weui-btn_warn close" href="javascript:">禁用</a></div>'}$(t).find(".weui-cells_form").after(i),""!==i&&($(t).find(".open").on("click",function(){a(1)}),$(t).find(".close").on("click",function(){a(0)}))})}}}("#next-proxy-detail");isLogin(nextProxyDetail.init)</script>
+</template>
+<script src="plugins/zepto/zepto.min.js"></script>
+<script src="plugins/weui/weui.min.js"></script>
+<script src="js/is.js"></script>
+<script src="plugins/weui/main.js"></script>
+</body>
+</html>

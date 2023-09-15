@@ -1,0 +1,241 @@
+{extend name="common/base" /}
+{block name="title"}功能配置开关{/block}
+{block name="css"}{/block}
+{block name="content"}
+<script id="msg-bar" type="text/html">
+    <!-- Package Game Manage Switch   -->
+    <a class='layui-btn layui-btn-sm layui-btn-normal' lay-event='PGMS'>游戏管理</a>
+    <a class='layui-btn layui-btn-sm layui-btn-normal' lay-event='ReName'>改名</a>
+
+</script>
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto"></div>
+    <div class="layui-tab layui-tab-brief" lay-filter="test">
+        <ul class="layui-tab-title">
+            <li class="layui-this" lay-id="1">分包管理</li>
+            <!--            <li class="" lay-id="2">未分类配置</li>-->
+            <!--            <li class="" lay-id="3">盘控配置</li>-->
+            <!--            <li class="" lay-id="3">客户端配置</li>-->
+        </ul>
+        <div class="layui-tab-content" id="TabItem" style="background-color: #f2f2f2">
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script id="toolbar" type="text/html">
+    <div class="layui-btn-container">
+        <button class="layui-btn " lay-event="additem"><i class="layui-icon">&#xe608;</i> 添加</button>
+    </div>
+</script>
+<script>
+	var tabitem = 0, html = ""; //页签总下标+1
+	layui.use(['jquery'], function () {
+		var $ = layui.jquery;
+		for (var i = 0; i <= tabitem; i++) {
+			if (i == 0)
+				html +=
+					"<div class='layui-tab-item layui-show'><table id='Table" + i + "'lay-filter='Table" + i + "'></table> </div>";
+			// else  html += "<div class='layui-tab-item'><table id='Table" + i + "'lay-filter='Table" + i + "'></table> </div>";
+		}
+		$().ready(function () {
+			$("#TabItem").html(html);
+			// $("#Table1").click();
+		});
+	});
+</script>
+<script>
+	/*
+    * RechargeSwitch	DrawBackSwitch	CustomerServiceSwitch	TaskSwitch	DaySignSwitch	MailSwitch
+    * */
+	var cols0 = [
+		{field: 'OperatorId', align: 'center', title: '包ID', width: 100},
+		{field: 'PackageName', title: '包名称', minWidth: 220},
+		{
+			field: 'RechargeSwitch', align: 'center', title: '充值开关', minWidth: 100, templet: function (d) {
+				index = 3;
+				field = d[Object.keys(d)[index]];
+				if (field == 1) return "<input type='checkbox' ctrlField='" + this.field + "' ctrlID = '" + d.OperatorId + "' lay-filter='Disable' lay-skin='switch' lay-text='开|关' checked>"
+				return "<input type='checkbox' ctrlField='" + this.field + "' ctrlID = '" + d.OperatorId + "'  lay-filter='Disable' lay-skin='switch' lay-text='开|关'>"
+			}
+		},
+		{
+			field: 'DrawBackSwitch', align: 'center', title: '提现开关', minWidth: 100, templet: function (d) {
+				index = 4;
+				field = d[Object.keys(d)[index]];
+				if (field == 1) return "<input type='checkbox' ctrlField='" + this.field + "' ctrlID = '" + d.OperatorId + "' lay-filter='Disable' lay-skin='switch' lay-text='开|关' checked>"
+				return "<input type='checkbox' ctrlField='" + this.field + "' ctrlID = '" + d.OperatorId + "'  lay-filter='Disable' lay-skin='switch' lay-text='开|关'>"
+			}
+		},
+		{
+			field: 'CustomerServiceSwitch', align: 'center', title: '客服开关', minWidth: 100, templet: function (d) {
+				index = 5;
+				field = d[Object.keys(d)[index]];
+				if (field == 1) return "<input type='checkbox' ctrlField='" + this.field + "' ctrlID = '" + d.OperatorId + "' lay-filter='Disable' lay-skin='switch' lay-text='开|关' checked>"
+				return "<input type='checkbox' ctrlField='" + this.field + "' ctrlID = '" + d.OperatorId + "'  lay-filter='Disable' lay-skin='switch' lay-text='开|关'>"
+			}
+		},
+		{
+			field: 'TaskSwitch', align: 'center', title: '任务开关', minWidth: 100, templet: function (d) {
+				index = 6;
+				field = d[Object.keys(d)[index]];
+				if (field == 1) return "<input type='checkbox' ctrlField='" + this.field + "' ctrlID = '" + d.OperatorId + "' lay-filter='Disable' lay-skin='switch' lay-text='开|关' checked>"
+				return "<input type='checkbox' ctrlField='" + this.field + "' ctrlID = '" + d.OperatorId + "'  lay-filter='Disable' lay-skin='switch' lay-text='开|关'>"
+			}
+		},
+		{
+			field: 'DaySignSwitch', align: 'center', title: '每日签到', minWidth: 100, templet: function (d) {
+				index = 7;
+				field = d[Object.keys(d)[index]];
+				if (field == 1) return "<input type='checkbox' ctrlField='" + this.field + "' ctrlID = '" + d.OperatorId + "' lay-filter='Disable' lay-skin='switch' lay-text='开|关' checked>"
+				return "<input type='checkbox' ctrlField='" + this.field + "' ctrlID = '" + d.OperatorId + "'  lay-filter='Disable' lay-skin='switch' lay-text='开|关'>"
+			}
+		},
+		{
+			field: 'MailSwitch', align: 'center', title: '邮件开关', minWidth: 100, templet: function (d) {
+				index = 8;
+				field = d[Object.keys(d)[index]];
+				if (field == 1) return "<input type='checkbox' ctrlField='" + this.field + "' ctrlID = '" + d.OperatorId + "' lay-filter='Disable' lay-skin='switch' lay-text='开|关' checked>"
+				return "<input type='checkbox' ctrlField='" + this.field + "' ctrlID = '" + d.OperatorId + "'  lay-filter='Disable' lay-skin='switch' lay-text='开|关'>"
+			}
+		},
+		{fixed: 'right', title: '操作', align: 'center', minWidth: 100, toolbar: '#msg-bar'}
+
+	]; //分包管理配置
+	layui.config({
+		base: '__layui__/' //静态资源所在路径
+	}).extend({
+		index: 'lib/index' //主入口模块
+	}).use(['table', 'layer', 'element', 'laydate', 'form', 'jquery', 'util'], function () {
+		//ID=table0
+		//每个页签的独立变量 增加页签的时候 手动增加
+		var tb0 = 'Table0', tb1 = 'Table1', tb2 = 'Table2', tb3 = 'Table3'
+		;
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, util = layui.util,
+			table = layui.table, $ = layui.$, form = layui.form;
+		Tabs = {
+			tab0Evn: function () {
+				table.render({
+					elem: '#' + tb0,
+					toolbar: '#toolbar',
+					// where: Wheres[0],
+					url: "{:url('game_cfg/PackageConfigManager')}?action=Packlist",
+					page: true, cols: [cols0], autoSort: false,done: function (res) {
+                        tzTbale();
+                    }
+				});
+			},
+
+		};
+		TBinit = {
+			// sortEvn: function () {            },
+			editEvn: function () {
+				table.on('tool(' + tb0 + ')', function (obj) {
+					if (obj.event === 'PGMS') {
+						var url = "{:url('GameCfg/PackageGamelistTree')}?ID=" + obj.data.OperatorId;
+						x_admin_show('游戏列表', url, $(window).width() * 0.5, $(window).height() * 0.8);
+					}
+					if (obj.event === 'ReName') {
+						layer.prompt({
+							formType: 0,
+							value: obj.data.PackageName,
+							title: '请输入新的名称',
+							area: ['300px', '350px'] //自定义文本域宽高
+						}, function (value, index, elem) {
+							value = value.trim();
+							if (value.length > 1) {
+								$.ajax({
+									url: "{:url('PackageConfigManager')}?action=ReName",
+									data: {packID: obj.data.OperatorId, name: value},
+									success: function (data) {
+										if (data.code == 1) layer.msg(data.msg, {icon: 6});
+										else layer.msg(data.msg, {icon: 5});
+									}
+								});								// alert(value); //得到value
+								layer.close(index);
+								parent.location.reload();
+							} else
+								layer.msg('请输入包名', {icon: 5});
+
+						});
+					}
+				});
+				table.on('toolbar(' + tb0 + ')', function (obj) {
+					if (obj.event == "additem") {
+						layer.prompt({
+							formType: 0,
+							value: '',
+							title: '请输入新包的名称',
+							area: ['300px', '350px'] //自定义文本域宽高
+						}, function (value, index, elem) {
+							value = value.trim();
+							if (value.length > 1) {
+								$.ajax({
+									url: "{:url('PackageConfigManager')}?action=AddItem",
+									data: {name: value},
+									success: function (data) {
+										if (data.code == 1) layer.msg(data.msg, {icon: 6});
+										else layer.msg(data.msg, {icon: 5});
+									}
+								});								// alert(value); //得到value
+								layer.close(index);
+								parent.location.reload();
+							} else
+								layer.msg('请输入包名', {icon: 5});
+
+						});
+
+						// x_admin_show('游戏列表', "{:url('GameCfg/PackageManagerAdd')}", $(window).width() * 0.5, $(window).height() * 0.8);
+						// var url = "{:url('PackageConfigManager')}?action=AddItem";
+					}
+
+				})
+			},
+			//页签 切换事件
+			TabEvn: function () {
+				element.on('tab(test)', function (data) {
+					switch (data.index) {
+						case 0:
+							return Tabs.tab0Evn();
+					}
+				});
+			},
+			SwitchEvn: function () {
+				form.on('switch(Disable)', function (data) {
+					var ID = data.elem.attributes['ctrlID'].nodeValue;
+					var field = data.elem.attributes['ctrlField'].nodeValue;
+					var swtype = data.elem.checked;
+					var type = 0;
+					if (swtype) type = 1;
+					else type = 0;
+
+					//设置开关
+					$.ajax({
+						url: "{:url('PackageConfigManager')}?action=ChangeSwitch",
+						type: 'post',
+						data: {'ID': ID, 'field': field, type: type},
+						success: function (res) {
+							if (res.code === 0) {
+								layer.msg('修改成功', {icon: 6});
+							} else {
+								layer.msg('修改失败', {icon: 5});
+							}
+							form.render();
+						}
+					})
+
+				});
+
+			},
+			init: function () {
+				Tabs.tab0Evn();
+				// this.sortEvn();
+				this.editEvn();
+				this.TabEvn();
+				this.SwitchEvn();
+			}
+		}
+		TBinit.init();
+	});
+</script>
+{/block}

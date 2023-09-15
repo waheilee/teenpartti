@@ -1,0 +1,177 @@
+{extend name="common/base" /}
+{block name="title"}活动编辑{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<style type="text/css">
+    header { color: black; }
+</style>
+<div class="x-body">
+    <form action="{:url('Activity/ActivityConfigEdit')}" class="layui-form" id='mainForm'>
+        <div class="layui-form-item layui-hide">
+            <div class="layui-hide">
+                <input class="layui-input layui-hide" name="ActivityID" id="ActivityID" type="text" value="{$data.ActivityID}">
+		<input  class="layui-input layui-hide" name="ActivityType" id="ActivityType" type="text" value="{$data.ActivityType}">
+            </div>
+        </div>
+        
+        <div class="layui-form-item">
+          <div class="layui-inline">
+            <label class="layui-form-label">活动名称</label>
+            <div class="layui-input-inline">
+              <input type="text" name="ActivityName" id="ActivityName" lay-verify="required" autocomplete="off" placeholder="活动名称" class="layui-input"  value="{$data.ActivityName}">
+            </div>
+          </div>
+          <div class="layui-inline">
+            <label class="layui-form-label">活动开始时间</label>
+            <div class="layui-input-inline">
+                <input type="text" name="BeginTime" id="BeginTime"  autocomplete="off" class="layui-input" value="{$data.BeginTime}">
+            </div>
+          </div>
+        </div>
+        
+        <div class="layui-form-item">
+          <div class="layui-inline">
+            <label class="layui-form-label">活动结束时间</label>
+            <div class="layui-input-inline">
+              <input type="text" name="EndTime" id="EndTime"  autocomplete="off" class="layui-input" value="{$data.EndTime}">
+            </div>
+          </div>
+          <div class="layui-inline">
+            <label class="layui-form-label">领奖截止时间</label>
+            <div class="layui-input-inline">
+              <input type="text" name="ShowTime" id="ShowTime"  autocomplete="off" class="layui-input" value="{$data.ShowTime}">
+            </div>
+          </div>
+        </div>
+        
+        <div class="layui-form-item">
+          <div class="layui-inline">
+            <label class="layui-form-label">领奖最低充值</label>
+            <div class="layui-input-inline">
+              <input autocomplete="off" class="layui-input" lay-verify="required|number" name="MinRecharge" id="MinRecharge"  placeholder="最低充值" type="text" value="{$data.MinRecharge}">
+            </div>
+          </div>
+          <div class="layui-inline">
+            <label class="layui-form-label">领奖最低流水</label>
+            <div class="layui-input-inline">
+              <input autocomplete="off" class="layui-input" lay-verify="required|number" name="MinWater" id="MinWater" placeholder="最低流水" type="text" value="{$data.MinWater}">
+            </div>
+          </div>
+        </div>
+
+        
+        <div class="layui-form-item">
+            <label class="layui-form-label">活动状态</label>
+            <div class="layui-input-block">
+                <input lay-skin="switch" lay-filter="Status" lay-text="开|关" name="Status" id="Status" type="checkbox" {$data.Status==1?'checked':''} value="{$data.Status==1?1:0}" >
+            </div>
+        </div>
+        
+        <div class="layui-form-item">
+            <label class="layui-form-label">活动描述</label>
+            <div class="layui-input-block">
+                <textarea name="ActivityDesc" id="ActivityDesc" autocomplete="off" placeholder="活动描述" class="layui-textarea">{$data.ActivityDesc}</textarea>
+            </div>
+        </div>
+        <div class="layui-form-item"  style="display:none">
+            <div class="layui-input-block">
+                <button id="submit_btn" class="layui-btn" lay-submit="" lay-filter="toSubmit">保存</button>
+            </div>
+        </div>
+        
+    </form>
+</div>
+{/block}
+{block name="script"}
+<script type="text/javascript">
+	var _isClickSave = false;
+	var _callback;
+	var _layer_index;
+        var url = "{:url('Activity/ActivityConfigEdit')}";
+	var main;
+	layui.config({
+		base: '__layui__/'
+	}).extend({
+		index: 'lib/index'
+	}).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+                var element = layui.element
+                    ,layer = layui.layer
+                    ,table = layui.table
+                    ,$ = layui.$
+                    ,form = layui.form;
+                var laydate = layui.laydate;
+
+                //日期
+                laydate.render({
+                  elem: '#BeginTime', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime',trigger: 'click'
+                });
+                laydate.render({
+                  elem: '#EndTime', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime',trigger: 'click'
+                });
+                laydate.render({
+                  elem: '#ShowTime', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime',trigger: 'click'
+                });
+		
+                element.render();
+                form.render();
+		main = {
+			bindEvent: function () {
+				form.on('submit(toSubmit)', function (data) {
+					main.submitForm(data);
+					return false;
+				});
+
+				$('#cancel').on('click', function (e) {
+					e.preventDefault();
+					x_admin_close();
+				});
+                                //监听switch操作
+                                form.on('switch(Status)', function (obj) {
+                                    if (!obj.elem.checked) {
+                                        $(this).val(0);
+                                    } else {
+                                        $(this).val(1);
+                                    }
+                                });
+			},
+			//添加
+			submitForm: function (data) {
+                                if (_isClickSave) return;
+                                _isClickSave = true;
+				$.ajax({
+					type: 'post',
+					url: url,
+					data: $('#mainForm').serialize(),
+					dataType: 'json',
+					success: function (res) {
+                                            _isClickSave = false;
+						if (res.code === 0) {
+							layer.msg(res.msg, {icon: 1, time: 1000}, function () {
+								_callback();
+								parent.layer.close(_layer_index);
+							});
+						} else {
+							layer.msg(res.msg, {icon: 2});
+						}
+					}
+				});
+			},
+
+			init: function () {
+				main.bindEvent();
+			}
+		};
+
+		main.init();
+	});
+	function saveData(callback, layer_index, autoClose) {
+		_layer_index = layer_index;
+		_callback = callback;
+                $('#submit_btn').click();
+	}
+
+
+</script>
+{/block}

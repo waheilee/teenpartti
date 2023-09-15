@@ -1,0 +1,107 @@
+{extend name="common/base" /}
+
+{block name="title"}支付通道修改{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('gamemanage/editScorelist')}" method="post" id="addProxy" >
+
+
+
+
+
+
+    <input type="hidden" id="id" name='id' lay-verify="required" placeholder="请输入客服微信号" autocomplete="off" class="layui-input" value="{$id}" >
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">等级：</label>
+        <div class="layui-input-block">
+            <input type="text" id="awardid"   disabled name='awardid' lay-verify="required" placeholder="请输入客服微信号" autocomplete="off" class="layui-input layui-disabled" value="{$awardid}" >
+
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">奖励金币：</label>
+        <div class="layui-input-block">
+            <input type="text" id="awardmoney" name='awardmoney' lay-verify="required" placeholder="请输入客服微信号" autocomplete="off" class="layui-input" value="{$awardmoney}" >
+
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >修改</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" lay-submit="" lay-filter="cancel" id="cancel" >取消</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var layer = layui.layer
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                var roleid = $.trim($('#bankname option:selected').text());
+//                alert( roleid);
+                var awardid = $.trim(data.field.awardid),
+                    id = $.trim(data.field.id),
+                awardmoney = $.trim(data.field.awardmoney);
+
+
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'awardid' : awardid,
+                        'awardmoney' : awardmoney,
+
+                        'id' : id,
+
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

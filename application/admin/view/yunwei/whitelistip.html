@@ -1,0 +1,152 @@
+{extend name="common/base" /}
+
+{block name="title"}超级玩家列表{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">ip白名单</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="ip" name="ip" lay-verify="number" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">搜索</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <a style="margin-bottom: 10px;" class="layui-btn" onclick="x_admin_show('添加白名单IP','addWhite.html', '', 200)">
+            <i class="layui-icon layui-icon-add-circle"></i>
+        </a>
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script type="text/html" id="msg-bar">
+    <!--<a class="layui-btn layui-btn-xs" lay-event="edit"><i class="layui-icon layui-icon-edit"></i></a>-->
+    <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete"><i class="layui-icon layui-icon-delete"></i></a>
+</script>
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            //渲染数据
+            renderData : function() {
+                var cols = [ //表头
+                    {field: 'Id', title: 'ID', minWidth:120}
+                    ,{field: 'ipaddr', title: 'IP地址', minWidth:120}
+                    ,{field: 'ipaddr2', title: '整数IP', minWidth:120}
+//                    , {field: 'totalout', title: '总转出', minWidth:150}
+//                , {field: 'proxyincome', title: '账户余额', minWidth:150}
+                    , {fixed: 'right', title:'操作', align:'center', minWidth:100, toolbar: '#msg-bar'}
+                ];
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('yunwei/whitelistip')}" //数据接口
+                    , page: true //开启分页
+                    , limit:15
+                    , cols: [cols]
+                    , done : function(res) {
+                        tzTbale()
+                    }
+                });
+            },
+
+            //搜索
+            search : function() {
+                var ip = $.trim($('#ip').val());
+//                if (isNaN(ip)) {
+//                    layer.msg('请输入正确的ID', {icon: 5});
+//                    return false;
+//                }
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'ip':ip
+                    }
+                });
+            },
+
+            //操作事件
+            extraEvent : function () {
+                //编辑
+                table.on('tool(proxylist)', function(obj) {
+                    var data = obj.data //获得当前行数据
+                        ,layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'edit') {
+                        x_admin_show('编辑白名单', 'editWhite.html?id='+data.id+'&ip='+data.ip+'&remark='+data.remark, '', 270);
+
+                    } else if (layEvent === 'delete') { //删除
+                        layer.confirm("{:lang('确认删除这条记录？')}",{btn: ['确认','取消']}, function() {
+                            $.ajax({
+                                type: 'post',
+//                                url: "{:url('player/deleteSuper')}",
+                                url: "{:url('yunwei/deleteWhite')}",
+                                data: {
+                                    'id': data.Id
+                                },
+                                dataType: 'json',
+                                success: function (res) {
+                                    if (res === 0) {
+                                        layer.msg('删除成功', {icon: 1,time:1000}, function() {
+                                            window.location.reload();
+                                        });
+                                    } else {
+                                        layer.msg('删除失败', {icon: 5});
+                                    }
+                                }
+                            });
+                        });
+                    }
+                });
+            },
+
+            //绑定事件
+            bindEvent : function () {
+                $('#search').on('click', function(e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            },
+
+            //初始化
+            init : function() {
+                this.renderData();
+                this.extraEvent();
+                this.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

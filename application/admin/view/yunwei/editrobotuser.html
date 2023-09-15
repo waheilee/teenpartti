@@ -1,0 +1,134 @@
+{extend name="common/base" /}
+
+{block name="title"}编辑超级玩家{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('yunwei/addrobotuser')}" method="post" id="addProxy" >
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">机器人ID：</label>
+        <div class="layui-input-block">
+            <input type="text" id="userid" name='userid' value="{$userid}" readonly lay-verify="required|number" placeholder="请输入超级玩家ID" autocomplete="off" class="layui-input layui-disabled">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">服务时间: </label>
+        <div class="layui-input-block" id="servicetime">
+            <input type="checkbox" class="servicetime" name="servicetime" lay-skin="primary"  value="1" title="0" {if $servicetime & 1}checked{/if}>
+            <input type="checkbox" class="servicetime" name="servicetime" lay-skin="primary"   value="2" title="1" {if $servicetime & 2}checked{/if}>
+            <input type="checkbox" class="servicetime" name="servicetime"  lay-skin="primary"  value="4" title="2" {if $servicetime & 4}checked{/if}>
+            <input type="checkbox" class="servicetime" name="servicetime" lay-skin="primary"  value="8" title="3" {if $servicetime & 8}checked{/if}>
+            <input type="checkbox" class="servicetime" name="servicetime" lay-skin="primary"  value="16" title="4" {if $servicetime & 16}checked{/if}>
+            <input type="checkbox" class="servicetime" name="servicetime" lay-skin="primary"  value="32" title="5" {if $servicetime & 32}checked{/if}>
+            <input type="checkbox" class="servicetime" name="servicetime" lay-skin="primary"  value="64" title="6" {if $servicetime & 64}checked{/if}>
+            <input type="checkbox" class="servicetime" name="servicetime" lay-skin="primary"  value="128" title="7" {if $servicetime & 128}checked{/if}>
+            <input type="checkbox" class="servicetime" name="servicetime" lay-skin="primary"  value="256" title="8" {if $servicetime & 256}checked{/if}>
+            <input type="checkbox" class="servicetime" name="servicetime" lay-skin="primary"   value="512" title="9" {if $servicetime & 512}checked{/if}>
+            <input type="checkbox" class="servicetime" name="servicetime" lay-skin="primary"  value="1024" title="10" {if $servicetime & 1024}checked{/if}>
+            <input type="checkbox" class="servicetime" name="servicetime" lay-skin="primary"  value="2048" title="11" {if $servicetime & 2048}checked{/if}>
+            <input type="checkbox" class="servicetime" name="servicetime" lay-skin="primary"  value="4096" title="12" {if $servicetime & 4096}checked{/if}>
+            <input type="checkbox" class="servicetime" name="servicetime" lay-skin="primary"  value="8192" title="13" {if $servicetime & 8192}checked{/if}>
+            <input type="checkbox" class="servicetime" name="servicetime" lay-skin="primary"  value="16384" title="14" {if $servicetime & 16384}checked{/if}>
+            <input type="checkbox" class="servicetime" name="servicetime" lay-skin="primary"  value="32768" title="15" {if $servicetime & 32768}checked{/if}>
+            <input type="checkbox" class="servicetime" name="servicetime" lay-skin="primary"  value="65536" title="16" {if $servicetime & 65536}checked{/if}>
+            <input type="checkbox" class="servicetime" name="servicetime" lay-skin="primary"  value="131072" title="17" {if $servicetime & 131072}checked{/if}>
+            <input type="checkbox" class="servicetime" name="servicetime" lay-skin="primary"  value="262144" title="18" {if $servicetime & 262144}checked{/if}>
+            <input type="checkbox" class="servicetime" name="servicetime" lay-skin="primary"  value="524288" title="19" {if $servicetime & 524288}checked{/if}>
+            <input type="checkbox" class="servicetime" name="servicetime" lay-skin="primary"  value="1048576" title="20" {if $servicetime & 1048576}checked{/if}>
+            <input type="checkbox" class="servicetime" name="servicetime" lay-skin="primary"  value="2097152" title="21" {if $servicetime & 2097152}checked{/if}>
+            <input type="checkbox" class="servicetime" name="servicetime" lay-skin="primary"  value="4194304" title="22" {if $servicetime & 4194304}checked{/if}>
+            <input type="checkbox" class="servicetime" name="servicetime" lay-skin="primary"   value="8388608" title="23" {if $servicetime & 8388608}checked{/if}>
+        </div>
+    </div>
+    <div class="layui-form-item" id="servicegender">
+        <label class="layui-form-label">服务类型: </label>
+        <div class="layui-input-block">
+            <input type="checkbox" name="servicegender" lay-skin="primary"   value="1" title="相互模拟" {if $servicegender & 1}checked{/if}>
+            <input type="checkbox" name="servicegender" lay-skin="primary"  value="2" title="被动陪打" {if $servicegender & 2}checked{/if}>
+            <input type="checkbox" name="servicegender" lay-skin="primary"  value="4" title="主动陪玩" {if $servicegender & 4}checked{/if}>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >修改</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" id="cancel" >取消</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var layer = layui.layer
+            ,$ = layui.$
+            ,form = layui.form;
+        var main = {
+            submitForm : function(data) {
+                var userid = $.trim(data.field.userid)
+                    ,servicetime=0
+                    ,servicegender=0;
+
+                $("#servicetime .layui-form-checkbox").each(function(i){
+                    if ($(this).hasClass('layui-form-checked')) {
+                        servicetime += parseInt($(this).prev().val());
+                    }
+                });
+                $("#servicegender .layui-form-checkbox").each(function(i){
+                    if ($(this).hasClass('layui-form-checked')) {
+                        servicegender += parseInt($(this).prev().val());
+                    }
+                });
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'userid' : userid,
+                        'servicetime' : servicetime,
+                        'servicegender' : servicegender,
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

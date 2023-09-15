@@ -1,0 +1,423 @@
+{extend name="common/base" /}
+{block name="title"}{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-tab" lay-filter="test">
+    <ul class="layui-tab-title">
+        <li class="layui-this">{:lang('彩金分配')}</li>
+        <li>{:lang('操作记录')}</li>
+        <li>{:lang('彩金记录')}</li>
+        <li>{:lang('当前彩金')}</li>
+    </ul>
+    <div class="layui-tab-content">
+        <!--        彩金分配-->
+        <div class="layui-tab-item layui-show">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <form class="layui-form" lay-filter="component-form-group">
+                        <div class="layui-inline">
+                            <a class="layui-btn" onclick="x_admin_show('{:lang(\'彩金预分配\')}',' ?Action=addView', 390,240)" style="margin-bottom: 10px;">
+                                <i class="layui-icon layui-icon-add-circle"></i>
+                            </a>
+                        </div>
+                    </form>
+                    <table id="Table0" lay-filter="Table0"></table>
+                </div>
+            </div>
+        </div>
+        <!--        操作记录-->
+        <div class="layui-tab-item ">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <form class="layui-form" lay-filter="component-form-group">
+                        <div class="layui-form-item">
+                            <div class="layui-inline">
+                                <input autocomplete="off" class="layui-input" id="CheckUser" lay-verify="number" name="CheckUser" placeholder="{:lang('操作人员')}" type="text">
+                            </div>
+                            <div class="layui-inline">
+                                <input autocomplete="off" class="layui-input" id="RoleId" lay-verify="number" name="RoleId" placeholder="{:lang('角色ID')}" type="text">
+                            </div>
+
+                            <div class="layui-inline" style="width: 263px">
+                                <label class="layui-form-label" style="width: auto">{:lang('日期')}</label>
+                                <div class="layui-input-inline" style="width: 90px">
+                                    <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off" class="layui-input">
+                                </div>
+                                <div class="layui-form-mid"> -</div>
+                                <div class="layui-input-inline" style="width: 90px">
+                                    <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date2" name="end" type="text">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label" style="width: auto">{:lang('彩金类型')}</label>
+                                <div class="layui-input-inline" style="width: 100px">
+                                    <select id="JackpotType" name="JackpotType">
+                                        <option value="">{:lang('全部')}</option>
+                                        <option value="27">{:lang('小彩金')}</option>
+                                        <option value="28">{:lang('超级彩金')}</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="layui-inline">
+                                <div class="layui-input-inline">
+                                    <a class="layui-btn" data-type="reload" id="search2">{:lang('搜索')}</a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <table id="Table1" lay-filter="Table1"></table>
+                </div>
+            </div>
+        </div>
+        <!--        彩金记录-->
+        <div class="layui-tab-item ">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    {:lang('总彩金')}：<span class="layui-badge layui-bg-red" id="TotalJackpotAward">0</span>
+                    {:lang('小彩金')}：<span class="layui-badge layui-bg-blue" id="minJackpot">0</span>
+                    {:lang('大彩金')}：<span class="layui-badge layui-bg-green" id="maxJackpot">0</span>
+                </div>
+            </div>
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <form class="layui-form" lay-filter="component-form-group">
+                        <div class="layui-form-item">
+                            <div class="layui-inline">
+                                <input autocomplete="off" class="layui-input" id="RoleId2" lay-verify="number" name="RoleId" placeholder="{:lang('角色ID')}" type="text">
+                            </div>
+
+                            <div class="layui-inline" style="width: 263px">
+                                <label class="layui-form-label" style="width: auto">{:lang('日期')}</label>
+                                <div class="layui-input-inline" style="width: 90px">
+                                    <input type="text" name="start" id="start" autocomplete="off" class="layui-input">
+                                </div>
+                                <div class="layui-form-mid"> -</div>
+                                <div class="layui-input-inline" style="width: 90px">
+                                    <input autocomplete="off" class="layui-input" id="end" name="end" type="text">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label" style="width: auto">{:lang('彩金类型')}</label>
+                                <div class="layui-input-inline" style="width: 100px">
+                                    <select id="JackpotType2" name="JackpotType">
+                                        <option value="">{:lang('全部')}</option>
+                                        <option value="27">{:lang('小彩金')}</option>
+                                        <option value="28">{:lang('超级彩金')}</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="layui-inline">
+                                <div class="layui-input-inline">
+                                    <a class="layui-btn" data-type="reload" id="search3">{:lang('搜索')}</a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <table id="Table2" lay-filter="Table2"></table>
+                </div>
+            </div>
+        </div>
+        <div class="layui-tab-item ">
+            <div class="layui-card">
+            </div>
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <table id="Table3" lay-filter="Table3"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script id="msg-bar" type="text/html">
+    <a class="layui-btn layui-btn-xs" lay-event="del">{:lang('删除')}</a>
+</script>
+<script id="msg-bar3" type="text/html">
+    <a class="layui-btn layui-btn-xs" lay-event="showView">{:lang('关联房间')}</a>
+</script>
+<script>
+	var tb0 = 'Table0', tb1 = 'Table1', tb2 = 'Table2', tb3 = 'Table3', tb4 = 'Table4';
+	layui.config({base: '__layui__/'}).extend({
+		index: 'lib/index'
+	}).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
+		url = "{:url('gamectrl/JackpotDistribution')}"
+		var cols0 = [ //表头
+			{field: 'ID', align: 'center', title: 'ID', minWidth: 100},
+			{field: 'RoleID', align: 'center', title: "{:lang('角色ID')}", minWidth: 100},
+			{field: 'JackpotType', title: "{:lang('彩金类型')}", align: 'center', minWidth: 150, templet: function (d) { return Number(d.JackpotType) == 27 ? '小彩金' : '超级彩金'; }},
+			{field: 'JackpotAward', title: "{:lang('彩金')}", align: 'center', minWidth: 120},
+			{field: 'CheckUser', title: "{:lang('操作人员')}", align: 'center', minWidth: 170},
+			{field: 'AddTime', title: "{:lang('添加时间')}", align: 'center', minWidth: 170, templet: function (d) { return formatDateTime(d.AddTime) }},
+			{fixed: 'right', title: "{:lang('操作')}", align: 'center', minWidth: 100, toolbar: '#msg-bar'}
+		];
+		var cols1 = [ //表头
+			{field: 'ID', align: 'center', title: 'ID', minWidth: 100},
+			{field: 'RoleID', align: 'center', title: "{:lang('角色ID')}", minWidth: 110},
+			{field: 'JackpotType', title: "{:lang('彩金类型')}", align: 'center', minWidth: 100, templet: function (d) { return Number(d.JackpotType) == 27 ? '小彩金' : '超级彩金'; }},
+			{field: 'JackpotAward', title: "{:lang('彩金')}", align: 'center', minWidth: 120},
+			{field: 'CheckUser', title: "{:lang('操作人员')}", align: 'center', minWidth: 170},
+			{field: 'AddTime', title: "{:lang('添加时间')}", align: 'center', minWidth: 170, templet: function (d) { return formatDateTime(d.AddTime) }}
+
+		];
+		var cols2 = [ //表头
+			{field: 'ID', align: 'center', title: 'ID', minWidth: 100},
+			{field: 'KindName', align: 'center', title: "{:lang('游戏')}", minWidth: 100},
+			{field: 'RoleID', align: 'center', title: "{:lang('角色ID')}", minWidth: 110},
+			{field: 'JackpotType', title: "{:lang('彩金类型')}", align: 'center', minWidth: 100, templet: function (d) { return Number(d.JackpotType) == 27 ? "{:lang('小彩金')}" : "{:lang('超级彩金')}"; }},
+			{field: 'JackpotAward', title: "{:lang('彩金')}", align: 'center', minWidth: 120, sort: true},
+			{field: 'AddTime', title: "{:lang('添加时间')}", align: 'center', minWidth: 170, templet: function (d) { return formatDateTime(d.AddTime) }}
+		];
+		var cols3 = [ //表头
+			{field: 'JackpotType', align: 'center', title: "{:lang('彩池')}", minWidth: 110},
+			{field: 'JackpotType', title: "{:lang('彩金类型')}", align: 'center', minWidth: 100, templet: function (d) { return Number(d.JackpotType) > 0 ? "{:lang('小彩金')}" : "{:lang('超级彩金')}"; }},
+			{field: 'RealCaijin', align: 'center', title: "{:lang('彩金')}", minWidth: 110},
+			{fixed: 'right', title: "{:lang('操作')}", align: 'center', width: 100, toolbar: '#msg-bar3'}
+
+		];
+		Wheres = [
+			{Action: 'list', Status: 0},
+			{Action: 'list', Status: 1},
+			{Action: 'Record', Status: 1},
+			{Action: 'JackNow'},
+		]
+		Tabs = {
+			//彩金分配
+			tab0Evn: function () {
+				table.render({
+					elem: '#' + tb0,
+					where: Wheres[0],
+					url: url,
+					page: true, cols: [cols0], autoSort: false,
+				});
+			},
+			//操作记录
+			tab1Evn: function () {
+				table.render({
+					elem: '#' + tb1,
+					where: Wheres[1],
+					url: url,
+					page: true, cols: [cols1], autoSort: false,
+				});
+			},
+			//彩金记录
+			tab2Evn: function () {
+				table.render({
+					elem: '#' + tb2, where: Wheres[2], url: url, page: true, cols: [cols2],
+					done: function (d) {
+						$('#TotalJackpotAward').html(d.other.TotalJackpotAward);
+						$('#maxJackpot').html(d.other.maxJackpot);
+						$('#minJackpot').html(d.other.minJackpot);
+                        tzTbale();
+					}
+				});
+			},
+			tab3Evn: function () {
+				table.render({
+					elem: '#' + tb3,
+					where: Wheres[3],
+					url: url,
+					page: true, cols: [cols3],
+				});
+			},
+			tab4Evn: function () {
+
+			},
+
+
+		};
+		TabReload = {
+			tab0: function () {table.reload(tb0, {page: {curr: 1}});},
+			tab1: function () {table.reload(tb1, {page: {curr: 1}});},
+			tab2: function () {table.reload(tb2, {page: {curr: 1}});},
+			tab3: function () {table.reload(tb3, {page: {curr: 1}});},
+			tab4: function () {table.reload(tb4, {page: {curr: 1}});}
+		}
+		var main = {
+			renderData: function () {
+				Tabs.tab0Evn();
+			},
+			//搜索
+			search1: function () {
+				//执行重载
+				table.reload(tb1, {
+					page: {curr: 1}, where: {
+						CheckUser: $('#CheckUser').val(),
+						RoleId: $('#RoleId').val(),
+						start: $('#LAY-component-form-group-date').val(),
+						end: $('#LAY-component-form-group-date2').val(),
+						JackpotType: $('#JackpotType').val()
+					},
+					done: function (d) {
+
+					}
+				});
+
+			},
+			search2: function () {
+				//执行重载
+				table.reload(tb2, {
+					page: {curr: 1}, where: {
+						RoleId: $('#RoleId2').val(),
+						start: $('#start').val(),
+						end: $('#end').val(),
+						JackpotType: $('#JackpotType2').val()
+					},
+					done: function (d) {
+						$('#TotalJackpotAward').html(d.other.TotalJackpotAward);
+						$('#maxJackpot').html(d.other.maxJackpot);
+						$('#minJackpot').html(d.other.minJackpot);
+					}
+				});
+			},
+			TabEvn: function () {
+				element.on('tab(test)', function (data) {
+					switch (data.index) {
+						case 0:
+							return Tabs.tab0Evn();
+						case 1:
+							return Tabs.tab1Evn();
+						case 2:
+							return Tabs.tab2Evn();
+						case 3:
+							return Tabs.tab3Evn();
+						case 4:
+							return Tabs.tab4Evn();
+					}
+				});
+			},
+			//操作事件
+			extraEvent: function () {
+				//编辑&&删除
+				table.on('tool(Table0)', function (obj) {
+					var data = obj.data, layEvent = obj.event;
+					if (layEvent === 'del') {
+						layer.confirm("{:lang('确认要删除这条记录吗？')}", {btn: ["{:lang('确认')}", "{:lang('取消')}"]}, function () {
+							$.ajax({
+								type: 'post',
+								url: url,
+								data: {Action: 'del', ID: data.ID},
+								dataType: 'json',
+								success: function (res) {
+									if (res.code === 1) {
+										layer.msg(res.msg, {icon: 6, time: 1000}, function () {
+											window.location.reload();
+										});
+									} else {
+										layer.msg(res.msg, {icon: 5});
+									}
+								}
+							});
+						});
+
+					}
+				});
+				table.on('edit(Table0)', function (obj) {
+					$.ajax({
+						url: url,
+						data: {Action: 'note', Notice: obj.value, ID: obj.data.id},
+						success: function (res) {
+							if (res.code === 1) {
+								return layer.msg(res.msg, {icon: 1, time: 1000}, function () {
+									obj.update({Notice: obj.value});
+								});
+							}
+							return layer.msg(res.msg, {icon: 2});
+						}
+					});
+				});
+				table.on('tool(Table3)', function (obj) {
+					var data = obj.data, layEvent = obj.event;
+					if (layEvent !== 'showView') { return; }
+					console.info(data)
+					if (data.JackpotType == '0') return  layer.msg('所有游戏共用此奖池');
+
+					url = "{:url('gamectrl/JackpotRoomlist')}?ID="+data.JackpotType
+					x_admin_show('',url,400,700);
+
+				});
+			},
+			init: function () {
+				laydate.render({elem: '#LAY-component-form-group-date', format: 'yyyy-MM-dd', max: 1, btns: ['clear', 'confirm'], value: new Date(2021, 5, 1)});
+				laydate.render({elem: '#start', format: 'yyyy-MM-dd', max: 1, btns: ['clear', 'confirm'], value: new Date(2021, 5, 1)});
+				laydate.render({elem: '#LAY-component-form-group-date2', format: 'yyyy-MM-dd', max: 1, btns: ['clear', 'confirm'], value: new Date()});
+				laydate.render({elem: '#end', format: 'yyyy-MM-dd', max: 1, btns: ['clear', 'confirm'], value: new Date()});
+				this.renderData();
+				this.extraEvent();
+				this.TabEvn();
+				$('#search2').on('click', function (e) {
+					e.preventDefault();
+					main.search1();
+				});
+				$('#search3').on('click', function (e) {
+					e.preventDefault();
+					main.search2();
+				});
+			}
+		};
+
+
+		main.init();
+
+	});
+	$('#output').click(function () {
+		where = {
+			RoleId: $.trim($("#RoleId").val()),
+			Amount: $.trim($("#Amount").val()),
+			Title: $.trim($("#Title").val()),
+			Notice: $.trim($("#Notice").val()),
+			start: $.trim($("#LAY-component-form-group-date").val()),
+			end: $.trim($("#LAY-component-form-group-date2").val()),
+			VerifyState: $.trim($("#VerifyState").val()),
+			ExtraType: $.trim($("#ExtraType").val()),
+			limit: 10000000,
+			Action: 'exec',
+		}
+		download();
+
+		function download() {
+			var params = Object.keys(where).map(function (key) {
+				return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+			}).join("&");
+			url = url + "?" + params;
+			$.ajax({
+				type: 'POST',
+				dataType: 'json',
+				async: true,
+				url: url, // 生成文件，保存在服务器
+				success: function (data) {
+					var result = data;
+					console.info(data);
+					switch (result["code"]) {
+						case 0:
+							parent.parent.open(url + "&exec=1&outall=true");
+							break;
+						case 1:
+							layer.msg(result["message"]);
+							break;
+						case 2:
+							layer.confirm(result['message'], {
+								btn: ["{:lang('是')}", "{:lang('否')}"] //按钮
+							}, function () {
+								parent.parent.open(url + "&exec=1&outall=true");
+								layer.msg('', {icon: 6, time: 1000}, function () {
+									window.location.reload();
+								});
+							});
+					}
+				},
+				error: function (XMLHttpRequest, textStatus, e) {
+					console.log("oilDetection.js  method exportOilDetection" + e);
+				}
+			});
+		}
+	});
+</script>
+{/block}

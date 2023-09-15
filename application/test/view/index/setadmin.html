@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{block name="title"}修改管理员ID{/block}</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="__layui__/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="__layui__/style/admin.css" media="all">
+    {block name="css"}{/block}
+</head>
+<body>
+<style>
+    thead .layui-table-cell {
+        height: auto;
+        white-space: initial;
+        /*为了让字母和数字也换行*/
+        word-break: break-word;
+        line-height: 20px;
+        padding-top: 4px;
+        padding-bottom: 4px;
+    }
+</style>
+<div class="layui-fluid">
+    <form class="layui-form" action="{:url('Index/setadmin')}" method="post" id="addProxy" >
+        <input type="hidden" name="OperatorId" id="OperatorId" value="{$data['OperatorId'] ?? ''}" />
+
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">{:lang('管理员名称')}：</label>
+            <div class="layui-input-block">
+                <input type="text" id="admin" name='admin' lay-verify="required" placeholder="{:lang('请输入管理员名称')}" autocomplete="off" class="layui-input"  value="">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">{:lang('管理员id')}：</label>
+            <div class="layui-input-block">
+                <input type="text" id="admin_id" name='admin_id' lay-verify="required" placeholder="{:lang('请输入管理员id')}" autocomplete="off" class="layui-input"  value="">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >{:lang('修改')}</a>
+                <a  class="layui-btn layui-btn-primary layui-btn-radius" lay-submit="" lay-filter="cancel" id="cancel" >{:lang('取消')}</a>
+            </div>
+        </div>
+    </form>
+</div>
+<script type="text/javascript" src="__js__/jquery.min.js"></script>
+<script src="__layui__/layui/layui.js?t=1"></script>
+<script type="text/javascript" src="__static__/js/xadmin.js"></script>
+<script type="text/javascript" src="__static__/js/common.js?v=1.0"></script>
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery','upload'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                var admin      = $.trim(data.field.admin);
+                var admin_id        = $.trim(data.field.admin_id);
+                // if(WhatsAppShareLink==''){
+                //     layer.alert('{:lang("代理邀请WhatsApp分享链接")}！',{icon:5});
+                //     return;
+                // }if(FBShareLink==''){
+                //     layer.alert('{:lang("请输入代理邀请FaceBook分享链接")}！',{icon:5});
+                //     return;
+                // }
+                // if(WithdrawRemain==''){
+                //     layer.alert('{:lang("请输入渠道额度")}！',{icon:5});
+                //     return;
+                // }
+
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'admin':admin,
+                        'admin_id' : admin_id,
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        var index = parent.layer.getFrameIndex(window.name); /* 先得到当前iframe层的索引 */
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:100000}, function () {
+                                x_admin_close();
+                                parent.layui.table.reload('proxylist',{page:{curr:$(".layui-laypage-em").next().html()}});   //主要代码
+                                parent.layer.close(index);
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2,time:100000});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+</body>
+</html>
+

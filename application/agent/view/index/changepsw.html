@@ -1,0 +1,100 @@
+{extend name="common/base" /}
+
+{block name="title"}{:lang('form_chageepass_title')}{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+<div class="layui-card">
+    <div class="layui-card-header">{:lang('form_chageepass_title')}</div>
+    <div class="layui-card-body">
+        <div class="layui-form" lay-filter="">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">{:lang('form_chageepass_password')}</label>
+                    <div class="layui-input-block">
+                        <input type="password" name="oldPassword" id="oldPassword" lay-verify="required"
+                               class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">{:lang('form_chageepass_newpassword')}</label>
+                    <div class="layui-input-block">
+                        <input type="password" name="password" id="password" lay-verify="pass"  autocomplete="off"
+                               id="LAY_password" class="layui-input" placeholder="{:lang('form_chageepass_six')}">
+                    </div>
+
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">{:lang('form_chageepass_newrepassword')}</label>
+                    <div class="layui-input-block">
+                        <input type="password" name="repassword" id="repassword" lay-verify="repass"
+                               autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" id="btn" lay-submit lay-filter="setmypass">{:lang('form_chageepass_save')}</button>
+                    </div>
+                </div>
+        </div>
+
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script>
+    layui.config({
+        base: '{$laypath}/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+
+
+        $(document).on('click','#btn',function(){
+            var oldpsw = $('#oldPassword').val();
+            var password = $('#password').val();
+            var repassword =$('#repassword').val();
+
+            if(oldpsw=='' || password=='' || repassword=='')
+            {
+                layer.msg("{:lang('form_changepass_input')}", {icon: 2});
+                return;
+            }
+
+            if (password != repassword) {
+                layer.msg("{:lang('form_changepass_passwordwrong')}", {icon: 2});
+                return;
+            }
+
+            $.ajax({
+                type: 'post',
+                url: "{:url('index/savepsw')}",
+                data: {
+                    'oldpsw': oldpsw,
+                    'password': password
+                },
+                dataType: 'json',
+                success: function (res) {
+                    if (res.code === 0) {
+                        layer.msg(res.msg, {icon: 1, time: 1000}, function () {
+                            $('#oldPassword').val('');
+                            $('#password').val('');
+                            $('#repassword').val('');
+                        });
+                    } else {
+                        layer.msg(res.msg, {icon: 2});
+                    }
+                }
+            });
+        });
+
+    });
+</script>
+{/block}

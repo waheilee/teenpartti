@@ -1,0 +1,114 @@
+{extend name="common/base" /}
+
+{block name="title"}{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<div class="layui-row layui-col-space30">
+    <div class="layui-col-md12 layui-col-lg12 layui-col-xs12 layui-col-sm12">
+        <div class="layui-card">
+            <div class="layui-card-body">
+                <div id="alllist">
+                    <table id="proxylist" lay-filter="proxylist"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script>
+    url = "{:url('statistical/dailyProfit')}?action=list&date={$month}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery', 'gameonline'], function () {
+        //隐藏轮播
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'mydate', align: 'center', title: "{:lang('日期')}", minWidth: 200}
+                    , {field: 'totalsystem', align: 'center', title: "{:lang('总盈利(金币)')}", minWidth: 200}
+                    , {field: 'totalsystem', align: 'center', title: "{:lang('总盈利(平台金额)')}", minWidth: 200}
+                    , {field: 'rate', align: 'center', title: "{:lang('汇率(平台配置)')}", minWidth: 200}
+                    , {field: 'totalprofit', align: 'center', title: "{:lang('总抽成(平台金额)')}", minWidth: 200}
+                    , {field: 'online', align: 'center', title: "{:lang('平台上线时间')}", minWidth: 200}
+                ];
+                table.render({
+                    elem: '#proxylist',
+                    url: url,
+                    page: true,
+                    limit: 10,
+                    cols: [cols],
+                    where: {Action: 'list'}
+                });
+            },
+
+            //搜索
+            search: function () {
+                var strartdate = $.trim($('#LAY-component-form-group-date').val());
+                var enddate = $.trim($('#LAY-component-form-group-date2').val());
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'start_date': strartdate,
+                        'end_date': enddate,
+                    }
+                });
+            },
+
+            //其他
+            extraEvent: function () {
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+
+                    if (layEvent === 'detail') {
+                        x_admin_show("{:lang('详情')}", 'profitStatement?date=' + data.mydate, 900, 500);
+                    }
+                });
+            },
+
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+                laydate.render({
+                    elem: '#LAY-component-form-group-date'
+                    , format: 'yyyy-MM-dd'
+                    , max: 0
+                    , lang: '{$datelang ?: "cn"}'
+                    , btns: ['clear', 'confirm']
+                    , value: new Date()
+                });
+                laydate.render({
+                    elem: '#LAY-component-form-group-date2'
+                    , format: 'yyyy-MM-dd'
+                    , max: 0
+                    , lang: '{$datelang ?: "cn"}'
+                    , btns: ['clear', 'confirm']
+                    , value: new Date()
+                });
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+
+    });
+</script>
+{/block}

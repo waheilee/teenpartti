@@ -1,0 +1,378 @@
+{extend name="common/base" /}
+{block name="title"}关系列表{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-row layui-col-space20">
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('总充值')}</div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="TotalDeposit">0</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('总提现')}</div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="TotalRollOut">0</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('总盈亏')}</div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="Totalyk">0</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('总税收')}</div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="TotalTax">0</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('总人数')}</div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="totalCount">0</p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('邀请人ID')}</label>
+                    <div class="layui-input-inline"><input autocomplete="off" class="layui-input" id="parentid" lay-verify="number" name="parentid" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('受邀人ID')}</label>
+                    <div class="layui-input-inline"><input autocomplete="off" class="layui-input" id="roleid" lay-verify="number" name="roleid" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('是否充值')}</label>
+                    <div class="layui-input-inline">
+                        <select name="ispay" id="ispay">
+                            <option value="">{:lang('所有')}</option>
+                            <option value="1">{:lang('充值玩家')}</option>
+                            <option value="2">{:lang('未充值玩家')}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('注册时间')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="register_date1" id="register_date1" autocomplete="off" class="layui-input">
+                    </div>
+                    <div class="layui-form-mid"> -
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="register_date2" id="register_date2" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('登陆时间')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="login_date1" id="login_date1" autocomplete="off" class="layui-input">
+                    </div>
+                    <div class="layui-form-mid"> -
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="login_date2" id="login_date2" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('注册ip')}</label>
+                    <div class="layui-input-inline"><input autocomplete="off" class="layui-input" id="register_ip"  name="roleid" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <a class="layui-btn" data-type="reload" id="search">{:lang('搜索')}</a>
+                    <a class="layui-btn layui-btn-danger" id="output">{:lang('导出记录')}</a>
+
+                    <!-- <a class="layui-btn layui-btn-normal" id="bind" >{:lang('绑定上级')}</a>
+                    <a class="layui-btn layui-btn-normal" id="unbind" style="background-color: red">{:lang('解除绑定')}</a>
+                    <a class="layui-btn" id="binglog">{:lang('绑定记录')}</a> -->
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+    
+</div>
+
+{/block}
+{block name="script"}
+<script src="__js__/cache.js"></script>
+<script src="__js__/Barrett.js"></script>
+<script src="__js__/BigInt.js"></script>
+<script src="__js__/RSA.js"></script>
+<script>
+    url = "{:url('agent/relation')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var table = layui.table;
+        var form  = layui.form;
+        var laydate  = layui.laydate;
+        var $ = layui.$;
+        var element  = layui.element;
+          table.render({
+            elem: '#proxylist'
+            ,height: 'full-320'
+            ,url: url+'?action=list'//数据接口
+            ,limit:20
+            ,page: true //开启分页
+            ,id:'proxylist'
+            ,autoSort:false
+            ,cols: [[ //表头
+                {field:'ParentID', title: "{:lang('邀请人ID')}",align:'center', minWidth: 100},
+                // {field:'ParentName', title: "{:lang('邀请人昵称')}",align:'center', minWidth: 300},
+                {field:'RoleID', title: "{:lang('受邀人ID')}",align:'center', minWidth: 100},
+                // {field:'RoleName', title: "{:lang('受邀人昵称')}",align:'center', minWidth: 300},
+                {field:'TotalDeposit', title: "{:lang('总充值')}",align:'center', minWidth: 100, sort: true},
+                {field:'TransMoney', title: "{:lang('首充金额')}",align:'center', minWidth: 100, sort: true},
+                {field:'firtczTime', title: "{:lang('首充时间')}",align:'center', minWidth: 200, sort: true},
+                {field:'TotalRollOut', title: "{:lang('总提现')}",align:'center', minWidth: 100, sort: true},
+                {field:'Totalyk', title: "{:lang('总盈亏')}",align:'center', minWidth: 100, sort: true},
+                {field:'TotalTax', title: "{:lang('总税收')}",align:'center', minWidth: 100, sort: true},
+                {field:'RegIP', title: "{:lang('注册ip')}",align:'center', minWidth: 100},
+                {field:'RegisterTime', title: "{:lang('注册时间')}",align:'center', minWidth: 100, sort: true},
+                {field:'LastLoginTime', title: "{:lang('最后登陆时间')}",align:'center', minWidth: 100, sort: true}
+                // {title:'操作', toolbar: '#toolbar'}
+            ]]
+            , done: function (res) {
+                data = res.other;
+                $('#TotalDeposit').html(data.TotalDeposit);
+                $('#TotalRollOut').html(data.TotalRollOut);
+                $('#Totalyk').html(data.Totalyk);
+                $('#TotalTax').html(data.TotalTax);
+                $('#totalCount').html(res.count);
+                tzTbale();
+            }
+          });
+          laydate.render({elem: '#register_date1', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+          laydate.render({elem: '#register_date2', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+          laydate.render({elem: '#login_date1',format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+          laydate.render({elem: '#login_date2', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+          // 搜索 
+          $("#search").on('click', function(){
+             table.reload('proxylist', {
+              page:{
+                  curr:1 
+              },
+              where: {
+                  roleid: $('#roleid').val(),
+                  parentid: $('#parentid').val(),
+                  ispay:$('#ispay').val(),
+                  register_date1:$('#register_date1').val(),
+                  register_date2:$('#register_date2').val(),
+                  login_date1:$('#login_date1').val(),
+                  login_date2:$('#login_date2').val(),
+                  register_ip:$('#register_ip').val(),
+              }
+            })
+          });
+          //排序
+        table.on('sort(proxylist)', function (obj) {
+            //执行重载
+            table.reload('proxylist', {
+                initSort: obj,
+                page: {curr: 1},
+                where: {
+                    roleid: $('#roleid').val(),
+                    parentid: $('#parentid').val(),
+                    ispay:$('#ispay').val(),
+                    register_date1:$('#register_date1').val(),
+                    register_date2:$('#register_date2').val(),
+                    login_date1:$('#login_date1').val(),
+                    login_date2:$('#login_date2').val(),
+                    register_ip:$('#register_ip').val(),
+                    orderytpe: obj.type,
+                    orderby: obj.field,
+                },
+                parseData:function(res){
+                  if(res.data.length==0){
+                    return{
+                      'code':'201',
+                      'msg':"{:lang('无数据')}"
+                    };
+                  };
+                }
+            });
+
+        });
+          // 绑定
+          $("#bind").on('click', function(){
+            var roleid = $('#roleid').val();
+            var parentid = $('#parentid').val();
+            if (parentid == '') {
+                layer.msg('请输入邀请人ID');
+                return false;
+            }
+            if (roleid == '') {
+                layer.msg('请输入受邀人ID');
+                return false;
+            }
+            layer.prompt({
+                  formType: 1,
+                  value: '',
+                  title: "{:lang('请输入确认密码')}",
+                  btn: ['{:lang("确定")}','{:lang("取消")}'],
+                  area: ['800px', '350px'] //自定义文本域宽高
+                }, function(value, index, elem){
+                    // var m = "   AF148DF38814A7CF2906B8CD2957F88D0F1F7F708A17371E408EE6629B25EC6B8514C3698F874B1C04E2EE7B05518FB58FE9EB57C0DC0617A7012E28D5D66D4B2F4B8676E28CB80DC0BA339740BAA557B872A5D6DD9E70E90C2943EDFB24A4597C252978E3556210E00CFB0BD2428FD77DE108A0BAF3BC8E06D71B3D65CECC6D";
+                    // setMaxDigits(131);
+                    // var key = new RSAKeyPair("10001", '', m);
+                    // var password = encryptedString(key, value);
+                    $.ajax({
+                    url:url+'?action=bind',
+                    type:"POST",
+                    dataType: 'json',
+                    async: true,
+                    data:{
+                        roleid: roleid,
+                        parentid: parentid,
+                        password:value
+                    },
+
+                    success:function(ret){
+                        if (ret.code == 0) {
+                          layer.msg("{:lang('操作成功')}");
+                          $(".layui-laypage-btn")[0].click();
+                          setTimeout(function() {
+                             layer.closeAll();
+                          }, 1000);
+                          // 
+                        }
+                        if (ret.code == 1) {
+                            layer.msg(ret.msg);
+                        }
+                    }
+                  });
+                  // alert(value); //得到value
+                  // layer.closeAll();
+                });
+            });
+          $("#binglog").on('click', function(){
+              x_admin_show("{:lang('绑定记录')}", 'bind_log', $(window).width() * 0.9, $(window).height() * 0.8);
+          })
+          // 解绑
+          $("#unbind").on('click', function(){
+            var roleid = $('#roleid').val();
+            var parentid = 0;
+            if (roleid == '') {
+                layer.msg('请输入受邀人ID');
+                return false;
+            }
+            layer.prompt({
+                  formType: 1,
+                  value: '',
+                  title: "{:lang('请输入确认密码')}",
+                  btn: ['{:lang("确定")}','{:lang("取消")}'],
+                  area: ['800px', '350px'] //自定义文本域宽高
+                }, function(value, index, elem){
+                    var m = "   AF148DF38814A7CF2906B8CD2957F88D0F1F7F708A17371E408EE6629B25EC6B8514C3698F874B1C04E2EE7B05518FB58FE9EB57C0DC0617A7012E28D5D66D4B2F4B8676E28CB80DC0BA339740BAA557B872A5D6DD9E70E90C2943EDFB24A4597C252978E3556210E00CFB0BD2428FD77DE108A0BAF3BC8E06D71B3D65CECC6D";
+                    setMaxDigits(131);
+                    var key = new RSAKeyPair("10001", '', m);
+                    var password = encryptedString(key, value);
+                    $.ajax({
+                    url:url+'?action=unbind',
+                    type:"POST",
+                    dataType: 'json',
+                    async: true,
+                    data:{
+                        roleid: roleid,
+                        parentid: parentid,
+                        password:password
+                    },
+
+                    success:function(ret){
+                        if (ret.code == 0) {
+                          layer.msg("{:lang('操作成功')}");
+                          $(".layui-laypage-btn")[0].click();
+                          setTimeout(function() {
+                           layer.closeAll();
+                        }, 1000);
+                        }
+                        if (ret.code == 1) {
+                            layer.msg(ret.msg);
+                        }
+                    }
+                  });
+                  // alert(value); //得到value
+                  // layer.closeAll();
+                });
+            });
+          $('#output').click(function () {
+            where = {
+                roleid: $('#roleid').val(),
+                parentid: $('#parentid').val(),
+                ispay:$('#ispay').val(),
+                register_date1:$('#register_date1').val(),
+                register_date2:$('#register_date2').val(),
+                login_date1:$('#login_date1').val(),
+                login_date2:$('#login_date2').val(),
+                register_ip:$('#register_ip').val(),
+                action: 'output',
+            }
+
+            download();
+
+            function download() {
+                var params = Object.keys(where).map(function (key) {
+                    return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+                }).join("&");
+                var output_url = url + "?" + params;
+                $.ajax({
+                    type: 'POST',
+                    dataType: 'json',
+                    async: true,
+                    url: output_url, // 生成文件，保存在服务器
+                    success: function (data) {
+                        var result = data;
+                        console.info(data);
+                        switch (result["code"]) {
+                            case 0:
+                                parent.parent.open(output_url + "&exec=1&outall=true");
+                                break;
+                            case 1:
+                                layer.msg(result["message"]);
+                                break;
+                            case 2:
+                                layer.confirm(result['message'], {
+                                    btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
+                                }, function () {
+                                    parent.parent.open(output_url + "&exec=1&outall=true");
+                                    layer.msg('', {icon: 6, time: 1000}, function () {
+                                        window.location.reload();
+                                    });
+                                });
+                        }
+                    },
+                    error: function (XMLHttpRequest, textStatus, e) {
+                        console.log("oilDetection.js  method exportOilDetection" + e);
+                    }
+                });
+            }
+        });
+    });
+</script>
+{/block}

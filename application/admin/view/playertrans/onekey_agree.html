@@ -1,0 +1,116 @@
+{extend name="common/base" /}
+
+{block name="title"}同意转出申请{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<!--<form class="layui-form" action="{:url('payment/editOffline')}" method="post" id="addProxy" >-->
+<form class="layui-form" action="{:url('playertrans/onekeyAgree')}" method="post" id="addProxy" style="position: relative;right: 30px;">
+    <div style="display: none">
+        <div class="layui-form-item">
+            <label class="layui-form-label">{:lang('玩家ID')}订单ID：</label>
+            <div class="layui-input-block">
+                <input type="text" id="OrderNo" name="OrderNo" value="{$OrderNo}" lay-verify="" autocomplete="off" readonly class="layui-input layui-disabled">
+            </div>
+        </div>     
+    </div>
+    <!--  -->
+     <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('审核人')}</label>
+        <div class="layui-input-inline">
+            <select name="condition" id="checkUser" name="checkUser">
+                <option value="0" selected>{:lang('全部')}</option>
+                {if !empty($checkUser)}
+                {foreach $checkUser as $k => $v}
+                    {if ($v==$adminuser)}<option value="{$v}" selected>{$v}</option>
+                    {else}<option value="{$v}">{$v}</option>
+                    {/if}
+                {/foreach}
+                {/if}
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('备注')}：</label>
+        <div class="layui-input-block">
+            <textarea class="layui-textarea" id="description" name="description" placeholder="备注" autocomplete="off">{$description}</textarea>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit">{:lang('确定')}</a>
+            <a class="layui-btn layui-btn-primary layui-btn-radius" id="cancel">{:lang('取消')}</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var layer = layui.layer
+            , $ = layui.$
+            , form = layui.form;
+
+        var main = {
+            submitForm: function (data) {
+                // console.log(data.field);
+                var 
+                    OrderNo = $.trim(data.field.OrderNo)         ,
+                    description = $.trim(data.field.description);
+                var checkUser = $.trim($("#checkUser").val());
+                $.ajax({
+                    type: 'post',
+                    url: data.form.action,
+                    data: {
+                        'OrderNo': OrderNo,
+                        'description': description,
+                        'checkUser':checkUser
+                    },
+                    dataType: 'json',
+                    success: function (res) {
+                        if (res['code']===0) {
+                            layer.msg(res['msg'],{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+
+                            layer.msg(res['msg'],{icon:2,time:5000}, function () {
+                                x_admin_close();
+                            });
+//                            x_admin_close();
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function () {
+                form.on('submit(addit)', function (data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function (e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init: function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

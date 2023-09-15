@@ -1,0 +1,352 @@
+{extend name="common/base" /}
+{block name="title"}{:lang('添加邮件发送')}{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+<style>
+    .layui-form-item .layui-input-inline {width: 130px}
+</style>
+<form action="{:url('CustomerServiceSystem/EmailManager')}?Action=add" class="layui-form" id="addmailbox" method="post">
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('邮件标题')}：</label>
+        <div class="layui-input-block">
+            <input autocomplete="off" class="layui-input" id="mailtitle" lay-verify="required" name='mailtitle' placeholder="" type="text">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('邮件文本')}：</label>
+        <div class="layui-input-block">
+            <textarea class="layui-textarea" id="mailtxt" lay-verify="content" name="mailtxt" placeholder="{:lang('请输入')}"></textarea>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('邮件类型')}：</label>
+        <div class="layui-input-block">
+            <select lay-filter="recordtype" id="recordtype" lay-search="" lay-verify="required" name="recordtype">
+                <option selected="selected" value="-1">{:lang('请选择')}</option>
+                {volist name='mailtype' id='vo' }
+                <option value="{$key}">{$key}-{:lang($vo)}</option>
+                {/volist}
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item" id="sendobj">
+        <div class="layui-inline">
+            <label class="layui-form-label">{:lang('发送对象')}：</label>
+            <div class="layui-input-inline">
+                <input lay-filter="sendobj" type="radio" ID="ID" name="sendobj" value="0" title="{:lang('用户ID')}" checked>
+                <input lay-filter="sendobj" type="radio" ID="all" name="sendobj" value="1" title="{:lang('全发')}">
+            </div>
+
+            <div class="layui-input-inline">
+                <input autocomplete="off"  class="layui-input" id="rolelist" name='rolelist' placeholder="{:lang('用户ID')}" type="text" value="">
+            </div>
+        </div>
+    </div>
+    <div class="layui-form-item" id="fj">
+        <label class="layui-form-label">{:lang('附件类型')}：</label>
+        <div class="layui-input-block">
+            <select id="extratype" lay-filter="extratype" lay-verify="required" name="extratype">
+                <option selected="selected" value="-1">{:lang('请选择')}</option>
+                {volist name='extratype' id='vo' }
+                <option value="{$key}">{$key}-{:lang($vo)}</option>
+                {/volist}
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item" id="showextra" style="display: none">
+        <label class="layui-form-label">{:lang('附件数量')}：</label>
+        <div class="layui-input-block">
+            <input autocomplete="off" class="layui-input" id="amount" lay-verify="number" name='amount' placeholder="" type="text" value="0">
+        </div>
+    </div>
+
+    <div class="layui-form-item" id="wagemulid" style="display: none">
+        <label class="layui-form-label">{:lang('打码倍数')}：</label>
+        <div class="layui-input-block">
+            <input autocomplete="off" class="layui-input" id="WageMul" lay-verify="number" name='WageMul' placeholder="{:lang('支持小数点输入')}" type="text" value="0">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item" id="note" style="display: none">
+        <label class="layui-form-label">{:lang('备注')}：</label>
+        <div class="layui-input-block">
+            <input autocomplete="off" class="layui-input" id="Notice" name='Notice' placeholder="{:lang('请输入备注')}" type="text" value="">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('发送类型')}：</label>
+        <div class="layui-input-block">
+            <input checked="" lay-filter="sendtype" name="sendtype" title="{:lang('即时发送')}" type="radio" value="0">
+            <input lay-filter="sendtype" name="sendtype" title="{:lang('定时发送')}" type="radio" value="1">
+        </div>
+    </div>
+
+    <div class="layui-form-item"  id="ischargeorder" style="display: none" >
+        <label class="layui-form-label">{:lang('充值订单')}：</label>
+        <div class="layui-input-block">
+            <input type="checkbox" name="chargeorder" id="chargeorder" lay-skin="switch" lay-filter="switchTest" lay-text="{:lang('是')}|{:lang('否')}">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item" id="showsend" style="display: none">
+        <label class="layui-form-label">{:lang('定时发送时间')}：</label>
+        <div class="layui-input-block">
+            <input autocomplete="off" class="layui-input" id="sendtime" name='sendtime' placeholder="" type="text">
+        </div>
+    </div>
+   <div class="layui-form-item">
+    <div class="layui-input-block">
+                <a class="layui-btn layui-btn-radius" id="addit" lay-filter="addit" lay-submit="" style="margin-left: 15%" type="submit">{:lang('确定')}</a>
+      			<a class="layui-btn layui-btn-primary layui-btn-radius" id="cancel" lay-filter="cancel" lay-submit="">{:lang('取消')}</a>
+    </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+	var _isClickSave = false;
+	var _callback;
+	var _layer_index;
+
+	var main;
+	layui.config({base: '__layui__/'}).extend({index: 'lib/index'}).use(['table', 'layer', 'element', 'layedit', 'laydate', 'form', 'jquery'], function () {
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, layedit = layui.layedit, table = layui.table, $ = layui.$, form = layui.form;
+		main = {
+			submitForm: function () {
+				data = getSerializeFormData($("form").serializeArray());
+                var chargeorder = 0;
+                if($("#chargeorder").is(':checked')){
+                    chargeorder =1;
+                }
+				console.info(data);
+				var
+					rolelist = $.trim(data.rolelist),
+					mailtitle = $.trim(data.mailtitle),
+					mailtxt = $.trim(data.mailtxt),
+					recordtype = $.trim(data.recordtype),
+					extratype = $.trim(data.extratype),
+					sendtime = $.trim(data.sendtime),
+					amount = $.trim(data.amount),
+                    WageMul = $.trim(data.WageMul),
+					sendtype = $.trim(data.sendtype);
+				Notice = $.trim(data.Notice);
+				sendobj = $.trim(data.sendobj);
+
+				if (sendtype == 1) {
+					if (sendtime == '') {
+						layer.msg('{:lang("请输入发送时间")}', {icon: 2});
+						return;
+					}
+				}
+
+				if (recordtype == -1) {
+					layer.msg('{:lang("请选择邮件类型")}', {icon: 2});
+					return;
+				} else if (recordtype == 7) {
+					extratype = 0;
+				} else {
+					if (rolelist == '') {
+						// if (parseInt(Number(rolelist)) || rolelist == 0) {
+							
+						// }
+						layer.msg('{:lang("发送对象不能为空")}', {icon: 2});
+						return;
+					}
+				}
+
+				if (extratype == -1) {
+					layer.msg('{:lang("请选择附件类型")}', {icon: 2});
+					return;
+				} else {
+					if (parseInt(extratype) > 0) {
+						if (amount == '') {
+							layer.msg('{:lang("请输入附件数量")}', {icon: 2});
+							return;
+						}
+						if(parseInt(extratype)==7){
+						    if(WageMul=='')
+                                WageMul =0;
+                        }
+					}
+				}
+
+				$.ajax({
+					type: 'post',
+//                    type:'get',
+					url: "{:url('CustomerServiceSystem/EmailManager')}?Action=add",
+					data: {
+						rolelist: rolelist,
+						title: mailtitle,
+						mailtxt: mailtxt,
+						recordtype: recordtype,
+						extratype: extratype,
+						sendtime: sendtime,
+						sendtype: sendtype,
+						amount: amount,
+						sendObj: sendobj,
+						Notice: Notice,
+                        WageMul:WageMul,
+                        chargeorder: chargeorder,
+						Country:$('#Country').val()
+					},
+					dataType: 'json',
+					success: function (res) {
+						if (res.code === 1) {
+							layer.msg(res.msg, {icon: 1, time: 1000}, function () {
+								parent.location.reload();
+								// _callback();
+								// parent.layer.close(_layer_index);
+							});
+						} else {
+							layer.msg(res.msg, {icon: 2});
+						}
+					}
+				});
+			},
+
+			bindEvent: function () {
+				form.on('submit(addit)', function (data) {
+					main.submitForm(data);
+					return false;
+				});
+
+				$('#cancel').on('click', function (e) {
+					e.preventDefault();
+					x_admin_close();
+				})
+			},
+			formreader: function () {
+				form.render('select');
+			},
+
+			init: function () {
+				$('#all').next().hide();
+				$("#fj").hide();
+				$("#sendobj").hide();
+
+				table.render();
+				laydate.render({
+					elem: '#sendtime'
+					, type: 'datetime'
+					, format: 'yyyy-MM-dd HH:mm:ss'
+                    ,lang: '{$datelang}'
+					, btns: ['clear', 'confirm']
+				});
+				main.bindEvent();
+
+
+			}
+		};
+
+		form.on('radio(sendtype)', function (data) {
+			if (data.value == 1) {
+				$("#showsend").show();
+			} else {
+				$("#showsend").hide();
+			}
+
+		});
+
+
+
+		form.on('radio(sendobj)', function (data) {
+			if (data.value == 1) {
+				$("#rolelist").hide();
+			} else {
+				$("#rolelist").show();
+			}
+		});
+
+		form.on('select(recordtype)', function (data) {
+			if (parseInt(data.value) > 0) {
+				$("#showextra").show();
+			} else {
+				// $("#selected").selected()
+				$("#showextra").hide();
+			}
+			if (data.value == 7) {
+				$("#sendobj").show();
+				$('#ID').next().hide();
+				$('#all').next().show();
+				$('#all').next().click();
+
+				$("#showextra").hide();
+				$("#extratype").val(1);
+				$("#fj").hide();
+				$("#note").hide(); //备注隐藏
+                $('#wagemulid').hide();
+                $('#ischargeorder').hide();
+			} else { //系统补偿  发送用户ID
+				$("#sendobj").show();
+				$('#ID').next().show();
+				$('#all').next().hide();
+				$('#ID').next().click();
+				$("#fj").show();
+				$("#showextra").show();
+			}
+            main.formreader();
+		});
+		//附件类型
+		form.on('select(extratype)', function (data) {
+			value = Number(data.value);
+			if (value > 0) $("#showextra").show();
+			else $("#showextra").hide();
+			if (value == 1) {
+                $("#note").show(); //备注显示
+                $('#wagemulid').hide();
+                $('#ischargeorder').show();
+            }else if(value == 7){
+                $('#wagemulid').show();
+                $('#ischargeorder').show();
+                $("#note").show(); //备注显示
+            }
+			else {
+			    $('#wagemulid').hide();
+                $('#ischargeorder').hide();
+                $("#note").hide(); //备注显示
+            }
+
+		});
+
+		$(document).on('click', '#searchrole', function () {
+			x_admin_show('', '#', 600, 600);
+		});
+		main.init();
+
+	});
+
+	function GetCountry(RoleID) {
+		$.ajax({
+			url: "{:url('CustomerServiceSystem/GetCountryByRoleID')}",
+			data: {RoleID: RoleID},
+			success: function (d) {
+				if (d.status == 1) {
+					$('#Country').val(d.countryCode);
+					main.formreader();
+				} else {
+					layer.msg('{:lang("用户ID不存在请重新输入")}', {icon: 2});
+				}
+
+			}
+		})
+	}
+
+	function saveData(callback, layer_index, autoClose) {
+        if (_isClickSave) return;
+        _isClickSave = true;
+        _layer_index = layer_index;
+        _callback = callback
+        main.submitForm();
+	}
+
+
+</script>
+{/block}

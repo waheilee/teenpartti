@@ -1,0 +1,218 @@
+{extend name="common/base" /}
+{block name="title"}购买免费游戏明细{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-row layui-col-space20">
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('当日新增团队数')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="today_register_count" style="color: #009688">{$data.today_register_count}</p></div>
+        </div>
+    </div>
+
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('总团队数量')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="total_register_count" style="color: #009688">
+                {$data.total_register_count}
+            </p></div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('当日总团队收益')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="today_profit" style="color: #009688">
+                {$data.today_profit}
+            </p></div>
+        </div>
+    </div>
+
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('总团队总收益')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="total_profit" style="color: #009688">
+                {$data.total_profit}
+            </p></div>
+        </div>
+    </div>
+
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('当日团队收益总提现')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="today_with" style="color: #009688">
+                {$data.today_with}
+            </p></div>
+        </div>
+    </div>
+
+
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('总团队收益提现')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="total_with" style="color: #009688">
+                {$data.total_with}
+            </p></div>
+        </div>
+    </div>
+
+
+    <!-- 统计团队数据-->
+
+    <!--<div class="layui-col-md2">-->
+        <!--<div class="layui-card">-->
+            <!--<div class="layui-card-header"> 总充值</div>-->
+            <!--<div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="total_pay" style="color: #009688">0</p></div>-->
+        <!--</div>-->
+    <!--</div>-->
+
+    <!--<div class="layui-col-md2">-->
+        <!--<div class="layui-card">-->
+            <!--<div class="layui-card-header"> 总提现</div>-->
+            <!--<div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="total_draw" style="color: #009688">0</p></div>-->
+        <!--</div>-->
+    <!--</div>-->
+
+    <!--<div class="layui-col-md2">-->
+        <!--<div class="layui-card">-->
+            <!--<div class="layui-card-header"> 总彩金</div>-->
+            <!--<div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="total_caijin" style="color: #009688">0</p></div>-->
+        <!--</div>-->
+    <!--</div>-->
+
+
+    <!--<div class="layui-col-md2">-->
+        <!--<div class="layui-card">-->
+            <!--<div class="layui-card-header"> 总盈亏</div>-->
+            <!--<div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="total_yk" style="color: #009688">0</p></div>-->
+        <!--</div>-->
+    <!--</div>-->
+
+
+
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('团队总充值')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="team_total_pay" style="color: #009688">
+                {$data.TeamTotalPay}
+            </p></div>
+        </div>
+    </div>
+
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('团队总提现')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="team_total_draw" style="color: #009688">
+                {$data.TeamTotalDraw}
+            </p></div>
+        </div>
+    </div>
+
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('团队总彩金')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="team_total_caijin" style="color: #009688">
+                {$data.TeamTotalCaiJin}
+            </p></div>
+        </div>
+    </div>
+
+
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('团队总盈亏')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="team_total_yk" style="color: #009688">
+                {$data.TeamTotalyk}
+            </p></div>
+        </div>
+    </div>
+
+</div>
+
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+
+    url = "{:url('agent/datastatistic')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'Date', title: "{:lang('时间')}", minWidth: 100, align: 'center'},
+                    {field: 'TeamNum', title: "{:lang('当日团队人数')}", minWidth: 180, align: 'center'},
+                    {field: 'TeamReward', title: "{:lang('当日收益总数')}", minWidth: 200, align: 'center'},
+                    {field: 'TeamNumTotal', title: "{:lang('团队总数')}", minWidth: 180, align: 'center'},
+                    {field: 'TeamRewardTotal', title: "{:lang('收益总数')}", minWidth: 140, align: 'center'},
+
+                    {field: 'TeamTotalPay', title: "{:lang('团队总充值')}", minWidth: 150, align: 'center'},
+                    {field: 'TeamTotalDraw', title: "{:lang('团队总提现')}", minWidth: 180, align: 'center'},
+                    {field: 'TeamTotalCaiJin', title: "{:lang('团队总彩金')}", minWidth: 150, align: 'center'},
+                    {field: 'TeamTotalyk', title: "{:lang('团队总盈亏')}", minWidth: 230, align: 'center'}
+                ];
+                table.render({
+                    elem: '#proxylist', url: url, where: {
+                        Action: 'list'
+                    }, page: true, limit: 15, cols: [cols], sort: false, autoSort: false,
+                    done: function (res, curr, count) {
+
+
+                    }
+                });
+            },
+
+            //搜索
+            search: function () {
+                //执行重载
+                table.reload('proxylist', {
+                    page: {curr: 1},
+                    where: {},
+                    done: function (res, curr, count) {}
+                });
+            },
+
+            //操作事件
+            extraEvent: function () {
+
+                //排序
+                table.on('sort(proxylist)', function (obj) {
+                    //执行重载
+                    table.reload('proxylist', {
+                        initSort: obj,
+                        page: {curr: 1},
+                        where: {}
+                    });
+
+                });
+                //编辑&&删除
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data, layEvent = obj.event;
+                    if (layEvent === 'roomInfo') {
+                        // console.info(data);
+
+                    }
+
+                });
+            },
+
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

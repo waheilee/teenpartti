@@ -1,0 +1,386 @@
+{extend name="common/base" /}
+{block name="title"}所有玩家{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <select id="PackID" name="PackID">
+                            <option value="{$PackIDS}">可用分包</option>
+                            {foreach $PackID as $k1 => $v1}
+                            <option value="{$v1['OperatorId']}">{$v1['PackageName']}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                    <div class="layui-input-inline">
+                        <input ID="regTime" autocomplete="off" class="layui-input" placeholder="注册时间起始 - 注册时间结束 " type="text">
+                        <input ID="startTime" hidden>
+                        <input ID="endTime" hidden>
+                    </div>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <select id="usertype" name="usertype">
+                            <option value="-1">渠道</option>
+                            {foreach $usertype as $k1 => $v1}
+                            <option value="{$k1}">{$v1}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="roleid" name="roleid" placeholder="玩家ID" type="text">
+                    </div>
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="nickname" name="nickname" placeholder="昵称" type="text">
+                    </div>
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="mobile" name="mobile" placeholder="手机号" type="text">
+                    </div>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <select id="online" name="online">
+                            <option value="-1">是否在线</option>
+                            <option value="0">在线</option>
+                            <option value="1">离线</option>
+                        </select>
+                    </div>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <select id="isdisable" name="isdisable">
+                            <option value="-1">账号状态</option>
+                            <option value="0">正常</option>
+                            <option value="1">禁用</option>
+                        </select>
+                    </div>
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="ipaddr" name="ipaddr" placeholder="最后登录IP" type="text">
+                    </div>
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" data-type="reload" id="search">搜索</a>
+                        <button class="layui-btn layui-btn-primary" type="reset">重置</button>
+                    </div>
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="output">导出记录</a>
+                    </div>
+
+                </div>
+            </div>
+
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+
+<script>
+    function getOnline() {
+        $.ajax({
+	        url: "{:url('UserPackageManage/index')}",
+	        type: 'post',
+	        data: {'Action': "onlinelist"},
+	        success: function (res) {
+		        online = res.data;
+		        // form.render();
+	        }
+        })
+    }
+
+    var online = getOnline();
+
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['table', 'layer', 'element', 'laydate', 'form', 'jquery', 'util'], function () {
+        var element = layui.element, layer = layui.layer, laydate = layui.laydate, util = layui.util, table = layui.table, $ = layui.$, form = layui.form;
+
+	    laydate.render({
+		    elem: '#regTime',
+		    range: true,
+		    done: function (value, date, endDate) {
+			    dates = value.split(" - ");
+			    $("#startTime").val(dates[0]);
+			    $("#endTime").val(dates[1]);
+		    }
+	    });
+	    var cols = [ //表头
+		    {
+			    field: 'PackageName', align: "center", title: '包名', width: 100
+		    },
+		    {
+			    field: 'ID', title: '玩家ID', width: 100, templet: function (d) {
+				    return " <a class=\"layui-bg-green\" lay-event=\"info\">" + d.ID + "</a>";
+			    }
+		    },
+		    {field: 'MachineCode', title: '设备号', minWidth: 40},
+		    {field: 'countryCode', title: '国籍', width: 60},
+		    {field: 'AccountName', title: '玩家账号', minWidth: 100, sort: true},
+		    {field: 'LoginName', title: '玩家昵称', width: 100},
+		    {
+			    field: 'GmType', title: '登陆类型', align: "center", width: 95, templet: function (d) {
+				    switch (Number(d.GmType)) {
+					    case 0:
+						    return "游客";
+					    case 1:
+						    return "Google";
+					    case 2:
+						    return "Facebook";
+					    case 3:
+						    return "IOS";
+                        case 5:
+                            return "{:lang('手机')}";
+                        case 6:
+                            return "{:lang('邮箱')}";
+				    }
+			    }
+		    },
+
+		    {field: 'TotalDeposit', title: '总充值', width: 80},
+		    {field: 'TotalRollOut', title: '总提现', width: 80},
+		    {
+			    field: 'Money', title: '余额', width: 110, templet: function (d) {
+				    if (d.Money == 0) return '0.00';
+				    return d.Money;
+			    }
+		    },
+		    {
+			    field: 'RegisterTime', title: '注册时间', width: 160, templet: function (d) {
+				    return d.RegisterTime.substr(0, d.RegisterTime.length - 4)
+			    }
+		    },
+		    {
+			    field: '', title: '是否在线', width: 100, align: "center", templet: function (d) {
+				    for (i = 0; i < online.length; i++) {
+					    if (d.ID == online[i]) return "<span class=\"layui-bg-green\">&nbsp;在线&nbsp;</span>";
+				    }
+				    return "<span class=\"layui-bg-red\">&nbsp;离线&nbsp;</span>";
+			    }
+		    },
+		    {field: 'LastLoginIP', title: '最后IP', width: 130},
+		    {
+			    field: 'Locked', width: 95, title: '禁/启用', align: "center", templet: function (d) {
+				    if (d.Locked == 0) {
+					    return "<input type='checkbox' ctrlID = '" + d.ID + "' lay-filter='Disable' lay-skin='switch' lay-text='正常|封号' checked>"
+				    } else {
+					    return "<input type='checkbox' ctrlID = '" + d.ID + "'  lay-filter='Disable' lay-skin='switch' lay-text='正常|封号'>"
+				    }
+			    }
+		    },
+		    {
+			    field: "", width: 80, title: '强 退', align: "center", templet: function (d) {
+				    for (i = 0; i < online.length; i++) {
+					    if (d.ID == online[i])
+						    return "<a lay-submit class='layui-btn layui-btn-sm layui-bg-red' ctrlID = '" + d.ID + "' lay-filter='Retreat'>强退</a>";
+				    }
+				    return "";
+			    }
+		    },
+	    ];
+	    var main = {
+		    renderData: function () {
+			    table.render({
+				    elem: '#proxylist',
+				    url: "{:url('UserPackageManage/index')}", //数据接口
+				    page: true, //开启分页
+				    limit: 15,
+				    sort: true,
+				    autoSort: false,
+				    cols: [cols],
+				    where: {
+					    Action: 'list',
+					    PackID: $("#PackID").val()
+				    }
+                });
+            },
+            //搜索
+            search: function () {
+                //执行重载
+                table.reload('proxylist', {
+                    page: {curr: 1},
+                    where: {
+                        'startTime': $("#startTime").val(),
+                        'endTime': $("#endTime").val(),
+                        'roleid': $.trim($('#roleid').val()),
+                        'nickname': $.trim($('#nickname').val()),
+                        'mobile': $.trim($('#mobile').val()),
+                        'isonline': $.trim($('#online').val()),
+                        'isdisable': $.trim($('#isdisable').val()),
+                        'lastIP': $.trim($('#ipaddr').val()),
+                        'usertype': $.trim($('#usertype').val()),
+                        'PackID': $("#PackID").val()
+                    },
+                    done: function () {
+                        getOnline()
+                    }
+                });
+            },
+            //操作事件
+            extraEvent: function () {
+                //开关事件
+                form.on('switch(Disable)', function (data) {
+                    var ID = data.elem.attributes['ctrlID'].nodeValue;
+                    var swtype = data.elem.checked;
+                    var type = 0;
+                    if (swtype) type = 0;
+                    else type = 1;
+                    // layer.msg(data);
+                    //设置开关
+                    $.ajax({
+                        url: "{:url('player/DiasbleByID')}",
+                        type: 'post',
+                        data: {'ID': ID, type: type},
+                        success: function (res) {
+                            if (res.code === 0) {
+                                // layer.msg(res.msg, {icon: 6});
+                                layer.msg('修改成功', {icon: 6});
+                            } else {
+                                // layer.msg(res.msg, {icon: 5});
+                                layer.msg('修改失败', {icon: 5});
+                            }
+                            form.render();
+                        }
+                    })
+
+                });
+                //编辑
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'info') {
+                        var url = 'UserInfo?roleid=' + data.ID;
+                        x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.7, $(window).height() * 0.6);
+                    } else if (layEvent === 'ganme') { //游戏日志
+                        //window.location.href =
+                        var url = '/admin/player/gameLog?roleid=' + data.ID;
+                        window.parent.layui.index.openTabsPage(url, data.accountname + "玩家游戏日志");
+                    } else if (layEvent === 'cold') {
+                        var url = '/admin/player/coinLog?roleid=' + data.ID;
+                        window.parent.layui.index.openTabsPage(url, data.accountname + "玩家金币日志");
+                    }
+                });
+
+                form.on('submit(Retreat)', function (data) {
+                    var ID = data.elem.attributes['ctrlID'].nodeValue;
+                    layer.confirm('真的要强退: ' + ID + ' 吗?', {
+                        btn: ['{:lang("是")}', '{:lang("否")}'] //可以无限个按钮
+                        , btn1: function (index, layero) {
+                            $.ajax({
+                                url: "{:url('player/forceQuit')}",
+                                type: 'post',
+                                data: {'roleid': ID},
+                                success: function (res) {
+                                    if (res.code === 0) layer.msg(res.msg, {icon: 6});               // layer.msg('操作成功', {icon: 6});
+                                    else layer.msg(res.msg, {icon: 5});               // layer.msg('操作失败', {icon: 5});
+                                    form.render();
+                                }
+                            })
+
+                        }
+                    });
+
+
+                });
+
+                //排序
+                table.on('sort(proxylist)', function (obj) {
+                    var roleid = $.trim($('#roleid').val());
+                    var roomid = $.trim($('#roomid').val());
+                    var mobile = $.trim($('#mobile').val());
+                    var usertype = $.trim($('#usertype').val());
+                    //执行重载
+                    table.reload('proxylist', {
+                        page: {
+                            curr: 1 //重新从第 1 页开始
+                        },
+                        where: {
+                            'roleid': roleid,
+                            'roomid': roomid,
+                            'mobile': mobile,
+                            'orderfield': obj.field,
+                            'ordertype': obj.type,
+                            'usertype': usertype,
+                        }
+                    });
+
+                });
+            },
+
+            init: function () {
+                main.renderData();
+	            main.extraEvent();
+	            $('#search').on('click', function (e) {
+		            e.preventDefault();
+		            main.search();
+	            });
+            }
+	    };
+
+	    main.init();
+    });
+
+    $('#output').click(function () {
+	    where = {
+		    'startTime': $("#startTime").val(),
+		    'endTime': $("#endTime").val(),
+		    'roleid': $.trim($('#roleid').val()),
+		    'nickname': $.trim($('#nickname').val()),
+		    'mobile': $.trim($('#mobile').val()),
+		    'isonline': $.trim($('#online').val()),
+		    'isdisable': $.trim($('#isdisable').val()),
+		    lastIP: $.trim($('#ipaddr').val()),
+		    limit: 100000,
+		    usertype: $.trim($('#usertype').val()),
+		    PackID: $("#PackID").val(),
+		    Action: 'exec',
+	    }
+
+	    download();
+
+	    function download() {
+		    var params = Object.keys(where).map(function (key) {
+			    return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+		    }).join("&");
+		    url = "{:url('UserPackageManage/index')}?" + params;
+		    $.ajax({
+			    type: 'POST',
+			    dataType: 'json',
+			    async: true,
+			    url: url, // 生成文件，保存在服务器
+			    success: function (data) {
+				    var result = data;
+				    console.info(data);
+				    switch (result["code"]) {
+					    case 0:
+						    parent.parent.open(url + "&exec=1&outall=true");
+						    break;
+					    case 1:
+						    layer.msg(result["message"]);
+						    break;
+					    case 2:
+						    layer.confirm(result['message'], {
+							    btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
+						    }, function () {
+							    parent.parent.open(url + "&exec=1&outall=true");
+							    layer.msg('', {icon: 6, time: 1000}, function () {
+								    window.location.reload();
+							    });
+						    });
+				    }
+
+			    },
+			    error: function (XMLHttpRequest, textStatus, e) {
+				    console.log("oilDetection.js  method exportOilDetection" + e);
+			    }
+		    });
+	    }
+    });
+</script>
+{/block}

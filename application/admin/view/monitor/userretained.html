@@ -1,0 +1,190 @@
+index.html{extend name="common/base" /}
+
+{block name="title"}玩家行为分析{/block}
+{block name="css"}{/block}
+{block name="content"}
+<!-- 
+<div class="layui-row layui-col-space20">
+    <div class="layui-col-md6">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                汇总
+                <span class="layui-badge layui-bg-blue layuiadmin-badge">汇总</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="totalsum">0</p>
+            </div>
+        </div>
+    </div>
+</div>
+-->
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">国家</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="countrycode" name="countrycode" lay-verify="number" placeholder="输入国家代号" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+				<div class="layui-inline">
+                    <label class="layui-form-label">平台</label>
+                    <div class="layui-input-inline">
+                        <select name="devicetype" id="devicetype">
+                            <option value="0">所有</option>
+                                <option value="1">AndRoid</option>
+								<option value="2">IOS</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">日期</label>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="end" id="LAY-component-form-group-date2" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" id="search" data-type="reload">搜索</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <div class ="layui-row layui-col-space30">
+
+            <div id="alllist" class="layui-col-md12">
+                <table id="proxylist" lay-filter="proxylist"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'days', title: '日期', minWidth: 120}					
+                    , {field: 'anzhuang', title: '安装', minWidth: 80}
+					, {field: 'firstday', title: '首日留存', minWidth: 80}
+					, {field: '1days', title: '次日留存', minWidth: 80}
+					, {field: '3days', title: '3日留存', minWidth: 80}
+					, {field: '5days', title: '5日留存', minWidth: 80}
+					, {field: '7days', title: '7日留存', minWidth: 80}
+					, {field: '15days', title: '15日留存', minWidth: 80}
+					, {field: '30days', title: '30日留存', minWidth: 80}
+                ];
+
+
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('Monitor/userretained')}" //数据接口
+                    , page: true //开启分页
+                    , cols: [cols]
+                    , where: {'status':-1}
+                    , limit: 15
+                    , done: function (res) {$(".layui-table-main tr").each(function (index, val) {
+                            $($(".layui-table-fixed-l .layui-table-body tbody tr")[index]).height($(val).height());
+                            $($(".layui-table-fixed-r .layui-table-body tbody tr")[index]).height($(val).height());
+                        });
+                        $('#totalsum').html(res.other.totalsum);
+                    }
+                });
+            },
+
+            //搜索
+            search: function () {
+                var start = $.trim($('#LAY-component-form-group-date').val());
+                var end = $.trim($('#LAY-component-form-group-date2').val());
+				var devicetype = $.trim($('#devicetype').val());
+				var countrycode = $.trim($('#countrycode').val());
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'countrycode': countrycode,
+						'devicetype': devicetype,
+						'strartdate': start,
+                        'enddate': end
+                    }
+                });
+            },
+
+            //操作事件
+            extraEvent: function () {
+                //编辑
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'tongchang') {
+                        alert(55);
+
+                    } else if (layEvent === 'ganme') { //删除
+                        alert(data.nickname);
+                    } else if (layEvent === 'cold') {
+
+                    } else if (layEvent === 'delete') {
+
+                    }
+                });
+            },
+
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+                laydate.render({
+                    elem: '#LAY-component-form-group-date'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , btns: ['clear', 'confirm']
+                    ,value: new Date()
+                });
+                laydate.render({
+                    elem: '#LAY-component-form-group-date2'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , btns: ['clear', 'confirm']
+                    ,value: new Date()
+                });
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

@@ -1,0 +1,247 @@
+{extend name="common/base" /}
+
+{block name="title"}{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-card">
+    <div class="layui-card-body">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <input autocomplete="off" class="layui-input" id="RoleId" lay-verify="number" name="RoleId"
+                           placeholder="推送对象(0==全部)" type="text">
+                </div>
+                <div class="layui-inline">
+                    <input autocomplete="off" style="width: 150px" class="layui-input " id="Title" name="Title"
+                           placeholder="主题" type="text">
+                </div>
+                <div class="layui-inline">
+                    <input autocomplete="off" style="width: 150px" class="layui-input " id="Message" name="Message"
+                           placeholder="内容" type="text">
+                </div>
+                <div class="layui-inline">
+                    <input autocomplete="off" style="width: 150px" class="layui-input " id="Descript" name="Descript"
+                           placeholder="备注" type="text">
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label" style="width: auto">添加时间</label>
+                    <div class="layui-input-inline" style="width: 180px">
+                        <input type="text" name="start" id="startdate" autocomplete="off"
+                               class="layui-input" placeholder="yyyy-MM-dd HH:mm:ss">
+                    </div>
+                    <div class="layui-form-mid"> -</div>
+                    <div class="layui-input-inline" style="width: 180px">
+                        <input autocomplete="off" class="layui-input" id="enddate" name="end"
+                               type="text" placeholder="yyyy-MM-dd HH:mm:ss">
+                    </div>
+                </div>
+                
+                <div class="layui-inline">
+                    <label class="layui-form-label" style="width: auto">审核状态</label>
+                    <div class="layui-input-inline" style="width: 90px">
+                        <select id="Status" name="Status">
+                            <option value="">全部</option>
+                            <option value="0">待审核</option>
+                            <option value="1">已审核</option>
+                            <option value="2">作废</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" data-type="reload" id="search">搜索</a>
+                    </div>
+                </div>
+                
+            </div>
+            <div class="layui-inline">
+                    <a class="layui-btn" onclick="add()" style="margin-bottom: 10px;">
+                        <i class="layui-icon layui-icon-add-circle"></i>
+                    </a>
+            </div>
+        </form>
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script id="msg-bar" type="text/html">
+    {{# if(d.Status==0){ }}
+    <a class="layui-btn layui-btn-xs" lay-event="check">审核</a>
+    <a class="layui-btn layui-btn-xs" lay-event="del">作废</a>
+    {{#  } }}
+
+</script>
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$,
+            form = layui.form;
+        url = "{:url('Push/getPushRecord')}"
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'Id', align: 'center', title: 'ID', width: 100},
+                    {field: 'Title', title: '标题', width: 100},
+                    {field: 'RoleId', align: 'center', title: '推送对象', width: 110},
+                    {field: 'Message', title: '内容', width: 170},
+                    {field: 'SendType', align: 'center', title: '设备', width: 100, templet: function (d) {
+                            if (d.SendType == 1) return "安卓";
+                            if (d.SendType == 2) return "IOS";
+                            if (d.SendType == 3) return "安卓 + IOS";
+                        }
+                    },
+                    {
+                        field: 'LoginType', align: 'center', title: '活跃用户', width: 200, templet: function (d) {
+                            if (d.LoginDays == 0) return '全部用户';
+                            if (d.LoginType == 1) return '近'+d.LoginDays+'天内未登陆用户';
+                            if (d.LoginType == 2) return '近'+d.LoginDays+'天内登陆过用户';
+                        }
+                    },
+                    {
+                        field: 'Status', align: 'center', title: '状态', width: 100, templet: function (d) {
+                            if (d.Status == 0) return "<span style='color:red'>待审核</span>";
+                            if (d.Status == 1) return "<span style='color:green'>已审核</span>";
+                            if (d.Status == 2) return "<span style='color:darkred'>已作废</span>";
+                        }
+                    },
+                    {field: 'AddTime', align: 'center', title: '添加时间', width: 200},
+                    {field: 'SendTime', align: 'center', title: '发送时间', width: 200},
+                    {field: 'Descript', align: 'center', title: '备注', width: 100},
+                    {field: 'Author', align: 'center', title: '添加人', width: 100},
+                    {field: 'Checker', align: 'center', title: '审核人', width: 100},
+                    {field: '', align: 'center', title: '推送情况(总数/剩余)', width: 100, templet: function (d) {
+                            return d.total+'/'+d.remain;
+                        }
+                    },
+                    {fixed: 'right', title: '操作', align: 'center', width: 120, toolbar: '#msg-bar'},
+                ];
+                table.render({
+                    elem: '#proxylist',
+                    url: url,
+                    where: {Action: 'list'},
+                    page: true, cols: [cols]
+                });
+                laydate.render({
+                    elem: '#startdate'
+                    ,type: 'datetime'
+                });
+                laydate.render({
+                    elem: '#enddate'
+                    ,type: 'datetime'
+                });
+                // laydate.render({
+                //     elem: '#LAY-component-form-group-date'
+                //     , format: 'yyyy-MM-dd HH:ii:ss'
+                //     , max: 1
+                //     , btns: ['clear', 'confirm']
+                //     , value: new Date()
+                // });
+                // laydate.render({
+                //     elem: '#LAY-component-form-group-date2'
+                //     , format: 'yyyy-MM-dd HH:ii:ss'
+                //     , max: 1
+                //     , btns: ['clear', 'confirm']
+                //     , value: new Date()
+                // });
+            },
+
+            //搜索
+            search: function () {
+
+                //执行重载
+                table.reload('proxylist', {
+                    page: {curr: 1},
+                    where: {
+                        roleId: $.trim($("#RoleId").val()),
+                        title: $.trim($("#Title").val()),
+                        message: $.trim($("#Message").val()),
+                        descript: $.trim($("#Descript").val()),
+                        startdate: $.trim($("#startdate").val()),
+                        enddate: $.trim($("#enddate").val()),
+                        status: $.trim($("#Status").val()),
+                    }
+                });
+            },
+
+
+            //操作事件
+            extraEvent: function () {
+
+                //编辑&&删除
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data, layEvent = obj.event, tips = "";
+                    if (layEvent === 'check') {
+                        layer.confirm("确认审核通过？通过后将按照记录发送时间推送内容至用户设备。",
+                         {btn: ['{:lang("确定")}','{:lang("取消")}']}, 
+                         function () {
+                            var post_data = {}
+                            $.ajax({
+                                type: 'post',
+                                url: "{:url('Push/check')}",
+                                data: {Action: 'agree', ID: data.Id},
+                                dataType: 'json',
+                                success: function (res) {
+                                    if (res.code === 1) {
+                                        layer.msg(res.msg, {icon: 6, time: 1000}, function () {
+                                            main.search();
+                                        });
+                                    } else {
+                                        layer.msg(res.msg, {icon: 5});
+                                    }
+                                }
+                            });
+                        });
+
+                    }
+                    if (layEvent === 'del') {
+                        layer.confirm("确认要作废这条记录吗？", {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
+                            $.ajax({
+                                type: 'post',
+                                url: "{:url('Push/check')}",
+                                data: {Action: 'del', ID: data.Id},
+                                dataType: 'json',
+                                success: function (res) {
+                                    if (res.code === 1) {
+                                        layer.msg(res.msg, {icon: 6, time: 1000}, function () {
+                                            main.search();
+                                        });
+                                    } else {
+                                        layer.msg(res.msg, {icon: 5});
+                                    }
+                                }
+                            });
+                        });
+
+                    }
+                });
+            },
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+    function add() {
+        // openBarWinParent('添加推送记录', 700, 700, '/admin/Push/addRecord', function () {
+        //     main.search();
+        // }, ['保存', '取消']);
+        x_admin_show('添加推送记录', '{:url("Push/addRecord")}', 700, 700);
+    }
+</script>
+{/block}

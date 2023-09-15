@@ -1,0 +1,124 @@
+{extend name="common/base" /}
+{block name="title"}{:lang('frame_top_view')}{/block}
+{block name="css"}
+
+{/block}
+{block name="content" }
+
+<section class="content-header">
+    <h1 class="hidden-xs"> {:lang('frame_top_view')}
+        <small style="margin-left: 8px; margin-right: 8px;"><a href="javascript:"
+                                                               onclick="javascript:window.history.back()"
+                                                               target="_self"><i class="fa fa-arrow-left"></i> {:lang('system_back')}</a>
+        </small>
+    </h1>
+    <ol class="breadcrumb hidden-md hidden-lg hidden-sm">
+        <li>{:lang('frame_top_view')}&nbsp;&nbsp;&nbsp;<a href="javascript:"
+                                                                 onclick="javascript:window.history.back()"
+                                                                 target="_self"><i
+                class="fa fa-arrow-left"></i> {:lang('system_back')}</a></li>
+    </ol>
+</section>
+<section class="content">
+
+
+<div class="row">
+    <div class="col-lg-4 col-xs-6">
+        <!-- small box -->
+        <div class="small-box bg-red">
+            <div class="inner">
+                <h3>{$info.accountname}</h3>
+                <p>{:lang('page_main_username')}</p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-pie-graph"></i>
+            </div>
+
+        </div>
+    </div><!-- ./col -->
+
+
+    <div class="col-lg-4 col-xs-6">
+        <!-- small box -->
+        <div class="small-box bg-aqua">
+            <div class="inner">
+                <h3>{$info.balance}</h3>
+                <p>{:lang('page_main_mypoint')}</p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-bag"></i>
+            </div>
+
+        </div>
+    </div><!-- ./col -->
+
+
+
+    <div class="col-lg-4 col-xs-6">
+        <!-- small box -->
+        <div class="small-box bg-green">
+            <div class="inner">
+                <h3>{$info.totalproxy}<sup style="font-size: 20px"></sup></h3>
+                <p>{:lang('page_main_agentnum')}</p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-stats-bars"></i>
+            </div>
+            <!--<a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>-->
+        </div>
+    </div><!-- ./col -->
+    <div class="col-lg-4 col-xs-6">
+        <!-- small box -->
+        <div class="small-box bg-yellow">
+            <div class="inner">
+                <h3>{$info.totalplayer}</h3>
+                <p>{:lang('page_main_playernum')}</p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-person-add"></i>
+            </div>
+            <!--<a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>-->
+        </div>
+    </div><!-- ./col -->
+
+
+    <div class="col-lg-4 col-xs-6">
+        <!-- small box -->
+        <div class="small-box bg-purple">
+            <div class="inner">
+                <h3>{$info.totalin}</h3>
+                <p>{:lang('page_main_topup')}</p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-pie-graph"></i>
+            </div>
+
+        </div>
+    </div><!-- ./col -->
+
+
+    <div class="col-lg-4 col-xs-6">
+        <!-- small box -->
+        <div class="small-box bg-olive">
+            <div class="inner">
+                <h3>{$info.totalout}</h3>
+                <p>{:lang('page_main_turnout')}</p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-pie-graph"></i>
+            </div>
+
+        </div>
+    </div><!-- ./col -->
+
+</div>
+
+</section>
+
+
+    {/block}
+    {block name="script"}
+    <script type="text/javascript">
+
+    </script>
+    {/block}

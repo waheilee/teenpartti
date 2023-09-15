@@ -1,0 +1,100 @@
+{include file="public/head"}
+
+<div class="x-body">
+    <div style="margin-left: 80px;">
+        <ul class="ztree" id="tree"></ul>
+    </div>
+    <hr>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn layui-btn " id="auth-btn">{:lang('提交')}</button>
+        </div>
+    </div>
+</div>
+{include file="public/foot"}
+<link href="__module__/ztree/css/metroStyle/metroStyle.css" rel="stylesheet" type="text/css">
+<script src="__module__/ztree/js/jquery-1.4.4.min.js" type="text/javascript"></script>
+<script src="__module__/ztree/js/jquery.ztree.core.js" type="text/javascript"></script>
+<script src="__module__/ztree/js/jquery.ztree.excheck.js" type="text/javascript"></script>
+<script type="text/javascript">
+	url = "{:url('game_cfg/VipGameListTree')}";
+	$(function () {
+		var tree = $("#tree");
+		var zTree;
+		var setting = {
+			check: {enable: true},
+			view: {
+				dblClickExpand: true, showLine: true, showIcon: true, selectedMulti: false
+			},
+			data: {
+				simpleData: {
+					enable: true,
+					idKey: "TypeID",
+					pIdKey: "ParentId",
+					rootpid: ""
+				},
+				key: {
+					name: "NodeName"
+				},
+				check:{
+					enable:true,  //true 、 false 分别表示 显示 、不显示 复选框或单选框
+					nocheckInherit:true  //当父节点设置 nocheck = true 时，设置子节点是否自动继承 nocheck = true
+				}
+
+			}
+		};
+		//加载树形菜单
+		$.ajax({
+			url: url,
+			type: "post",
+			dataType: "json",
+			cache: false,
+			data: {action: "list"},
+			success: function (data) {
+				zTree = $.fn.zTree.init(tree, setting, data);
+			}
+		});
+		/**
+		 * 授权提交
+		 */
+		$("#auth-btn").bind("click", function () {
+			var checked_ids, auth_rule_ids = [];
+			checked_ids = zTree.getCheckedNodes(); // 获取当前选中的checkbox
+			$.each(checked_ids, function (index, item) {
+				auth_rule_ids.push(item.TypeID);
+			});
+
+			$.ajax({
+				url: url,
+				type: "post",
+				cache: false,
+				data: {
+					action: "UpData",
+					list: auth_rule_ids
+				},
+				success: function (data) {
+					console.log(data);
+					if (data.code === 1) {
+						layer.msg(data.msg, {icon: 1, time: 1000, offset: 't'}, function () {
+							x_admin_close();
+							// parent.location.reload();
+						})
+					} else {
+						layer.msg(data.msg, {icon: 2, offset: 't'});
+					}
+				}
+			});
+		});
+	})
+
+</script>
+<style>
+    .ztree * {
+        font-size: 16px;
+    }
+
+    .ztree li {
+        line-height: 24px;
+    }
+
+</style>

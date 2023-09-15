@@ -1,0 +1,37 @@
+{extend name="common/base" /}
+{block name="title"}{:lang('frame_top_view')}{/block}
+{block name="css"}
+
+{/block}
+{block name="content" }
+            <div class="layui-card">
+                <div class="layui-card-header">{:lang('page_main_balanceinfo')}</div>
+                <div class="layui-card-body">
+                    <div class="  layadmin-backlog" lay-anim="" lay-indicator="inside"
+                         lay-arrow="none">
+                        <div carousel-item="">
+                            <ul class="layui-row layui-col-space10 layui-this">
+
+                                <li class="layui-col-xs4">
+                                    <a lay-href="template/goodslist.html" class="layadmin-backlog-body">
+                                        <h3>{:lang('page_player_roleid')}</h3>
+                                        <p><cite>{$proxyid}</cite></p>
+                                    </a>
+                                </li>
+
+                                <li class="layui-col-xs4">
+                                    <a lay-href="template/goodslist.html" class="layadmin-backlog-body">
+                                        <h3>{:lang('page_player_account')}</h3>
+                                        <p><cite>{$proxyname}</cite></p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+    {/block}
+    {block name="script"}
+    <script type="text/javascript">
+
+    </script>
+    {/block}

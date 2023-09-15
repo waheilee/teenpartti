@@ -1,0 +1,413 @@
+{extend name="common/base" /}
+
+{block name="title"}盘控玩家胜率配置表{/block}
+{block name="css"}{/block}
+{block name="content"}
+<!--顶部-->
+<div class="layui-row layui-col-space20">
+    <div class="layui-col-md3">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('玩家总产出')}</span>
+                <!--                <a hidden class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>-->
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-normal-font" style="color: #009688" id="TotalOutput">{$res.TotalOutput}</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md3">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('玩家总流水')}</span>
+                <!--                <a hidden class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>-->
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-normal-font" style="color: #009688" id="TotalWater">{$res.TotalWater}</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('系统库存')}</span>
+                <!--                <a hidden class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>-->
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-normal-font" style="color: #009688" id="TotalProfit">{$res.TotalProfit}</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('总税收')}</span>
+                <!--                <a hidden class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>-->
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-normal-font" style="color: #009688" id="TotalTax">{$res.TotalTax}</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('RTP')}</span>
+                <!--                <a hidden class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>-->
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-normal-font" style="color: #009688" id="rtp">{$res.rtp}</p>
+            </div>
+        </div>
+    </div>
+    
+
+   	<div class="layui-col-md3">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('实时玩家总产出')}</span>
+                <!--                <a hidden class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>-->
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-normal-font" style="color: #009688" id="TotalOutput">{$ss.TotalOutput}</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md3">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('实时玩家总流水')}</span>
+                <!--                <a hidden class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>-->
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-normal-font" style="color: #009688" id="TotalWater">{$ss.TotalWater}</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('实时系统库存')}</span>
+                <!--                <a hidden class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>-->
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-normal-font" style="color: #009688" id="TotalProfit">{$ss.TotalProfit}</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('实时总税收')}</span>
+                <!--                <a hidden class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>-->
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-normal-font" style="color: #009688" id="TotalTax">{$ss.TotalTax}</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('实时RTP')}</span>
+                <!--                <a hidden class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>-->
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-normal-font" style="color: #009688" id="rtp">{$ss.rtp}</p>
+            </div>
+        </div>
+    </div>
+    
+
+    <div class="layui-col-md3">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('系统胜率')}</span>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-normal-font" style="color: #009688" id="CtrlValue">{$res.RoomCtrlValue/2}</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md3">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('收水')}</span>
+                <!--                <a hidden class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>-->
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-normal-font" style="color: #009688" id="CurWaterIn">{$res.CurWaterIn}</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md3">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('放水')}</span>
+                <!--                <a hidden class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>-->
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-normal-font" style="color: #009688" id="CurWaterOut">{$res.CurWaterOut}</p>
+            </div>
+        </div>
+    </div>
+</div>
+<!--添加盘控-->
+<div class="layui-tab">
+    <div class="layui-btn layui-icon layui-icon-add-circle" onclick="x_admin_show('{:lang(\'添加盘控\')}','PlatecontrolItemAdd.html','',300)">{:lang('添加盘控')}</div>
+    <div class="layui-btn layui-bg-blue" lay-tips="{:lang('盘控全部设置0')}" onclick="ResetPlate()">{:lang('盘控重置')}</div>
+</div>
+<!--tab页签-->
+<div class="layui-tab layui-tab-card layui-tab-brief" lay-filter="test">
+    <ul class="layui-tab-title">
+        <li class=" layui-this" lay-id="0">{:lang('盘控记录')}</li>
+        <li lay-id="1">{:lang('基础配置')}</li>
+    </ul>
+    <div class="layui-tab-content">
+        <!-- 盘控记录 -->
+        <div class="layui-tab-item layui-show layui-card">
+            <form class="layui-form" lay-filter="component-form-group">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <div class="layui-input-inline">
+                            <select id="tick" name="tick">
+                                <option value="-1">{:lang('时间隔')}</option>
+                                <option value="10">10分钟</option>
+                                <option value="30">30分钟</option>
+                                <option value="60">1小时</option>
+                                <option value="360">6小时</option>
+                                <option value="720">12小时</option>
+                                <option value="1440">1天</option>
+                                <option value="2880">2天</option>
+                            </select>
+                        </div>
+                        <div class="layui-input-inline">
+                            <input ID="regTime" autocomplete="off" class="layui-input" placeholder="{:lang('注册时间起始 - 注册时间结束')} " type="text">
+                            <input ID="startTime" hidden>
+                            <input ID="endTime" hidden>
+                        </div>
+
+
+                        <div class="layui-input-inline">
+                            <a class="layui-btn" data-type="reload" id="search">{:lang('搜索')}</a>
+                            <button class="layui-btn layui-btn-primary" type="reset">{:lang('重置')}</button>
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+            <div class="layui-carousel  layadmin-dataview" id="test1" data-anim="fade" lay-filter="LAY-index-dataview">
+                <div carousel-item id="Graph">
+                    <div><i class="layui-icon layui-icon-loading layadmin-loading"></i></div>
+                </div>
+            </div>
+        </div>
+        <!-- 基础配置 -->
+        <div class="layui-tab-item layui-card">
+            <div class="layui-card-body">
+                <div id="alllist">
+                    <table id="Table1" lay-filter="Table1"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+
+<script>
+	//初始化
+	var initURL = [
+		//Ajax获取基础配置
+		"{:url('GamePlatecontrol/index')}",
+		//编辑请求的URL
+		"{:url('GamePlatecontrol/PlatecontrolItemEdit')}?Action=E&ID=",
+	];
+	var pagelimt = 12, limits = [12, 24, 50, 100];
+	//表头
+	var cols = [
+		// {field: 'ID', title: 'ID', minWidth: 50},
+		// {field: 'LimitDown', align: 'center', title: "{:lang('下限')}", minWidth: 220},
+		// {field: 'LimitUp', align: 'center', title: "{:lang('上限')}", minWidth: 220},
+		// {field: 'WinRate', align: 'center', title: "{:lang('概率')}", minWidth: 220},
+		// {fixed: 'right', title: '操作', align: 'center', width: 220, toolbar: '#msg-bar'},
+		{field: 'CfgType', align: "center", title: 'CfgType', sort: true, width: 200},
+		{field: 'CfgValue', title: 'CfgValue', sort: true, width: 200},
+		{field: 'Description', title: "{:lang('功能描述')}", sort: true, minWidth: 300,align:'left'},
+        {field: 'Rate', title: "{:lang('比例')}",  minWidth: 200,hide:true},
+		{
+			field: 'Switch', width: 110, title: "{:lang('禁/启用')}", align: "center", templet: function (d) {
+				if (d.Switch == 1) {
+					if (d.CfgValue == 1)
+						return "<input type='checkbox' ctrlID = '" + d.CfgType + "' lay-filter='Disable' lay-skin='switch' lay-text='{:lang('开')}|{:lang('关')}' checked>"
+					else
+						return "<input type='checkbox' ctrlID = '" + d.CfgType + "'  lay-filter='Disable' lay-skin='switch' lay-text='{:lang('开')}|{:lang('关')}'>"
+
+				} else
+					return "<a class='layui-btn layui-btn-sm layui-btn-normal' lay-event='edit'>{:lang('编辑')}</a>"
+
+			}
+		},
+		// {fixed: 'right', title: '操作', align: 'center', minWidth: 100, toolbar: '#msg-bar'}
+	];
+
+	layui.config({base: '__layui__/'}).extend({index: 'lib/index'}).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery', 'carousel', 'echarts'], function () {
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table,
+			$ = layui.$, form = layui.form, carousel = layui.carousel, echarts = layui.echarts;
+		laydate.render({
+			elem: '#regTime', range: true, lang:'{$datelang ?: "cn"}',done: function (value, date, endDate) {
+				dates = value.split(" - ");
+				$("#startTime").val(dates[0]);
+				$("#endTime").val(dates[1]);
+			}
+		});
+		Tabs = {tab1Evn: function () { table.render({elem: '#Table1', url: initURL[0], where: {Action: 'list'}, page: true, limit: pagelimt, sort: true, cols: [cols], limits: limits,done: function (res) {
+                        tzTbale();
+                    }},); },};
+		var main = {
+			Carousel: function () {
+				carousel.render({elem: '#test1', width: '100%', height: '100%', arrow: 'none', interval: 5000, autoplay: false,});
+				$(".layui-carousel-ind").hide();
+				element.render('progress');
+			},
+			search: function () {
+				//执行重载
+				table.reload('Graph', {
+					page: {curr: 1},
+					where: {
+						'startTime': $("#startTime").val(),
+						'endTime': $("#endTime").val(),
+					},
+					done: function () {
+					}
+				});
+			},
+			//曲线图
+			Echart: function (where) {
+				$.ajax({
+					type: 'post',
+					url: 'Graph',
+					data: where, //条件
+					dataType: 'json',
+					async: false,
+					success: function (res) {
+						if (res.code === 0) {
+							//标准折线图
+							var echnormline = [], normline = [
+								{
+									title: {text: "{:lang('盘控数据')}", x: 'center', textStyle: {fontSize: 16}},
+									tooltip: {trigger: 'axis'},
+									legend: {data: ['', ''],},
+									toolbox: {
+										show: true, feature: {
+											mark: {show: true}, dataView: {show: true, readOnly: false}, magicType: {show: true, type: ['line', 'bar']},
+											restore: {show: true}, saveAsImage: {show: true}
+										}
+									},
+									grid: {left: '20', containLabel: true},
+									// calculable : false, //所有点都突出显示
+									xAxis: [{type: 'category', boundaryGap: true, data: res.data[0],}],
+									yAxis: [{
+										type: 'value', splitNumber: 10, max: function (value) {
+											return value.max * 1.1;
+										}
+									}],
+									series: [{
+										name: "{:lang('总产出')}",
+										type: 'line',
+										data: res.data[1],
+										markPoint: {data: [{type: 'max', name: "{:lang('最大值')}"}, {type: 'min', name: "{:lang('最小值')}"}]},
+										markLine: {data: [/**{type : 'average', name: '平均值'}*/]}
+									},
+										{
+											name: "{:lang('系统库存')}",
+											type: 'line',
+											data: res.data[2],
+											markPoint: {
+												data: [
+													{type: 'max', name: "{:lang('最大值')}"},
+													{type: 'min', name: "{:lang('最小值')}"}
+												]
+											},
+											markLine: {
+												data: [
+													// {type : 'average', name: '平均值'}
+												]
+											}
+										},
+										{
+											name: "{:lang('系统胜率')}",
+											type: 'line',
+											data: res.data[3],
+											markPoint: {
+												data: [
+													{type: 'max', name: '最大值'},
+													{type: 'min', name: '最小值'}
+												]
+											},
+											markLine: {
+												data: [
+													// {type : 'average', name: '平均值'}
+												]
+											}
+										}
+
+									]
+								},
+							]
+								, elemnormline = $('#Graph').children('div')
+								, rendernormline = function (index) {
+								echnormline[index] = echarts.init(elemnormline[index], layui.echartsTheme);
+								echnormline[index].setOption(normline[index]);
+								window.onresize = echnormline[index].resize;
+							};
+							if (!elemnormline[0]) return;
+							rendernormline(0);
+						}
+					}
+				});
+			},
+			TabEvn: function () {
+				element.on('tab(test)', function (data) {
+					switch (data.index) {
+						case 1:
+							return Tabs.tab1Evn();
+					}
+				});
+				table.on('tool(Table1)', function (obj) {
+					if (obj.event === 'edit') {
+						var url = "{:url('game_cfg/FunctionItemEdit')}?ID=" + obj.data.CfgType + "&Value=" + obj.data.CfgValue +'&Rate='+ obj.data.Rate + "&Msg=" + obj.data.Description;
+						x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.4, $(window).height() * 0.4);
+					}
+				});
+			},
+			init: function () {
+				this.TabEvn();
+				this.Carousel();
+				this.Echart();
+				$('#search').on('click', function (e) {
+					e.preventDefault();
+					main.search();
+				});
+			}
+		};
+		main.init();
+	});
+
+	function ResetPlate() {
+		$.ajax({
+			url: "{:url('GamePlatecontrol/PlatecontrolItemAdd')}",
+			type: 'post',
+			data: {Watertype: 3},
+			success: function (d) {
+				if (d.code === 0) {
+					layer.msg(d.msg, {icon: 1, time: 1000}, function () { });
+				}
+			}
+		});
+	}
+
+
+</script>
+{/block}

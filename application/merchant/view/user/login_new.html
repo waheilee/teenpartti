@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{:config('app_name')}管理后台</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <link rel="stylesheet" href="{$laypath}/admin/login/login.css" media="all">
+  <script>
+  </script>
+</head>
+<style type="text/css">
+    body {
+    background: url({$laypath}/admin/login/bc2.jpg) 0% 0% / cover no-repeat;
+}
+</style>
+<body>
+<div class="main-body" style="border-radius:20px;box-shadow:0px 0px 24px 4px #aaa;">
+    <div class="login-main">
+        <!-- <div class="login-top">
+            <span>{:config('app_name')}管理后台</span>
+            <span class="bg1"></span>
+            <span class="bg2"></span>
+        </div> -->
+        <form class="layui-form login-bottom"  onsubmit="return false">
+            
+            <div class="center">
+                <div class="item">
+                    <span class="icon icon-2"></span>
+                    <input type="text" name="username" lay-verify="required"  placeholder="{:lang('请输入用户名')}" id="LAY-user-login-username">
+                </div>
+
+                <div class="item">
+                    <span class="icon icon-3"></span>
+                    <input type="password" name="password" lay-verify="required"  placeholder="{:lang('请输入密码')}" id="LAY-user-login-password" >
+                    <!-- <span class="bind-password icon icon-4"></span> -->
+                </div>
+
+                <div id="validatePanel" class="item">
+                  <span class="icon icon-1"></span>
+                    <input type="text" name="vercode2" lay-verify="required" placeholder="请输入谷歌验证码" id='code2'>
+                </div>
+                <div class="layui-form-item" id="codeimg" style="display: none;text-align: center">
+                  <img id="imgsrc" style="text-align:center;width: 100px;height: 100px"/>
+              </div>
+                <!-- <div>
+                  <img id="refreshCaptcha" class="validateImg" style="width:100%" src="{:captcha_src()}" onclick="this.src=this.src+'?'">
+                </div> -->
+            </div>
+
+            <div class="tip">
+                <!-- <span class="icon-nocheck"></span><span class="login-tip">记住一周</span> -->
+            </div>
+
+            <div class="layui-form-item" style="text-align:center; width:100%;height:100%;margin:0px;">
+                <button class="login-btn" lay-submit lay-filter="LAY-user-login-submit">确认登录</button>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="footer">
+    <span class="padding-5"></span>
+</div>
+<script src="{$laypath}/layui/layui.js"></script>
+<script src="__js__/jquery.min.js?v=2.1.4"></script>
+<!--<script src="__js__/common.js?v=1.1"></script>-->
+<script src="__js__/cache.js"></script>
+<script src="__js__/Barrett.js"></script>
+<script src="__js__/BigInt.js"></script>
+<script src="__js__/RSA.js"></script>
+<script>
+    layui.config({
+        base: '{$laypath}/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'user'], function () {
+        var $ = layui.$
+            , setter = layui.setter
+            , admin = layui.admin
+            , form = layui.form
+            , router = layui.router()
+            , search = router.search;
+
+        var m = "   AF148DF38814A7CF2906B8CD2957F88D0F1F7F708A17371E408EE6629B25EC6B8514C3698F874B1C04E2EE7B05518FB58FE9EB57C0DC0617A7012E28D5D66D4B2F4B8676E28CB80DC0BA339740BAA557B872A5D6DD9E70E90C2943EDFB24A4597C252978E3556210E00CFB0BD2428FD77DE108A0BAF3BC8E06D71B3D65CECC6D";
+        var n = 10001;
+
+        form.render();
+
+        //提交
+        form.on('submit(LAY-user-login-submit)', function (obj) {
+
+
+            var username = $('#LAY-user-login-username').val();
+            var password = $('#LAY-user-login-password').val();
+            var code = $('#code2').val();
+            // var mobile = $('#LAY-user-login-mobile').val();
+            // var choose = [];
+            // $('input[name="choose"]:checked').each(function () {
+            //     choose.push($(this).val());
+            // });
+            // choosecode = choose[0];
+            // if (choosecode == 1) {
+            //     var code = $('#code1').val();
+            // } else {
+            //
+            // }
+
+            var remember = [];
+            $('input[name="remember"]:checked').each(function () {
+                remember.push($(this).val());
+            });
+            var sr = 0;
+            if (remember[0] === 'on') {
+                sr = 1;
+            }
+            if (username == '' || password == '') {
+                layer.msg("{:lang('账号密码不能为空')}", {offset: 't'});
+                return;
+            }
+            // if (mobile == '') {
+            //     layer.msg('手机号不能为空', {offset: 't'});
+            //     return;
+            // }
+            if (code == '' || code == null) {
+                layer.msg("{:lang('验证码不能为空')}", {offset: 't'});
+                return;
+            }
+
+            // setMaxDigits(131);
+            // var key = new RSAKeyPair("10001", '', m);
+            // password = encryptedString(key, password);
+            // console.log(password);
+
+            $.ajax({
+                type: 'post',
+                url: "{:url('user/login')}",
+                data: {
+                    username: username,
+                    password: password,
+                    // mobile: mobile,
+                    code: code,
+                    //choose: choosecode,
+                    remember: sr
+                },
+                dataType: 'json',
+                success: function (res) {
+                    if (res.code === 0) {
+                        layer.msg("{:lang('登录成功')}", {icon: 1, time: 1000}, function () {
+                            window.location.href = "{:url('merchant/index/index')}?lang={$currlang}";
+                        });
+                    } else if (res.code === 1) {
+                        window.location.href = "{:url('merchant/index/index')}";
+                    } else if (res.code === 2) {
+                        window.location.href = "{:url('merchant/index/index')}";
+                    } else if (res.code === 3) {
+                        layer.msg(res.msg, {icon: 2, time: 1000}, function () {
+
+                        });
+
+                    }
+                }
+            });
+        });
+        form.on('radio(filter)', function (data) {
+            //选择验证，谷歌的话先身份验证
+            if (data.value == 1) {
+                $('#googlecode').hide();
+                $('#codeimg').hide();
+                $('#mobilecode').show();
+            } else {
+                var username = $('#LAY-user-login-username').val();
+                var password = $('#LAY-user-login-password').val();
+                // var mobile = $('#LAY-user-login-mobile').val();
+                if (username == '' || password == '' //|| mobile == ''
+                ) {
+                    layer.msg("{:lang('请输入账号密码')}", {icon: 2, time: 1000}, function () {
+                        $('#LAY-user-login-password').val('');
+                        $('#code1').val('');
+                        $('#code2').val('');
+                        $('#gg').prop('checked', false);
+                        $('#sj').prop('checked', true);
+                        form.render();
+                    });
+                } else {
+                    // setMaxDigits(131);
+                    // var key = new RSAKeyPair("10001", '', m);
+                    // password = encryptedString(key, password);
+                    $.ajax({
+                        url: "{:url('user/verify')}",
+                        type: 'post',
+                        data: {
+                            username: username,
+                            password: password,
+                            //mobile: mobile
+                        },
+                        success: function (response) {
+                            if (response.code === 0) {
+                                if (response.isshow === 1) {
+                                    $('#imgsrc').attr('src', response.data);
+                                    $('#secret').html(response.secret);
+                                    $('#codeimg').show();
+                                    $('#secretpart').show();
+                                } else {
+                                    $('#codeimg').hide();
+                                    $('#secretpart').hide();
+                                }
+                                $('#googlecode').show();
+                                $('#mobilecode').hide();
+                            } else {
+                                layer.msg(response.msg, {icon: 2, time: 1000}, function () {
+                                    //window.location.reload();
+                                    $('#LAY-user-login-password').val('');
+                                    $('#code1').val('');
+                                    $('#code2').val('');
+                                    $('#gg').prop('checked', false);
+                                    $('#sj').prop('checked', true);
+                                    form.render();
+
+                                });
+                            }
+                        }
+                    });
+                }
+            }
+        });
+
+
+        $("#LAY-user-login-password").blur(function(){
+            var username = $('#LAY-user-login-username').val();
+            var password = $('#LAY-user-login-password').val();
+            // var mobile = $('#LAY-user-login-mobile').val();
+            if (username == '' || password == '' //|| mobile == ''
+            ) {
+                layer.msg("{:lang('请输入账号密码')}", {icon: 2, time: 1000}, function () {
+                    $('#LAY-user-login-password').val('');
+                    $('#code1').val('');
+                    $('#code2').val('');
+                    // $('#gg').prop('checked', false);
+                    // $('#sj').prop('checked', true);
+                    form.render();
+                });
+            } else {
+                // setMaxDigits(131);
+                // var key = new RSAKeyPair("10001", '', m);
+                // password = encryptedString(key, password);
+                $.ajax({
+                    url: "{:url('user/verify')}",
+                    type: 'post',
+                    data: {
+                        username: username,
+                        password: password,
+                        //mobile: mobile
+                    },
+                    success: function (response) {
+                        if (response.code === 0) {
+                            if (response.isshow === 1) {
+                                $('#imgsrc').attr('src', response.data);
+                                $('#secret').html(response.secret);
+                                $('#codeimg').show();
+                                $('#secretpart').show();
+                            } else {
+                                $('#codeimg').hide();
+                                $('#secretpart').hide();
+                            }
+                            $('#googlecode').show();
+                        } else {
+                            layer.msg(response.msg, {icon: 2, time: 1000}, function () {
+                                //window.location.reload();
+                                $('#LAY-user-login-password').val('');
+                                $('#code2').val('');
+                                $('#codeimg').hide();
+                                $('#secretpart').hide();
+                                form.render();
+
+                            });
+                        }
+                    }
+                });
+            }
+        });
+
+        //发送短信验证码
+        $('#sendcode').on('click', function () {
+            sendCode();
+        });
+
+        function sendCode() {
+            var phoneNum = $('#LAY-user-login-mobile').val();
+            if (phoneNum === '') {
+                layer.msg("{:lang('手机号码不能为空')}");
+                return false;
+            }
+
+            $.ajax({
+                url: "{:url('user/sendSms')}",
+                type: 'get',
+                data: {
+                    mobile: phoneNum,
+                    //captcha: captcha
+                },
+                success: function (response) {
+                    if (response.code === 0) {
+                        layer.msg("{:lang('发送成功')}");
+                        cache.setItem('loginCode', phoneNum);
+                        cache.createTimeOut();
+                    } else {
+                        layer.msg(response.msg)
+                    }
+                }
+            })
+        }
+    });
+</script>
+</body>

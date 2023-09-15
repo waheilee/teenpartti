@@ -1,0 +1,196 @@
+{extend name="common/base" /}
+{block name="title"}关系列表{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-row layui-col-space20">
+    <!--<div class="layui-col-md6">-->
+        <!--<div class="layui-card">-->
+            <!--<div class="layui-card-header"> {:lang('总打码')}</div>-->
+            <!--<div class="layui-card-body layuiadmin-card-list">-->
+                <!--<p class="layuiadmin-big-font" style="color: #009688" id="total1">0</p>-->
+            <!--</div>-->
+        <!--</div>-->
+
+    <!--</div>-->
+    <!--<div class="layui-col-md3">-->
+        <!--<div class="layui-card">-->
+            <!--<div class="layui-card-header"> {:lang('奖励金币')}</div>-->
+            <!--<div class="layui-card-body layuiadmin-card-list">-->
+                <!--<p class="layuiadmin-big-font" style="color: #009688" id="total2">0</p>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
+</div>
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('玩家ID')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="roleid" autocomplete="off" class="layui-input" id='roleid'>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <a class="layui-btn" data-type="reload" id="search">{:lang('搜索')}</a>
+                    <a class="layui-btn layui-btn-danger" id="output">{:lang('导出记录')}</a>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+    <script type="text/html" id="toolbar">
+   
+      </script>
+</div>
+<script type="text/html" id="is_default">
+    {{#  if(d.isDefault == 1){ }}
+    <input type="checkbox" checked="" name="is_default" lay-skin="switch" lay-filter="is_default" lay-text="是|否">
+    {{#  } else { }}
+    <input type="checkbox" name="is_default" lay-skin="switch" lay-filter="is_default" lay-text="是|否">
+    {{#  } }}
+</script>
+{/block}
+{block name="script"}
+
+<script>
+    url = "{:url('admin/player/userDailyWage')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var table = layui.table;
+        var form = layui.form;
+        var $ = layui.$;
+        var element = layui.element;
+        var laydate = layui.laydate;
+        table.render({
+            elem: '#proxylist'
+            , height: 'full-180'
+            , url: url + '?action=list&date={$date}'//数据接口
+            , limit: 20
+            , page: true //开启分页
+            , id: 'proxylist'
+            , autoSort: false
+            , cols: [[ //表头
+                {
+                    field: 'RoleID',title: "{:lang('玩家ID')}",fixed: true,width: 120,align: 'center',
+                    templet: function (d) {
+                        return d.RoleID
+                    }
+                },
+                {field: 'Water', title: "{:lang('累计打码')}", width: 120, align: 'center'},
+                {field: 'adddate', title: "{:lang('日期')}", width: 200, align: 'center'}
+                // {fixed: 'right',title:"{:lang('操作')}", toolbar: '#toolbar',minWidth: 120,  align: 'center'}
+
+            ]]
+            , done: function (res) {
+                data = res.other;
+                $('#total1').html(data.TotalWater);
+                //$('#total2').html(data.LotteryAward);
+            }
+        });
+        // 搜索
+        $("#search").on('click', function () {
+            table.reload('proxylist', {
+                page: {
+                    curr: 1
+                },
+                where: {
+                    roleid: $('#roleid').val(),
+                    start_date:$.trim($('#LAY-component-form-group-date').val()),
+                    end_date:$.trim($('#LAY-component-form-group-date2').val())
+                }
+            })
+        });
+        laydate.render({
+            elem: '#LAY-component-form-group-date',
+            format: 'yyyy-MM-dd HH:mm:ss',
+            type: 'datetime'
+            , max: 0
+            , lang:'{$datelang ?: "cn"}'
+            , btns: ['clear', 'confirm']
+        });
+        laydate.render({
+            elem: '#LAY-component-form-group-date2',
+            format: 'yyyy-MM-dd HH:mm:ss',
+            type: 'datetime'
+            , max: 0
+            , lang:'{$datelang ?: "cn"}'
+            , btns: ['clear', 'confirm']
+        });
+        $(document).off('mousedown', '.layui-table-grid-down').on('mousedown', '.layui-table-grid-down', function (event) {
+            table._tableTrCurrr = $(this).closest('td');
+        });
+        $(document).off('click', '.layui-table-tips-main [lay-event]').on('click', '.layui-table-tips-main [lay-event]', function (event) {
+            //debugger
+            var elem = $(this);
+            var tableTrCurrr = table._tableTrCurrr;
+            if (!tableTrCurrr) {
+                return;
+            }
+            var layerIndex = elem.closest('.layui-table-tips').attr('times');
+            console.log(layerIndex);
+            layer.close(layerIndex);
+            table._tableTrCurrr.find('[lay-event="' + elem.attr('lay-event') + '"]').click();
+        });
+
+        table.on('tool(proxylist)', function (obj) {
+            var data = obj.data;
+
+        });
+    });
+    $('#output').click(function () {
+            where = {
+                roleid: $('#roleid').val(),
+                start_date:$.trim($('#LAY-component-form-group-date').val()),
+                end_date:$.trim($('#LAY-component-form-group-date2').val()),
+            }
+
+            download();
+
+            function download() {
+                var params = Object.keys(where).map(function (key) {
+                    return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+                }).join("&");
+                var outurl = url + '?action=output&date={$date}&' + params;
+                $.ajax({
+                    type: 'POST',
+                    dataType: 'json',
+                    async: true,
+                    url: outurl, // 生成文件，保存在服务器
+                    success: function (data) {
+                        var result = data;
+                        console.info(data);
+                        switch (result["code"]) {
+                            case 0:
+                                parent.parent.open(outurl + "&exec=1&outall=true");
+                                break;
+                            case 1:
+                                layer.msg(result["message"]);
+                                break;
+                            case 2:
+                                layer.confirm(result['message'], {
+                                    btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
+                                }, function () {
+                                    parent.parent.open(outurl + "&exec=1&outall=true");
+                                    layer.msg('', {icon: 6, time: 1000}, function () {
+                                        window.location.reload();
+                                    });
+                                });
+                        }
+                    },
+                    error: function (XMLHttpRequest, textStatus, e) {
+                        console.log("oilDetection.js  method exportOilDetection" + e);
+                    }
+                });
+            }
+        });
+</script>
+{/block}

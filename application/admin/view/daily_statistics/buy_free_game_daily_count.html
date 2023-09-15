@@ -1,0 +1,137 @@
+{extend name="common/base" /}
+
+{block name="title"}购买免费游戏日统计{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">日期</label>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="end" id="LAY-component-form-group-date2" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <a class="layui-btn" id="search" data-type="reload">搜索</a>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    <a class="layui-btn" id="output">导出记录</a>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script type="text/html" id="formatScaling">
+
+</script>
+<script>
+    var bl = "{$bl}"? Number("{$bl}"):1000;
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+            var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+                ,table = layui.table
+                ,$ = layui.$
+            ,form = layui.form;
+
+            var main = {
+                 renderData : function() {
+                    var cols = [ //表头
+                        {field: 'day', title: '日期', minWidth:170, align:'center'}
+                        , {field: 'rtp', title: 'RTP(%)', minWidth:120, align:'center',templet: function(d){ return formatDecimal(d.rtp * 100, 2); }}
+                        , {field: 'total_games', title: '总局数', minWidth:120, align:'center',templet: function(d){ return formatDecimal(d.total_games, 3); }}
+                        , {field: 'total_consumption', title: '总消耗', minWidth:120, align:'center',templet: function(d){ return formatDecimal(d.total_consumption / bl,3); }}
+                        , {field: 'total_output', title: '总产出', minWidth:120, align:'center',templet: function(d){ return formatDecimal(d.total_output / bl,3); }}
+                        , {field: 'total_profit_and_loss', title: '总盈亏', minWidth:120, align:'center',templet: function(d){ return formatDecimal(d.total_profit_and_loss / bl,3); }}
+                        , {field: 'update_time', title: '更新时间', minWidth:170, align:'center',templet: function(d){
+                                return formatDateTime(d.update_time);
+                            }}
+                    ];
+
+                    table.render({
+                        elem: '#proxylist'
+                        , url: "{:url('DailyStatistics/BuyFreeGameDailyCount')}" //数据接口
+                        , page: true //开启分页
+                        , limit:10
+                        , cols: [cols]
+                    });
+                },
+
+                //搜索
+                search : function() {
+                    var strartdate = $.trim($('#LAY-component-form-group-date').val());
+                    var enddate = $.trim($('#LAY-component-form-group-date2').val());
+
+                    //执行重载
+                    table.reload('proxylist', {
+                        page: {
+                            curr: 1 //重新从第 1 页开始
+                        },
+                        where: {
+                            'start':strartdate,
+                            'end':enddate
+                        }
+                    });
+                },
+
+                 init : function() {
+                    var daily_update = {$daily_update};
+                    if (!daily_update.status) {
+                        layer.msg(daily_update.msg, {icon: 5});
+                    }
+                    main.renderData();
+                    laydate.render({
+                        elem: '#LAY-component-form-group-date'
+                        , format: 'yyyy-MM-dd'
+                        , max: 1
+                        , btns: ['clear', 'confirm']
+                    });
+                    laydate.render({
+                        elem: '#LAY-component-form-group-date2'
+                        , format: 'yyyy-MM-dd'
+                        , max: 1
+                        , btns: ['clear', 'confirm']
+                    });
+                    $('#search').on('click', function(e) {
+                        e.preventDefault();
+                        main.search();
+                    });
+                }
+            };
+
+            main.init();
+    });
+    $('#output').click(function(){
+        var start = $.trim($('#LAY-component-form-group-date').val());
+        var end = $.trim($('#LAY-component-form-group-date2').val());
+        var url = "{:url('DailyStatistics/exportBuyFreeGameDailyCount')}?start=" + start + '&end='+ end;
+        location.href = url;
+    });
+</script>
+{/block}
