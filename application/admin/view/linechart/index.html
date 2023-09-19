@@ -129,7 +129,7 @@ index.html{extend name="common/base" /}
                 <span class="layuiadmin-badge">{:lang('合计')}:{$Total.TotalOut*1.00}</span>
             </div>
             <div class="layui-card-body layuiadmin-card-list">
-                <p class="layuiadmin-big-font" id="TotalPayOut" style="color: #009688">{if(isset($info.totalpayout))}{$info.totalpayout*1.00}{else}0{/if}</p>
+                <p class="layuiadmin-big-font" id="TotalPayOut" style="color: #009688">{if(!empty($info.totalpayout))}{$info.totalpayout*1.00}{else}0{/if}</p>
             </div>
         </div>
     </div>
@@ -140,7 +140,7 @@ index.html{extend name="common/base" /}
                 <span class="layuiadmin-badge">{:lang('合计')}:{$Total.TotalOutNum}{:lang('人')}</span>
             </div>
             <div class="layui-card-body layuiadmin-card-list">
-                <p class="layuiadmin-big-font" id="TotalOutNumber" style="color: #009688">{if(isset($info.totalpayoutnum))}{$info.totalpayoutnum}{else}0{/if}</p>
+                <p class="layuiadmin-big-font" id="TotalOutNumber" style="color: #009688">{if(!empty($info.totalpayoutnum))}{$info.totalpayoutnum}{else}0{/if}</p>
             </div>
         </div>
     </div>
@@ -153,7 +153,7 @@ index.html{extend name="common/base" /}
             </div>
             <div class="layui-card-body layuiadmin-card-list">
                 <p class="layuiadmin-big-font" id="totalPayAout" style="color: #009688">
-                    {if(isset($info.totalpayuser) && isset($info.totalpayout))}{$info.totalpayuser-$info.totalpayout}{else}0{/if}
+                    {if(!empty($info.totalpayuser) && !empty($info.totalpayout))}{$info.totalpayuser-$info.totalpayout}{else}0{/if}
                 </p>
             </div>
         </div>
@@ -165,7 +165,7 @@ index.html{extend name="common/base" /}
                 <span class="layuiadmin-badge">{:lang('合计')}: {$Total.Totalyk}</span>
             </div>
             <div class="layui-card-body layuiadmin-card-list">
-                <p class="layuiadmin-big-font" id="totalWater" style="color: #009688">>{if(isset($info.totalyk))}{$info.totalyk}{else}0{/if}</p>
+                <p class="layuiadmin-big-font" id="totalWater" style="color: #009688">>{if(!empty($info.totalyk))}{$info.totalyk}{else}0{/if}</p>
             </div>
         </div>
     </div>
@@ -187,7 +187,7 @@ index.html{extend name="common/base" /}
                 <span class="layuiadmin-badge">{:lang('合计')}: {$Total.TotalGameRate}</span>
             </div>
             <div class="layui-card-body layuiadmin-card-list">
-                <p class="layuiadmin-big-font" id="totalGameRate" style="color: #009688">{if(isset($info.GameRate))}{$info.GameRate}{else}0{/if}</p>
+                <p class="layuiadmin-big-font" id="totalGameRate" style="color: #009688">{if(!empty($info.GameRate))}{$info.GameRate}{else}0{/if}</p>
             </div>
         </div>
     </div>
@@ -201,7 +201,7 @@ index.html{extend name="common/base" /}
                 <span class="layuiadmin-badge">{:lang('合计')}:{$Total.TotalGCount}{:lang('局')}</span>
             </div>
             <div class="layui-card-body layuiadmin-card-list">
-                <p class="layuiadmin-big-font" id="totalGCount" style="color: #009688">{if(isset($info.GCount))}{$info.GCount}{else}0{/if}</p>
+                <p class="layuiadmin-big-font" id="totalGCount" style="color: #009688">{if(!empty($info.GCount))}{$info.GCount}{else}0{/if}</p>
             </div>
         </div>
     </div>
