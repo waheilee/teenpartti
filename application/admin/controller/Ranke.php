@@ -172,7 +172,12 @@ class Ranke extends Main
                     ConVerMoney($v['iFreezonMoney']);
                     ConVerMoney($v['iNeedWaged']);
                     ConVerMoney($v['iCurWaged']);
-
+                    if ($v['iCurWaged'] == 0 || $v['iNeedWaged'] == 0){
+                        $percentage = '0%';
+                    }else{
+                        $percentage = bcmul(bcdiv( $v['iCurWaged'] , $v['iNeedWaged'],2),100,2).'%';
+                    }
+                    $v['CompletionProgress'] = $percentage;
 //                    if ($v['iNeedWaged'] <= $v['iCurWaged']) {
 //                        $v['iCurWaged'] = $v['iNeedWaged'] = '0.00';
 //                    }
