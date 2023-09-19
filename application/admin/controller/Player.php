@@ -1115,6 +1115,19 @@ class Player extends Main
                     //是否在线
                     $item['is_oline'] = $this->sendGameMessage('CMD_MD_USER_STATE', [$item['ID']], "DC", 'returnComm')['iResult'] ?? 0;
 
+                    //打码百分比
+                    $item['dmrateset'] = 0;
+                    if (config('is_dmrateset') == 1) {
+                        $dmrateset = $db->getTableObject('T_Job_UserInfo')->where('RoleID', $item['ID'])->find() ?: [];
+                        if($dmrateset){
+                            if ($dmrateset['job_key'] == 3) {
+                                $item['dmrateset'] = $dmrateset['value'];
+                            }
+                            if ($dmrateset['job_key'] == 4) {
+                                $item['dmrateset'] = -$dmrateset['value'];
+                            }
+                        }
+                    }
                     ConVerMoney($item['Money']);
                     ConVerMoney($item['ProxyBonus']);
 
@@ -3793,6 +3806,11 @@ class Player extends Main
                 $v['LiveRunningReturnRate'] = bcdiv($v['LiveRunningReturnRate'], 100, 3);
                 $v['SportRunningReturnRate'] = bcdiv($v['SportRunningReturnRate'], 100, 3);
 
+                if(empty($v['ValidInviteCounts']))
+                {
+                    $v['ValidInviteCounts'] =0;
+                }
+
                 $running_return = [
                     $v['OrignalRunningReturnRate'],
                     $v['JacketpotRunningReturnRate'],
@@ -3846,8 +3864,7 @@ class Player extends Main
                 $ServiceFeeRate = input('ServiceFeeRate', 0);
                 $SevenDaysCharge = input('SevenDaysCharge', 0);
                 $NeedCharge = input('NeedCharge', 0);
-                $WeekLossRate = input('WeekLossRate', 0);
-
+                $ValidInviteCounts = input('ValidInviteCounts',0);
 
                 $savedata = [
                     'NeedPoint' => intval($NeedPoint) * bl,
@@ -3861,7 +3878,7 @@ class Player extends Main
                     'ServiceFeeRate' => $ServiceFeeRate * 10,
                     'SevenDaysCharge' => $SevenDaysCharge,
                     'NeedCharge' => $NeedCharge,
-                    'WeekLossRate' => $WeekLossRate
+                    'ValidInviteCounts'=>$ValidInviteCounts
 
                 ];
 
@@ -3917,6 +3934,11 @@ class Player extends Main
             $level['SlotRunningReturnRate'] = bcdiv($level['SlotRunningReturnRate'], 100, 3);
             $level['LiveRunningReturnRate'] = bcdiv($level['LiveRunningReturnRate'], 100, 3);
             $level['SportRunningReturnRate'] = bcdiv($level['SportRunningReturnRate'], 100, 3);
+
+            if(empty($level['ValidInviteCounts']))
+            {
+                $level['ValidInviteCounts'] =0;
+            }
 
             $running_return = [
                 $level['OrignalRunningReturnRate'],
@@ -4208,7 +4230,7 @@ class Player extends Main
             $dm = 100;
         }
         $data = $this->sendGameMessage('CMD_MD_USER_WAGED_RATE', [$roleid, $type, $dm], "DC", 'returnComm');
-        if ($data['iResult'] == 0) {
+        if ($data['iResult'] == 1) {
             if ($type == 0) {
                 $comment = '编辑赢打码百分比：' . $dm;
             } else {
