@@ -1115,19 +1115,7 @@ class Player extends Main
                     //是否在线
                     $item['is_oline'] = $this->sendGameMessage('CMD_MD_USER_STATE', [$item['ID']], "DC", 'returnComm')['iResult'] ?? 0;
 
-                    //打码百分比
-                    $item['dmrateset'] = 0;
-                    if (config('is_dmrateset') == 1) {
-                        $dmrateset = $db->getTableObject('T_Job_UserInfo')->where('RoleID', $item['ID'])->find() ?: [];
-                        if($dmrateset){
-                            if ($dmrateset['job_key'] == 3) {
-                                $item['dmrateset'] = $dmrateset['value'];
-                            }
-                            if ($dmrateset['job_key'] == 4) {
-                                $item['dmrateset'] = -$dmrateset['value'];
-                            }
-                        }
-                    }
+
                     ConVerMoney($item['Money']);
                     ConVerMoney($item['ProxyBonus']);
 
@@ -1208,6 +1196,22 @@ class Player extends Main
         return $this->fetch();
     }
 
+    public function getdmrateset(){
+        //打码百分比
+        $roleid = input('roleid');
+        $item['win_dmrateset'] = 0;
+        $item['lose_dmrateset'] = 0;
+
+        $dmrateset = (new UserDB())->getTableObject('T_Job_UserInfo')->where('RoleID', $roleid)->where('job_key',3)->find() ?: [];
+        if($dmrateset){
+            $item['win_dmrateset'] = $dmrateset['value'];
+        }
+        $dmrateset = (new UserDB())->getTableObject('T_Job_UserInfo')->where('RoleID', $roleid)->where('job_key',4)->find() ?: [];
+        if($dmrateset){
+            $item['lose_dmrateset'] = $dmrateset['value'];
+        }
+        return json($item);
+    }
     /**手机绑定列表 */
     public function MobileList()
     {
@@ -4216,7 +4220,7 @@ class Player extends Main
     public function setRateDm()
     {
         $roleid = $this->request->param('roleid');
-        $dm = $this->request->param('dm');
+        $dm = abs($this->request->param('dm'));
         $type = $this->request->param('type');
         $dm = intval($dm);
         $auth_ids = $this->getAuthIds();

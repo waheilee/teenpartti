@@ -616,49 +616,41 @@
 
                                 // x_admin_show('{:lang(\'编辑单控\')}', "{:url('/admin/player/online2Control')}?roleid="+ data.ID, 700, 600);
                             } else if (layEvent === 'dmrateset') {
-                                // $.ajax({
-                                //     type: 'post',
-                                //     url: "{:url('player/getDm')}?roleid="+data.ID,
-                                //     data: {
-                                //         'roleid': data.ID,
-                                //     },
-                                //     dataType: 'json',
-                                //     success: function (res) {
-                                //         if (res.code == 0) {
-                                //             var lCurWaged = res.data.lCurWaged;
-                                var content = '<form class="layui-form" action="">' +
-                                    // '<div class="layui-form-item"><label class="layui-form-label" style="width:87px">{:lang("当前值")}</label><div class="layui-input-block"><input type="text" name="title" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" value="'+lCurWaged+'" readonly=""></div></div>'+
-                                    '<div class="layui-form-item"><label class="layui-form-label">{:lang("百分比0-100")}</label><div class="layui-input-block"><input type="number" min="0"name="title" lay-verify="title" autocomplete="off" placeholder="{:lang(\'请输入百分比%\')}" class="layui-input" id="dmrate" value="'+d.dmrateset+'" ></div></div>' +
-                                    '</form>';
-                                layer.open({
-                                    content: content,
-                                    title: '{:lang("打码量设置")}'
-                                    , btn: ['{:lang("赢百分比")}', '{:lang("输百分比")}']
-                                    , yes: function (index, layero) {
-                                        var dmrate = $("#dmrate").val();
-                                        if (dmrate == '') {
-                                            layer.msg("{:lang('请输入百分比值')}");
-                                            return;
-                                        }
-                                        editRateDm(data.ID, dmrate, 0);
-                                    }
-                                    , btn2: function (index, layero) {
-                                        var dmrate = $("#dmrate").val();
-                                        if (dmrate == '') {
-                                            layer.msg("{:lang('请输入百分比值')}");
-                                            return;
-                                        }
-                                        editRateDm(data.ID, dmrate, 1);
+
+                                $.ajax({
+                                    type: 'post',
+                                    url: "{:url('player/getdmrateset')}",
+                                    data: {
+                                        'roleid': data.ID,
+                                    },
+                                    dataType: 'json',
+                                    success: function (res) {
+                                        var content = '<form class="layui-form" action="">' +
+                                            '<div class="layui-form-item"><label class="layui-form-label">{:lang("百分比0-100")}</label><div class="layui-input-block"><input type="number" min="0"name="title" lay-verify="title" autocomplete="off" placeholder="{:lang(\'请输入百分比%\')}" class="layui-input" id="dmrate" value="0" ></div></div>' +
+                                            '</form>';
+                                        layer.open({
+                                            content: content,
+                                            title: '{:lang("打码量设置")}，赢：'+res.win_dmrateset+'%，输：'+res.lose_dmrateset+'%'
+                                            , btn: ['{:lang("赢百分比")}', '{:lang("输百分比")}']
+                                            , yes: function (index, layero) {
+                                                var dmrate = $("#dmrate").val();
+                                                if (dmrate == '') {
+                                                    layer.msg("{:lang('请输入百分比值')}");
+                                                    return;
+                                                }
+                                                editRateDm(data.ID, dmrate, 0);
+                                            }
+                                            , btn2: function (index, layero) {
+                                                var dmrate = $("#dmrate").val();
+                                                if (dmrate == '') {
+                                                    layer.msg("{:lang('请输入百分比值')}");
+                                                    return;
+                                                }
+                                                editRateDm(data.ID, dmrate, 1);
+                                            }
+                                        });
                                     }
                                 });
-                                //         } else {
-                                //             layer.msg(res['msg'], {icon: 5});
-                                //             return false;
-                                //         }
-                                //     }
-                                // });
-
-                                // x_admin_show('{:lang(\'编辑单控\')}', "{:url('/admin/player/online2Control')}?roleid="+ data.ID, 700, 600);
                             } else if (layEvent === 'setInviteCode') {
                                 layer.prompt({
                                     formType: 3,
