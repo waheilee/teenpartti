@@ -82,6 +82,9 @@ define('CMD_MD_THIRD_PARTY_CLEAR_INGAME_LABEL', 75);//三方清除在游戏中�
 
 define('CMD_MD_CHANNEL_CHILD_ONLINE_COUNTS', 76);//查询渠道对应的在线人数
 define('CMD_MD_USER_STATE', 77);//查询玩家在线状态
+define('CMD_MD_USER_WAGED_RATE', 78);//查询打码百分比
+define('CMD_MD_GM_ADD_PROXY_COMMISSION', 79);//佣金上下分
+
 
 class sendQuery
 {
@@ -309,6 +312,16 @@ class sendQuery
         $socket->request($in_head, $in);
     }
 
+    function CMD_MD_GM_ADD_PROXY_COMMISSION($socket, $iRoleID, $iMonery, $ntype)
+    {
+        //$this->in_stream = new PHPStream();
+        $this->in_stream->WriteULong($iRoleID);
+        $this->in_stream->WriteLong($ntype);
+        $this->in_stream->WriteINT64($iMonery);
+        $in_head = $this->comm->MakeSendHead(79, $this->in_stream->len, 0, REQ_OM, REQ_DC);
+        $in = $this->in_stream->data;
+        $socket->request($in_head, $in);
+    }
 //补发积分
 //UINT32		iRoleID;				//角色ID
 //UINT32		iKindID; 				//游戏类型 int 1000
@@ -1145,6 +1158,17 @@ class sendQuery
         $this->in_stream->WriteULong($type);
         $this->in_stream->WriteINT64($dm);
         $in_head = $this->comm->MakeSendHead(CMD_MD_SET_WAGED, $this->in_stream->len, 0, REQ_OM, REQ_DC);
+        $in = $this->in_stream->data;
+        $res = $socket->request($in_head, $in);
+    }
+
+    //设置打码百分比
+    public function CMD_MD_USER_WAGED_RATE($socket, $roleid, $type, $dm)
+    {
+        $this->in_stream->WriteULong($roleid);
+        $this->in_stream->WriteULong($type);
+        $this->in_stream->WriteINT64($dm);
+        $in_head = $this->comm->MakeSendHead(CMD_MD_USER_WAGED_RATE, $this->in_stream->len, 0, REQ_OM, REQ_DC);
         $in = $this->in_stream->data;
         $res = $socket->request($in_head, $in);
     }
