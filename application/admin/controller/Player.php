@@ -4256,6 +4256,50 @@ class Player extends Main
             return $this->apiReturn(1, '', '操作失败');
         }
     }
+
+    /**
+     * 批量打码百分比设置
+     * @return mixed
+     */
+    public function multisetRateDm()
+    {
+        $accountId = $this->request->param('roleid/a');
+        $dm = abs($this->request->param('dm'));
+        $type = $this->request->param('type');
+        $auth_ids = $this->getAuthIds();
+        if (!in_array(10004, (array)$auth_ids)) {
+            return $this->apiReturn(2, [], '没有权限');
+        }
+        if ($dm < 0) {
+            $dm = 0;
+        }
+        if ($dm > 100) {
+            $dm = 100;
+        }
+        $success_num =0;
+        $faild_num =0;
+        foreach ($accountId as $k => $v) {
+            $data = $this->sendGameMessage('CMD_MD_USER_WAGED_RATE', [$v, $type, $dm], "DC", 'returnComm');
+            if ($data['iResult'] == 1) {
+                if ($type == 0) {
+                    $comment = '编辑赢打码百分比：' . $dm;
+                } else {
+                    $comment = '编辑输打码百分比:' . $dm;
+                }
+                $db = new GameOCDB();
+                $db->setTable('T_PlayerComment')->Insert([
+                    'roleid' => $v,
+                    'adminid' => session('userid'),
+                    'type' => 4,
+                    'opt_time' => date('Y-m-d H:i:s'),
+                    'comment' => $comment
+                ]);
+            }
+        }
+        $str_msg ='处理成功'.$success_num.',失败：'.$faild_num;
+        return $this->apiReturn(0, '', $str_msg);
+
+    }
     public function getCommentList()
     {
         $roleid = input('roleid', 0, 'intval');

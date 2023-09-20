@@ -85,12 +85,16 @@
 <script type="text/html" id="toolbarDemo">
     <div class="layui-btn-container">
         <button class="layui-btn layui-btn-sm" lay-event="onekeyPass">{:lang('打码批量清零')}</button>
+        <button class="layui-btn layui-btn-sm" lay-event="multiDmRateSet">{:lang('批量打码百分比设置')}</button>
+        <button class="layui-btn layui-btn-sm" lay-event="multiCancelControl">{:lang('批量结束控制')}</button>
 
     </div>
 </script>
 
 <script type="text/html" id="msg-bar">
     <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="wageclear">{:lang('打码清零')}</a>
+    <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="dmrateset">{:lang('打码百分比设置')}</a>
+    <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="cancelControl">{:lang('结束控制')}</a>
 </script>
 <script>
     url = "{:url('ranke/wageTaskList')}";
@@ -141,7 +145,18 @@
                     ,
                     {field: 'iCurWaged', align: 'center', title: "{:lang('当前完成打码')}", width: 180},
                     {field: 'iNeedWaged', align: 'center', title: "{:lang('打码任务')}", width: 180},
-                    {field: 'CompletionProgress', align: 'center', title: "{:lang('完成进度')}", width: 180},
+                    {field: 'CompletionProgress', align: 'center', title: "{:lang('完成进度')}", width: 180,sort:true},
+                    {field: 'CtrlRatio', title: "{:lang('单控数值')}", minWidth:150, templet: function (d) {
+                            if (d.CtrlRatio > 0 && d.CtrlRatio != 100) {
+                                return "<span style='color:#e60000;font-weight:bold;'>"+d.CtrlRatio+"</span>";
+                            } else {
+                                if (d.CtrlRatio == null || d.CtrlRatio == 100) {
+                                    return '';
+                                }
+                            }
+
+                        }
+                    },
                     {fixed: 'right', title: "{:lang('操作')}", align: 'center', minWidth: 150, toolbar: '#msg-bar'}
 
 
@@ -206,16 +221,32 @@
                     });
 
                 });
-
+                $(document).off('mousedown','.layui-table-grid-down').
+                on('mousedown','.layui-table-grid-down',function (event) {
+                    table._tableTrCurrr = $(this).closest('td');
+                });
+                $(document).off('click','.layui-table-tips-main [lay-event]').
+                on('click','.layui-table-tips-main [lay-event]',function (event) {
+                    //debugger
+                    var elem = $(this);
+                    var tableTrCurrr =  table._tableTrCurrr;
+                    if(!tableTrCurrr){
+                        return;
+                    }
+                    var layerIndex = elem.closest('.layui-table-tips').attr('times');
+                    console.log(layerIndex);
+                    layer.close(layerIndex);
+                    table._tableTrCurrr.find('[lay-event="' + elem.attr('lay-event') +'"]').click();
+                });
                 table.on('tool(proxylist)', function (obj) {
+                    console.log(obj)
                     var data = obj.data //获得当前行数据
                         , layEvent = obj.event; //获得 lay-event 对应的值
                     tr = obj.tr; //获得当前行 tr 的DOM对象
                     if (layEvent === 'detail') {
                         var url = '/admin/player/playerDetail?roleid=' + data.AccountID;
                         x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.6);
-                    }
-                    if(layEvent=='wageclear'){
+                    }else if(layEvent === 'wageclear'){
                         layer.confirm("玩家："+data.AccountID+",{:lang('确认打码清零？')}", {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
                             $.ajax({
                                 type: 'post',
@@ -235,8 +266,96 @@
                                 }
                             });
                         });
+                    }else if(layEvent === 'cancelControl'){
+                        layer.confirm("玩家："+data.AccountID+",{:lang('确认结束控制？')}", {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
+                            $.ajax({
+                                type: 'post',
+                                url:'{:url("gamectrl/resetPersonRate")}',
+                                data:{
+                                    'roleid' : data.AccountID
+                                },
+                                dataType: 'json',
+                                success: function (res) {
+                                    if (res.code === 0) {
+                                        layer.msg(res.msg, {icon: 1, time: 1000}, function () {
+                                            main.renderData();
+                                        });
+                                    } else {
+                                        layer.msg(res.msg, {icon: 2});
+                                    }
+                                }
+                            });
+                        });
+                    }else if (layEvent === 'dmrateset') {
+
+                        $.ajax({
+                            type: 'post',
+                            url: "{:url('player/getdmrateset')}",
+                            data: {
+                                'roleid': data.AccountID,
+                            },
+                            dataType: 'json',
+                            success: function (res) {
+                                var content = '<form class="layui-form" action="">' +
+                                    '<div class="layui-form-item"><label class="layui-form-label">{:lang("百分比0-100")}</label><div class="layui-input-block"><input type="number" min="0"name="title" lay-verify="title" autocomplete="off" placeholder="{:lang(\'请输入百分比%\')}" class="layui-input" id="dmrate" value="0" ></div></div>' +
+                                    '</form>';
+                                layer.open({
+                                    content: content,
+                                    title: '{:lang("打码量设置")}，赢：'+res.win_dmrateset+'%，输：'+res.lose_dmrateset+'%'
+                                    , btn: ['{:lang("赢百分比")}', '{:lang("输百分比")}']
+                                    , yes: function (index, layero) {
+                                        var dmrate = $("#dmrate").val();
+                                        if (dmrate == '') {
+                                            layer.msg("{:lang('请输入百分比值')}");
+                                            return;
+                                        }
+                                        editRateDm(data.AccountID, dmrate, 0);
+                                    }
+                                    , btn2: function (index, layero) {
+                                        var dmrate = $("#dmrate").val();
+                                        if (dmrate == '') {
+                                            layer.msg("{:lang('请输入百分比值')}");
+                                            return;
+                                        }
+                                        editRateDm(data.AccountID, dmrate, 1);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    function editRateDm(id, dm, t) {
+                        $.ajax({
+                            type: 'post',
+                            url: "{:url('player/setRateDm')}",
+                            beforeSend: function () {
+                                var layindex = layer.msg("{:lang('稍等片刻,马上就好')}", {
+                                    icon:16,
+                                    shade:[0.1, '#fff'],
+                                    time:false //不自动关闭
+                                });
+                            },
+                            data: {
+                                'roleid': id,
+                                'dm': dm,
+                                'type': t
+                            },
+                            dataType: 'json',
+                            success: function (res) {
+                                if (res.code == 0) {
+                                    layer.msg("{:lang('设置成功')}", {icon: 1, time: 1000}, function () {
+                                        //window.location.reload();
+                                        layer.closeAll();
+                                    });
+                                } else {
+                                    layer.msg(res['msg'], {icon: 5});
+                                }
+                            }
+                        });
                     }
                 });
+
+
+
 
                 //触发表格复选框选择
                 table.on('checkbox(proxylist)', function(obj){
@@ -244,17 +363,18 @@
                 });
                 table.on('toolbar(proxylist)', function(obj){
                     var checkStatus = table.checkStatus(obj.config.id);
+                    var da = checkStatus.data;
+                    if (da.length == 0) {
+                        layer.msg('{:lang("未选择记录")}');
+                        return;
+                    }
+                    var AccountID = [];
+                    for (var i = da.length - 1; i >= 0; i--) {
+                        AccountID.push(da[i].AccountID)
+                    }
                     switch(obj.event){
                         case 'onekeyPass':
-                            var da = checkStatus.data;
-                            if (da.length == 0) {
-                                layer.msg('{:lang("未选择记录")}');
-                                return;
-                            }
-                            var AccountID = [];
-                            for (var i = da.length - 1; i >= 0; i--) {
-                                AccountID.push(da[i].AccountID)
-                            }
+
                             layer.confirm("{:lang('确认要批量清零？')}", {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
                                 $.ajax({
                                     type: 'post',
@@ -274,10 +394,87 @@
                                     }
                                 });
                             });
-
-
                             break;
-                    };
+                        case 'multiDmRateSet':
+
+                            var content = '<form class="layui-form" action="">' +
+                                '<div class="layui-form-item"><label class="layui-form-label">{:lang("百分比0-100")}</label><div class="layui-input-block"><input type="number" min="0"name="title" lay-verify="title" autocomplete="off" placeholder="{:lang(\'请输入百分比%\')}" class="layui-input" id="dmrate" value="0" ></div></div>' +
+                                '</form>';
+                            layer.open({
+                                content: content,
+                                title: '{:lang("打码量设置")}',
+                                btn: ['{:lang("赢百分比")}', '{:lang("输百分比")}'],
+                                yes: function (index, layero) {
+                                    var dmrate = $("#dmrate").val();
+                                    if (dmrate == '') {
+                                        layer.msg("{:lang('请输入百分比值')}");
+                                        return;
+                                    }
+                                    editMultiRateDm(AccountID, dmrate, 0);
+                                }
+                                , btn2: function (index, layero) {
+                                    var dmrate = $("#dmrate").val();
+                                    if (dmrate == '') {
+                                        layer.msg("{:lang('请输入百分比值')}");
+                                        return;
+                                    }
+                                    editMultiRateDm(AccountID, dmrate, 1);
+                                }
+                            });
+                        function editMultiRateDm(id, dm, t) {
+                            console.log(id)
+                            $.ajax({
+                                type: 'post',
+                                url: "{:url('player/multisetRateDm')}",
+                                beforeSend: function () {
+                                    var layindex = layer.msg("{:lang('稍等片刻,马上就好')}", {
+                                        icon:16,
+                                        shade:[0.1, '#fff'],
+                                        time:false //不自动关闭
+                                    });
+                                },
+                                data: {
+                                    'roleid': id,
+                                    'dm': dm,
+                                    'type': t
+                                },
+                                dataType: 'json',
+                                success: function (res) {
+                                    if (res.code == 0) {
+                                        layer.msg("{:lang('设置成功')}", {icon: 1, time: 1000}, function () {
+                                            //window.location.reload();
+                                            layer.closeAll();
+                                        });
+                                    } else {
+                                        layer.msg(res['msg'], {icon: 5});
+                                    }
+                                }
+                            });
+                        }
+                            break;
+                        case 'multiCancelControl':
+
+                            layer.confirm("{:lang('确认结束控制？')}", {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
+                                $.ajax({
+                                    type: 'post',
+                                    url:'{:url("gamectrl/multiCancelControl")}',
+                                    data:{
+                                        'roleid' : AccountID
+                                    },
+                                    dataType: 'json',
+                                    success: function (res) {
+                                        if (res.code === 0) {
+                                            layer.msg(res.msg, {icon: 1, time: 1000}, function () {
+                                                main.renderData();
+                                            });
+                                        } else {
+                                            layer.msg(res.msg, {icon: 2});
+                                        }
+                                    }
+                                });
+                            });
+                            break;
+                    }
                 });
             },
             init: function () {
@@ -345,5 +542,6 @@
             });
         }
     });
+
 </script>
 {/block}

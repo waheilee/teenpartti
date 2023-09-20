@@ -253,9 +253,10 @@ class UserDB extends BaseModel
         } 
         
         $result = $this->getTableObject('[View_Accountinfo](NOLOCK)')->alias('a')
+                ->join('[CD_UserDB].[dbo].[T_UserCtrlData] b', 'b.RoleID=a.AccountID', 'LEFT')
                 ->where($where)
                 ->order("$orderby $ordertype")
-                ->field('AccountID,Money,OperatorId,TotalDeposit,TotalRollOut,RegisterTime')
+                ->field('AccountID,Money,OperatorId,TotalDeposit,TotalRollOut,RegisterTime,b.CtrlRatio')
                 ->paginate($limit)
                 ->toArray();
         $result['list'] = $result['data'];
