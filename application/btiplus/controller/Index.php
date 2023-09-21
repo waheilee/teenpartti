@@ -771,12 +771,6 @@ class Index extends Base
      */
     public function createusertest()
     {
-        $reserveIdRedisKey = '12312312312';
-//        Redis::set($reserveIdRedisKey,100);
-        Redis::rm($reserveIdRedisKey);
-        $betsTotal = Redis::get($reserveIdRedisKey) ?? 0;
-        var_dump((int)$betsTotal);
-        die();
         $roleId = 110;
         $encry = $this->encry($roleId);
         Redis::set($encry, $encry, 600);
@@ -838,6 +832,15 @@ class Index extends Base
         $socket = new QuerySocket();
         $accountDB = new AccountDB();
         try {
+            if (!is_numeric($accountId)) {
+                $response = [
+                    "error_code" => -2,
+                    "error_message" => "Invalid Customer",
+                    "balance" => 0,
+                    "trx_id" => $this->makeOrderId(00),
+                ];
+                return json($response);
+            }
             $accountInfo = $accountDB->getTableObject('T_Accounts')
                 ->where('AccountID', $accountId)
                 ->select();
@@ -863,6 +866,7 @@ class Index extends Base
                 save_log('btiplus', '===' . request()->url() . '===响应资金不足数据===' . json_encode($response));
                 return json($response);
             }
+            var_dump($accountInfo);die();
 
             $reserve = Redis::get($this->reserveRedisKey . $accountId . $reserveId);//请求重复直接返回上次请求参数
             if (!empty($reserve)) {
@@ -918,7 +922,7 @@ class Index extends Base
 
         $commitReserveRedisKey = 'USER_COMMIT_FOR_RESERVE_ID_' . $accountId . $reserveId . $orderId;
         //查看玩家reserve是否存在
-        if (!Redis::has($this->reserveRedisKey. $accountId . $reserveId)) {
+        if (!Redis::has($this->reserveRedisKey . $accountId . $reserveId)) {
             $response = [
                 "error_code" => 0,
                 "error_message" => "ReserveID Not Exist",
@@ -929,7 +933,7 @@ class Index extends Base
         }
 
         //查看相同一次投注订单是否重复提交
-        $numberOfBets = Redis::get($this->reqIdRedisKey. $accountId . $reserveId . $orderId . $reqId);
+        $numberOfBets = Redis::get($this->reqIdRedisKey . $accountId . $reserveId . $orderId . $reqId);
         if ($numberOfBets) {
             $response = [
                 "error_code" => 0,
@@ -951,7 +955,7 @@ class Index extends Base
         //Reserve 中的 URL 传入&amount=10，DebitRserve 中
         //的 url 可以传&amount=10.01，只需读取 Reserve
         //URL 中的金额即可。
-        $reserveBets = Redis::get($this->reserveAmountBetRedisKey. $accountId . $reserveId);//玩家reserve总金额
+        $reserveBets = Redis::get($this->reserveAmountBetRedisKey . $accountId . $reserveId);//玩家reserve总金额
         if ($reserveBets < bcadd($debitTotal, 0.01, 2)) {
             $response = [
                 "error_code" => 0,
@@ -961,8 +965,8 @@ class Index extends Base
             ];
             return json($response);
         }
-        Redis::set($this->debitTotalRedisKey. $accountId . $reserveId . $orderId, $debitTotal, 84600);
-        Redis::set($this->reqIdRedisKey. $accountId . $reserveId . $orderId . $reqId, $amount, 84600);
+        Redis::set($this->debitTotalRedisKey . $accountId . $reserveId . $orderId, $debitTotal, 84600);
+        Redis::set($this->reqIdRedisKey . $accountId . $reserveId . $orderId . $reqId, $amount, 84600);
         //已取消预留
         $cancelDebitReserve = Redis::get('RESERVE_BET_CANCEL' . $accountId . $reserveId);
         if ($cancelDebitReserve) {

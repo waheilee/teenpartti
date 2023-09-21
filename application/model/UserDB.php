@@ -200,7 +200,9 @@ class UserDB extends BaseModel
 
         $wage_min = input('wage_min','');
         $wage_max = input('wage_max','');
-
+        if ($orderby == 'CompletionProgress'){
+            $orderby = 'Money';
+        }
 
         if (session('merchant_OperatorId') && request()->module() == 'merchant') {
             $OperatorId = session('merchant_OperatorId');     
@@ -254,9 +256,11 @@ class UserDB extends BaseModel
         
         $result = $this->getTableObject('[View_Accountinfo](NOLOCK)')->alias('a')
                 ->join('[CD_UserDB].[dbo].[T_UserCtrlData] b', 'b.RoleID=a.AccountID', 'LEFT')
+                ->join('[CD_UserDB].[dbo].[T_Job_UserInfo] c', 'c.RoleID=a.AccountID and c.job_key=3', 'LEFT')
+                ->join('[CD_UserDB].[dbo].[T_Job_UserInfo] d', 'd.RoleID=a.AccountID and d.job_key=4', 'LEFT')
                 ->where($where)
                 ->order("$orderby $ordertype")
-                ->field('AccountID,Money,OperatorId,TotalDeposit,TotalRollOut,RegisterTime,b.CtrlRatio')
+                ->field('AccountID,Money,OperatorId,TotalDeposit,TotalRollOut,RegisterTime,b.CtrlRatio,c.value as win_dmrateset,c.job_key as win_key,d.value as lose_dmrateset,d.job_key as lost_key')
                 ->paginate($limit)
                 ->toArray();
         $result['list'] = $result['data'];

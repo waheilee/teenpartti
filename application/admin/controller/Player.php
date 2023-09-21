@@ -4300,6 +4300,29 @@ class Player extends Main
         return $this->apiReturn(0, '', $str_msg);
 
     }
+    /**
+     * 批量结束控制(停止使用)
+     * @return void
+     */
+    public function multiCancelControl()
+    {
+        $accountId = $this->request->param('roleid/a');
+        foreach ($accountId as $k => $v) {
+            $this->sendGameMessage('CMD_MD_USER_WAGED_RATE', [$v, 0, 0], "DC", 'returnComm');
+            $this->sendGameMessage('CMD_MD_USER_WAGED_RATE', [$v, 1, 0], "DC", 'returnComm');
+            $comment = '编辑输赢打码百分比：' . 0;
+            $db = new GameOCDB();
+            $db->setTable('T_PlayerComment')->Insert([
+                'roleid' => $v,
+                'adminid' => session('userid'),
+                'type' => 4,
+                'opt_time' => date('Y-m-d H:i:s'),
+                'comment' => $comment
+            ]);
+        }
+        GameLog::logData(__METHOD__, $this->request->request());
+        return $this->apiReturn(0, [], '设置成功');
+    }
     public function getCommentList()
     {
         $roleid = input('roleid', 0, 'intval');

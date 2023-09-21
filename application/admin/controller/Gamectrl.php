@@ -752,20 +752,20 @@ class Gamectrl extends Main
     }
 
     /**
-     * 批量结束控制
+     * 批量结束控制(停止使用)
      * @return void
      */
-    public function multiCancelControl()
-    {
-        $accountId = $this->request->param('roleid/a');
-        foreach ($accountId as $k => $v) {
-            $socket = new QuerySocket();
-            $socket->setRoleRate($v, 100, 0, 0);
-            ob_clean();
-        }
-        GameLog::logData(__METHOD__, $this->request->request());
-        return $this->apiReturn(0, [], '设置成功');
-    }
+//    public function multiCancelControl()
+//    {
+//        $accountId = $this->request->param('roleid/a');
+//        foreach ($accountId as $k => $v) {
+//            $socket = new QuerySocket();
+//            $socket->setRoleRate($v, 100, 0, 0);
+//            ob_clean();
+//        }
+//        GameLog::logData(__METHOD__, $this->request->request());
+//        return $this->apiReturn(0, [], '设置成功');
+//    }
 
 
     public function getRoomListTiger()

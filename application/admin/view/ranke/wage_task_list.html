@@ -146,17 +146,7 @@
                     {field: 'iCurWaged', align: 'center', title: "{:lang('当前完成打码')}", width: 180},
                     {field: 'iNeedWaged', align: 'center', title: "{:lang('打码任务')}", width: 180},
                     {field: 'CompletionProgress', align: 'center', title: "{:lang('完成进度')}", width: 180,sort:true},
-                    {field: 'CtrlRatio', title: "{:lang('单控数值')}", minWidth:150, templet: function (d) {
-                            if (d.CtrlRatio > 0 && d.CtrlRatio != 100) {
-                                return "<span style='color:#e60000;font-weight:bold;'>"+d.CtrlRatio+"</span>";
-                            } else {
-                                if (d.CtrlRatio == null || d.CtrlRatio == 100) {
-                                    return '';
-                                }
-                            }
-
-                        }
-                    },
+                    {field: 'CtrlRatio', title: "{:lang('单控数值')}", minWidth:150},
                     {fixed: 'right', title: "{:lang('操作')}", align: 'center', minWidth: 150, toolbar: '#msg-bar'}
 
 
@@ -270,18 +260,44 @@
                         layer.confirm("玩家："+data.AccountID+",{:lang('确认结束控制？')}", {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
                             $.ajax({
                                 type: 'post',
-                                url:'{:url("gamectrl/resetPersonRate")}',
-                                data:{
-                                    'roleid' : data.AccountID
+                                url: "{:url('player/setRateDm')}",
+                                data: {
+                                    'roleid': data.AccountID,
+                                    'dm': 0,
+                                    'type': 0
                                 },
                                 dataType: 'json',
                                 success: function (res) {
-                                    if (res.code === 0) {
-                                        layer.msg(res.msg, {icon: 1, time: 1000}, function () {
-                                            main.renderData();
+                                    if (res.code == 0) {
+                                    } else {
+                                        layer.msg(res['msg'], {icon: 5});
+                                    }
+                                }
+                            });
+                            $.ajax({
+                                type: 'post',
+                                url: "{:url('player/setRateDm')}",
+                                beforeSend: function () {
+                                    var layindex = layer.msg("{:lang('稍等片刻,马上就好')}", {
+                                        icon:16,
+                                        shade:[0.1, '#fff'],
+                                        time:false //不自动关闭
+                                    });
+                                },
+                                data: {
+                                    'roleid': data.AccountID,
+                                    'dm': 0,
+                                    'type': 1
+                                },
+                                dataType: 'json',
+                                success: function (res) {
+                                    if (res.code == 0) {
+                                        layer.msg("{:lang('设置成功')}", {icon: 1, time: 1000}, function () {
+                                            window.location.reload();
+                                            layer.closeAll();
                                         });
                                     } else {
-                                        layer.msg(res.msg, {icon: 2});
+                                        layer.msg(res['msg'], {icon: 5});
                                     }
                                 }
                             });
@@ -343,7 +359,7 @@
                             success: function (res) {
                                 if (res.code == 0) {
                                     layer.msg("{:lang('设置成功')}", {icon: 1, time: 1000}, function () {
-                                        //window.location.reload();
+                                        window.location.reload();
                                         layer.closeAll();
                                     });
                                 } else {
@@ -457,7 +473,14 @@
                             layer.confirm("{:lang('确认结束控制？')}", {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
                                 $.ajax({
                                     type: 'post',
-                                    url:'{:url("gamectrl/multiCancelControl")}',
+                                    url:'{:url("player/multiCancelControl")}',
+                                    beforeSend: function () {
+                                        var layindex = layer.msg("{:lang('稍等片刻,马上就好')}", {
+                                            icon:16,
+                                            shade:[0.1, '#fff'],
+                                            time:false //不自动关闭
+                                        });
+                                    },
                                     data:{
                                         'roleid' : AccountID
                                     },

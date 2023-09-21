@@ -150,7 +150,10 @@ class Ranke extends Main
                 $db = new UserDB();
                 $data =$db->GetGoldRanklist();
                 $socket = new QuerySocket();
+                $orderby = input('orderby', "Money");
+                $ordertype = input('ordertype', 'desc');
                 foreach ($data['list'] as $k=>&$v){
+
                     $userbanlance =$socket->DSQueryRoleBalance($v['AccountID']);
                     $v['CashAble'] =0;
                     if(!empty($userbanlance)){
@@ -178,10 +181,20 @@ class Ranke extends Main
                         $percentage = bcmul(bcdiv( $v['iCurWaged'] , $v['iNeedWaged'],2),100,2).'%';
                     }
                     $v['CompletionProgress'] = $percentage;
-//                    if ($v['iNeedWaged'] <= $v['iCurWaged']) {
-//                        $v['iCurWaged'] = $v['iNeedWaged'] = '0.00';
-//                    }
+                    $v['CtrlRatio'] = '';
+                    if ($v['win_dmrateset']){
+                        $v['CtrlRatio'] = "赢：".$v['win_dmrateset'];
+                    }
+                    if ($v['lose_dmrateset']){
+                        $v['CtrlRatio'] = $v['CtrlRatio'].PHP_EOL.'输：'. $v['lose_dmrateset'];
+                    }
+//                    $v['CtrlRatio'] = "赢：".$v['win_dmrateset'] .",输：". $v['lose_dmrateset'];
                     unset($v);
+                }
+                if ($orderby == 'CompletionProgress'){
+                    $sortType = $ordertype == 'desc' ? SORT_DESC : SORT_ASC;
+                    $CompletionProgress = array_column($data['list'],'CompletionProgress');
+                    array_multisort($CompletionProgress,$sortType,$data['list']);
                 }
                 return $this->apiJson($data);
             case 'exec':
