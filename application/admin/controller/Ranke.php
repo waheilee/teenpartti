@@ -182,10 +182,11 @@ class Ranke extends Main
                     }
                     $v['CompletionProgress'] = $percentage;
                     $v['CtrlRatio'] = '';
-                    if ($v['win_dmrateset']){
+
+                    if ($v['win_dmrateset'] && $v['win_dmrateset'] != 100){
                         $v['CtrlRatio'] = "赢：".$v['win_dmrateset'].'%';
                     }
-                    if ($v['lose_dmrateset']){
+                    if ($v['lose_dmrateset'] && $v['lose_dmrateset'] != 100){
                         $v['CtrlRatio'] = $v['CtrlRatio'].PHP_EOL.'输：'. $v['lose_dmrateset'].'%';
                     }
 //                    $v['CtrlRatio'] = "赢：".$v['win_dmrateset'] .",输：". $v['lose_dmrateset'];
