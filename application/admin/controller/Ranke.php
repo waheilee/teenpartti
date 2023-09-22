@@ -191,8 +191,13 @@ class Ranke extends Main
 //                    $v['CtrlRatio'] = "赢：".$v['win_dmrateset'] .",输：". $v['lose_dmrateset'];
                     unset($v);
                 }
+                $sortType = $ordertype == 'desc' ? SORT_DESC : SORT_ASC;
+                if ($orderby == 'CtrlRatio'){
+                    $CompletionProgress = array_column($data['list'],'win_dmrateset');
+                    array_multisort($CompletionProgress,$sortType,$data['list']);
+                }
                 if ($orderby == 'CompletionProgress'){
-                    $sortType = $ordertype == 'desc' ? SORT_DESC : SORT_ASC;
+
                     $CompletionProgress = array_column($data['list'],'CompletionProgress');
                     array_multisort($CompletionProgress,$sortType,$data['list']);
                 }

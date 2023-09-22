@@ -203,6 +203,9 @@ class UserDB extends BaseModel
         if ($orderby == 'CompletionProgress'){
             $orderby = 'Money';
         }
+        if ($orderby == 'CtrlRatio'){
+            $orderby = 'Money';
+        }
 
         if (session('merchant_OperatorId') && request()->module() == 'merchant') {
             $OperatorId = session('merchant_OperatorId');     
