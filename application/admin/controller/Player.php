@@ -4308,8 +4308,8 @@ class Player extends Main
     {
         $accountId = $this->request->param('roleid/a');
         foreach ($accountId as $k => $v) {
-            $this->sendGameMessage('CMD_MD_USER_WAGED_RATE', [$v, 0, 100], "DC", 'returnComm');
-            $this->sendGameMessage('CMD_MD_USER_WAGED_RATE', [$v, 1, 100], "DC", 'returnComm');
+            $this->sendGameMessage('CMD_MD_USER_WAGED_RATE', [$v, 0, 0], "DC", 'returnComm');
+            $this->sendGameMessage('CMD_MD_USER_WAGED_RATE', [$v, 1, 0], "DC", 'returnComm');
             $comment = '编辑输赢打码百分比：' . 0;
             $db = new GameOCDB();
             $db->setTable('T_PlayerComment')->Insert([
