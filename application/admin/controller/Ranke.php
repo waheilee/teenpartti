@@ -189,7 +189,7 @@ class Ranke extends Main
 //                    if ($v['lose_dmrateset'] && $v['lose_dmrateset'] != 100){
 //                        $v['CtrlRatio'] = $v['CtrlRatio'].PHP_EOL.'输：'. $v['lose_dmrateset'].'%';
 //                    }
-                    $v['CtrlRatio'] = "赢：".$v['win_dmrateset'] .",输：". $v['lose_dmrateset'];
+                    $v['CtrlRatio'] = "赢：".$v['win_dmrateset'] ?? 0 .",输：". $v['lose_dmrateset'] ?? 0;
                     unset($v);
                 }
                 $sortType = $ordertype == 'desc' ? SORT_DESC : SORT_ASC;
