@@ -178,7 +178,7 @@ class Ranke extends Main
                     if ($v['iCurWaged'] == 0 || $v['iNeedWaged'] == 0){
                         $percentage = '0%';
                     }else{
-                        $percentage = bcmul(bcdiv( $v['iCurWaged'] , $v['iNeedWaged'],2),100,2).'%';
+                        $percentage = bcmul(bcdiv( $v['iCurWaged'] , $v['iNeedWaged'],6),100,2).'%';
                     }
                     $v['CompletionProgress'] = $percentage;
 //                    $v['CtrlRatio'] = '';
