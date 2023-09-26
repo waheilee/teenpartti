@@ -178,18 +178,26 @@ class Ranke extends Main
                     if ($v['iCurWaged'] == 0 || $v['iNeedWaged'] == 0){
                         $percentage = '0%';
                     }else{
-                        $percentage = bcmul(bcdiv( $v['iCurWaged'] , $v['iNeedWaged'],2),100,2).'%';
+                        $percentage = bcmul(bcdiv( $v['iCurWaged'] , $v['iNeedWaged'],6),100,2).'%';
                     }
                     $v['CompletionProgress'] = $percentage;
-                    $v['CtrlRatio'] = '';
-
-                    if ($v['win_dmrateset'] && $v['win_dmrateset'] != 100){
-                        $v['CtrlRatio'] = "赢：".$v['win_dmrateset'].'%';
+//                    $v['CtrlRatio'] = '';
+//
+//                    if ($v['win_dmrateset'] && $v['win_dmrateset'] != 100){
+//                        $v['CtrlRatio'] = "赢：".$v['win_dmrateset'].'%';
+//                    }
+//                    if ($v['lose_dmrateset'] && $v['lose_dmrateset'] != 100){
+//                        $v['CtrlRatio'] = $v['CtrlRatio'].PHP_EOL.'输：'. $v['lose_dmrateset'].'%';
+//                    }
+                    $win = 0;
+                    $lost = 0;
+                    if ($v['win_dmrateset']){
+                        $win = $v['win_dmrateset'];
                     }
-                    if ($v['lose_dmrateset'] && $v['lose_dmrateset'] != 100){
-                        $v['CtrlRatio'] = $v['CtrlRatio'].PHP_EOL.'输：'. $v['lose_dmrateset'].'%';
+                    if ($v['lose_dmrateset']){
+                        $lost =$v['lose_dmrateset'];
                     }
-//                    $v['CtrlRatio'] = "赢：".$v['win_dmrateset'] .",输：". $v['lose_dmrateset'];
+                    $v['CtrlRatio'] = "赢：".$win .",输：". $lost;
                     unset($v);
                 }
                 $sortType = $ordertype == 'desc' ? SORT_DESC : SORT_ASC;
