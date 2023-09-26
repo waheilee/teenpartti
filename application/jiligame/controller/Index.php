@@ -62,12 +62,12 @@ class Index extends Base
             $key = rand(100000,999999).md5('Token='.$token.'&GameId='.$gameid.'&Lang='.$language.'&AgentId='.$this->config['Merchant_ID'].$KeyG).rand(100000,999999);
             $url = $this->config['API_Host'].'singleWallet/LoginWithoutRedirect?Token='.$token.'&GameId='.$gameid.'&Lang='.$language.'&AgentId='.$this->config['Merchant_ID'].'&Key='.$key;
 
-            if(config('is_jiligame_trans') == 2){
+            if(config('is_jiligame_trans') == 1){
                 $result = $this->curl($url);
             } else {
-                $post_param['url'] = $url;
-
-                $result = $this->curl(config('trans_url_other').'/jiligame/index/createuser',$post_param);
+//                $post_param['url'] = $url;
+//
+//                $result = $this->curl(config('trans_url_other').'/jiligame/index/createuser',$post_param);
             }
             save_log('jiligame', '===第三方玩家创建===' . json_encode($result));
             $result = json_decode($result,1);
