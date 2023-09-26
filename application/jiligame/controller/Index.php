@@ -61,6 +61,7 @@ class Index extends Base
 
             $key = rand(100000,999999).md5('Token='.$token.'&GameId='.$gameid.'&Lang='.$language.'&AgentId='.$this->config['Merchant_ID'].$KeyG).rand(100000,999999);
             $url = $this->config['API_Host'].'singleWallet/LoginWithoutRedirect?Token='.$token.'&GameId='.$gameid.'&Lang='.$language.'&AgentId='.$this->config['Merchant_ID'].'&Key='.$key;
+            save_log('jiligame', '===请求Url===' . json_encode($url));
             if(config('is_jiligame_trans') == 2){
                 $result = $this->curl($url);
             } else {
