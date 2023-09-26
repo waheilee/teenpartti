@@ -61,11 +61,11 @@ class Index extends Base
 
             $key = rand(100000,999999).md5('Token='.$token.'&GameId='.$gameid.'&Lang='.$language.'&AgentId='.$this->config['Merchant_ID'].$KeyG).rand(100000,999999);
             $url = $this->config['API_Host'].'singleWallet/LoginWithoutRedirect?Token='.$token.'&GameId='.$gameid.'&Lang='.$language.'&AgentId='.$this->config['Merchant_ID'].'&Key='.$key;
-            save_log('jiligame', '===请求Url===' . json_encode($url));
             if(config('is_jiligame_trans') == 2){
                 $result = $this->curl($url);
             } else {
                 $post_param['url'] = $url;
+                save_log('jiligame', '===请求Url===' . json_encode(config('trans_url_other').'/jiligame/index/createuser',$post_param));
                 $result = $this->curl(config('trans_url_other').'/jiligame/index/createuser',$post_param);
             }
             save_log('jiligame', '===第三方玩家创建===' . json_encode($result));
