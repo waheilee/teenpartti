@@ -64,7 +64,8 @@ class Index extends Base
             if(config('is_jiligame_trans') == 2){
                 $result = $this->curl($url);
             } else {
-                $result = '{}';
+                $post_param['url'] = $url;
+                $result = $this->curl(config('trans_url_other').'/jiligame/index/createuser',$post_param);
             }
             save_log('jiligame', '===第三方玩家创建===' . json_encode($result));
             $result = json_decode($result,1);
