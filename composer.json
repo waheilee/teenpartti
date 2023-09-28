@@ -25,8 +25,8 @@
       "ext-zip": "*",
       "ext-bcmath": "*",
       "ext-json": "*",
-      "ext-sqlsrv": "*",
-      "ext-pcntl": "*"
+      "ext-curl": "*",
+      "starkbank/ecdsa": "^2.1"
     },
     "extra": {
         "think-path": "thinkphp"
