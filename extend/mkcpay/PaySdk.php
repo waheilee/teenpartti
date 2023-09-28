@@ -40,16 +40,13 @@ class PaySdk
         } else {
             $this->api_url = '';
         }
-
+        save_log('playertrans','提交三方参数'.'---订单号:'.$OrderNo.'---订单'.json_encode($order));
         $pixtype = $order['BankName'];
         $pixkey = '';
         $CPF = $order['CardNo'];
         switch ($pixtype) {
-            case 'CPF':
-                $pixkey = $order['CardNo'];
-                break;
-
             case 'CNPJ':
+            case 'CPF':
                 $pixkey = $order['CardNo'];
                 break;
 
