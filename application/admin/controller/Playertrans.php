@@ -575,7 +575,7 @@ class Playertrans extends Main
     {
         $userID = intval(input('UserID')) ? intval(input('UserID')) : 0;
         $OrderNo = input('OrderNo') ? input('OrderNo') : '';
-
+        save_log('playertrans','提交三方参数'.'---用户ID:'.$userID.'---订单号:'.$OrderNo.'---通道id'.input('channelid').'---审核人员'.input('checkUser'));
         if ($this->request->isAjax()) {
             try {
 
