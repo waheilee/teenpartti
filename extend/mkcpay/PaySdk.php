@@ -83,7 +83,6 @@ class PaySdk
             'sign:' . $sign,
             'appKey:' . $this->appid,
         ];
-var_dump($postData,$sign);die();
         $resultData = $this->httpRequestDataTest($this->api_url, json_encode($postData), $header);//发送http的post请求
         //{
         //"result": {
