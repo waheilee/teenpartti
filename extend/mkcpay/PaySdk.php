@@ -83,8 +83,8 @@ class PaySdk
             'sign:' . $sign,
             'appKey:' . $this->appid,
         ];
-
-        $result = $this->httpRequestDataTest($this->api_url, json_encode($postData), $header);//发送http的post请求
+var_dump($postData,$sign);die();
+        $resultData = $this->httpRequestDataTest($this->api_url, json_encode($postData), $header);//发送http的post请求
         //{
         //"result": {
         //"orderNo": "881609443421192192",
@@ -106,8 +106,8 @@ class PaySdk
         //"message": "成功",
         //"code": 200
         //}
-        save_log('mkcpay', 'post:' . json_encode($postData) . ',output:' . $result);
-        $res = json_decode($result, true);
+        save_log('mkcpay', 'post:' . json_encode($postData) . ',output:' . $resultData);
+        $res = json_decode($resultData, true);
         $result = ['system_ref' => '', 'message' => ''];
         if ($res) {
             if ($res['success']) {
