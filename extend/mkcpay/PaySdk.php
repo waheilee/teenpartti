@@ -48,10 +48,12 @@ class PaySdk
             case 'CNPJ':
             case 'CPF':
                 $pixkey = $order['CardNo'];
+                $pixtype = 'CPF';
                 break;
 
             case 'PHONE':
                 $pixkey = '+55' . $order['Province'];
+                $pixtype = '+55' . $order['Province'];
                 break;
 
             case 'EMAIL':
@@ -67,8 +69,8 @@ class PaySdk
         }
 
         $postData = [
-            'amount' => $order['RealMoney'],
-            'pix' => 'PIX',
+            'amount' => (int)($order['RealMoney']  * 100),
+            'pix' => $pixkey,
             'externalOrderNo' => $OrderNo,
             'purpose' => $pixkey,
             'transferType' => $pixtype,
@@ -108,7 +110,7 @@ class PaySdk
         $res = json_decode($result, true);
         $result = ['system_ref' => '', 'message' => ''];
         if ($res) {
-            if ($res['status']) {
+            if ($res['success']) {
                 $result['system_ref'] = '';
                 $result['status'] = true;
                 $result['message'] = 'success';
