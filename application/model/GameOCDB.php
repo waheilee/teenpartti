@@ -20,14 +20,14 @@ class GameOCDB extends BaseModel
      * UserDB.
      * @param string $tableName 连接的数据表
      */
-    public function __construct($tableName = '',$read_from_master= false)
+    public function __construct($tableName = '', $read_from_master = false)
     {
         $this->page = input('page', 1);
         $this->pageSize = input('limit', 15);
         $this->start = input('strartdate', date('Y-m-d'));
         $this->end = input('enddate', date('Y-m-d'));
         if (!IsNullOrEmpty($tableName)) $this->table = $tableName;
-        Parent::__construct($this->GameOC,$read_from_master);
+        Parent::__construct($this->GameOC, $read_from_master);
     }
 
     /**
@@ -64,7 +64,7 @@ class GameOCDB extends BaseModel
             $orderby = 'WinNum';
         }
 
-        $result = $this->GetPage($where, "$orderby $orderType", '*,(CASE WHEN Water=0 THEN 0 ELSE (WinScore*1.00/RoundBets) END) as KillRate', true);
+        $result = $this->GetPage($where, "$orderby $orderType", '*,(CASE WHEN RoundBets=0 THEN 0 ELSE (WinScore*1.00/RoundBets) END) as KillRate', true);
         $totol = $this->GetRow('1=1 ' . $where,
             " ISNULL(SUM(GCount),0) GCount,ISNULL(SUM(TotalNum),0) GNum,ISNULL(SUM(Water),0) GameWater,"
             . " ISNULL(SUM(WinScore),0)Score,ISNULL(SUM(Tax),0)Tax,SUM(ISNULL(RoundBets,0))RoundBets");
@@ -107,7 +107,10 @@ class GameOCDB extends BaseModel
                             break;
                         case 40000:
                             $v['RoomName'] = 'Haba';
-                            break;   
+                            break;
+                        case 41000:
+                            $v['RoomName'] = 'HackSaw';
+                            break;
                     }
                 }
                 $gamerate = sprintf("%.2f", $v['GameRate']);
@@ -439,7 +442,7 @@ class GameOCDB extends BaseModel
                 $join .= " WHERE A.OperatorId=" . $OperatorId;
             }
         }
-        $business_id='';
+        $business_id = '';
         if (session('business_ProxyChannelId') && request()->module() == 'business') {
             $business_id = session('business_ProxyChannelId');
             if ($business_id != '') {
@@ -454,9 +457,9 @@ class GameOCDB extends BaseModel
         $field = "A.ID,A.ServerID,RoleID,SerialNumber,ChangeType,GameRoundRunning,AddTime,Tax,A.Money+GameRoundRunning AwardMoney," .
             "RoomID/10*10 KindID,RoomID,RoomName,A.Money,LastMoney,LastMoney+Tax-A.Money PreMoney,A.OperatorId,RoundBets";
         $table = 'dbo.T_UserGameChangeLogs';
-        
-        
-        $order = input('orderfield', "A.ID");
+
+
+        $order = input('orderfield', "A.AddTime");
         $ordertype = input('ordertype', 'desc');
         $order = "'$order $ordertype'";
         $sqlExec = "exec Proc_GetPageData '$table','$field','$where', $order,'$join','$begin','$end', $page , $limit";
@@ -506,6 +509,10 @@ class GameOCDB extends BaseModel
                     $v['RoomID'] = 39400;
                     $v['RoomName'] = 'Spribe';
                 }
+                if ($v['ServerID'] == 41000) {
+                    $v['RoomID'] = 41000;
+                    $v['RoomName'] = 'HackSaw';
+                }
                 $v['AwardMoney'] = FormatMoney($v['RoundBets'] + $v['Money']);
                 ConVerMoney($v['Money']);
                 ConVerMoney($v['GameRoundRunning']);
@@ -550,7 +557,7 @@ class GameOCDB extends BaseModel
         if (session('merchant_OperatorId') && request()->module() == 'merchant') {
             $OperatorId = session('merchant_OperatorId');
         }
-        $business_id='';
+        $business_id = '';
         if (session('business_ProxyChannelId') && request()->module() == 'business') {
             $business_id = session('business_ProxyChannelId');
         }
@@ -676,6 +683,7 @@ class GameOCDB extends BaseModel
         $NickName = input('NickName');
         $usertype = intval(input('usertype', -1));
         $OperatorId = input('OperatorId') ?: '';
+        $ServerID = input('ServerID') ?: '';
         $where = "";
 
         $outAll = input('outall', false);
@@ -683,32 +691,27 @@ class GameOCDB extends BaseModel
             $this->pageSize = 1;
         }
         $join = "LEFT JOIN CD_Account.dbo.T_Accounts B WITH (NOLOCK) ON A.RoleID=B.AccountID";
+        $field = 'A.ID,RoleID,ServerID,ChangeType,Money,LastMoney,AddTime,Tax,Description,A.OperatorId';
         if (session('merchant_OperatorId') && request()->module() == 'merchant') {
             $OperatorId = session('merchant_OperatorId');
         }
         if ($OperatorId !== '') {
-            $join .= " where  OperatorId=" . $OperatorId;
+            $where .= " AND  OperatorId=" . $OperatorId;
         }
 
-        $business_id='';
+        $business_id = '';
         if (session('business_ProxyChannelId') && request()->module() == 'business') {
             $business_id = session('business_ProxyChannelId');
         }
 
         if ($business_id !== '') {
-            $field = 'A.ID,RoleID,ServerID,ChangeType,Money,LastMoney,AddTime,Tax,Description,A.OperatorId';
-            $join .= " where B.ProxyChannelId=" . $business_id;
-            $join2=$join;
-
-        }
-        else{
-            $field = 'ID,RoleID,ServerID,ChangeType,Money,LastMoney,AddTime,Tax,Description,OperatorId';
-            $join2='';
+            $where .= " AND B.ProxyChannelId=" . $business_id;
         }
 
 
         if ($changetype > 0) $where .= "AND ChangeType=$changetype ";
         if ($roleId > 0) $where .= "AND roleId=$roleId ";
+        if (!empty($ServerID)) $where .= " AND ServerID=''$ServerID''";
         if ($usertype >= 0) $join .= " AND  gmtype=" . $usertype;
         //外联 条件
         if (!empty($AccountName)) $join .= " AND AccountName=''$AccountName''";
@@ -720,7 +723,7 @@ class GameOCDB extends BaseModel
         // var_dump($where);die();
         $table = 'dbo.T_BankWeathChangeLog';
 
-        $sqlExec = "exec Proc_GetPageData '$table','$field','$where', 'ID DESC','$join2','$begin','$end', $this->page , $this->pageSize";
+        $sqlExec = "exec Proc_GetPageData '$table','$field','$where', 'AddTime DESC','$join','$begin','$end', $this->page , $this->pageSize";
         try {
             $result = $this->getTableQuery($sqlExec);
         } catch (Exception $exception) {
@@ -811,7 +814,7 @@ class GameOCDB extends BaseModel
         }
 
 
-        $business_id='';
+        $business_id = '';
         if (session('business_ProxyChannelId') && request()->module() == 'business') {
             $business_id = session('business_ProxyChannelId');
         }
@@ -957,20 +960,20 @@ class GameOCDB extends BaseModel
         switch ($tab) {
             case 'today':
                 $startdate = date('Y-m-d');
-                $enddate   = $startdate;
+                $enddate = $startdate;
                 break;
             case 'yestoday':
-                $startdate = date('Y-m-d',strtotime('-1 days'));
-                $enddate   = $startdate;
+                $startdate = date('Y-m-d', strtotime('-1 days'));
+                $enddate = $startdate;
                 break;
             case 'month':
-                $startdate = date('Y-m').'-01';
-                $enddate   = date('Y-m-d');
+                $startdate = date('Y-m') . '-01';
+                $enddate = date('Y-m-d');
 
                 break;
             case 'lastmonth':
-                $startdate = date('Y-m-01',strtotime('-1 month'));
-                $enddate   = date('Y-m-d',strtotime(date('Y-m').'-01')-1);
+                $startdate = date('Y-m-01', strtotime('-1 month'));
+                $enddate = date('Y-m-d', strtotime(date('Y-m') . '-01') - 1);
 
                 break;
             case 'week':
@@ -978,9 +981,9 @@ class GameOCDB extends BaseModel
                 if ($w == 0) {
                     $w = 7;
                 }
-                $w = mktime(0,0,0,date('m'),date('d')-$w+1,date('y'));
-                $startdate = date('Y-m-d',$w);
-                $enddate   = date('Y-m-d');
+                $w = mktime(0, 0, 0, date('m'), date('d') - $w + 1, date('y'));
+                $startdate = date('Y-m-d', $w);
+                $enddate = date('Y-m-d');
 
                 break;
             case 'lastweek':
@@ -988,20 +991,20 @@ class GameOCDB extends BaseModel
                 if ($w == 0) {
                     $w = 7;
                 }
-                $w = mktime(0,0,0,date('m'),date('d')-$w+1,date('y'));
-                $startdate = date('Y-m-d',$w-7*86400);
-                $enddate   = date('Y-m-d',strtotime(date('Y-m-d',$w))-1);
+                $w = mktime(0, 0, 0, date('m'), date('d') - $w + 1, date('y'));
+                $startdate = date('Y-m-d', $w - 7 * 86400);
+                $enddate = date('Y-m-d', strtotime(date('Y-m-d', $w)) - 1);
                 break;
             case 'q_day':
-                $startdate = date('Y-m-d',strtotime($startdate)-86400);
-                $enddate   = $startdate;
+                $startdate = date('Y-m-d', strtotime($startdate) - 86400);
+                $enddate = $startdate;
                 break;
             case 'h_day':
-                $enddate = date('Y-m-d',strtotime($enddate)+86400);
-                $startdate   = $enddate;
+                $enddate = date('Y-m-d', strtotime($enddate) + 86400);
+                $startdate = $enddate;
                 break;
             default:
-                
+
                 break;
         }
         $begin = date('Y-m-d', strtotime($startdate));
@@ -1031,22 +1034,9 @@ class GameOCDB extends BaseModel
             $res['list'] = $result[1];
             foreach ($res['list'] as &$v) {
                 if ($iswater) {
-                    $m = new \app\model\MasterDB();
-                    $lv1rateConfig = $m->getTableObject('T_GameConfig')
-                        ->where('CfgType',213)
-                        ->value('CfgValue')??0;
-                    $lv2rateConfig = $m->getTableObject('T_GameConfig')
-                        ->where('CfgType',214)
-                        ->value('CfgValue')??0;
-                    $lv3rateConfig = $m->getTableObject('T_GameConfig')
-                        ->where('CfgType',215)
-                        ->value('CfgValue')??0;
-                    $lv1rate = bcdiv($lv1rateConfig,10000,4);
-                    $lv2rate = bcdiv($lv2rateConfig,10000,4);
-                    $lv3rate = bcdiv($lv3rateConfig,10000,4);
-                    // $lv1rate = config('agent_running_parent_rate')[1];
-                    // $lv2rate = config('agent_running_parent_rate')[2];
-                    // $lv3rate = config('agent_running_parent_rate')[3];
+                    $lv1rate = config('agent_running_parent_rate')[1];
+                    $lv2rate = config('agent_running_parent_rate')[2];
+                    $lv3rate = config('agent_running_parent_rate')[3];
                     $Lv1Reward = bcmul($v['Lv1Running'], $lv1rate, 4);
                     $Lv2Reward = bcmul($v['Lv2Running'], $lv2rate, 4);
                     $Lv3Reward = bcmul($v['Lv3Running'], $lv3rate, 4);
@@ -1070,7 +1060,7 @@ class GameOCDB extends BaseModel
                 ConVerMoney($v['Lv1Running']);
 
                 //团队打码
-                $v['dm'] = bcadd($v['Lv1Running'], $v['Lv2Running'],3);
+                $v['dm'] = bcadd($v['Lv1Running'], $v['Lv2Running'], 3);
             }
             unset($v);
         }
@@ -1081,7 +1071,7 @@ class GameOCDB extends BaseModel
 
     //业务员
     public function GetBusinessAgentRecord($iswater = false): array
-    {   
+    {
         $startdate = input('start', date('Y-m-d', time()));
         $enddate = input('end', date('Y-m-d', time()));
         $roleid = input('roleid');
@@ -1107,7 +1097,7 @@ class GameOCDB extends BaseModel
 
         $all_ProxyChannelId = $this->getXbusiness(session('business_ProxyChannelId'));
         $all_ProxyChannelId[] = session('business_ProxyChannelId');
-        $where .= " and proxyid in(SELECT AccountID from [CD_Account].[dbo].[T_Accounts](nolock) WHERE ProxyChannelId in(".implode(',', $all_ProxyChannelId)."))";
+        $where .= " and proxyid in(SELECT AccountID from [CD_Account].[dbo].[T_Accounts](nolock) WHERE ProxyChannelId in(" . implode(',', $all_ProxyChannelId) . "))";
 
         $begin = date('Y-m-d', strtotime($startdate));
         $end = date('Y-m-d', strtotime($enddate));
@@ -1119,7 +1109,7 @@ class GameOCDB extends BaseModel
         $table = 'dbo.T_ProxyDailyCollectData';
         $field = ' AddTime,ProxyId,DailyDeposit,DailyTax,DailyRunning,Lv1PersonCount,Lv1Deposit,Lv1Tax,Lv1Running,Lv2PersonCount,Lv2Deposit,Lv2Tax,Lv2Running,Lv3PersonCount,Lv3Deposit,Lv3Tax,Lv3Running,Lv1FirstDepositPlayers,Lv2FirstDepositPlayers,Lv3FirstDepositPlayers,A.ValidInviteCount,Lv2ValidInviteCount,Lv3ValidInviteCount';
         $sqlExec = "exec Proc_GetPageData '$table','$field','$where','$order','$join','$begin','$end', $this->page , $this->pageSize";
-        
+
         try {
             $result = $this->getTableQuery($sqlExec);
         } catch (Exception $exception) {
@@ -1197,11 +1187,11 @@ class GameOCDB extends BaseModel
 
         $all_ProxyChannelId = $this->getXbusiness(session('business_ProxyChannelId'));
         $all_ProxyChannelId[] = session('business_ProxyChannelId');
-        $where .= " and proxyid in(SELECT AccountID from [CD_Account].[dbo].[T_Accounts](nolock) WHERE ProxyChannelId in(".implode(',', $all_ProxyChannelId)."))";
+        $where .= " and proxyid in(SELECT AccountID from [CD_Account].[dbo].[T_Accounts](nolock) WHERE ProxyChannelId in(" . implode(',', $all_ProxyChannelId) . "))";
 
-        $where2 .= " and c.ProxyChannelId in(".implode(',', $all_ProxyChannelId).")";
+        $where2 .= " and c.ProxyChannelId in(" . implode(',', $all_ProxyChannelId) . ")";
 
-        if ($roleid > 0){
+        if ($roleid > 0) {
             $where .= ' and proxyid=' . $roleid;
             $where2 .= ' and a.RoleID=' . $roleid;
         }
@@ -1222,14 +1212,14 @@ class GameOCDB extends BaseModel
             if (isset($result[0])) {
                 $list = $result[0];
                 $list[0]['FirstDepositMoney'] = (new \app\model\DataChangelogsDB())
-                ->getTableObject('T_UserTransactionLogs')->alias('a')
-                ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) c', 'c.AccountID=a.RoleID', 'left')
-                ->where($where2)
-                ->whereTime('a.AddTime','>=',$begin.' 00:00:00')
-                ->whereTime('a.AddTime','<=',$end.' 23:59:59')
-                ->where('a.ChangeType',5)
-                ->where('a.IfFirstCharge',1)
-                ->sum('TransMoney')?:0;
+                    ->getTableObject('T_UserTransactionLogs')->alias('a')
+                    ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) c', 'c.AccountID=a.RoleID', 'left')
+                    ->where($where2)
+                    ->whereTime('a.AddTime', '>=', $begin . ' 00:00:00')
+                    ->whereTime('a.AddTime', '<=', $end . ' 23:59:59')
+                    ->where('a.ChangeType', 5)
+                    ->where('a.IfFirstCharge', 1)
+                    ->sum('TransMoney') ?: 0;
                 foreach ($list as &$v) {
 
                     ConVerMoney($v['Lv1Running']);
@@ -1273,7 +1263,7 @@ class GameOCDB extends BaseModel
         if (!empty($AccountName)) $join .= " AND AccountName=''$AccountName''";
 //        if (!empty($NickName)) $join .= " AND LoginName=''$NickName''";
 
-        if ($roleid > 0){
+        if ($roleid > 0) {
             $where .= ' and proxyid=' . $roleid;
             $where2 .= ' and a.RoleID=' . $roleid;
         }
@@ -1286,44 +1276,44 @@ class GameOCDB extends BaseModel
         switch ($tab) {
             case 'today':
                 $startdate = date('Y-m-d');
-                $enddate   = $startdate;
+                $enddate = $startdate;
                 break;
             case 'yestoday':
-                $startdate = date('Y-m-d',strtotime('-1 days'));
-                $enddate   = $startdate;
+                $startdate = date('Y-m-d', strtotime('-1 days'));
+                $enddate = $startdate;
                 break;
             case 'month':
-                $startdate = date('Y-m').'-01';
-                $enddate   = date('Y-m-d');
+                $startdate = date('Y-m') . '-01';
+                $enddate = date('Y-m-d');
 
                 break;
             case 'lastmonth':
-                $startdate = date('Y-m-01',strtotime('-1 month'));
-                $enddate   = date('Y-m-d',strtotime(date('Y-m').'-01')-1);
+                $startdate = date('Y-m-01', strtotime('-1 month'));
+                $enddate = date('Y-m-d', strtotime(date('Y-m') . '-01') - 1);
 
                 break;
             case 'week':
 
-                $w = mktime(0,0,0,date('m'),date('d')-date('w')+1,date('y'));
-                $startdate = date('Y-m-d',$w);
-                $enddate   = date('Y-m-d');
+                $w = mktime(0, 0, 0, date('m'), date('d') - date('w') + 1, date('y'));
+                $startdate = date('Y-m-d', $w);
+                $enddate = date('Y-m-d');
 
                 break;
             case 'lastweek':
-                $w = mktime(0,0,0,date('m'),date('d')-date('w')+1,date('y'));
-                $startdate = date('Y-m-d',$w-7*86400);
-                $enddate   = date('Y-m-d',strtotime(date('Y-m-d',$w))-1);
+                $w = mktime(0, 0, 0, date('m'), date('d') - date('w') + 1, date('y'));
+                $startdate = date('Y-m-d', $w - 7 * 86400);
+                $enddate = date('Y-m-d', strtotime(date('Y-m-d', $w)) - 1);
                 break;
             case 'q_day':
-                $startdate = date('Y-m-d',strtotime($startdate)-86400);
-                $enddate   = $startdate;
+                $startdate = date('Y-m-d', strtotime($startdate) - 86400);
+                $enddate = $startdate;
                 break;
             case 'h_day':
-                $enddate = date('Y-m-d',strtotime($enddate)+86400);
-                $startdate   = $enddate;
+                $enddate = date('Y-m-d', strtotime($enddate) + 86400);
+                $startdate = $enddate;
                 break;
             default:
-                
+
                 break;
         }
         $begin = date('Y-m-d', strtotime($startdate));
@@ -1338,14 +1328,14 @@ class GameOCDB extends BaseModel
             if (isset($result[0])) {
                 $list = $result[0];
                 $list[0]['FirstDepositMoney'] = (new \app\model\DataChangelogsDB())
-                ->getTableObject('T_UserTransactionLogs')->alias('a')
-                ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) c', 'c.AccountID=a.RoleID', 'left')
-                ->where($where2)
-                ->whereTime('a.AddTime','>=',$begin.' 00:00:00')
-                ->whereTime('a.AddTime','<=',$end.' 23:59:59')
-                ->where('a.ChangeType',5)
-                ->where('a.IfFirstCharge',1)
-                ->sum('TransMoney')?:0;
+                    ->getTableObject('T_UserTransactionLogs')->alias('a')
+                    ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) c', 'c.AccountID=a.RoleID', 'left')
+                    ->where($where2)
+                    ->whereTime('a.AddTime', '>=', $begin . ' 00:00:00')
+                    ->whereTime('a.AddTime', '<=', $end . ' 23:59:59')
+                    ->where('a.ChangeType', 5)
+                    ->where('a.IfFirstCharge', 1)
+                    ->sum('TransMoney') ?: 0;
                 foreach ($list as &$v) {
 
                     ConVerMoney($v['Lv1Running']);
@@ -2155,7 +2145,7 @@ class GameOCDB extends BaseModel
                         break;
 
                     case 23700: //double
-                         $totalbet = 0;
+                        $totalbet = 0;
                         if (!empty($dd['bet'])) {
                             $bet = $dd['bet'];
                             $totalbet = intval(isset($bet['红色']) ? $bet['红色'] : 0) + intval(isset($bet['灰色']) ? $bet['灰色'] : 0) + intval(isset($bet['']) ? $bet[''] : 0);
@@ -2917,7 +2907,7 @@ class GameOCDB extends BaseModel
                     $html .= lang('点击区域') . ':[' . $hitpos . '],' . lang('共点击') . ':' . $HitCount;
                     $html .= '，' . lang('埋雷数') . ':' . $BombCount;
                     $html .= '}';
-                    $GameDetail = json_decode($v['GameDetail'],true);
+                    $GameDetail = json_decode($v['GameDetail'], true);
                     $totalbet = $GameDetail['BaseScore'] ?? 0;
                     $html .= '&nbsp;&nbsp;&nbsp;' . lang('总下注') . ':' . FormatMoney($totalbet) . '&nbsp;&nbsp;&nbsp;';
                     break;
@@ -3049,14 +3039,16 @@ class GameOCDB extends BaseModel
         $res = $this->DBOriginQuery($sqlExec);
         return 1;
     }
-    public function getXbusiness($ProxyChannelIds){
+
+    public function getXbusiness($ProxyChannelIds)
+    {
         static $result = [];
-        $xChannelIds = (new \app\model\GameOCDB())->getTableObject('T_ProxyChannelConfig')->where('pid','in',$ProxyChannelIds)->field('ProxyChannelId')->select();
+        $xChannelIds = (new \app\model\GameOCDB())->getTableObject('T_ProxyChannelConfig')->where('pid', 'in', $ProxyChannelIds)->field('ProxyChannelId')->select();
         if (empty($xChannelIds)) {
             return $result;
         } else {
             $xChannelIds = array_column($xChannelIds, 'ProxyChannelId');
-            $result = array_unique(array_merge($result,$xChannelIds));
+            $result = array_unique(array_merge($result, $xChannelIds));
             return $this->getXbusiness($xChannelIds);
         }
     }
