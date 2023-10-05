@@ -66,7 +66,7 @@ class Player extends Main
             $proxyId      = input('proxyId', '');
             $isControll   = input('iscontroll', '');
             $isbind       = input('isbind',-1);
-            
+
             $minrecharge  = input('minrecharge', '');
             $maxrecharge  = input('maxrecharge', '');
             $VipLv        = input('VipLv', '');
@@ -143,7 +143,6 @@ class Player extends Main
             $all_ProxyChannelId = $this->getXbusiness(session('business_ProxyChannelId'));
             $all_ProxyChannelId[] = session('business_ProxyChannelId');
             $where .= " and ProxyChannelId in (".implode(',', $all_ProxyChannelId).")";
-
             $gameOCDB = new GameOCDB();
             if(config('is_portrait')==1){
                 $default_Proxy = $gameOCDB->getTableObject('T_ProxyChannelConfig')->where('isDefault', 1)->find() ?: [];
@@ -152,13 +151,13 @@ class Player extends Main
                 $default_ProxyId = $default_Proxy['ProxyChannelId'];
                 if (!empty($proxyId)) {
                     if ($default_Proxy['ProxyChannelId'] == $proxyId) {
-                       $where .= " and (ProxyChannelId=0 or ProxyChannelId='$proxyId')";
+                        $where .= " and (ProxyChannelId=0 or ProxyChannelId='$proxyId')";
                     } else {
                         $where .= " and ProxyChannelId='$proxyId'";
                     }
                 }
             } else{
-                
+
                 $default_ProxyId = $gameOCDB->getTableObject('T_ProxyChannelConfig')->where('isDefault', 1)->value('ProxyId') ?: '';
 
                 if (!empty($proxyId)) {
@@ -235,7 +234,7 @@ class Player extends Main
                             $item['proxyId'] = $default_ProxyId;
                         }
                     }
-                    
+
                     ConVerMoney($item['Money']);
                     ConVerMoney($item['ProxyBonus']);
                     //是否在线
@@ -355,7 +354,7 @@ class Player extends Main
 
     }
 
-     //玩家强退
+    //玩家强退
     public function forceQuit()
     {
         if ($this->request->isAjax()) {
@@ -379,7 +378,7 @@ class Player extends Main
     }
 
 
-     /**
+    /**
      * 玩家详情(玩家列表点击)
      */
     public function playerDetail()
@@ -405,7 +404,7 @@ class Player extends Main
             $gameOCDB = new GameOCDB();
             $ParentIds = array_filter(explode(',', $proxyinfo['ParentIds']));
             $proxy = [];
-            
+
             if(config('is_portrait')==1){
                 if ($user['ProxyChannelId']) {
                     $proxy = $gameOCDB->getProxyChannelConfig()->GetRow(['ProxyChannelId' => $user['ProxyChannelId']], '*', 'ProxyChannelId desc') ?: [];
@@ -488,12 +487,12 @@ class Player extends Main
             ];
         } else if(config('app_type') == 3){
             $banklist=[
-                
+
             ];
         } else {
             $banklist = $bankcode->getListAll();
         }
-        
+
         $this->assign('bind_auth', '0');
 
 
@@ -514,7 +513,13 @@ class Player extends Main
         $this->assign('bankway', $bankway);
         $this->assign('banklist', $banklist);
         $this->assign('pixway',$pixway);
-        return $this->fetch();
+
+
+        if (config('app_name') == 'UWPLAY' || config('app_name') == 'evgwin') {
+            return $this->fetch('player_detail_s');
+        } else {
+            return $this->fetch();
+        }
     }
 
     public function getRoleWage()
@@ -653,51 +658,58 @@ class Player extends Main
     }
 
     //玩家等级数据
-    public function getProxyLvData(){
+    public function getProxyLvData()
+    {
         $roleId = intval(input('roleid')) ? intval(input('roleid')) : 0;
-        $data =[];
-        if($roleId>0){
-            $db =new UserDB();
-            $field ='ProxyId,Lv1PersonCount,Lv1Deposit,Lv1DepositPlayers,Lv2PersonCount,Lv2Deposit,Lv2DepositPlayers,Lv3PersonCount,Lv3Deposit,Lv3DepositPlayers';
-            $row =$db->getTableRow('T_ProxyCollectData','ProxyId='.$roleId,$field);
+        $data = [];
+        if ($roleId > 0) {
+            $db = new UserDB();
+            $field = 'ProxyId,Lv1PersonCount,Lv1Deposit,Lv1DepositPlayers,Lv2PersonCount,Lv2Deposit,Lv2DepositPlayers,Lv3PersonCount,Lv3Deposit,Lv3DepositPlayers,Lv1WithdrawAmount,Lv2WithdrawAmount,Lv3WithdrawAmount,Lv1WithdrawCount,Lv2WithdrawCount,Lv3WithdrawCount';
+            $row = $db->getTableRow('T_ProxyCollectData', 'ProxyId=' . $roleId, $field);
 
-            $avarage1= 0;
-            $avarage2= 0;
-            $avarage3= 0;
-            if($row['Lv1DepositPlayers']>0){
-                $avarage1 = bcdiv($row['Lv1Deposit'],$row['Lv1DepositPlayers'],2);
+            $avarage1 = 0;
+            $avarage2 = 0;
+            $avarage3 = 0;
+            if ($row['Lv1DepositPlayers'] > 0) {
+                $avarage1 = bcdiv($row['Lv1Deposit'], $row['Lv1DepositPlayers'], 2);
             }
             $avarage1 =
-            $levle1 =[
-                'level'=>lang('等级1'),
-                'person'=>$row['Lv1PersonCount'],
-                'chargenum'=>$row['Lv1DepositPlayers'],
-                'amount'=>$row['Lv1Deposit'],
-                'avarage'=>$avarage1
+            $levle1 = [
+                'level' => lang('等级1'),
+                'person' => $row['Lv1PersonCount'],
+                'chargenum' => $row['Lv1DepositPlayers'],
+                'amount' => $row['Lv1Deposit'],
+                'avarage' => $avarage1,
+                'withdrawCount' => $row['Lv1WithdrawCount'],
+                'withdrawAmount' => $row['Lv1WithdrawAmount'] / bl,
             ];
-            if($row['Lv2DepositPlayers']>0){
-                $avarage2 = bcdiv($row['Lv2Deposit'],$row['Lv2DepositPlayers'],2);
+            if ($row['Lv2DepositPlayers'] > 0) {
+                $avarage2 = bcdiv($row['Lv2Deposit'], $row['Lv2DepositPlayers'], 2);
             }
-            $levle2 =[
-                'level'=>lang('等级2'),
-                'person'=>$row['Lv2PersonCount'],
-                'chargenum'=>$row['Lv2DepositPlayers'],
-                'amount'=>$row['Lv2Deposit'],
-                'avarage'=>$avarage2
+            $levle2 = [
+                'level' => lang('等级2'),
+                'person' => $row['Lv2PersonCount'],
+                'chargenum' => $row['Lv2DepositPlayers'],
+                'amount' => $row['Lv2Deposit'],
+                'avarage' => $avarage2,
+                'withdrawCount' => $row['Lv2WithdrawCount'],
+                'withdrawAmount' => $row['Lv2WithdrawAmount'] / bl,
             ];
-            if($row['Lv3DepositPlayers']>0){
-                $avarage3 =bcdiv($row['Lv3Deposit'],$row['Lv3DepositPlayers'],2);
+            if ($row['Lv3DepositPlayers'] > 0) {
+                $avarage3 = bcdiv($row['Lv3Deposit'], $row['Lv3DepositPlayers'], 2);
             }
-            $levle3 =[
-                'level'=>lang('等级3'),
-                'person'=>$row['Lv3PersonCount'],
-                'chargenum'=>$row['Lv3DepositPlayers'],
-                'amount'=>$row['Lv3Deposit'],
-                'avarage'=>$avarage3
+            $levle3 = [
+                'level' => lang('等级3'),
+                'person' => $row['Lv3PersonCount'],
+                'chargenum' => $row['Lv3DepositPlayers'],
+                'amount' => $row['Lv3Deposit'],
+                'avarage' => $avarage3,
+                'withdrawCount' => $row['Lv3WithdrawCount'],
+                'withdrawAmount' => $row['Lv3WithdrawAmount'] / bl,
             ];
-            array_push($data,$levle1);
-            array_push($data,$levle2);
-            array_push($data,$levle3);
+            array_push($data, $levle1);
+            array_push($data, $levle2);
+            array_push($data, $levle3);
         }
         return $this->successJSON($data);
     }
@@ -788,7 +800,7 @@ class Player extends Main
         $this->assign('RoomList', json_encode($this->GetRoomList()));
         return $this->fetch();
     }
-    
+
 
     /**
      * Notes: 游戏日志（单独菜单）
@@ -868,6 +880,108 @@ class Player extends Main
         }
         $selectData = $this->getRoomList();
         $this->assign('selectData', $selectData);
+        return $this->fetch();
+    }
+
+    public function gameDailyReport()
+    {
+        switch (input('Action')) {
+            case 'list':
+                $roleid = $this->request->param('roleid');
+                $start = $this->request->param('start') ?: date('Y-m-d 00:00:00');
+                $end = $this->request->param('end') ?: date('Y-m-d 23:59:59');
+                $page = $this->request->param('page') ?: 1;
+                $limit = $this->request->param('limit') ?: 20;
+                $orderby = input('orderfield');
+                $ordertype = input('ordertype');
+                $where = '';
+                $where_total = '';
+                if ($roleid != '') {
+                    $where .= ' and a.RoleID=' . $roleid;
+                    $where_total .= ' and RoleID=' . $roleid;
+                }
+                $where .= ' and a.AddTime>=\'' . $start . '\' and a.AddTime<=\'' . $end . '\'';
+                $where_total .= " and AddTime>=''$start'' and AddTime<=''$end''";
+
+
+                $db = new GameOCDB();
+                $userProxyInfo = new UserProxyInfo();
+                $ProxyChannelConfig = (new GameOCDB())->getTableObject('T_ProxyChannelConfig')->column('*', 'ProxyChannelId');
+                $field = 'a.RoleId,b.ParentID ,ServerID,CONVERT(varchar(30),addtime,112) as AddTime,sum(tax) as Tax,sum(GameRoundRunning) as GameRoundRunning,sum(Money) as TotalWin';
+                $join = 'left join [CD_UserDB].[dbo].[T_UserProxyInfo] as b on a.RoleID=b.RoleID';
+                $all_ProxyChannelId = $this->getXbusiness(session('business_ProxyChannelId'));
+                $all_ProxyChannelId[] = session('business_ProxyChannelId');
+
+                $join .= " left join [CD_Account].[dbo].[T_Accounts](nolock) as C on C.AccountID=a.RoleId  and C.ProxyChannelId in(".implode(',',$all_ProxyChannelId).")";
+                $group = ' ServerID,CONVERT(varchar(30),addtime,112),a.RoleID,b.ParentID';
+                $startdate = date('Y-m-d', strtotime($start));
+                $enddate = date('Y-m-d', strtotime($end));
+                $order = 'AddTime desc';
+                if ($orderby && $ordertype) {
+                    $order = "$orderby $ordertype";
+                }
+                // var_dump($join);die();
+                $result = $db->getPageListByGroup('T_UserGameChangeLogs', $field, $join, $where, $order, $group, $startdate, $enddate, $page, $limit);
+                $list = $result['list'];
+                if ($result['count'] == 0) {
+                    $result['list'] = [];
+                    $result['count'] = 0;
+                    $result['other'] = [
+                        'TotalPay' => 0,
+                        'TotalPayOut' => 0,
+                        'TotalWater' => 0,
+                        'Tax' => 0,
+                        'TotalWin' => 0,
+                    ];
+                    return $this->apiJson($result);
+                }
+                $roomlist = $this->GetRoomList();
+                $roomlist = array_values($roomlist);
+                $default_ProxyId = $db->getTableObject('T_ProxyChannelConfig')->where('isDefault', 1)->value('ProxyId') ?: 0;
+                if (isset($list)) {
+                    foreach ($list as $k => &$v) {
+                        $v['AddTime'] = date('Y-m-d', strtotime($v['AddTime']));
+                        //$ParentIds = array_filter(explode(',', $v['ParentIds'] ?? ''));
+
+                        $proxy = [];
+                        if (!empty($v['ParentID'])) {
+//                            $proxy = $ProxyChannelConfig[$ParentIds[0]] ?? [];
+//                            if ($proxy) {
+//                                $v['proxyId'] = $proxy['ProxyId'];
+//                            } else {
+//                                $v['proxyId'] = $v['ParentID'];
+//                            }
+                            $v['proxyId'] = $v['ParentID'];
+                        } else {
+                            //默认系统代理
+                            $v['proxyId'] = $default_ProxyId;
+                        }
+                        $v['RoomName'] = '-';
+                        $roomids = array_column($roomlist, 'RoomID');
+                        $findkey = array_search($v['ServerID'], $roomids);
+                        if ($findkey !== false) {
+                            $v['RoomName'] = lang($roomlist[$findkey]['RoomName']);
+                        }
+                    }
+                }
+                $result['list'] = $list;
+                $result['count'] = $result['count'];
+                $sqlExec = "exec Proc_GameDailyLogSum '$where_total','$startdate','$enddate'";
+                $res = $db->getTableQuery($sqlExec);
+                if (isset($res[0][0])) {
+                    $data = $res[0][0];
+                    $result['other'] = $data;
+                } else {
+                    $result['other'] = [
+                        'TotalPay' => 0,
+                        'TotalPayOut' => 0,
+                        'TotalWater' => 0,
+                        'Tax' => 0,
+                        'TotalWin' => 0,
+                    ];
+                }
+                return $this->apiJson($result);
+        }
         return $this->fetch();
     }
 }

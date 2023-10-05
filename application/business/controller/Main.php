@@ -23,7 +23,7 @@ class Main extends Controller
     protected $channelInfoKeyALL = "getChannelInfoAll"; //支付通道
     protected $kindListKey = "KIND_LIST";   //游戏类型
     protected $roomListKey = "ROOM_LIST";   //房间列表
-    
+
     /**
      * 初始化
      */
@@ -47,29 +47,29 @@ class Main extends Controller
             $lang = 'zh-cn';
         }
         if ($lang) {
-            cookie('think_var',$lang);
+            cookie('think_var', $lang);
         }
         $lang = cookie('think_var');
         $datalang = 'cn';
-        $laypath ="/public/layuiAdmin/layuiadmin";
-        switch ($lang){
+        $laypath = "/public/layuiAdmin/layuiadmin";
+        switch ($lang) {
             case "en-us":
-                $laypath ="/public/layuiAdmin/layuiadmin_en";
-                $date_lang =",lang: 'en'";
-                $datalang ='en';
+                $laypath = "/public/layuiAdmin/layuiadmin_en";
+                $date_lang = ",lang: 'en'";
+                $datalang = 'en';
                 break;
 //            case "thai":
 //                $laypath ="/public/layuiAdmin/layuiadmin_th";
 //                $date_lang =",lang: 'en'";
 //                $datalang ='th';
 //                break;
-            defautl:
-                $laypath ="/public/layuiAdmin/layuiadmin";
+                defautl:
+                $laypath = "/public/layuiAdmin/layuiadmin";
                 break;
         }
 
-        $this->assign('laypath',$laypath);
-        $this->assign('datelang',$datalang);
+        $this->assign('laypath', $laypath);
+        $this->assign('datelang', $datalang);
         session('lastuse', sysTime());
     }
 
@@ -134,29 +134,32 @@ class Main extends Controller
         return json($tmp);
     }
 
-    
+
     /**
      * 返回错误信息。
-     * @param type $message     
+     * @param type $message
      */
-    protected function failData($message = null, $code = 1) {
-        return array('code'=>$code, 'status' => false, 'msg' => lang($message));
+    protected function failData($message = null, $code = 1)
+    {
+        return array('code' => $code, 'status' => false, 'msg' => lang($message));
     }
 
     /**
      * 返回成功信息
      * @param type $data
      */
-    protected function successData($data = NULL, $msg = "success", $code = 0) {
-        return array('code'=>$code, 'status' => true, 'data' => $data, 'msg'=>lang($msg));
+    protected function successData($data = NULL, $msg = "success", $code = 0)
+    {
+        return array('code' => $code, 'status' => true, 'data' => $data, 'msg' => lang($msg));
     }
-    
+
     /**
      * 输出错误JSON信息。
-     * @param type $message     
+     * @param type $message
      */
-    protected function failJSON($message, $options = true, $code = 1) {
-        $jsonData = array('code'=>$code, 'status' => false, 'msg' => lang($message));
+    protected function failJSON($message, $options = true, $code = 1)
+    {
+        $jsonData = array('code' => $code, 'status' => false, 'msg' => lang($message));
         $json = json_encode($jsonData, $options);
         echo $json;
         exit;
@@ -166,17 +169,20 @@ class Main extends Controller
      * 输出成功JSON信息
      * @param type $data
      */
-    protected function successJSON($data = NULL, $msg = "success", $options = 256, $code = 0) {
-        $jsonData = array('code'=>$code, 'status' => true, 'data' => $data, 'msg' => lang($msg));
+    protected function successJSON($data = NULL, $msg = "success", $options = 256, $code = 0)
+    {
+        $jsonData = array('code' => $code, 'status' => true, 'data' => $data, 'msg' => lang($msg));
         $json = json_encode($jsonData, $options);
         echo $json;
         exit;
     }
+
     /**
      * 获取当前页码
      * @return type
      */
-    protected function getPageIndex() {
+    protected function getPageIndex()
+    {
         return input('page', -1);
     }
 
@@ -184,16 +190,18 @@ class Main extends Controller
      * 获取每页显示数量
      * @return type`
      */
-    protected function getPageLimit() {
+    protected function getPageLimit()
+    {
         $pageLimit = input('limit', 10);
-        if ($pageLimit > 50){
+        if ($pageLimit > 50) {
             $pageLimit = 50;
         }
         return $pageLimit;
     }
-    
-    protected function toDataGrid($count=0, $data=[], $code=0, $msg='') {
-        return json(array('data'=>$data, 'count'=>$count, 'code'=>$code, 'msg'=>$msg));
+
+    protected function toDataGrid($count = 0, $data = [], $code = 0, $msg = '')
+    {
+        return json(array('data' => $data, 'count' => $count, 'code' => $code, 'msg' => $msg));
     }
 
     //房间配置 room kind
@@ -202,11 +210,11 @@ class Main extends Controller
         $key = &$this->roomListKey;
         if (Cache::has($key)) {
             $db = new model\MasterDB();
-            $sql ="select b.RoomID,RoomName+'-('+CONVERT(VARCHAR,b.RoomID)+')' RoomName  from [OM_GameOC].[dbo].[T_GameRoomSort] as a left join  T_GameRoomInfo as b on a.RoomID=b.RoomID  where b.Nullity=0 order by a.sortID";
+            $sql = "select b.RoomID,RoomName+'-('+CONVERT(VARCHAR,b.RoomID)+')' RoomName  from [OM_GameOC].[dbo].[T_GameRoomSort] as a left join  T_GameRoomInfo as b on a.RoomID=b.RoomID  where b.Nullity=0 order by a.sortID";
             $rsult = $db->getTableQuery($sql);
             //列出禁用的KindID 加以屏蔽
             $treeList = $db->getTableQuery("SELECT KindID,NodeName,ParentId,Nullity FROM T_GameType  WHERE  Nullity=1");
-            $dellist =[];// [2200, 3000, 3100, 3200, 3300, 3400];
+            $dellist = [];// [2200, 3000, 3100, 3200, 3300, 3400];
 
             foreach ($treeList as $index => &$item) {
                 if ($item['KindID'] > 0 && intval($item['Nullity']) == 1) {
@@ -220,12 +228,12 @@ class Main extends Controller
                     unset($rsult[$index]);
                 }
             }
-            $apiroom=[
-                ['RoomID'=>36000,'RoomName'=>'PG-(36000)'],
-                ['RoomID'=>37000,'RoomName'=>'EvoLive-(37000)'],
-                ['RoomID'=>38000,'RoomName'=>'PP-(38000)']
+            $apiroom = [
+                ['RoomID' => 36000, 'RoomName' => 'PG-(36000)'],
+                ['RoomID' => 37000, 'RoomName' => 'EvoLive-(37000)'],
+                ['RoomID' => 38000, 'RoomName' => 'PP-(38000)']
             ];
-            $rsult=array_merge($rsult,$apiroom);
+            $rsult = array_merge($rsult, $apiroom);
             unset($item);
             Cache::set($key, $rsult, 86400);
             return $rsult;
@@ -251,28 +259,28 @@ class Main extends Controller
         }
         if (!Redis::has($rediskey)) {
             $is_end = 1;
-            $page   = 0;
+            $page = 0;
             $res = [];
             $res['iTotalCount'] = 0;
             $res['onlinelist'] = [];
             $res['iTotalCount'] = 0;
             while ($is_end) {
-                $res_arr = $this->sendGameMessage('CMD_MD_QUERY_ALL_ONLINE_PLAYER', [$page,100], "DC", $param);
+                $res_arr = $this->sendGameMessage('CMD_MD_QUERY_ALL_ONLINE_PLAYER', [$page, 100], "DC", $param);
                 if ($res_arr['iPageCount'] > 0) {
                     $res['iTotalCount'] = $res_arr['iTotalCount'];
                     $res_arr['onlinelist'] = $res_arr['onlinelist'] ?? [];
-                    $res['onlinelist']  = array_merge($res_arr['onlinelist'],$res['onlinelist']);
+                    $res['onlinelist'] = array_merge($res_arr['onlinelist'], $res['onlinelist']);
                     if ($res_arr['iPageCount'] < 100) {
                         $is_end = 0;
                     } else {
-                        $page = $page+1;
+                        $page = $page + 1;
                     }
                 } else {
                     $is_end = 0;
                 }
-                
 
-            } 
+
+            }
             if ($rediskey == 'onlineNum') {
                 Redis::set($rediskey, $res['iTotalCount'], 10);
                 return $res['iTotalCount'];
@@ -284,14 +292,14 @@ class Main extends Controller
                 $result['hall'] = [];
                 foreach ($res['onlinelist'] as $key => &$val) {
                     if ($val['iRoomId'] > 0) {
-                        array_push($result['game'],$val['iUserId']);
+                        array_push($result['game'], $val['iUserId']);
                         if (!isset($result['room'][$val['iRoomId']])) {
                             $result['room'][$val['iRoomId']] = [];
                         }
-                        array_push($result['room'][$val['iRoomId']],$val['iUserId']);
+                        array_push($result['room'][$val['iRoomId']], $val['iUserId']);
                         $result['roominfo'][$val['iUserId']] = $val['iRoomId'];
                     } else {
-                        array_push($result['hall'],$val['iUserId']);
+                        array_push($result['hall'], $val['iUserId']);
                     }
                 }
                 Redis::set($rediskey, $result, 10);
@@ -309,7 +317,7 @@ class Main extends Controller
         return $comm->callback($messageFunc, $parameter, $conSrv, $changeFunc);
     }
 
-    public function GetOutChannelInfo($showall=0)
+    public function GetOutChannelInfo($showall = 0)
     {
         $Channel = $this->getChannelInfo($showall);
         foreach ($Channel as $k => &$v) {
@@ -319,17 +327,17 @@ class Main extends Controller
     }
 
     //获取支付通道信息
-    public function getChannelInfo($showall=0)
+    public function getChannelInfo($showall = 0)
     {
         $key =& $this->channelInfoKey;
-        if($showall)
+        if ($showall)
             $key =& $this->channelInfoKeyALL;
         if (!Cache::has($key)) {
             $db = new model\GamePayChannel();
-            $where= '';
-            if($showall===0)
-                $where=" Status=1";
-            $result = $db->getListAll($where, "ChannelId,ChannelName,Type","ChannelName asc");
+            $where = '';
+            if ($showall === 0)
+                $where = " Status=1";
+            $result = $db->getListAll($where, "ChannelId,ChannelName,Type", "ChannelName asc");
             if (isset($result)) {
                 Cache::set($key, $result);
                 return $result;

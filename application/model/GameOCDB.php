@@ -744,34 +744,28 @@ class GameOCDB extends BaseModel
                 ConVerDate($v['AddTime']);
                 ConVerMoney($v['LastMoney']);
                 $v['ChangeName'] = '';
+                foreach ($roomlist as $k2 => $v2) {
+                    $serverID =& $v['ServerID'];
+                    if ($serverID == $v2['RoomID']) {
+                        $v['RoomName'] = $v2['RoomName'];
+                        break;
+                    }
 
-                if(is_array($roomlist)){
-                    foreach ($roomlist as $k2 => $v2) {
-                        $serverID =& $v['ServerID'];
-                        if ($serverID == $v2['RoomID']) {
-                            $v['RoomName'] = $v2['RoomName'];
-                            break;
-                        }
-
-                        if ($serverID == 25000) {
-                            $v['RoomName'] = lang('捕鱼游戏');
-                            break;
-                        } else if ($serverID == 26000) {
-                            $v['RoomName'] = lang('IMONE游戏');
-                            break;
-                        }
-                        $v['RoomName'] = '';
+                    if ($serverID == 25000) {
+                        $v['RoomName'] = lang('捕鱼游戏');
+                        break;
+                    } else if ($serverID == 26000) {
+                        $v['RoomName'] = lang('IMONE游戏');
+                        break;
+                    }
+                    $v['RoomName'] = '';
+                }
+                foreach ($changeType as $k2 => $v2) {
+                    if ($v['ChangeType'] == $k2) {
+                        $v['ChangeName'] = $v2;
+                        break;
                     }
                 }
-                if (is_array($changeType)){
-                    foreach ($changeType as $k2 => $v2) {
-                        if ($v['ChangeType'] == $k2) {
-                            $v['ChangeName'] = $v2;
-                            break;
-                        }
-                    }
-                }
-
                 if (in_array($v['ChangeType'], [3, 45, 51, 76])) {//转换负数
                     $v['Money'] = 0 - $v['Money'];
                 }
