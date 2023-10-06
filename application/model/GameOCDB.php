@@ -705,7 +705,7 @@ class GameOCDB extends BaseModel
         }
         $whereBusiness = '';
         if ($business_id !== '') {
-            $whereBusiness .= " AND B.ProxyChannelId=" . $business_id;
+            $whereBusiness .= " where ProxyChannelId=" . $business_id;
         }
 
 
