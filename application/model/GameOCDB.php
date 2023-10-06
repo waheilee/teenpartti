@@ -703,9 +703,9 @@ class GameOCDB extends BaseModel
         if (session('business_ProxyChannelId') && request()->module() == 'business') {
             $business_id = session('business_ProxyChannelId');
         }
-
+        $whereBusiness = '';
         if ($business_id !== '') {
-            $where .= " AND B.ProxyChannelId=" . $business_id;
+            $whereBusiness .= " AND B.ProxyChannelId=" . $business_id;
         }
 
 
@@ -723,7 +723,7 @@ class GameOCDB extends BaseModel
         // var_dump($where);die();
         $table = 'dbo.T_BankWeathChangeLog';
 
-        $sqlExec = "exec Proc_GetPageData '$table','$field','$where', 'AddTime DESC','$join','$begin','$end', $this->page , $this->pageSize";
+        $sqlExec = "exec Proc_GetPageData '$table','$field','$where', 'AddTime DESC','$join','$begin','$end', $this->page , $this->pageSize,$whereBusiness";
         try {
             $result = $this->getTableQuery($sqlExec);
         } catch (Exception $exception) {
