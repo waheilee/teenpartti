@@ -691,7 +691,7 @@ class GameOCDB extends BaseModel
             $this->pageSize = 1;
         }
         $join = "LEFT JOIN CD_Account.dbo.T_Accounts B WITH (NOLOCK) ON A.RoleID=B.AccountID";
-        $field = 'A.ID,RoleID,ServerID,ChangeType,Money,LastMoney,AddTime,Tax,Description,A.OperatorId';
+        $field = 'A.ID,RoleID,ServerID,ChangeType,Money,LastMoney,AddTime,Tax,Description,A.OperatorId,ProxyChannelId';
         if (session('merchant_OperatorId') && request()->module() == 'merchant') {
             $OperatorId = session('merchant_OperatorId');
         }
