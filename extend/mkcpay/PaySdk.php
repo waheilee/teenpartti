@@ -12,6 +12,7 @@ use EllipticCurve\Ecdsa;
 use EllipticCurve\PrivateKey;
 use EllipticCurve\PublicKey;
 use EllipticCurve\Signature;
+use redis\Redis;
 
 class PaySdk
 {
@@ -90,6 +91,13 @@ class PaySdk
             $result['status'] = false;
             return $result;
         }
+        $orderNum = Redis::get('PAYOUT_ORDER_NUMBER_'.$OrderNo);
+        if ($orderNum){
+            $result['message'] = '重复提交';
+            $result['status'] = false;
+            return $result;
+        }
+
         //{
         //"result": {
         //"orderNo": "881609443421192192",
@@ -128,6 +136,7 @@ class PaySdk
             $result['status'] = true;
             $result['message'] = 'success';
         }
+        Redis::set('PAYOUT_ORDER_NUMBER_'.$OrderNo,$OrderNo,86400);
         return $result;
     }
 
