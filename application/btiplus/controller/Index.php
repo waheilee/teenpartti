@@ -8,7 +8,7 @@ use socket\QuerySocket;
 use think\Exception;
 use redis\Redis;
 use think\Request;
-use libphonenumber\PhoneNumberUtil;
+
 class Index extends Base
 {
 
