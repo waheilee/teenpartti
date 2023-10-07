@@ -691,26 +691,27 @@ class GameOCDB extends BaseModel
             $this->pageSize = 1;
         }
         $join = "LEFT JOIN CD_Account.dbo.T_Accounts B WITH (NOLOCK) ON A.RoleID=B.AccountID";
-        $field = 'A.ID,RoleID,ServerID,ChangeType,Money,LastMoney,AddTime,Tax,Description,A.OperatorId,ProxyChannelId';
+        $field = 'A.ID,RoleID,ServerID,ChangeType,Money,LastMoney,AddTime,Tax,Description';
+
         if (session('merchant_OperatorId') && request()->module() == 'merchant') {
             $OperatorId = session('merchant_OperatorId');
         }
         if ($OperatorId !== '') {
-            $where .= " AND  OperatorId=" . $OperatorId;
+            $join .= " where  B.OperatorId=" . $OperatorId;
         }
 
         $business_id = '';
         if (session('business_ProxyChannelId') && request()->module() == 'business') {
             $business_id = session('business_ProxyChannelId');
         }
-        $whereBusiness = '';
+
         if ($business_id !== '') {
-            $whereBusiness .= "'where ProxyChannelId=$business_id'";
+            $join .= " where B.ProxyChannelId=" . $business_id;
         }
 
 
-        if ($changetype > 0) $where .= "AND ChangeType=$changetype ";
-        if ($roleId > 0) $where .= "AND roleId=$roleId ";
+        if ($changetype > 0) $where .= " AND ChangeType=$changetype ";
+        if ($roleId > 0) $where .= " AND roleId=$roleId ";
         if (!empty($ServerID)) $where .= " AND ServerID=''$ServerID''";
         if ($usertype >= 0) $join .= " AND  gmtype=" . $usertype;
         //外联 条件
@@ -720,10 +721,10 @@ class GameOCDB extends BaseModel
         $where .= " and AddTime>=''" . $strartdate . "'' and AddTime<=''" . $enddate . "'' ";
         $begin = date('Y-m-d', strtotime($strartdate));
         $end = date('Y-m-d', strtotime($enddate));
-        // var_dump($where);die();
+
         $table = 'dbo.T_BankWeathChangeLog';
 
-        $sqlExec = "exec Proc_GetPageData '$table','$field','$where', 'AddTime DESC','$join','$begin','$end', $this->page , $this->pageSize,$whereBusiness";
+        $sqlExec = "exec Proc_GetPageData '$table','$field','$where', 'AddTime DESC','$join','$begin','$end', $this->page , $this->pageSize";
         try {
             $result = $this->getTableQuery($sqlExec);
         } catch (Exception $exception) {
