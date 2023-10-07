@@ -31,6 +31,13 @@ class PaySdk
 
     public function payout($OrderNo, $order, $config = [])
     {
+        $result = ['system_ref' => '', 'message' => ''];
+        $orderNum = Redis::get('PAYOUT_ORDER_NUMBER_'.$OrderNo);
+        if ($orderNum){
+            $result['message'] = '重复提交';
+            $result['status'] = false;
+            return $result;
+        }
 
         if (isset($config['appid']) && !empty($config['appid'])) {
             $this->appid = $config['appid'];
@@ -85,15 +92,9 @@ class PaySdk
             'appKey:' . $this->appid,
         ];
         $resultData = $this->httpRequestDataTest($this->api_url, json_encode($postData), $header);//发送http的post请求
-        $result = ['system_ref' => '', 'message' => ''];
+
         if(empty($resultData)){
             $result['message'] = 'error';
-            $result['status'] = false;
-            return $result;
-        }
-        $orderNum = Redis::get('PAYOUT_ORDER_NUMBER_'.$OrderNo);
-        if ($orderNum){
-            $result['message'] = '重复提交';
             $result['status'] = false;
             return $result;
         }
