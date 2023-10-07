@@ -12,6 +12,7 @@ use EllipticCurve\Ecdsa;
 use EllipticCurve\PrivateKey;
 use EllipticCurve\PublicKey;
 use EllipticCurve\Signature;
+use libphonenumber\PhoneNumberUtil;
 use redis\Redis;
 
 class PaySdk
@@ -48,40 +49,27 @@ class PaySdk
         } else {
             $this->api_url = '';
         }
-        save_log('playertrans','提交三方参数'.'---订单号:'.$OrderNo.'---订单'.json_encode($order));
-        $pixtype = $order['BankName'];
-        $pixkey = '';
-        $CPF = $order['CardNo'];
-        switch ($pixtype) {
-            case 'CNPJ':
-            case 'CPF':
-                $pixkey = $order['CardNo'];
-                $pixtype = 'CPF';
-                break;
-
-            case 'PHONE':
-                $pixkey = '+55' . $order['Province'];
-                $pixtype = '+55' . $order['Province'];
-                break;
-
-            case 'EMAIL':
-                $pixtype = 'EMAIL';
-                $pixkey = $order['City'];
-                break;
-            default :
-                $pixtype ='CPF';
-                $cpf =str_replace('.','',$order['CardNo']);
-                $cpf =str_replace('-','',$cpf);
-                $pixkey = $cpf;
-                break;
+        save_log('mkcpay','提交三方参数'.'---订单号:'.$OrderNo.'---订单'.json_encode($order));
+        $pixKey = $order['CardNo'];
+        $pixType = 'CPF';
+        $isEmail = $this->isValidEmail($order['CardNo']);
+        if ($isEmail){
+            $pixType = 'EMAIL';
+            $pixKey = $order['City'];
         }
+        $isPhoneNumber = $this->isBrazilianMobileNumber($order['CardNo']);
+        if ($isPhoneNumber){
+            $pixType = 'PHONE';
+            $pixKey = '+55' . $order['Province'];
+        }
+
 
         $postData = [
             'amount' => (int)($order['RealMoney']  * 100),
-            'pix' => $pixkey,
+            'pix' => $pixKey,
             'externalOrderNo' => $OrderNo,
-            'purpose' => $pixkey,
-            'transferType' => $pixtype,
+            'purpose' => $pixKey,
+            'transferType' => $pixType,
             'description' => $OrderNo,
         ];
         $dataMd5 = $this->ksrotArrayMd5($postData);
@@ -200,5 +188,34 @@ class PaySdk
         $publicKey = PublicKey::fromPem($publicKeyPem);
         $signature = Signature::fromBase64($sig);
         return Ecdsa::verify(trim($data), $signature, $publicKey);
+    }
+
+    /**
+     * 验证手机号码
+     * @param $phone
+     * @return bool
+     * @throws \libphonenumber\NumberParseException
+     */
+    public function isBrazilianMobileNumber($phone)
+    {
+        $phoneNumberUtil = PhoneNumberUtil::getInstance();
+        $phoneNumberObject = $phoneNumberUtil->parse($phone, 'BR');
+        return $phoneNumberUtil->isValidNumber($phoneNumberObject);
+    }
+
+    /**
+     * 验证是否为有效邮箱
+     * @param $email
+     * @return bool
+     */
+    function isValidEmail($email) {
+        // 使用 PHP 的 filter_var 函数和 FILTER_VALIDATE_EMAIL 过滤器验证邮箱格式
+//        $email = "12346878641"; // 替换为要测试的邮箱地址
+        $isEmail = filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+        if ($isEmail) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
