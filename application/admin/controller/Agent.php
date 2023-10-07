@@ -2283,8 +2283,7 @@ class Agent extends Main
         }
         $userdb=new UserDB();
         $accountdb =new AccountDB();
-        $result = $userdb->getTableObject('T_UserProxyInfo')->field('RoleId')->where('ParentIds like \'%,'.$parentId.'%\'')->select();
-
+        $result = $userdb->getTableObject('T_UserProxyInfo')->field('RoleId')->where('ParentIds like \'%'.$parentId.'%\'')->select();
         if(empty($result)){
             return $this->apiReturn(1, '', '下级没有任务玩家，无法操作');
         }
