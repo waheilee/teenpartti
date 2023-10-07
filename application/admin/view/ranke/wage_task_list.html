@@ -133,7 +133,7 @@
                     {field: 'TotalDeposit', align: 'center', title: "{:lang('总充值')}", width: 150, sort: true},
                     {field: 'TotalRollOut', align: 'center', title: "{:lang('总提现')}", width: 150, sort: true},
                     {
-                        field: 'iFreezonMoney', align: 'center', title: "{:lang('冻结金额')}", width: 180, templet: function (d) {
+                        field: 'iFreezonMoney', align: 'center', title: "{:lang('冻结金额')}", sort: true,width: 180, templet: function (d) {
                             return d.iFreezonMoney != 0 ? d.iFreezonMoney : '0.00';
                         }
                     },
@@ -145,7 +145,8 @@
                     ,
                     {field: 'iCurWaged', align: 'center', title: "{:lang('当前完成打码')}", width: 180},
                     {field: 'iNeedWaged', align: 'center', title: "{:lang('打码任务')}", width: 180},
-                    {field: 'CompletionProgress', align: 'center', title: "{:lang('完成进度')}", width: 180,sort:true},
+                    // {field: 'CompletionProgress', align: 'center', title: "{:lang('完成进度')}", width: 180,sort:true},
+                    {field: 'percentage', align: 'center', title: "{:lang('完成进度')}", width: 180, sort: true},
                     {field: 'CtrlRatio', title: "{:lang('单控数值')}", minWidth:150,sort:true},
                     {fixed: 'right', title: "{:lang('操作')}", align: 'center', minWidth: 150, toolbar: '#msg-bar'}
 

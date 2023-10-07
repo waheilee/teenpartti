@@ -175,12 +175,13 @@ class Ranke extends Main
                     ConVerMoney($v['iFreezonMoney']);
                     ConVerMoney($v['iNeedWaged']);
                     ConVerMoney($v['iCurWaged']);
-                    if ($v['iCurWaged'] == 0 || $v['iNeedWaged'] == 0){
-                        $percentage = '0%';
-                    }else{
-                        $percentage = bcmul(bcdiv( $v['iCurWaged'] , $v['iNeedWaged'],6),100,2).'%';
-                    }
-                    $v['CompletionProgress'] = $percentage;
+                    $v['percentage'] = $v['percentage']*100 .'%';
+//                    if ($v['iCurWaged'] == 0 || $v['iNeedWaged'] == 0){
+//                        $percentage = '0%';
+//                    }else{
+//                        $percentage = bcmul(bcdiv( $v['iCurWaged'] , $v['iNeedWaged'],6),100,2).'%';
+//                    }
+//                    $v['CompletionProgress'] = $percentage;
 //                    $v['CtrlRatio'] = '';
 //
 //                    if ($v['win_dmrateset'] && $v['win_dmrateset'] != 100){
@@ -205,11 +206,11 @@ class Ranke extends Main
                     $CompletionProgress = array_column($data['list'],'win_dmrateset');
                     array_multisort($CompletionProgress,$sortType,$data['list']);
                 }
-                if ($orderby == 'CompletionProgress'){
-
-                    $CompletionProgress = array_column($data['list'],'CompletionProgress');
-                    array_multisort($CompletionProgress,$sortType,$data['list']);
-                }
+//                if ($orderby == 'CompletionProgress'){
+//
+//                    $CompletionProgress = array_column($data['list'],'CompletionProgress');
+//                    array_multisort($CompletionProgress,$sortType,$data['list']);
+//                }
                 return $this->apiJson($data);
             case 'exec':
                 //权限验证
