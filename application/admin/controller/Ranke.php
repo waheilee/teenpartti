@@ -176,11 +176,11 @@ class Ranke extends Main
                     ConVerMoney($v['iNeedWaged']);
                     ConVerMoney($v['iCurWaged']);
                     $v['percentage'] = $v['percentage']*100 .'%';
-//                    if ($v['iCurWaged'] == 0 || $v['iNeedWaged'] == 0){
-//                        $percentage = '0%';
-//                    }else{
-//                        $percentage = bcmul(bcdiv( $v['iCurWaged'] , $v['iNeedWaged'],6),100,2).'%';
-//                    }
+                    if ($v['iCurWaged'] == 0 || $v['iNeedWaged'] == 0){
+                        $v['percentage'] = '0%';
+                    }else{
+                        $v['percentage'] = bcmul(bcdiv( $v['iCurWaged'] , $v['iNeedWaged'],6),100,2).'%';
+                    }
 //                    $v['CompletionProgress'] = $percentage;
 //                    $v['CtrlRatio'] = '';
 //
