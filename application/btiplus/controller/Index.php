@@ -96,25 +96,7 @@ class Index extends Base
     }
 
 
-    //创建临时订单
-    private function makeOrderId($uid)
-    {
-        return date('YmdHis') . sprintf('%.0f', floatval(explode(' ', microtime())[0]) * 1000) . $uid;
-    }
 
-    //加密
-    private function encry($str, $key = 'btiplus')
-    {
-        $str = trim($str);
-        return think_encrypt($str, $key);
-
-    }
-
-    //解密
-    private function decry($str, $key = 'btiplus')
-    {
-        return think_decrypt($str, $key);
-    }
 
     /**
      * 客户端请求创建用户
@@ -547,5 +529,25 @@ class Index extends Base
         $gamemoney = $m['iGameWealth'] ?? 0;
         $balance = bcdiv($gamemoney, bl, 3);
         return floor($balance * 100) / 100;
+    }
+
+    //创建临时订单
+    private function makeOrderId($uid)
+    {
+        return date('YmdHis') . sprintf('%.0f', floatval(explode(' ', microtime())[0]) * 1000) . $uid;
+    }
+
+    //加密
+    private function encry($str, $key = 'btiplus')
+    {
+        $str = trim($str);
+        return think_encrypt($str, $key);
+
+    }
+
+    //解密
+    private function decry($str, $key = 'btiplus')
+    {
+        return think_decrypt($str, $key);
     }
 }
