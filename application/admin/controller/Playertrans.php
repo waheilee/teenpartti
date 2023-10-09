@@ -22,10 +22,12 @@ use socket\QuerySocket;
 use think\Cache;
 use think\Exception;
 use fmpay\FmPaySdk;
+use think\exception\PDOException;
 use think\Request;
 use tpay\PaySdk;
 use app\model\GameOCDB;
 use easypay\PaySdk as EasyPay;
+
 //use goldpay\PaySdk as GoldPay;
 use sepropay\PaySdk as SeproPay;
 use think\Db;
@@ -56,6 +58,7 @@ use xjpay\PaySdk as Xjpay;
 use roeasypay\PaySdk as Roeasypay;
 use holidiapay\PaySdk as Holidiapay;
 use socket\sendQuery;
+use think\Collection;
 
 /**
  * Class Playertrans
@@ -255,39 +258,39 @@ class Playertrans extends Main
         return $this->fetch();
     }
 
-/*
-    public function testfinish()
-    {
-        $orderid = input('orderno', '');
-        $UserDrawBack = new UserDrawBack('userdrawback');
-        $draw = $UserDrawBack->GetRow(['OrderNo' => $orderid], '*');
-        if (!$draw) {
-            return $this->apiReturn(100, '', '该提现订单不存在');
-        }
-//        if ($draw['checkUser'] != session('username')) {
-//            return $this->apiReturn(100, '', '权限不足');
-//        }
-        if (intval($draw['AccountID']) === 0) {
-            return $this->apiReturn(100, '', '该提现订单玩家id为0，无法处理');
-        }
+    /*
+        public function testfinish()
+        {
+            $orderid = input('orderno', '');
+            $UserDrawBack = new UserDrawBack('userdrawback');
+            $draw = $UserDrawBack->GetRow(['OrderNo' => $orderid], '*');
+            if (!$draw) {
+                return $this->apiReturn(100, '', '该提现订单不存在');
+            }
+    //        if ($draw['checkUser'] != session('username')) {
+    //            return $this->apiReturn(100, '', '权限不足');
+    //        }
+            if (intval($draw['AccountID']) === 0) {
+                return $this->apiReturn(100, '', '该提现订单玩家id为0，无法处理');
+            }
 
-        $draw['RealMoney'] = FormatMoney($draw['iMoney'] - $draw['Tax']);
-        $sendQuery = new sendQuery();
-        $realmoney = FormatMoney($draw['RealMoney']);
-        $res = $sendQuery->callback("CMD_MD_USER_DRAWBACK_MONEY", [$draw['AccountID'], 1, $orderid, $realmoney, $draw['RealMoney']]);
-        $code = unpack("LCode", $res)['Code'];
+            $draw['RealMoney'] = FormatMoney($draw['iMoney'] - $draw['Tax']);
+            $sendQuery = new sendQuery();
+            $realmoney = FormatMoney($draw['RealMoney']);
+            $res = $sendQuery->callback("CMD_MD_USER_DRAWBACK_MONEY", [$draw['AccountID'], 1, $orderid, $realmoney, $draw['RealMoney']]);
+            $code = unpack("LCode", $res)['Code'];
 
-        $save_data = [
-            'status' => 100,
-            'IsDrawback' => 100,
-            'TransactionNo' => '',
-            'UpdateTime' => date('Y-m-d H:i:s', time())
-        ];
-        $UserDrawBack->table = 'userdrawback';
-        $UserDrawBack->UPData($save_data, ['OrderNo' => $orderid]);
-        return $this->apiReturn(0, '', '订单更新成功');
-    }
-*/
+            $save_data = [
+                'status' => 100,
+                'IsDrawback' => 100,
+                'TransactionNo' => '',
+                'UpdateTime' => date('Y-m-d H:i:s', time())
+            ];
+            $UserDrawBack->table = 'userdrawback';
+            $UserDrawBack->UPData($save_data, ['OrderNo' => $orderid]);
+            return $this->apiReturn(0, '', '订单更新成功');
+        }
+    */
 
 
     public function channelOutManger()
@@ -316,7 +319,7 @@ class Playertrans extends Main
                 $where = "";
                 if ($ChannelId > 0) $where .= " AND ChannelId=$ChannelId";//
                 if ($status > -1) $where .= " AND Status=$status";//
-                if (!empty($ChannelType) && $ChannelType>-1 )  $where .= " AND ChannelType=$ChannelType";//
+                if (!empty($ChannelType) && $ChannelType > -1) $where .= " AND ChannelType=$ChannelType";//
                 if (!IsNullOrEmpty($type)) $where .= " AND Type=$type";
 
                 $orderfield = input('orderfield', 'id');
@@ -331,7 +334,7 @@ class Playertrans extends Main
                 }
                 $result = $DB->TGamePayChannel()->GetPage($where, "$orderfield $ordertype", '*', true);
                 foreach ($result['list'] as $key => &$val) {
-                    $val['ChannelCode'] = json_decode($val['MerchantDetail'],true)['code'] ?? 0;
+                    $val['ChannelCode'] = json_decode($val['MerchantDetail'], true)['code'] ?? 0;
                 }
                 return $this->apiJson($result);
             case 'edit'://编辑
@@ -575,7 +578,7 @@ class Playertrans extends Main
     {
         $userID = intval(input('UserID')) ? intval(input('UserID')) : 0;
         $OrderNo = input('OrderNo') ? input('OrderNo') : '';
-        save_log('playertrans','提交三方参数'.'---用户ID:'.$userID.'---订单号:'.$OrderNo.'---通道id'.input('channelid').'---审核人员'.input('checkUser'));
+        save_log('playertrans', '提交三方参数' . '---用户ID:' . $userID . '---订单号:' . $OrderNo . '---通道id' . input('channelid') . '---审核人员' . input('checkUser'));
         if ($this->request->isAjax()) {
             try {
 
@@ -595,9 +598,9 @@ class Playertrans extends Main
                 if (intval($draw['AccountID']) === 0) {
                     return $this->apiReturn(100, '', '该提现订单玩家id为0，无法处理');
                 }
-                $OperatorId = (new AccountDB())->getTableObject('T_Accounts')->where('AccountID',$draw['AccountID'])->value('OperatorId');
+                $OperatorId = (new AccountDB())->getTableObject('T_Accounts')->where('AccountID', $draw['AccountID'])->value('OperatorId');
                 if ($OperatorId > 0) {
-                    $WithdrawRemain = (new MasterDB())->getTableObject('T_OperatorLink')->where('OperatorId',$OperatorId)->value('WithdrawRemain')?:0;
+                    $WithdrawRemain = (new MasterDB())->getTableObject('T_OperatorLink')->where('OperatorId', $OperatorId)->value('WithdrawRemain') ?: 0;
                     if ($WithdrawRemain <= 0) {
                         return $this->apiReturn(100, '', '玩家所属运营商额度不足，无法出款');
                     }
@@ -607,7 +610,7 @@ class Playertrans extends Main
                 $channel = $db->getTableRow('T_GamePayChannel', ['ChannelId' => $channelid], '*');
                 $config = json_decode($channel['MerchantDetail'], true);
                 $extra = json_encode(['channelid' => $channelid]);
-                $channelcode =strtolower(trim($channel['ChannelCode']));
+                $channelcode = strtolower(trim($channel['ChannelCode']));
                 $result = [];
                 switch ($channelcode) {
                     case 'tpay9':
@@ -690,13 +693,13 @@ class Playertrans extends Main
                     case 'tgpay':
                         $tgpay = new TgPay();
                         // $result = $tgpay->payoutBrazil($OrderNo, $draw, $config);
-                       if (config('app_type') == 2) {
+                        if (config('app_type') == 2) {
                             $result = $tgpay->payoutBrazil($OrderNo, $draw, $config);
-                       } elseif(config('app_type') == 3) {
-                           $result = $tgpay->payoutPhp($OrderNo, $draw, $config);
-                       } else {
+                        } elseif (config('app_type') == 3) {
+                            $result = $tgpay->payoutPhp($OrderNo, $draw, $config);
+                        } else {
                             $result = $tgpay->payout($OrderNo, $draw, $config);
-                       }
+                        }
                         break;
                     case 'dypay':
                         $dypay = new DyPay();
@@ -758,11 +761,11 @@ class Playertrans extends Main
                         break;
                     case 'indipay':
                         $indipay = new IndiPay();
-                        $bccode='';
-                        if($draw['PayWay']==2){
+                        $bccode = '';
+                        if ($draw['PayWay'] == 2) {
                             $bankcode_model = new BankCode();
-                            $bccode = $bankcode_model->getValue(['BankName'=>$draw['BankName']],'BankCode3');
-                            if(empty($bccode)){
+                            $bccode = $bankcode_model->getValue(['BankName' => $draw['BankName']], 'BankCode3');
+                            if (empty($bccode)) {
                                 return $this->apiReturn(100, '', '银行没有对应编码');
                             }
                         }
@@ -770,36 +773,36 @@ class Playertrans extends Main
                         break;
                     case 'winpay':
 
-                        $winpay =new Winpay();
-                        $result =$winpay->payout($OrderNo, $draw, $config);
+                        $winpay = new Winpay();
+                        $result = $winpay->payout($OrderNo, $draw, $config);
                         break;
                     case 'ydpay':
 
-                        $ydpay =new Ydpay();
-                        $result =$ydpay->payout($OrderNo, $draw, $config);
+                        $ydpay = new Ydpay();
+                        $result = $ydpay->payout($OrderNo, $draw, $config);
                         break;
                     case 'xjpay':
 
-                        $xjpay =new Xjpay();
-                        $result =$xjpay->payout($OrderNo, $draw, $config);
+                        $xjpay = new Xjpay();
+                        $result = $xjpay->payout($OrderNo, $draw, $config);
                         break;
                     case 'roeasypay':
 
-                        $roeasypay =new Roeasypay();
-                        $result =$roeasypay->payout($OrderNo, $draw, $config);
+                        $roeasypay = new Roeasypay();
+                        $result = $roeasypay->payout($OrderNo, $draw, $config);
                         break;
                     case 'holidiapay':
 
-                        $holidiapay =new Holidiapay();
-                        $result =$holidiapay->payout($OrderNo, $draw, $config);
+                        $holidiapay = new Holidiapay();
+                        $result = $holidiapay->payout($OrderNo, $draw, $config);
                         break;
                     default:
-                        $class = '\\'.strtolower($channelcode).'\PaySdk';
+                        $class = '\\' . strtolower($channelcode) . '\PaySdk';
                         $pay = new $class();
-                        $result =$pay->payout($OrderNo, $draw, $config);
+                        $result = $pay->payout($OrderNo, $draw, $config);
                         break;
                 }
-                
+
                 if ($result['status']) {
                     $bankM = new BankDB();
                     $post_data = [
@@ -820,7 +823,7 @@ class Playertrans extends Main
                     return $this->apiReturn(100, '', $result['message']);
                 }
             } catch (\Exception $ex) {
-                save_log('playertrans',$ex->getMessage().$ex->getTraceAsString());
+                save_log('playertrans', $ex->getMessage() . $ex->getTraceAsString());
                 return $this->apiReturn(100, '', $ex->getMessage());
             }
         }
@@ -979,7 +982,7 @@ class Playertrans extends Main
                             // $result = $tgpay->payoutBrazil($OrderNo, $draw, $config);
                             if (config('app_type') == 2) {
                                 $result = $tgpay->payoutBrazil($OrderNo, $draw, $config);
-                            } elseif(config('app_type') == 3) {
+                            } elseif (config('app_type') == 3) {
                                 $result = $tgpay->payoutPhp($OrderNo, $draw, $config);
                             } else {
                                 $result = $tgpay->payout($OrderNo, $draw, $config);
@@ -1035,11 +1038,11 @@ class Playertrans extends Main
                             // $result = $tgpay->payoutBrazil($OrderNo, $draw, $config);
                             if (config('app_type') == 2) {
                                 $result = $tgpay->payoutBrazil($OrderNo, $draw, $config);
-                            } elseif(config('app_type') == 3) {
+                            } elseif (config('app_type') == 3) {
                                 $result = $tgpay->payoutPhp($OrderNo, $draw, $config);
                             } else {
                                 $result = $tgpay->payout($OrderNo, $draw, $config);
-                            }                           
+                            }
                             break;
                         case 'indipay':
                             $indipay = new IndiPay();
@@ -1055,33 +1058,33 @@ class Playertrans extends Main
                             $result = $indipay->payout($OrderNo, $draw, $config, $bccode);
                             break;
                         case 'Winpay':
-                            $Winpay =new Winpay();
-                            $result =$Winpay->payout($OrderNo, $draw, $config);
+                            $Winpay = new Winpay();
+                            $result = $Winpay->payout($OrderNo, $draw, $config);
                             break;
                         case 'ydpay':
 
-                            $ydpay =new Ydpay();
-                            $result =$ydpay->payout($OrderNo, $draw, $config);
+                            $ydpay = new Ydpay();
+                            $result = $ydpay->payout($OrderNo, $draw, $config);
                             break;
                         case 'xjpay':
 
-                            $xjpay =new Xjpay();
-                            $result =$xjpay->payout($OrderNo, $draw, $config);
+                            $xjpay = new Xjpay();
+                            $result = $xjpay->payout($OrderNo, $draw, $config);
                             break;
                         case 'roeasypay':
 
-                            $roeasypay =new Roeasypay();
-                            $result =$roeasypay->payout($OrderNo, $draw, $config);
+                            $roeasypay = new Roeasypay();
+                            $result = $roeasypay->payout($OrderNo, $draw, $config);
                             break;
                         case 'holidiapay':
 
-                            $holidiapay =new Holidiapay();
-                            $result =$holidiapay->payout($OrderNo, $draw, $config);
+                            $holidiapay = new Holidiapay();
+                            $result = $holidiapay->payout($OrderNo, $draw, $config);
                             break;
                         default:
-                            $class = '\\'.strtolower($channelcode).'\PaySdk';
+                            $class = '\\' . strtolower($channelcode) . '\PaySdk';
                             $pay = new $class();
-                            $result =$pay->payout($OrderNo, $draw, $config);
+                            $result = $pay->payout($OrderNo, $draw, $config);
                             break;
                     }
                     if ($result['status']) {
@@ -1117,7 +1120,7 @@ class Playertrans extends Main
                 }
                 return $this->apiReturn(0, $res_data, '操作成功。成功：' . $success_num . ',失败：' . $error_num);
             } catch (\Exception $ex) {
-                save_log('playertrans',$ex->getMessage().$ex->getTraceAsString());
+                save_log('playertrans', $ex->getMessage() . $ex->getTraceAsString());
                 return $this->apiReturn(100, '', $ex->getMessage());
             }
         }
@@ -1183,10 +1186,11 @@ class Playertrans extends Main
     }
 
     //获取有权限的管理员列表
-    public function getAdminUser(){
-        $group_ids = Db::table('game_auth_group')->where('rules','like','%,41')->whereOr('rules','like','%,41,%')->whereOr('rules','like','41,%')->column('id');
-        $admin_ids = Db::table('game_auth_group_access')->where('group_id','in',$group_ids)->column('uid');
-        $checkuser = Db::table('game_user')->where('id','in',$admin_ids)->column('username');
+    public function getAdminUser()
+    {
+        $group_ids = Db::table('game_auth_group')->where('rules', 'like', '%,41')->whereOr('rules', 'like', '%,41,%')->whereOr('rules', 'like', '41,%')->column('id');
+        $admin_ids = Db::table('game_auth_group_access')->where('group_id', 'in', $group_ids)->column('uid');
+        $checkuser = Db::table('game_user')->where('id', 'in', $admin_ids)->column('username');
         return $checkuser;
 
     }
@@ -1212,7 +1216,7 @@ class Playertrans extends Main
                 if ($status == 0) {
                     //加锁
                     $key = 'lock_PayAgree_' . $OrderNo;
-                    if (!Redis::lock($key)){
+                    if (!Redis::lock($key)) {
                         $error_num += 1;
                         $res_data[] = [
                             'OrderNo' => $OrderNo,
@@ -1232,7 +1236,7 @@ class Playertrans extends Main
                     GameLog::logData(__METHOD__, [$userID, $OrderNo, $msg], 1, $msg);
                     $success_num += 1;
                 } else {
-                    
+
                     $msg = lang('加入工单失败');
                     GameLog::logData(__METHOD__, [$userID, $OrderNo, $msg], 1, $msg);
                     $error_num += 1;
@@ -1257,6 +1261,7 @@ class Playertrans extends Main
         $this->assign('description', IsNullOrEmpty(input('description')) ? input('description') : '');
         return $this->fetch();
     }
+
     /** 拒绝退款*/
     public function refuse()
     {
@@ -1286,7 +1291,7 @@ class Playertrans extends Main
 //                $llRealMoney = ($info['iMoney'] - $info['Tax']) / bl;
                 $opuser = session('username');
                 save_log('drawback', '操作人:' . $opuser . ',单号：' . $OrderNo . ',金额：' . $info['iMoney'] . ',订单状态：开始');
-                $res = $this->sendGameMessage("CMD_MD_USER_DRAWBACK_MONEY_NEW", [$UserID, $status, $OrderNo, $info['iMoney'], $info['iMoney'],$info['DrawBackWay'],$info['FreezonMoney'],$info['CurWaged'],$info['NeedWaged']]);
+                $res = $this->sendGameMessage("CMD_MD_USER_DRAWBACK_MONEY_NEW", [$UserID, $status, $OrderNo, $info['iMoney'], $info['iMoney'], $info['DrawBackWay'], $info['FreezonMoney'], $info['CurWaged'], $info['NeedWaged']]);
                 $res = unpack("Cint", $res)['int'];
                 save_log('drawback', '操作人:' . $opuser . ',单号：' . $OrderNo . ',金额：' . $info['iMoney'] . ',订单状态：结束');
                 $msg = lang('操作成功.DC状态码:') . $res;
@@ -1315,7 +1320,8 @@ class Playertrans extends Main
     }
 
     //一键拒绝
-    public function onekeyRefuse(){
+    public function onekeyRefuse()
+    {
         $auth_ids = $this->getAuthIds();
         if (!in_array(10011, $auth_ids)) {
             return $this->apiReturn(1, [], '没有权限');
@@ -1371,10 +1377,10 @@ class Playertrans extends Main
                     $status = 2;
                     $data = ['status' => $status, 'IsDrawback' => $status, 'checkUser' => session('username'), 'Descript' => $description, 'checkTime' => date('Y-m-d H:i:s')];
                     $BankDB->updateTable('userdrawback', $data, ['OrderNo' => $OrderNo]);
-    //                $llRealMoney = ($info['iMoney'] - $info['Tax']) / bl;
+                    //                $llRealMoney = ($info['iMoney'] - $info['Tax']) / bl;
                     $opuser = session('username');
                     save_log('drawback', '操作人:' . $opuser . ',单号：' . $OrderNo . ',金额：' . $info['iMoney'] . ',订单状态：开始');
-                    $res = $this->sendGameMessage("CMD_MD_USER_DRAWBACK_MONEY_NEW", [$UserID, $status, $OrderNo, $info['iMoney'], $info['iMoney'],$info['DrawBackWay'],$info['FreezonMoney'],$info['CurWaged'],$info['NeedWaged']]);
+                    $res = $this->sendGameMessage("CMD_MD_USER_DRAWBACK_MONEY_NEW", [$UserID, $status, $OrderNo, $info['iMoney'], $info['iMoney'], $info['DrawBackWay'], $info['FreezonMoney'], $info['CurWaged'], $info['NeedWaged']]);
                     $res = unpack("Cint", $res)['int'];
                     save_log('drawback', '操作人:' . $opuser . ',单号：' . $OrderNo . ',金额：' . $info['iMoney'] . ',订单状态：结束');
                     $msg = lang('操作成功.DC状态码:') . $res;
@@ -1399,11 +1405,11 @@ class Playertrans extends Main
                     continue;
                 }
 
-                
+
             }
             return $this->apiReturn(0, $res_data, '操作成功。成功：' . $success_num . ',失败：' . $error_num);
         } catch (\Exception $ex) {
-            save_log('playertrans',$ex->getMessage().$ex->getTraceAsString());
+            save_log('playertrans', $ex->getMessage() . $ex->getTraceAsString());
             return $this->apiReturn(100, '', $ex->getMessage());
         }
     }
@@ -1443,10 +1449,10 @@ class Playertrans extends Main
 
 
         $order_coin = intval($draw['iMoney']);
-        $realmoney = intval($order_coin/1000);
+        $realmoney = intval($order_coin / 1000);
         $sendQuery = new  sendQuery();
-        $res = $sendQuery->callback("CMD_MD_USER_DRAWBACK_MONEY_NEW", [$userID, 1, $OrderNo, $realmoney, $order_coin,$draw['DrawBackWay'],$draw['FreezonMoney'],$draw['CurWaged'],$draw['NeedWaged']]);
-        save_log('shoudo','通知服务器状态:' . json_encode($res));
+        $res = $sendQuery->callback("CMD_MD_USER_DRAWBACK_MONEY_NEW", [$userID, 1, $OrderNo, $realmoney, $order_coin, $draw['DrawBackWay'], $draw['FreezonMoney'], $draw['CurWaged'], $draw['NeedWaged']]);
+        save_log('shoudo', '通知服务器状态:' . json_encode($res));
 
         if (!$ret) {
             return $this->apiReturn(100, '', '更新订单出错');
@@ -1455,7 +1461,8 @@ class Playertrans extends Main
         return $this->apiReturn(0, '', 'success');
     }
 
-    public function onekeyCpmpete(){
+    public function onekeyCpmpete()
+    {
         $auth_ids = $this->getAuthIds();
         if (!in_array(10011, $auth_ids)) {
             return $this->apiReturn(1, [], '没有权限');
@@ -1515,10 +1522,10 @@ class Playertrans extends Main
 
                 $userID = $draw['AccountID'];
                 $order_coin = intval($draw['iMoney']);
-                $realmoney = intval($order_coin/1000);
-                
-                $res = $sendQuery->callback("CMD_MD_USER_DRAWBACK_MONEY_NEW", [$userID, 1, $OrderNo, $realmoney, $order_coin,$draw['DrawBackWay'],$draw['FreezonMoney'],$draw['CurWaged'],$draw['NeedWaged']]);
-                save_log('shoudo','通知服务器状态:' . json_encode($res));
+                $realmoney = intval($order_coin / 1000);
+
+                $res = $sendQuery->callback("CMD_MD_USER_DRAWBACK_MONEY_NEW", [$userID, 1, $OrderNo, $realmoney, $order_coin, $draw['DrawBackWay'], $draw['FreezonMoney'], $draw['CurWaged'], $draw['NeedWaged']]);
+                save_log('shoudo', '通知服务器状态:' . json_encode($res));
 
                 if (!$ret) {
                     // return $this->apiReturn(100, '', '更新订单出错');
@@ -1529,7 +1536,7 @@ class Playertrans extends Main
             }
             return $this->apiReturn(0, $res_data, '操作成功。成功：' . $success_num . ',失败：' . $error_num);
         } catch (\Exception $ex) {
-            save_log('playertrans',$ex->getMessage().$ex->getTraceAsString());
+            save_log('playertrans', $ex->getMessage() . $ex->getTraceAsString());
             return $this->apiReturn(100, '', $ex->getMessage());
         }
     }
@@ -1569,11 +1576,11 @@ class Playertrans extends Main
 
 
         $order_coin = intval($draw['iMoney']);
-        $realmoney = intval($order_coin/1000);
+        $realmoney = intval($order_coin / 1000);
         $sendQuery = new  sendQuery();
 
-        $res = $sendQuery->callback("CMD_MD_USER_DRAWBACK_MONEY_NEW", [$userID, 2, $OrderNo, $realmoney, $order_coin,$draw['DrawBackWay'],$draw['FreezonMoney'],$draw['CurWaged'],$draw['NeedWaged']]);
-        save_log('shoudo','通知服务器状态:' . json_encode($res));
+        $res = $sendQuery->callback("CMD_MD_USER_DRAWBACK_MONEY_NEW", [$userID, 2, $OrderNo, $realmoney, $order_coin, $draw['DrawBackWay'], $draw['FreezonMoney'], $draw['CurWaged'], $draw['NeedWaged']]);
+        save_log('shoudo', '通知服务器状态:' . json_encode($res));
 
         if (!$ret) {
             return $this->apiReturn(100, '', '更新订单出错');
@@ -1582,7 +1589,8 @@ class Playertrans extends Main
         return $this->apiReturn(0, '', 'success');
     }
 
-    public function onekeyProcessfaild(){
+    public function onekeyProcessfaild()
+    {
         $auth_ids = $this->getAuthIds();
         if (!in_array(10011, $auth_ids)) {
             return $this->apiReturn(1, [], '没有权限');
@@ -1639,13 +1647,13 @@ class Playertrans extends Main
                     'UpdateTime' => date('Y-m-d H:i:s', time())
                 ];
                 $ret = $bankM->updateTable('userdrawback', $post_data, ['OrderNo' => $OrderNo]);
-                
+
                 $userID = $draw['AccountID'];
                 $order_coin = intval($draw['iMoney']);
-                $realmoney = intval($order_coin/1000);
-                
-                $res = $sendQuery->callback("CMD_MD_USER_DRAWBACK_MONEY_NEW", [$userID, 2, $OrderNo, $realmoney, $order_coin,$draw['DrawBackWay'],$draw['FreezonMoney'],$draw['CurWaged'],$draw['NeedWaged']]);
-                save_log('shoudo',$OrderNo.'通知服务器状态:' . json_encode($res,320));
+                $realmoney = intval($order_coin / 1000);
+
+                $res = $sendQuery->callback("CMD_MD_USER_DRAWBACK_MONEY_NEW", [$userID, 2, $OrderNo, $realmoney, $order_coin, $draw['DrawBackWay'], $draw['FreezonMoney'], $draw['CurWaged'], $draw['NeedWaged']]);
+                save_log('shoudo', $OrderNo . '通知服务器状态:' . json_encode($res, 320));
 
                 if (!$ret) {
                     // return $this->apiReturn(100, '', '更新订单出错');
@@ -1656,10 +1664,11 @@ class Playertrans extends Main
             }
             return $this->apiReturn(0, $res_data, '操作成功。成功：' . $success_num . ',失败：' . $error_num);
         } catch (\Exception $ex) {
-            save_log('playertrans',$ex->getMessage().$ex->getTraceAsString());
+            save_log('playertrans', $ex->getMessage() . $ex->getTraceAsString());
             return $this->apiReturn(100, '', $ex->getMessage());
         }
     }
+
     /**
      * 转出记录
      */
@@ -1731,7 +1740,7 @@ class Playertrans extends Main
                             $row['AddTime'],
                             $row['checkTime'],
                             $row['Descript'],
-                            
+
                         ];
                         $writer->writeSheetRow('sheet1', $item, ['height' => 16, 'halign' => 'center',]);
                         unset($rows[$index]);
@@ -2248,8 +2257,8 @@ class Playertrans extends Main
             $page = intval(input('page')) ? intval(input('page')) : 1;  //页码
             $limit = intval(input('limit')) ? intval(input('limit')) : 10;
             $roleid = input('roleid', '');
-            $start = input('start','');
-            $end = input('end','');
+            $start = input('start', '');
+            $end = input('end', '');
             $orderby = input('orderby');
             $orderytpe = input('orderytpe');
             // $where =['CorpType'=>0,'tempdata'=>['>',0]];
@@ -2258,11 +2267,11 @@ class Playertrans extends Main
                 $where .= " and roleid=" . $roleid;
             }
 
-            if(!empty($start)){
+            if (!empty($start)) {
                 $where .= " and addtime >='$start'";
             }
 
-            if(!empty($end)){
+            if (!empty($end)) {
                 $where .= " and addtime <='$end'";
             }
 
@@ -2279,24 +2288,59 @@ class Playertrans extends Main
                     // ->select();
                     ->paginate($limit)
                     ->toArray();
+
+
+                $resultLast = [];
                 foreach ($data['data'] as $key => &$val) {
-                    $val['RunningBonus'] = FormatMoney($val['RunningBonus'] ?: 0);
-                    $val['InviteBonus'] = FormatMoney($val['InviteBonus'] ?: 0);
-                    $val['FirstChargeBonus'] = FormatMoney($val['FirstChargeBonus'] ?: 0);
-                    $val['TotalProfit'] = FormatMoney($val['TotalProfit'] ?: 0);
-                    //$val['TotalProfit'] = round(($val['RunningBonus'] + $val['InviteBonus'] + $val['FirstChargeBonus']), 2);
+                    $item = [];
+                    $time = date('Ymd', strtotime($val['AddTime']));
+                    $liushui = $db->getTableObject('T_ProxyDailyCollectData_' . $time)
+                        ->where('ProxyId', $val['RoleID'])
+                        ->find();
+                    $item['firstLevelRechargeRate'] = '0%';
+                    $item['firstLevelAverageRecharge'] = '0.00';
+                    if (isset($liushui)) {
+                        $item['Lv1PersonCount'] = $liushui['Lv1PersonCount'];//1级人数
+                        $item['ValidInviteCount'] = $liushui['ValidInviteCount'];//有效人数
+                        $item['Lv1FirstDepositPlayers'] = $liushui['Lv1FirstDepositPlayers'];//一级首充人数
+                        $item['Lv1Deposit'] = $liushui['Lv1Deposit'];//一级充值人数
+                        $item['Lv1Running'] = $liushui['Lv1Running'];//一级流水
+                        if ($item['Lv1Running'] > 0 && $item['ValidInviteCount'] > 0) {
+                            $item['firstLevelAverageRecharge'] = FormatMoney(bcdiv($item['Lv1Running'], $item['ValidInviteCount']));
+                        }
+                        if ($item['Lv1FirstDepositPlayers'] > 0 && $item['Lv1PersonCount'] > 0) {
+                            $item['firstLevelRechargeRate'] = bcmul(bcdiv($item['Lv1FirstDepositPlayers'], $item['Lv1PersonCount'], 4), 100, 2) . '%';
+                        }
+                    }
+                    $item['RoleID'] = $val['RoleID'];
+                    $item['AddTime'] = $val['AddTime'];
+                    $item['RunningBonus'] = FormatMoney($val['RunningBonus'] ?: 0);
+                    $item['InviteBonus'] = FormatMoney($val['InviteBonus'] ?: 0);
+                    $item['FirstChargeBonus'] = FormatMoney($val['FirstChargeBonus'] ?: 0);
+                    $item['TotalProfit'] = FormatMoney($val['TotalProfit'] ?: 0);
+                    $resultLast[] = $item;
                 }
-                $list = $data['data'];
+
+//                var_dump($resultLast);
+//                die();
+//                foreach ($data['data'] as $key => &$val) {
+//                    $val['RunningBonus'] = FormatMoney($val['RunningBonus'] ?: 0);
+//                    $val['InviteBonus'] = FormatMoney($val['InviteBonus'] ?: 0);
+//                    $val['FirstChargeBonus'] = FormatMoney($val['FirstChargeBonus'] ?: 0);
+//                    $val['TotalProfit'] = FormatMoney($val['TotalProfit'] ?: 0);
+//                    //$val['TotalProfit'] = round(($val['RunningBonus'] + $val['InviteBonus'] + $val['FirstChargeBonus']), 2);
+//                }
+                $list = $resultLast;
                 $count = $data['total'];
                 if ($action == 'list' && input('output') != 'exec') {
                     $other = [
-                        
+
                     ];
                     return $this->apiReturn(0, $list, '', $count, $other);
                 }
             } else {
                 $where .= ' and (ReceiveProfit>0 or AbleProfit>0)';
-                
+
                 $list = $userproxyinfo->getList($where, $page, $limit, 'RoleID,AbleProfit,ReceiveProfit,TotalProfit', $order);
                 foreach ($list as $k => &$value) {
                     $value['TotalProfit'] = bcdiv($value['TotalProfit'], bl, 3);
@@ -2317,7 +2361,7 @@ class Playertrans extends Main
                     return $this->apiReturn(0, $list, '', $count, $other);
                 }
             }
-            
+
 
             if (input('output') == 'exec') {
                 //权限验证 
@@ -2353,7 +2397,7 @@ class Playertrans extends Main
                             lang('代理首充奖励') => "string",
                             lang('总收益') => 'string',
                         ];
-                    }else {
+                    } else {
                         $header_types = [
                             lang('玩家ID') => 'string',
                             lang('待领取金额') => "string",
@@ -2362,7 +2406,7 @@ class Playertrans extends Main
                             lang('总收益') => 'string',
                         ];
                     }
-                    
+
                     $filename = lang('代理奖励列表') . '-' . date('YmdHis');
                     $rows =& $result['list'];
                     $writer = $this->GetExcel($filename, $header_types, $rows, true);
@@ -2375,7 +2419,7 @@ class Playertrans extends Main
                                 $row['d3'],
                                 $row['TotalProfit'],
                             ];
-                        }else {
+                        } else {
                             $item = [
                                 $row['RoleID'],
                                 $row['AbleProfit'],
@@ -2384,7 +2428,7 @@ class Playertrans extends Main
                                 $row['TotalProfit'],
                             ];
                         }
-                        
+
                         $writer->writeSheetRow('sheet1', $item, ['height' => 16, 'halign' => 'center',]);
                         unset($rows[$index]);
                     }
@@ -2404,9 +2448,9 @@ class Playertrans extends Main
         //     'Received'=>bcdiv($Received,bl,3)
         // ];
         // $this->assign('data',$other);
-       if (config('is_portrait') == 1) {
+        if (config('is_portrait') == 1) {
             return $this->fetch('agent_coin_apply_s');
-        }else {
+        } else {
             return $this->fetch();
         }
     }
@@ -2502,7 +2546,7 @@ class Playertrans extends Main
         $config = json_decode($channel['MerchantDetail'], true);
         $extra = json_encode(['channelid' => $channelid]);
         $channelcode = $channel['ChannelCode'];
-        if($OrderNo == 'OrderNo'){
+        if ($OrderNo == 'OrderNo') {
             $save_data = [
                 'status' => 5,
                 'IsDrawback' => 5,
@@ -2514,15 +2558,15 @@ class Playertrans extends Main
             $order_coin = $draw['iMoney'];
             $realmoney = intval($order_coin / 1000);
             $sendQuery = new sendQuery();
-            $res = $sendQuery->callback("CMD_MD_USER_DRAWBACK_MONEY_NEW", [$draw['AccountID'], 2, $OrderNo, $realmoney, $order_coin,$draw['FreezonMoney'],$draw['CurWaged'],$draw['NeedWaged']]);
+            $res = $sendQuery->callback("CMD_MD_USER_DRAWBACK_MONEY_NEW", [$draw['AccountID'], 2, $OrderNo, $realmoney, $order_coin, $draw['FreezonMoney'], $draw['CurWaged'], $draw['NeedWaged']]);
             $res = unpack("Cint", $res)['int'];
             if ($res != 0) {
                 $log_txt = '第三方处理失败金币未返还';
             }
-            save_log('queryhand', '返回数据：' .',退币状态：' . json_encode($res) . $log_txt);
+            save_log('queryhand', '返回数据：' . ',退币状态：' . json_encode($res) . $log_txt);
             return $this->apiReturn(0, '', lang('支付通道失败并退币'));
         }
-        if($OrderNo == 'OrderNo'){
+        if ($OrderNo == 'OrderNo') {
             $save_data = [
                 'status' => 100,
                 'IsDrawback' => 100,
@@ -2536,7 +2580,7 @@ class Playertrans extends Main
             $order_coin = $draw['iMoney'];
             $realmoney = intval($order_coin / 1000);
             $sendQuery = new sendQuery();
-            $res = $sendQuery->callback("CMD_MD_USER_DRAWBACK_MONEY_NEW", [$draw['AccountID'], 1, $OrderNo, $realmoney, $order_coin,$draw['FreezonMoney'],$draw['CurWaged'],$draw['NeedWaged']]);
+            $res = $sendQuery->callback("CMD_MD_USER_DRAWBACK_MONEY_NEW", [$draw['AccountID'], 1, $OrderNo, $realmoney, $order_coin, $draw['FreezonMoney'], $draw['CurWaged'], $draw['NeedWaged']]);
             $text = "OK";
             save_log('queryhand', '返回数据：' . ',处理成功：' . json_encode($res) . $log_txt);
             return $this->apiReturn(0, '', lang('订单处理成功'));
@@ -2561,7 +2605,7 @@ class Playertrans extends Main
                         $order_coin = $draw['iMoney'];
                         $realmoney = intval($order_coin / 1000);
                         $sendQuery = new sendQuery();
-                        $res = $sendQuery->callback("CMD_MD_USER_DRAWBACK_MONEY_NEW", [$draw['AccountID'], 1, $OrderNo, $realmoney, $order_coin,$draw['DrawBackWay'],$draw['FreezonMoney'],$draw['CurWaged'],$draw['NeedWaged']]);
+                        $res = $sendQuery->callback("CMD_MD_USER_DRAWBACK_MONEY_NEW", [$draw['AccountID'], 1, $OrderNo, $realmoney, $order_coin, $draw['DrawBackWay'], $draw['FreezonMoney'], $draw['CurWaged'], $draw['NeedWaged']]);
                         $text = "OK";
                         save_log('queryhand', '返回数据：' . json_encode($result) . ',处理成功：' . json_encode($res) . $log_txt);
                         return $this->apiReturn(0, '', lang('订单处理成功'));
@@ -2577,7 +2621,7 @@ class Playertrans extends Main
                         $order_coin = $draw['iMoney'];
                         $realmoney = intval($order_coin / 1000);
                         $sendQuery = new sendQuery();
-                        $res = $sendQuery->callback("CMD_MD_USER_DRAWBACK_MONEY_NEW", [$draw['AccountID'], 2, $OrderNo, $realmoney, $order_coin,$draw['DrawBackWay'],$draw['FreezonMoney'],$draw['CurWaged'],$draw['NeedWaged']]);
+                        $res = $sendQuery->callback("CMD_MD_USER_DRAWBACK_MONEY_NEW", [$draw['AccountID'], 2, $OrderNo, $realmoney, $order_coin, $draw['DrawBackWay'], $draw['FreezonMoney'], $draw['CurWaged'], $draw['NeedWaged']]);
                         $res = unpack("Cint", $res)['int'];
                         if ($res != 0) {
                             $log_txt = '第三方处理失败金币未返还';
@@ -2640,19 +2684,20 @@ class Playertrans extends Main
 
 
     //自动出款设置
-    public function ChannelAutoConfig(){
+    public function ChannelAutoConfig()
+    {
         $action = $this->request->param('action');
         $gameoc = new GameOCDB();
         if ($action == 'list') {
-            $limit    = $this->request->param('limit')?:15;
+            $limit = $this->request->param('limit') ?: 15;
             $data = $gameoc->getTableObject('T_PayRiskConfig(NOLOCK)')
-                        ->order('RiskLevel desc')
-                        ->paginate($limit)
-                        ->toArray();
+                ->order('RiskLevel desc')
+                ->paginate($limit)
+                ->toArray();
             return $this->apiReturn(0, $data['data'], 'success', $data['total']);
         } else {
-            $risk_config = $gameoc->getTableObject('T_PayAutoConfig(NOLOCK)')->where('Id',1)->find();
-            $this->assign('risk_config',$risk_config);
+            $risk_config = $gameoc->getTableObject('T_PayAutoConfig(NOLOCK)')->where('Id', 1)->find();
+            $this->assign('risk_config', $risk_config);
 
             $Channel = $this->GetOutChannelInfo(1);
             $this->assign('channeInfo', $Channel);
@@ -2661,58 +2706,63 @@ class Playertrans extends Main
     }
 
     //
-    public function updatePayAutoConfig(){
+    public function updatePayAutoConfig()
+    {
         $param = $this->request->param();
         $gameoc = new GameOCDB();
-        $res   = $gameoc->getTableObject('T_PayAutoConfig')
-                    ->where('Id',1)
-                    ->data($param)
-                    ->update();
+        $res = $gameoc->getTableObject('T_PayAutoConfig')
+            ->where('Id', 1)
+            ->data($param)
+            ->update();
         if ($res) {
-             return $this->apiReturn(0, '', '操作成功');
+            return $this->apiReturn(0, '', '操作成功');
         } else {
             return $this->apiReturn(1, '', '操作失败');
         }
     }
 
-    public function updatePayRiskConfigStatus(){
-        $id     = $this->request->param('id');
+    public function updatePayRiskConfigStatus()
+    {
+        $id = $this->request->param('id');
         $status = $this->request->param('status');
         $gameoc = new GameOCDB();
-        $res   = $gameoc->getTableObject('T_PayRiskConfig')
-                    ->where('Id',$id)
-                    ->data(['Status'=>$status])
-                    ->update();
+        $res = $gameoc->getTableObject('T_PayRiskConfig')
+            ->where('Id', $id)
+            ->data(['Status' => $status])
+            ->update();
         if ($res) {
-             return $this->apiReturn(0, '', '操作成功');
-        } else {
-            return $this->apiReturn(1, '', '操作失败');
-        }
-    }
-    public function deletePayRiskConfig(){
-        $id     = $this->request->param('id');
-        $gameoc = new GameOCDB();
-        $res   = $gameoc->getTableObject('T_PayRiskConfig')
-                    ->where('Id',$id)
-                    ->delete();
-        if ($res) {
-             return $this->apiReturn(0, '', '操作成功');
+            return $this->apiReturn(0, '', '操作成功');
         } else {
             return $this->apiReturn(1, '', '操作失败');
         }
     }
 
-    public function editPayRiskConfig(){
+    public function deletePayRiskConfig()
+    {
+        $id = $this->request->param('id');
+        $gameoc = new GameOCDB();
+        $res = $gameoc->getTableObject('T_PayRiskConfig')
+            ->where('Id', $id)
+            ->delete();
+        if ($res) {
+            return $this->apiReturn(0, '', '操作成功');
+        } else {
+            return $this->apiReturn(1, '', '操作失败');
+        }
+    }
+
+    public function editPayRiskConfig()
+    {
         $gameoc = new GameOCDB();
         if ($this->request->method() == 'POST') {
             $id = request()->param('id');
             $data = [];
-            $data['Days']      = request()->param('Days');
-            $data['TotalWin']  = request()->param('TotalWin');
+            $data['Days'] = request()->param('Days');
+            $data['TotalWin'] = request()->param('TotalWin');
             $data['RiskLevel'] = request()->param('RiskLevel');
-            $data['Status']    = request()->param('Status');
+            $data['Status'] = request()->param('Status');
             if ($id) {
-                $res = $gameoc->getTableObject('T_PayRiskConfig')->where('Id',$id)->data($data)->update();
+                $res = $gameoc->getTableObject('T_PayRiskConfig')->where('Id', $id)->data($data)->update();
             } else {
                 $res = $gameoc->getTableObject('T_PayRiskConfig')->insert($data);
             }
@@ -2725,12 +2775,12 @@ class Playertrans extends Main
         $id = request()->param('id');
         $data = [];
         if ($id) {
-            $data = $gameoc->getTableObject('T_PayRiskConfig(NOLOCK)')->where('Id',$id)->find();
+            $data = $gameoc->getTableObject('T_PayRiskConfig(NOLOCK)')->where('Id', $id)->find();
         }
         if (empty($data)) {
             $data['Status'] = 0;
         }
-        $this->assign('data',$data);
+        $this->assign('data', $data);
         return $this->fetch();
     }
 }
