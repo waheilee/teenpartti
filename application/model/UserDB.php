@@ -809,6 +809,7 @@ class UserDB extends BaseModel
         $result['list'] = $data['data'];
         $result['count'] = $data['total'];
         unset($data);
+        $comments = (new \app\model\GameOCDB)->getTableObject("[OM_GameOC].[dbo].[T_PlayerComment]")->where('type', 1)->select();
         foreach ($result['list'] as &$item) {
             $item['ChannelName'] = "";
             foreach ($Channel as &$p) if ($p['ChannelId'] == $item['ChannelId']) $item['ChannelName'] = $p['ChannelName'];
@@ -880,9 +881,11 @@ class UserDB extends BaseModel
             }
             $item['cheatLevelDesc'] = $strcheat;
             if (empty($item['Descript'])) {
-                $comment = (new \app\model\GameOCDB)->getTableObject("[OM_GameOC].[dbo].[T_PlayerComment]")->where('type', 1)->where('roleid', $item['AccountID'])->order('opt_time desc')->find();
-                if ($comment) {
-                    $item['Descript'] = $comment['comment'];
+//                ->where('roleid', $item['AccountID'])->order('opt_time desc')->find();
+                foreach($comments as $comment){
+                    if ($comment['roleid'] == $item['AccountID']){
+                        $item['Descript'] = $comment['comment'];
+                    }
                 }
             }
             $item['DrawWayName'] = '';
