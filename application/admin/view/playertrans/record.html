@@ -699,36 +699,37 @@
 			    return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
 		    }).join("&");
 		    url = url + "?" + params;
-		    $.ajax({
-			    type: 'POST',
-			    dataType: 'json',
-			    async: true,
-			    url: url, // 生成文件，保存在服务器
-			    success: function (data) {
-				    var result = data;
-				    console.info(data);
-				    switch (result["code"]) {
-					    case 0:
-						    parent.parent.open(url + "&exec=1&outall=true");
-						    break;
-					    case 1:
-						    layer.msg(result["message"]);
-						    break;
-					    case 2:
-						    layer.confirm(result['message'], {
-							    btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
-						    }, function () {
-							    parent.parent.open(url + "&exec=1&outall=true");
-							    layer.msg('', {icon: 6, time: 1000}, function () {
-								    window.location.reload();
-							    });
-						    });
-				    }
-			    },
-			    error: function (XMLHttpRequest, textStatus, e) {
-				    console.log("oilDetection.js  method exportOilDetection" + e);
-			    }
-		    });
+            window.open(url)
+		    // $.ajax({
+			//     type: 'POST',
+			//     dataType: 'json',
+			//     async: true,
+			//     url: url, // 生成文件，保存在服务器
+			//     success: function (data) {
+			// 	    var result = data;
+			// 	    console.info(data);
+			// 	    switch (result["code"]) {
+			// 		    case 0:
+			// 			    parent.parent.open(url + "&exec=1&outall=true");
+			// 			    break;
+			// 		    case 1:
+			// 			    layer.msg(result["message"]);
+			// 			    break;
+			// 		    case 2:
+			// 			    layer.confirm(result['message'], {
+			// 				    btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
+			// 			    }, function () {
+			// 				    parent.parent.open(url + "&exec=1&outall=true");
+			// 				    layer.msg('', {icon: 6, time: 1000}, function () {
+			// 					    window.location.reload();
+			// 				    });
+			// 			    });
+			// 	    }
+			//     },
+			//     error: function (XMLHttpRequest, textStatus, e) {
+			// 	    console.log("oilDetection.js  method exportOilDetection" + e);
+			//     }
+		    // });
 	    }
     });
 </script>
