@@ -53,7 +53,7 @@ class PaySdk
         } else {
             $this->api_url = '';
         }
-        save_log('mkcpay','提交三方参数'.'---订单号:'.$OrderNo.'---订单'.json_encode($order));
+        save_log('mkcpay','提交三方订单参数'.'---订单号:'.$OrderNo.'---订单'.json_encode($order));
         $pixKey = $order['CardNo'];
         $pixType = 'CPF';
         $isEmail = $this->isValidEmail($order['CardNo']);
@@ -83,6 +83,7 @@ class PaySdk
             'sign:' . $sign,
             'appKey:' . $this->appid,
         ];
+        save_log('mkcpay','提交三方参数---'.json_encode($postData));
         $resultData = $this->httpRequestDataTest($this->api_url, json_encode($postData), $header);//发送http的post请求
 
         if(empty($resultData)){
