@@ -85,7 +85,7 @@ class PaySdk
         ];
         save_log('mkcpay','提交三方参数---'.json_encode($postData));
         $resultData = $this->httpRequestDataTest($this->api_url, json_encode($postData), $header);//发送http的post请求
-
+        save_log('mkcpay','返回参数---'.json_encode($resultData));
         if(empty($resultData)){
             $result['message'] = 'error';
             $result['status'] = false;
