@@ -50,8 +50,6 @@ class PaySdk
 
         if (isset($config['apiurl']) && !empty($config['apiurl'])) {
             $this->api_url = $config['apiurl'];
-        } else {
-            $this->api_url = '';
         }
         save_log('mkcpay','提交三方订单参数'.'---订单号:'.$OrderNo.'---订单'.json_encode($order));
         $pixKey = $order['CardNo'];
