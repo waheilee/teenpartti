@@ -21,10 +21,11 @@ class PaySdk
     private $api_url;
     private $appid;
 
-
+    private $privateKey;
 
     public function __construct()
     {
+        $this->privateKey = '';
         $this->api_url = 'https://doc.mkcpay.com/api/pay/v1/mkcPay/createPixTransfer';
         $this->appid = '';
     }
@@ -40,6 +41,9 @@ class PaySdk
             return $result;
         }
 
+        if (!empty($config['private_key'])) {
+            $this->privateKey = $config['private_key'];
+        }
         if (isset($config['appid']) && !empty($config['appid'])) {
             $this->appid = $config['appid'];
         }
@@ -73,7 +77,7 @@ class PaySdk
             'description' => $OrderNo,
         ];
         $dataMd5 = $this->ksrotArrayMd5($postData);
-        $sign = $this->encry($dataMd5);
+        $sign = $this->encry($dataMd5,$this->privateKey);
         $header = [
             'Content-Type: application/json; charset=utf-8',
             'sign:' . $sign,
@@ -162,12 +166,12 @@ class PaySdk
         $str = json_encode($data);
         return md5($str);
     }
-    public function encry($data)
+    public function encry($data,$privateKeyConfig)
     {
-        $key = 'MHUCAQEEIRgDFg6d7/rz9qBOiFnTyLCT4p6yw3fhQR+qKmsJpTMjxKAHBgUrgQQACqFEA0IABL7v4UTuEF9d24QPZJJVv7d+QEJXdd9JfmvFKn3ofIsqRcyPkIDK3VTrl6qEa86YAT5ZN05puDj2J689L/6wIgo=';
+        //$key = 'MHUCAQEEIRgDFg6d7/rz9qBOiFnTyLCT4p6yw3fhQR+qKmsJpTMjxKAHBgUrgQQACqFEA0IABL7v4UTuEF9d24QPZJJVv7d+QEJXdd9JfmvFKn3ofIsqRcyPkIDK3VTrl6qEa86YAT5ZN05puDj2J689L/6wIgo=';
 
         $privateKey = "-----BEGIN EC PRIVATE KEY-----\n";
-        $privateKey .= wordwrap($key, 64, "\n", true);
+        $privateKey .= wordwrap($privateKeyConfig, 64, "\n", true);
         $privateKey .= "\n-----END EC PRIVATE KEY-----\n";
 
 # Generate privateKey from PEM string
