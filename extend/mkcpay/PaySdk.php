@@ -26,7 +26,7 @@ class PaySdk
     public function __construct()
     {
         $this->api_url = 'https://doc.mkcpay.com/api/pay/v1/mkcPay/createPixTransfer';
-        $this->appid = 'eex831ooqizli';
+        $this->appid = '';
     }
 
 
