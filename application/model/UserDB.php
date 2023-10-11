@@ -257,7 +257,7 @@ class UserDB extends BaseModel
             ->join('(SELECT * FROM [T_UserWageRequire] where id in(select max(Id) from  [T_UserWageRequire] group by roleid )) as b', 'a.AccountID=b.roleid', 'left')
             ->where($where)
             ->order("$orderby $ordertype")
-            ->field('AccountID,Money,OperatorId,TotalDeposit,TotalRollOut,RegisterTime,b.FreezonMoney as iFreezonMoney,b.CurWageRequire/b.NeedWageRequire as percentage,c.CtrlRatio,d.value as win_dmrateset,d.job_key as win_key,e.value as lose_dmrateset,e.job_key as lost_key')
+            ->field('AccountID,Money,OperatorId,TotalDeposit,TotalRollOut,RegisterTime,b.FreezonMoney as iFreezonMoney,b.CurWageRequire/CAST(b.NeedWageRequire as FLOAT) as percentage,c.CtrlRatio,d.value as win_dmrateset,d.job_key as win_key,e.value as lose_dmrateset,e.job_key as lost_key')
             ->fetchSql(0)
                 ->paginate($limit)
                 ->toArray();
