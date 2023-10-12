@@ -581,7 +581,15 @@ class Playertrans extends Main
         save_log('playertrans', '提交三方参数' . '---用户ID:' . $userID . '---订单号:' . $OrderNo . '---通道id' . input('channelid') . '---审核人员' . input('checkUser'));
         if ($this->request->isAjax()) {
             try {
-
+                $cacheOrderNo = Redis::get('PAYOUT_ORDER_NUMBER_'.$OrderNo);
+                if($cacheOrderNo){
+                    $res_data[] = [
+                        'OrderNo' => $OrderNo,
+                        'msg' => '订单重复操作过于频繁！'
+                    ];
+                    save_log('mkcpay', 'function thirdPay----操作过于频繁:' . $OrderNo);
+                    return $this->apiReturn(0, $res_data, '操作失败！');
+                }
                 $channelid = intval(input('channelid')) ? intval(input('channelid')) : 0;
                 if (!$channelid || $channelid <= 0) {
                     return $this->apiReturn(100, '', '提现通道未选择');
@@ -799,6 +807,7 @@ class Playertrans extends Main
                     default:
                         $class = '\\' . strtolower($channelcode) . '\PaySdk';
                         $pay = new $class();
+                        Redis::set('PAYOUT_ORDER_NUMBER_'.$OrderNo,$OrderNo,30);
                         $result = $pay->payout($OrderNo, $draw, $config);
                         break;
                 }
@@ -851,7 +860,7 @@ class Playertrans extends Main
                         'OrderNo' => $OrderNo,
                         'msg' => '订单重复操作过于频繁！'
                     ];
-                    save_log('mkcpay', '操作过于频繁:' . $OrderNo);
+                    save_log('mkcpay', 'function onekeyThirdPay操作过于频繁:' . $OrderNo);
                     return $this->apiReturn(0, $res_data, '操作失败！');
                 }
                 $channelid = intval(input('channelid')) ? intval(input('channelid')) : 0;
