@@ -851,6 +851,7 @@ class Playertrans extends Main
                         'OrderNo' => $OrderNo,
                         'msg' => '订单重复操作过于频繁！'
                     ];
+                    save_log('mkcpay', '操作过于频繁:' . $OrderNo);
                     return $this->apiReturn(0, $res_data, '操作失败！');
                 }
                 $channelid = intval(input('channelid')) ? intval(input('channelid')) : 0;
