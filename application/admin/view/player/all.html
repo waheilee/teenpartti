@@ -156,6 +156,7 @@
     <a class="layui-btn layui-btn-xs" lay-event="setControll">{:lang('开关控制权限')}</a>
     <!--<a class="layui-btn layui-btn-xs" lay-event="unlockgold">{:lang('解锁金币')}</a>-->
     <a class="layui-btn layui-btn-xs" lay-event="setProftSwitch">{:lang('佣金返利开关')}</a>
+    <a class="layui-btn layui-btn-xs" lay-event="setAgentRebateSwitch">{:lang('代理返佣奖励开关')}</a>
     <!--    <a class="layui-btn layui-btn-xs " lay-event="ganme">{:lang('游戏日志')}</a>-->
     <!--    <a class="layui-btn layui-btn-xs" lay-event="cold">{:lang('金币日志')}</a>-->
     <!--<a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">{:lang('拉黑')}</a>-->
@@ -896,6 +897,54 @@
                                                 }
                                             }
                                         });
+                                    }
+                                });
+
+                            } else if(layEvent === 'setAgentRebateSwitch') {
+                                var roleId = data.ID;
+                                $.ajax({
+                                    type: 'post',
+                                    url: "{:url('player/getAgentRebateSwitch')}",
+                                    data: {
+                                        'roleid': roleId,
+                                    },
+                                    dataType: 'json',
+                                    success: function (res) {
+                                            let RebateSwitchType;
+                                        var msg ='';
+                                            if(res.data==2){
+                                                msg ='确认关闭代理返佣奖励？';
+                                                RebateSwitchType = 1;
+                                            }
+                                            else{
+                                                msg ='确认开启代理返佣奖励？';
+                                                RebateSwitchType = 2;
+                                            }
+                                            layer.confirm( '玩家：'+roleId + msg, {
+                                                btn: ["{:lang('是')}", "{:lang('否')}"] //按钮
+                                                , btn1: function (index, layero) {
+                                                    $.ajax({
+                                                        type: 'post',
+                                                        url: "{:url('player/setAgentRebateSwitch')}",
+                                                        data: {
+                                                            'roleid': roleId,
+                                                            'status': RebateSwitchType
+                                                        },
+                                                        dataType: 'json',
+                                                        success: function (res) {
+                                                            if (res.code == 0) {
+                                                                layer.msg("{:lang('操作成功')}", {icon: 1, time: 1000}, function () {
+                                                                    //window.location.reload();
+                                                                    table.reload("proxylist", {page: {curr: $(".layui-laypage-em").next().html()}});
+                                                                    layer.closeAll();
+                                                                });
+                                                            } else {
+                                                                layer.msg(res['msg'], {icon: 5});
+                                                            }
+                                                        }
+                                                    });
+                                                }
+                                            });
                                     }
                                 });
 

@@ -4974,4 +4974,42 @@ class Player extends Main
         $data = base64_encode($data);
         return $data;
     }
+
+    /**
+     * 获取代理返佣奖励开关；1关，2开
+     * @return mixed
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public function getAgentRebateSwitch()
+    {
+        $roleId = input('roleid');
+        $userDB = new UserDB();
+        $getUserAgentRebateSwitch = $userDB->getTableObject('T_Job_UserInfo')
+            ->where('RoleID',$roleId)
+            ->where('job_key',10008)
+            ->find();
+        if (isset($getUserAgentRebateSwitch) && $getUserAgentRebateSwitch->value == 2) {
+            return $this->apiReturn(0, 2, '');
+        } else {
+            return $this->apiReturn(0, 1, '');
+        }
+    }
+
+    /**
+     * 设置代理返佣奖励开关；1关，2开
+     * @return mixed
+     */
+    public function setAgentRebateSwitch()
+    {
+        $roleId = input('roleid');
+        $status = input('status');
+        $data = $this->sendGameMessage('CMD_MD_GM_UPDATE_USER_TYPE', [$roleId,10008,$status], "DC", 'returnComm');
+        if ($data['iResult'] == 0) {
+            return $this->apiReturn(0, '', '操作成功');
+        } else {
+            return $this->apiReturn(1, '', '操作失败');
+        }
+    }
 }

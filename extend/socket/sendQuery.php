@@ -84,6 +84,7 @@ define('CMD_MD_CHANNEL_CHILD_ONLINE_COUNTS', 76);//查询渠道对应的在线�
 define('CMD_MD_USER_STATE', 77);//查询玩家在线状态
 define('CMD_MD_USER_WAGED_RATE', 78);//查询打码百分比
 define('CMD_MD_GM_ADD_PROXY_COMMISSION', 79);//佣金上下分
+define('CMD_MD_GM_UPDATE_USER_TYPE', 10001);//玩家身上的各种开关  (为了防止以后同步代码发生冲突，从10000开始
 
 
 class sendQuery
@@ -1323,6 +1324,17 @@ class sendQuery
     {
         $this->in_stream->WriteULong($operator_id);
         $in_head = $this->comm->MakeSendHead(CMD_MD_CHANNEL_CHILD_ONLINE_COUNTS, $this->in_stream->len, 0, REQ_OM, REQ_DC);
+        $in = $this->in_stream->data;
+        $res = $socket->request($in_head, $in);
+    }
+
+
+    public function CMD_MD_GM_UPDATE_USER_TYPE($socket, $roleid, $type, $status)
+    {
+        $this->in_stream->WriteULong($roleid);
+        $this->in_stream->WriteULong($type);
+        $this->in_stream->WriteINT64($status);
+        $in_head = $this->comm->MakeSendHead(CMD_MD_GM_UPDATE_USER_TYPE, $this->in_stream->len, 0, REQ_OM, REQ_DC);
         $in = $this->in_stream->data;
         $res = $socket->request($in_head, $in);
     }
