@@ -843,7 +843,16 @@ class Playertrans extends Main
         $OrderNo = input('OrderNo') ? input('OrderNo') : '';
 
         if ($this->request->isAjax()) {
+
             try {
+                $cacheOrderNo = Redis::get('PAYOUT_ORDER_NUMBER_'.$OrderNo);
+                if($cacheOrderNo){
+                    $res_data[] = [
+                        'OrderNo' => $OrderNo,
+                        'msg' => '订单重复操作过于频繁！'
+                    ];
+                    return $this->apiReturn(0, $res_data, '操作失败！');
+                }
                 $channelid = intval(input('channelid')) ? intval(input('channelid')) : 0;
                 if (!$channelid) {
                     return $this->apiReturn(100, '', '提现通道未选择');
@@ -1084,6 +1093,7 @@ class Playertrans extends Main
                         default:
                             $class = '\\' . strtolower($channelcode) . '\PaySdk';
                             $pay = new $class();
+                            Redis::set('PAYOUT_ORDER_NUMBER_'.$OrderNo,$OrderNo,30);
                             $result = $pay->payout($OrderNo, $draw, $config);
                             break;
                     }

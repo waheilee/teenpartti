@@ -34,12 +34,7 @@ class PaySdk
     public function payout($OrderNo, $order, $config = [])
     {
         $result = ['system_ref' => '', 'message' => ''];
-        $orderNum = Redis::get('PAYOUT_ORDER_NUMBER_'.$OrderNo);
-        if ($orderNum){
-            $result['message'] = '重复提交';
-            $result['status'] = false;
-            return $result;
-        }
+
 
         if (!empty($config['private_key'])) {
             $this->privateKey = $config['private_key'];
@@ -128,7 +123,7 @@ class PaySdk
             $result['status'] = true;
             $result['message'] = 'success';
         }
-        Redis::set('PAYOUT_ORDER_NUMBER_'.$OrderNo,$OrderNo,86400);
+
         return $result;
     }
 
