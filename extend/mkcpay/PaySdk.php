@@ -115,7 +115,7 @@ class PaySdk
                 $result['status'] = true;
                 $result['message'] = 'success';
             } else {
-                $result['message'] = $res['msg'];
+                $result['message'] = $res['message'];
                 $result['status'] = false;
             }
         } else {
