@@ -865,7 +865,17 @@ class Playertrans extends Main
                 $error_num = 0;
                 $res_data = [];
                 foreach ($OrderNos as $key => &$OrderNo) {
-                    $cacheOrderNo = Redis::get('PAYOUT_ORDER_NUMBER_'.$OrderNo);
+                    $payOutOrderSuccess =  Redis::get('PAYOUT_ORDER_SUCCESS_'.$OrderNo);
+                    if ($payOutOrderSuccess){
+                        $error_num += 1;
+                        $res_data[] = [
+                            'OrderNo' => $OrderNo,
+                            'msg' => '该订单已处理成功！'
+                        ];
+                        save_log('mkcpay', '已请求成功订单:' . $OrderNo);
+                        continue;
+                    }
+                    $cacheOrderNo = Redis::get('PAYOUT_ORDER_NUMBER_SUBMIT'.$OrderNo);
                     if($cacheOrderNo){
                         $error_num += 1;
                         $res_data[] = [
@@ -1106,7 +1116,7 @@ class Playertrans extends Main
                         default:
                             $class = '\\' . strtolower($channelcode) . '\PaySdk';
                             $pay = new $class();
-                            Redis::set('PAYOUT_ORDER_NUMBER_'.$OrderNo,$OrderNo,30);
+                            Redis::set('PAYOUT_ORDER_NUMBER_SUBMIT'.$OrderNo,$OrderNo,30);
                             $result = $pay->payout($OrderNo, $draw, $config);
                             break;
                     }

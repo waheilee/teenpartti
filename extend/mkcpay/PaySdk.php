@@ -46,7 +46,7 @@ class PaySdk
         if (isset($config['apiurl']) && !empty($config['apiurl'])) {
             $this->api_url = $config['apiurl'];
         }
-        save_log('mkcpay','提交三方订单参数'.'---订单号:'.$OrderNo.'---订单'.json_encode($order));
+        save_log('mkcpay','提交三方订单号:'.$OrderNo);
         $pixKey = $order['CardNo'];
         $pixType = 'CPF';
         $isEmail = $this->isValidEmail($order['CardNo']);
@@ -108,20 +108,14 @@ class PaySdk
         //}
         save_log('mkcpay', 'post:' . json_encode($postData) . ',output:' . $resultData);
         $res = json_decode($resultData, true);
-
-        if ($res) {
-            if ($res['success']) {
-                $result['system_ref'] = '';
-                $result['status'] = true;
-                $result['message'] = 'success';
-            } else {
-                $result['message'] = $res['msg'];
-                $result['status'] = false;
-            }
-        } else {
+        if (isset($res) && $res['success']) {
             $result['system_ref'] = '';
             $result['status'] = true;
             $result['message'] = 'success';
+            Redis::set('PAYOUT_ORDER_SUCCESS_'.$OrderNo,$OrderNo);
+        } else {
+            $result['message'] = $res['msg'];
+            $result['status'] = false;
         }
 
         return $result;
