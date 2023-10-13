@@ -854,15 +854,7 @@ class Playertrans extends Main
         if ($this->request->isAjax()) {
 
             try {
-                $cacheOrderNo = Redis::get('PAYOUT_ORDER_NUMBER_'.$OrderNo);
-                if($cacheOrderNo){
-                    $res_data[] = [
-                        'OrderNo' => $OrderNo,
-                        'msg' => '订单重复操作过于频繁！'
-                    ];
-                    save_log('mkcpay', 'function onekeyThirdPay操作过于频繁:' . $OrderNo);
-                    return $this->apiReturn(0, $res_data, '操作失败！');
-                }
+
                 $channelid = intval(input('channelid')) ? intval(input('channelid')) : 0;
                 if (!$channelid) {
                     return $this->apiReturn(100, '', '提现通道未选择');
@@ -873,6 +865,27 @@ class Playertrans extends Main
                 $error_num = 0;
                 $res_data = [];
                 foreach ($OrderNos as $key => &$OrderNo) {
+                    $payOutOrderSuccess =  Redis::get('PAYOUT_ORDER_SUCCESS_'.$OrderNo);
+                    if ($payOutOrderSuccess){
+                        $error_num += 1;
+                        $res_data[] = [
+                            'OrderNo' => $OrderNo,
+                            'msg' => '该订单已处理成功！'
+                        ];
+                        save_log('mkcpay', '已请求成功订单:' . $OrderNo);
+                        continue;
+                    }
+                    $cacheOrderNo = Redis::get('PAYOUT_ORDER_NUMBER_SUBMIT'.$OrderNo);
+                    if($cacheOrderNo){
+                        $error_num += 1;
+                        $res_data[] = [
+                            'OrderNo' => $OrderNo,
+                            'msg' => '订单重复操作过于频繁！'
+                        ];
+                        save_log('mkcpay', 'function onekeyThirdPay操作过于频繁:' . $OrderNo);
+                        continue;
+//                        return $this->apiReturn(0, $res_data, '操作失败！');
+                    }
                     $draw = $UserDrawBack->GetRow(['OrderNo' => $OrderNo], '*');
                     if (!$draw) {
                         $error_num += 1;
@@ -1103,7 +1116,7 @@ class Playertrans extends Main
                         default:
                             $class = '\\' . strtolower($channelcode) . '\PaySdk';
                             $pay = new $class();
-                            Redis::set('PAYOUT_ORDER_NUMBER_'.$OrderNo,$OrderNo,30);
+                            Redis::set('PAYOUT_ORDER_NUMBER_SUBMIT'.$OrderNo,$OrderNo,30);
                             $result = $pay->payout($OrderNo, $draw, $config);
                             break;
                     }
@@ -1137,7 +1150,6 @@ class Playertrans extends Main
                         ];
                         continue;
                     }
-                    sleep(3);
                 }
                 return $this->apiReturn(0, $res_data, '操作成功。成功：' . $success_num . ',失败：' . $error_num);
             } catch (\Exception $ex) {

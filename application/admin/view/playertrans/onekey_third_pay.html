@@ -43,6 +43,9 @@
 
         var main = {
             submitForm : function(data) {
+                var index = layer.load(2, {
+                    shade: [0.1,'#fff'] //0.1透明度的白色背景
+                });
                 var orderNo = $.trim(data.field.orderno);
                 var channelId =$.trim(data.field.channelid);
 
@@ -56,13 +59,14 @@
                     dataType:'json',
                     success: function(res) {
                         if (res['code']===0) {
-                            layer.msg(res['msg'],{icon:1,time:1000}, function () {
+                            layer.close(index);
+                            layer.msg(res['msg'],{icon:1}, function () {
                                 x_admin_close();
                                 parent.location.reload();
                             });
                         } else {
-
-                            layer.msg(res['msg'],{icon:2,time:5000}, function () {
+                            layer.close(index);
+                            layer.msg(res['msg'],{icon:2}, function () {
                                 x_admin_close();
                             });
 //                            x_admin_close();
