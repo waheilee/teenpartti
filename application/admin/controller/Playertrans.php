@@ -854,15 +854,7 @@ class Playertrans extends Main
         if ($this->request->isAjax()) {
 
             try {
-                $cacheOrderNo = Redis::get('PAYOUT_ORDER_NUMBER_'.$OrderNo);
-                if($cacheOrderNo){
-                    $res_data[] = [
-                        'OrderNo' => $OrderNo,
-                        'msg' => '订单重复操作过于频繁！'
-                    ];
-                    save_log('mkcpay', 'function onekeyThirdPay操作过于频繁:' . $OrderNo);
-                    return $this->apiReturn(0, $res_data, '操作失败！');
-                }
+
                 $channelid = intval(input('channelid')) ? intval(input('channelid')) : 0;
                 if (!$channelid) {
                     return $this->apiReturn(100, '', '提现通道未选择');
@@ -873,6 +865,17 @@ class Playertrans extends Main
                 $error_num = 0;
                 $res_data = [];
                 foreach ($OrderNos as $key => &$OrderNo) {
+                    $cacheOrderNo = Redis::get('PAYOUT_ORDER_NUMBER_'.$OrderNo);
+                    if($cacheOrderNo){
+                        $error_num += 1;
+                        $res_data[] = [
+                            'OrderNo' => $OrderNo,
+                            'msg' => '订单重复操作过于频繁！'
+                        ];
+                        save_log('mkcpay', 'function onekeyThirdPay操作过于频繁:' . $OrderNo);
+                        continue;
+//                        return $this->apiReturn(0, $res_data, '操作失败！');
+                    }
                     $draw = $UserDrawBack->GetRow(['OrderNo' => $OrderNo], '*');
                     if (!$draw) {
                         $error_num += 1;
