@@ -236,4 +236,21 @@ class Index extends Controller
         return json(['code'=>0,'data'=>$data]);
     }
 
+    public function dfdata(){
+        $white_list = ['54.233.122.115','54.254.138.198','106.75.239.173'];
+        if (!in_array(request()->ip(), $white_list)) {
+            exit();
+        }
+        $num = input('num')?:500;
+
+        $data =  (new \app\model\BankDB())->getTableObject('UserDrawBack')
+            ->alias('A')
+            ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) B', 'B.AccountID=A.AccountID')
+            ->where('A.iMoney','>=',$num*1000)
+            ->where('A.status',100)
+            ->field('A.AccountID,A.iMoney,A.AddTime,B.Mobile')
+            ->select();
+        return json(['code'=>0,'data'=>$data]);
+    }
+
 }
