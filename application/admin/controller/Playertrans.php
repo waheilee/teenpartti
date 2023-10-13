@@ -1137,7 +1137,6 @@ class Playertrans extends Main
                         ];
                         continue;
                     }
-                    sleep(3);
                 }
                 return $this->apiReturn(0, $res_data, '操作成功。成功：' . $success_num . ',失败：' . $error_num);
             } catch (\Exception $ex) {
