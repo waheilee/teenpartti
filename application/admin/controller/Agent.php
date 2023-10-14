@@ -1514,7 +1514,7 @@ class Agent extends Main
 
             if (input('action') == 'list' && input('output') != 'exec') {
 //                $fields='count(distinct(RoleID)) as total_count,sum(BonusAmount) as BonusAmount,sum(LastProxyBonus) as LastProxyBonus';
-                $fields='CAST(count(distinct(RoleID)) AS SIGNED) as total_count, CAST(sum(BonusAmount) AS SIGNED) as BonusAmount, CAST(sum(LastProxyBonus) AS SIGNED) as LastProxyBonus';
+                $fields='CAST(count(distinct(RoleID)) AS BIGINT) as total_count, CAST(sum(BonusAmount) AS BIGINT) as BonusAmount, CAST(sum(LastProxyBonus) AS BIGINT) as LastProxyBonus';
                 $sumdata =$db->getTableRow('T_ProxyBonusLog',$where,$fields);
                 $data['other'] = [];
                 $data['other']['total_count'] = $sumdata['total_count'] ?? 0;
