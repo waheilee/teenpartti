@@ -1347,9 +1347,12 @@ class Agent extends Main
             $parentid = $this->request->param('parentid');
             $ispay = $this->request->param('ispay');
             $reg_date1 = $this->request->param('register_date1');
+            $register_ip = $this->request->param('register_ip');
             $reg_date2 = $this->request->param('register_date2');
             $login_date1 = $this->request->param('login_date1');
             $login_date2 = $this->request->param('login_date2');
+            $register_ip = $this->request->param('register_ip');
+            $limit = $this->request->param('limit') ?: 15;
 
             $orderby = input('orderby');
             $orderytpe = input('orderytpe');
@@ -1379,7 +1382,7 @@ class Agent extends Main
                 $where .= ' and c.RegisterTime>=\'' .$reg_date1.'\'';
             }
             if ($reg_date2 != '') {
-                $where .= ' and c.RegisterTime<=\'' .$reg_date1.'\'';
+                $where .= ' and c.RegisterTime<=\'' .$reg_date2.'\'';
             }
             if ($login_date1 != '') {
                 $where .= ' and c.LastLoginTime<=\'' .$login_date1.'\'';
@@ -1387,6 +1390,10 @@ class Agent extends Main
             if ($login_date2 != '') {
                 $where .= ' and c.LastLoginTime<=\'' .$login_date2.'\'';
             }
+            if ($register_ip != '') {
+                $where .= ' and c.RegIP=\'' .$register_ip.'\'';
+            }
+            $where .= ' and c.GmType<>0';
             $field = "a.RoleID,a.ParentID,a.TotalWater TotalTax,a.TotalProfit,d.TotalDeposit,d.TotalRollOut";
             $data = $m->getTableObject('T_UserProxyInfo')->alias('a')
                 ->join('[CD_UserDB].[dbo].[T_ProxyCollectData](NOLOCK) b', 'b.ProxyId=a.RoleID', 'left')
