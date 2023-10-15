@@ -56,10 +56,10 @@ class PaySdk
             $pixKey = $order['City'];
         }
 //        $isPhoneNumber = $this->isBrazilianMobileNumber($order['CardNo']);
-//        if ($isPhoneNumber){
-//            $pixType = 'PHONE';
-//            $pixKey = '+55' . $order['Province'];
-//        }
+        if ($order['CardNo'] == $order['RealName']){
+            $pixType = 'PHONE';
+            $pixKey = '+55' . $order['RealName'];
+        }
 
 
         $postData = [
