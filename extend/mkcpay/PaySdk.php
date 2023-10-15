@@ -47,8 +47,9 @@ class PaySdk
             $this->api_url = $config['apiurl'];
         }
         save_log('mkcpay','提交三方订单号:'.$OrderNo);
-        $pixKey = $order['CardNo'];
         $pixType = 'CPF';
+        $pixKey = $order['CardNo'];
+        $purpose = $order['CardNo'];
         $isEmail = $this->isValidEmail($order['CardNo']);
         if ($isEmail){
             $pixType = 'EMAIL';
@@ -65,7 +66,7 @@ class PaySdk
             'amount' => (int)($order['RealMoney']  * 100),
             'pix' => $pixKey,
             'externalOrderNo' => $OrderNo,
-            'purpose' => $pixKey,
+            'purpose' => $purpose,
             'transferType' => $pixType,
             'description' => $OrderNo,
         ];
