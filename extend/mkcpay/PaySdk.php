@@ -55,11 +55,11 @@ class PaySdk
             $pixType = 'EMAIL';
             $pixKey = $order['City'];
         }
-        $isPhoneNumber = $this->isBrazilianMobileNumber($order['CardNo']);
-        if ($isPhoneNumber){
-            $pixType = 'PHONE';
-            $pixKey = '+55' . $order['Province'];
-        }
+//        $isPhoneNumber = $this->isBrazilianMobileNumber($order['CardNo']);
+//        if ($isPhoneNumber){
+//            $pixType = 'PHONE';
+//            $pixKey = '+55' . $order['Province'];
+//        }
 
 
         $postData = [
