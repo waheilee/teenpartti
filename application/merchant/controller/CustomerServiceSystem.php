@@ -86,7 +86,7 @@ class CustomerServiceSystem extends Main
     //     }
     //     return self::ResetPwd();
     //     return $this->success("更新成功");
-        
+
     //     switch (input('Action')) {
     //         case 'bind':
     //             $db = new AccountDB();
@@ -241,7 +241,7 @@ class CustomerServiceSystem extends Main
                     $chargeorder = intval(input('chargeorder', 0));
                     $error = null;
                     $WageMul = $WageMul * 10;
-                    
+
 //                    halt(request()->request());
                     if ($recordtype < 0 || $extratype < 0 || $sendtype < 0 || empty($mailtxt) || empty($title)) $error = lang('请确认输入都正确');
                     if ($extratype > 0 && empty($amount)) $error .= lang("请输入附件数量");
@@ -250,41 +250,41 @@ class CustomerServiceSystem extends Main
                     if ($OperatorId) {
                         return $this->apiReturn(100, '', '权限不足');
                     }
-                    
+
                     if ($extratype > 0) {
                         //额度判断
                         $merchant_OperatorId = session('merchant_OperatorId');
-                         $db = new GameOCDB();
-                         $email_db = new DataChangelogsDB();
-                         $config = $db->getTableObject('T_OperatorEmailQuota')->where('OperatorId', $merchant_OperatorId)->find();
+                        $db = new GameOCDB();
+                        $email_db = new DataChangelogsDB();
+                        $config = $db->getTableObject('T_OperatorEmailQuota')->where('OperatorId', $merchant_OperatorId)->find();
 
-                         if (empty($config)) {
-                             $DailyQuota = 0;
-                             $TotalQuota = 0;
-                         } else {
-                             $DailyQuota = $config['DailyQuota'];
-                             $TotalQuota = $config['TotalQuota'];
-                         }
+                        if (empty($config)) {
+                            $DailyQuota = 0;
+                            $TotalQuota = 0;
+                        } else {
+                            $DailyQuota = $config['DailyQuota'];
+                            $TotalQuota = $config['TotalQuota'];
+                        }
 
 
                         $where =' extratype in(1,7) and  replace(Operator,\'biz-\',\'\')
   in(SELECT  LoginAccount  FROM [OM_GameOC].[dbo].[T_ProxyChannelConfig] where OperatorId='.$merchant_OperatorId.') or Operator=\''.session('merchant_OperatorName').'\'';
-                         
-                         $hasQuotaToday = $email_db->getTableObject('T_ProxyMsgLog')
-                             ->where($where)
-                             ->whereTime('AddTime', '>=', date('Y-m-d'))
-                             ->sum('Amount') ?: 0;
-                         $hasQuotaToday /= bl;
-                         $hasQuotaTotal = $email_db->getTableObject('T_ProxyMsgLog')
-                             ->where($where)
-                             ->sum('Amount') ?: 0;
-                         $hasQuotaTotal /= bl;
-                         if ($DailyQuota < ($hasQuotaToday + $amount)) {
-                             return $this->apiReturn(100, '', '日额度不足');
-                         }
-                         if ($TotalQuota < ($hasQuotaTotal + $amount)) {
-                             return $this->apiReturn(100, '', '总额度不足');
-                         }
+
+                        $hasQuotaToday = $email_db->getTableObject('T_ProxyMsgLog')
+                            ->where($where)
+                            ->whereTime('AddTime', '>=', date('Y-m-d'))
+                            ->sum('Amount') ?: 0;
+                        $hasQuotaToday /= bl;
+                        $hasQuotaTotal = $email_db->getTableObject('T_ProxyMsgLog')
+                            ->where($where)
+                            ->sum('Amount') ?: 0;
+                        $hasQuotaTotal /= bl;
+                        if ($DailyQuota < ($hasQuotaToday + $amount)) {
+                            return $this->apiReturn(100, '', '日额度不足');
+                        }
+                        if ($TotalQuota < ($hasQuotaTotal + $amount)) {
+                            return $this->apiReturn(100, '', '总额度不足');
+                        }
                     }
                     $amount *= bl;
                     if ($sendtype == 1 && !empty($sendtime)) {
@@ -357,7 +357,7 @@ class CustomerServiceSystem extends Main
                         // 执行统计
                         $gameocdb = new GameOCDB();
                         $strtoday = date('Y-m-d', time());
-                        $gameocdb->runSystemDaySum($strtoday);
+                        // $gameocdb->runSystemDaySum($strtoday);
                         return $this->success('审核成功');
                     } else {
                         return $this->error('审核失败');
@@ -406,7 +406,7 @@ class CustomerServiceSystem extends Main
                 }
                 //导出表格
                 if ((int)input('exec', 0) == 1 && $outAll = true) {
-                    //权限验证 
+                    //权限验证
                     // $auth_ids = $this->getAuthIds();
                     // if (!in_array(10008, $auth_ids)) {
                     //     return $this->apiReturn(1, '', '没有权限');
@@ -450,6 +450,8 @@ class CustomerServiceSystem extends Main
         }
         $extratype = config('extratype');
         $this->assign('extratype',$extratype);
+        $mailtype = config('mailtype_merchant');
+        $this->assign('mailtype', $mailtype);
         return $this->fetch();
     }
 
@@ -496,7 +498,7 @@ class CustomerServiceSystem extends Main
                 }
                 //导出表格
                 if ((int)input('exec', 0) == 1 && $outAll = true) {
-                    //权限验证 
+                    //权限验证
                     // $auth_ids = $this->getAuthIds();
                     // if (!in_array(10008, $auth_ids)) {
                     //     return $this->apiReturn(1, '', '没有权限');
@@ -879,5 +881,82 @@ class CustomerServiceSystem extends Main
             }
         }
         return $this->fetch();
+    }
+
+    //邀请奖励结算管理
+    public function inviteRewardConfig(){
+        $action = $this->request->param('action');
+        if ($action == 'list') {
+            $roleid   = $this->request->param('roleid');
+            $RecStatus   = $this->request->param('RecStatus');
+            $where = '1=1';
+            if ($roleid != '') {
+                $where .= ' and RoleId='.$roleid;
+            }
+            if ($RecStatus != '') {
+                $where .= ' and RecStatus='.$RecStatus;
+            }
+
+            $limit = $this->request->param('limit') ?: 15;
+            $m = new DataChangelogsDB();
+            $data = $m->getTableObject('T_CommiCheckRec')->alias('a')
+                ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) b','a.RoleId=b.AccountID')
+                // ->join('[OM_GameOC].[dbo].[T_OperatorSubAccount](NOLOCK) c', 'b.OperatorId=c.OperatorId', 'LEFT')
+                ->where('b.OperatorId',session('merchant_OperatorId'))
+                ->where($where)
+                ->field('a.*,b.OperatorId')
+                ->order('addDate desc')
+                ->paginate($limit)
+                ->toArray();
+            foreach ($data['data'] as $key => &$val) {
+                $val['InviteCommi'] = $val['InviteCommi']/bl;
+                $val['HistoryInviteAmount'] = $val['HistoryInviteAmount']/bl;
+                if ($val['LV1FirstChargeCount'] == 0) {
+                    $val['avg'] = 0.00;
+                } else {
+                    $val['avg'] = round($val['LV1FirstChargeAmount']/$val['LV1FirstChargeCount'],2);
+                }
+
+            }
+            return $this->apiReturn(0, $data['data'], 'success', $data['total']);
+        }
+        return $this->fetch();
+    }
+
+    public function checkInviteReward(){
+        $Id   = $this->request->param('Id');
+        $status   = $this->request->param('status');
+        $m = new DataChangelogsDB();
+        $record  = $m->getTableObject('T_CommiCheckRec')->where('Id',$Id)->find();
+
+        if (!$record || $record['RecStatus'] != 0) {
+            return $this->apiReturn(1, '', '记录不存在或已审核');
+        }
+        $role = (new AccountDB())->getTableObject('T_Accounts')->where('AccountID',$record['RoleId'])->find();
+        if (empty($role) || $role['OperatorId'] != session('merchant_OperatorId')) {
+            return $this->apiReturn(1, '', '玩家不存在或不属于该渠道');
+        }
+        if ($status == 2) {
+            $res = $m->getTableObject('T_CommiCheckRec')->where('Id',$Id)->data(['RecStatus'=>2])->update();
+        }
+        if ($status == 1) {
+            $res = $m->getTableObject('T_CommiCheckRec')->where('Id',$Id)->data(['RecStatus'=>1])->update();
+            // $before = $m->getTableObject('T_ProxyBonusLog')->where('RoleId',$record['RoleId'])->order('AddTime desc')->value('BonusAmount')?:0;
+            // $m->getTableObject('T_ProxyBonusLog')->insert([
+            //     'RoleId'=>$record['RoleId'],
+            //     'BonusType'=>7,
+            //     'BonusAmount'=>$record['InviteCommi'],
+            //     'AddTime'=>date('Y-m-d H:i:s'),
+            //     'DonatorId'=>0,
+            //     'LastProxyBonus'=>$before
+            // ]);
+            // (new UserDB())->getTableObject('T_UserGameWealth')->where('RoleID',$record['RoleId'])->setInc('ProxyBonus',$record['InviteCommi']);
+            try {
+                $this->sendGameMessage('CMD_MD_GM_ADD_PROXY_COMMISSION', [$record['RoleId'], $record['InviteCommi'], 0]);
+            } catch (Exception $exception) {
+                return $this->apiReturn(1, '', '连接服务器失败,请稍后重试!');
+            }
+        }
+        return $this->apiReturn(0, '', 'success');
     }
 }

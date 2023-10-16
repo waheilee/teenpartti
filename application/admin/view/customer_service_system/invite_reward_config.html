@@ -1,0 +1,209 @@
+{extend name="common/base" /}
+{block name="title"}关系列表{/block}
+{block name="css"}
+<style type="text/css">
+  .layui-form-pane .layui-form-label{
+    width: 200px !important;
+  }
+  .layui-form-pane .layui-input-block{
+    margin-left:200px !important;
+  }
+
+</style>
+{/block}
+{block name="content"}
+<div class="layui-card" style="padding: 20px">
+    <form class="layui-form" id='edit_form' onsubmit="return false">
+         <div class="layui-form-item layui-form-pane">
+            <div class="layui-form-item">
+                <label class="layui-form-label">邀请结算审核开关</label>
+                <div class="layui-input-block">
+                    <input type="radio" value="0"  title="关闭"  name="button"  {php} if($button==0){echo 'checked';} {/php}>
+                    <input type="radio" value="1"  title="开启"  name="button" {php} if($button==1){echo 'checked';} {/php}>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">自动发放标准>=</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="autonum" autocomplete="off" class="layui-input" id='autonum' value="{$autonum ?? 0}">
+                </div>
+                <div class="layui-form-mid layui-word-aux">(1级首充用户的首充总额/1级首充用户总数)</div>
+            </div>
+            <div class="layui-input-inline">
+                <button class="layui-btn layui-btn-fluid"  lay-filter="formDemo"  id="sub">保存</button>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="layui-card">
+    <div class="layui-card-body">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('玩家ID')}</label>
+                    <div class="layui-input-inline"><input autocomplete="off" class="layui-input" id="roleid" lay-verify="number" name="roleid" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang("状态")}</label>
+                    <div class="layui-input-inline"">
+                        <select id="RecStatus" name="RecStatus">
+                            <option value="">{:lang("全部")}</option>
+                            <option value="0">{:lang("等待审核")}</option>
+                            <option value="1">{:lang("已通过")}</option>
+                            <option value="2">{:lang("已拒绝")}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <a class="layui-btn" data-type="reload" id="search">{:lang("搜索")}</a>
+                </div>
+            </div>
+        </form>
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script src="__js__/cache.js"></script>
+<script src="__js__/Barrett.js"></script>
+<script src="__js__/BigInt.js"></script>
+<script src="__js__/RSA.js"></script>
+<script>
+    url = "{:url('CustomerServiceSystem/inviteRewardConfig')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var table = layui.table;
+        var form  = layui.form;
+        var laydate  = layui.laydate;
+        var $ = layui.$;
+        var element  = layui.element;
+          table.render({
+            elem: '#proxylist'
+            ,height: 'full-320'
+            ,url: url+'?action=list'//数据接口
+            ,limit:20
+            ,page: true //开启分页
+            ,id:'proxylist'
+            ,autoSort:false
+            ,cols: [[ //表头
+                {field:'addDate', title: "{:lang('日期')}",align:'center', minWidth: 200},
+                {field:'RoleId', title: "{:lang('玩家ID')}",align:'center', minWidth: 100},
+                {field:'OperatorId', title: "{:lang('渠道ID')}",align:'center', minWidth: 100},
+                {field:'OperatorName', title: "{:lang('渠道名称')}",align:'center', minWidth: 100},
+                {field:'InviteCommi', title: "{:lang('待审核金额')}",align:'center', minWidth: 100},
+                {field:'', title: "{:lang('邀请人数/1级首充人数')}",align:'center', minWidth: 200, templet: function (d) {
+                        return d.Lv1PersonCount+'/'+d.LV1FirstChargeCount
+                    }
+                },
+                {field:'LV1FirstChargeAmount', title: "{:lang('1级首充用户首充总额')}",align:'center', minWidth: 200},
+                {field:'avg', title: "{:lang('1级首充用户平均充值')}",align:'center', minWidth: 200},
+                {field:'HistoryInviteAmount', title: "{:lang('历史邀请奖金')}",align:'center', minWidth: 200},
+                {field:'RecStatus', title: "{:lang('状态')}",align:'center', minWidth: 100, templet: function (d) {
+                        if(d.RecStatus ==  0){
+                          return '<span style="color:blue"><b>等待审核</b></span>';
+                        } else if(d.RecStatus ==1) {
+                          return '<span style="color:red"><b>已通过</b></span>';
+                        } else if (d.RecStatus ==2) {
+                          return '<span style="color:green"><b>已拒绝</b></span>';
+                        }
+                    }
+                },
+                {title:'操作',align:'center', templet: function(d){
+                        if (d.RecStatus == 0) {
+                            return  '<a class="layui-btn layui-btn-sm" lay-event="pass">通过</a>'+
+                                    '<a class="layui-btn layui-btn-sm" lay-event="refuse" layui-btn-danger>拒绝</a>';
+                        } else {
+                          return ''
+                        }
+                }}
+                // {field:'LastLoginTime', title: "{:lang('操作时间')}",align:'center', minWidth: 100}
+            ]]
+            , done: function (res) {
+                tzTbale();
+            }
+          });
+          // 搜索 
+          $("#search").on('click', function(){
+             table.reload('proxylist', {
+              page:{
+                  curr:1 
+              },
+              where: {
+                  roleid: $('#roleid').val(),
+                  RecStatus: $('#RecStatus').val(),
+              }
+            })
+          });
+        //监听工具条
+          table.on('tool(proxylist)', function(obj){
+            var data = obj.data;
+            if(obj.event === 'pass'){
+              layer.confirm('确定通过？', function(index){
+                $.ajax({
+                  url:"{:url('CustomerServiceSystem/checkInviteReward')}?Id="+data.Id+"&status=1",
+                  type:'GET',
+                  dataType:'json',
+                  success:function(ret){
+                    if(ret.code == 0) {
+                      layer.msg('审核成功');
+                      $(".layui-laypage-btn")[0].click();
+                    } else {
+                      layer.msg('审核失败');
+                    }
+                  }
+                });
+              });
+            }   
+            if(obj.event === 'refuse'){
+              layer.confirm('确定拒绝？', function(index){
+                $.ajax({
+                  url:"{:url('CustomerServiceSystem/checkInviteReward')}?Id="+data.Id+"&status=2",
+                  type:'GET',
+                  dataType:'json',
+                  success:function(ret){
+                    if(ret.code == 0) {
+                      layer.msg('审核成功');
+                      $(".layui-laypage-btn")[0].click();
+                    } else {
+                      layer.msg('审核失败');
+                    }
+                  }
+                });
+              });
+            } 
+          });
+          
+        // 绑定
+        $("#sub").on('click', function(){
+            var post_data = $('#edit_form').serialize();
+            var index = layer.msg('正在拼命处理...' , {
+              icon: 16 ,
+              shade: 0.6 ,
+              time: 0 ,
+            });
+            $.ajax({
+                    url:"{:url('CustomerServiceSystem/autoInviteRewardConfig')}",
+                    type:"POST",
+                    data:post_data,
+                    dataType:'json',
+                    success:function(ret){
+                        if (ret.code == 0) {
+                          layer.msg('操作成功');
+                          // parent.$(".layui-laypage-btn")[0].click();
+                          // setTimeout(function(){parent.layer.closeAll()},1500);
+                        }
+                        if (ret.code == 1) {
+                            layer.msg(ret.msg);
+                        }
+                    }
+                });
+        });
+    });
+</script>
+{/block}

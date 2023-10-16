@@ -345,7 +345,7 @@ class CustomerServiceSystem extends Main
                             } else {
                                 $VerifyState = 0;  //需要审核0 1不需要审核
                             }
-                            
+
                         }
                         $delaytime = 0;
                         if ($sendtype == 1) $delaytime = strtotime($sendtime) - sysTime();
@@ -354,9 +354,9 @@ class CustomerServiceSystem extends Main
                         $res = unpack('Lint', $res)['int'];
                     }
                     if ($res == 0) {
-                        
+
                         return $this->apiReturn(1, '', '邮件发送成功');
-                        
+
                     } elseif ($res > 0) {
                         return $this->apiReturn(1, '', '邮件发送失败');
                     }
@@ -470,7 +470,6 @@ class CustomerServiceSystem extends Main
                         lang('邮件类型') => 'string',
                         lang('附件类型') => 'string',
                         lang('邮件文本') => 'string',
-                        lang('操作人') => 'string',
                     ];
                     $filename = lang('邮件管理') . '-' . date('YmdHis');
                     $rows =& $result['list'];
@@ -487,7 +486,6 @@ class CustomerServiceSystem extends Main
                             $row['RecordType'],
                             $row['ExtraType'],
                             $row['SysText'],
-                            $row['Operator'],
                         ];
                         $writer->writeSheetRow('sheet1', $item, ['height' => 16, 'halign' => 'center',]);
                         unset($rows[$index]);
@@ -500,6 +498,8 @@ class CustomerServiceSystem extends Main
         }
         $extratype = config('extratype');
         $this->assign('extratype',$extratype);
+        $mailtype = config('mailtype');
+        $this->assign('mailtype',$mailtype);
         return $this->fetch();
     }
 
@@ -548,7 +548,7 @@ class CustomerServiceSystem extends Main
                 }
                 //导出表格
                 if ((int)input('exec', 0) == 1 && $outAll = true) {
-                    //权限验证 
+                    //权限验证
                     $auth_ids = $this->getAuthIds();
                     if (!in_array(10008, $auth_ids)) {
                         return $this->apiReturn(1, '', '没有权限');
@@ -912,4 +912,92 @@ class CustomerServiceSystem extends Main
     }
 
 
+    //邀请奖励结算管理
+    public function inviteRewardConfig(){
+        $action = $this->request->param('action');
+        if ($action == 'list') {
+            $roleid   = $this->request->param('roleid');
+            $RecStatus   = $this->request->param('RecStatus');
+            $where = '1=1';
+            if ($roleid != '') {
+                $where .= ' and RoleId='.$roleid;
+            }
+            if ($RecStatus != '') {
+                $where .= ' and RecStatus='.$RecStatus;
+            }
+            $limit = $this->request->param('limit') ?: 15;
+            $m = new DataChangelogsDB();
+            $data = $m->getTableObject('T_CommiCheckRec')->alias('a')
+                ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) b','a.RoleId=b.AccountID')
+                ->join('[OM_GameOC].[dbo].[T_OperatorSubAccount](NOLOCK) c', 'b.OperatorId=c.OperatorId', 'LEFT')
+                ->where($where)
+                ->field('a.*,b.OperatorId,c.OperatorName')
+                ->order('addDate desc')
+                ->paginate($limit)
+                ->toArray();
+            foreach ($data['data'] as $key => &$val) {
+                $val['InviteCommi'] = $val['InviteCommi']/bl;
+                $val['HistoryInviteAmount'] = $val['HistoryInviteAmount']/bl;
+                if ($val['LV1FirstChargeCount'] == 0) {
+                    $val['avg'] = 0.00;
+                } else {
+                    $val['avg'] = round($val['LV1FirstChargeAmount']/$val['LV1FirstChargeCount'],2);
+                }
+
+            }
+            return $this->apiReturn(0, $data['data'], 'success', $data['total']);
+        }
+        $m = new MasterDB();
+        $button = $m->getTableObject('T_GameConfig')->where('CfgType',266)->value('CfgValue');
+        $autonum= $m->getTableObject('T_GameConfig')->where('CfgType',267)->value('CfgValue');
+
+        $this->assign('button',$button);
+        $this->assign('autonum',$autonum);
+        return $this->fetch();
+    }
+
+    public function autoInviteRewardConfig(){
+        $button   = $this->request->param('button')?1:0;
+        $autonum  = $this->request->param('autonum');
+
+        $m = new MasterDB();
+        $m->getTableObject('T_GameConfig')->where('CfgType',266)->data(['CfgValue'=>$button])->update();
+        $m->getTableObject('T_GameConfig')->where('CfgType',267)->data(['CfgValue'=>$autonum])->update();
+
+        return $this->apiReturn(0, '', '操作成功');
+    }
+
+    public function checkInviteReward(){
+        $Id   = $this->request->param('Id');
+        $status   = $this->request->param('status');
+        $m = new DataChangelogsDB();
+        $record  = $m->getTableObject('T_CommiCheckRec')->where('Id',$Id)->find();
+
+        if (!$record || $record['RecStatus'] != 0) {
+            return $this->apiReturn(1, '', '记录不存在或已审核');
+        }
+
+        if ($status == 2) {
+            $res = $m->getTableObject('T_CommiCheckRec')->where('Id',$Id)->data(['RecStatus'=>2])->update();
+        }
+        if ($status == 1) {
+            $res = $m->getTableObject('T_CommiCheckRec')->where('Id',$Id)->data(['RecStatus'=>1])->update();
+            // $before = $m->getTableObject('T_ProxyBonusLog')->where('RoleId',$record['RoleId'])->order('AddTime desc')->value('BonusAmount')?:0;
+            // $m->getTableObject('T_ProxyBonusLog')->insert([
+            //     'RoleId'=>$record['RoleId'],
+            //     'BonusType'=>7,
+            //     'BonusAmount'=>$record['InviteCommi'],
+            //     'AddTime'=>date('Y-m-d H:i:s'),
+            //     'DonatorId'=>0,
+            //     'LastProxyBonus'=>$before
+            // ]);
+            // (new UserDB())->getTableObject('T_UserGameWealth')->where('RoleID',$record['RoleId'])->setInc('ProxyBonus',$record['InviteCommi']);
+            try {
+                $this->sendGameMessage('CMD_MD_GM_ADD_PROXY_COMMISSION', [$record['RoleId'], $record['InviteCommi'], 0]);
+            } catch (Exception $exception) {
+                return $this->apiReturn(1, '', '连接服务器失败,请稍后重试!');
+            }
+        }
+        return $this->apiReturn(0, '', 'success');
+    }
 }
