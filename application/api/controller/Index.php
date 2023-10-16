@@ -185,21 +185,34 @@ class Index extends Controller
             exit();
         }
         $num = input('num')?:0;
-        $field = 'A.AccountID,A.AccountName,A.Mobile,ISNULL(B.ReceivedIncome,0) As ReceivedIncome,ISNULL(B.TotalDeposit,0) AS TotalDeposit,ISNULL(B.TotalTax,0) AS TotalTax,ISNULL(B.TotalRunning,0) AS TotalRunning,ISNULL(B.Lv1PersonCount,0) AS Lv1PersonCount,ISNULL(B.Lv1Deposit,0) AS Lv1Deposit,ISNULL(B.Lv1DepositPlayers,0) AS Lv1DepositPlayers,ISNULL(B.Lv1Tax,0) AS Lv1Tax,ISNULL(B.Lv1Running,0) AS Lv1Running,ISNULL(B.Lv2PersonCount,0) AS Lv2PersonCount,ISNULL(B.Lv2Deposit,0) AS Lv2Deposit,ISNULL(B.Lv2DepositPlayers,0) AS Lv2DepositPlayers,ISNULL(B.Lv2Tax,0) AS Lv2Tax,ISNULL(B.Lv2Running,0) AS Lv2Running,ISNULL(B.Lv3PersonCount,0) AS Lv3PersonCount,ISNULL(B.Lv3Deposit,0) AS Lv3Deposit,ISNULL(B.Lv3DepositPlayers,0) AS Lv3DepositPlayers,ISNULL(B.Lv3Tax,0) AS Lv3Tax,ISNULL(B.Lv3Running,0) AS Lv3Running,ISNULL(B.Lv1WithdrawCount,0) AS Lv1WithdrawCount,ISNULL(B.Lv2WithdrawCount,0) AS Lv2WithdrawCount,ISNULL(B.Lv3WithdrawCount,0) AS Lv3WithdrawCount,ISNULL(B.Lv1WithdrawAmount,0) AS Lv1WithdrawAmount,ISNULL(B.Lv2WithdrawAmount,0) AS Lv2WithdrawAmount,ISNULL(B.Lv3WithdrawAmount,0) AS Lv3WithdrawAmount';
+        $type = input('type')?:'Mobile';//,A.MailAccount
+        $field = 'A.AccountID,A.AccountName,A.'.$type.' As Mobile,ISNULL(B.ReceivedIncome,0) As ReceivedIncome,ISNULL(B.TotalDeposit,0) AS TotalDeposit,ISNULL(B.TotalTax,0) AS TotalTax,ISNULL(B.TotalRunning,0) AS TotalRunning,ISNULL(B.Lv1PersonCount,0) AS Lv1PersonCount,ISNULL(B.Lv1Deposit,0) AS Lv1Deposit,ISNULL(B.Lv1DepositPlayers,0) AS Lv1DepositPlayers,ISNULL(B.Lv1Tax,0) AS Lv1Tax,ISNULL(B.Lv1Running,0) AS Lv1Running,ISNULL(B.Lv2PersonCount,0) AS Lv2PersonCount,ISNULL(B.Lv2Deposit,0) AS Lv2Deposit,ISNULL(B.Lv2DepositPlayers,0) AS Lv2DepositPlayers,ISNULL(B.Lv2Tax,0) AS Lv2Tax,ISNULL(B.Lv2Running,0) AS Lv2Running,ISNULL(B.Lv3PersonCount,0) AS Lv3PersonCount,ISNULL(B.Lv3Deposit,0) AS Lv3Deposit,ISNULL(B.Lv3DepositPlayers,0) AS Lv3DepositPlayers,ISNULL(B.Lv3Tax,0) AS Lv3Tax,ISNULL(B.Lv3Running,0) AS Lv3Running,ISNULL(B.Lv1WithdrawCount,0) AS Lv1WithdrawCount,ISNULL(B.Lv2WithdrawCount,0) AS Lv2WithdrawCount,ISNULL(B.Lv3WithdrawCount,0) AS Lv3WithdrawCount,ISNULL(B.Lv1WithdrawAmount,0) AS Lv1WithdrawAmount,ISNULL(B.Lv2WithdrawAmount,0) AS Lv2WithdrawAmount,ISNULL(B.Lv3WithdrawAmount,0) AS Lv3WithdrawAmount';
+        if ($type == 'Mobile') {
+            $data =  (new \app\model\AccountDB())->getTableObject('T_Accounts')
+                ->alias('A')
+                ->join('[CD_UserDB].[dbo].[T_ProxyCollectData](NOLOCK) B', 'B.ProxyId=A.AccountID', 'LEFT')
+                ->where('Lv1PersonCount','>=',$num)
+                ->where('Mobile','<>','')
+                ->field($field)
+                // ->fetchSql(true)
+                ->select();
+        }
+        if ($type == 'MailAccount') {
+            $data =  (new \app\model\AccountDB())->getTableObject('T_Accounts')
+                ->alias('A')
+                ->join('[CD_UserDB].[dbo].[T_ProxyCollectData](NOLOCK) B', 'B.ProxyId=A.AccountID', 'LEFT')
+                ->where('Lv1PersonCount','>=',$num)
+                ->where('MailAccount is not null')
+                ->field($field)
+                // ->fetchSql(true)
+                ->select();
+        }
 
-        $data =  (new \app\model\AccountDB())->getTableObject('T_Accounts')
-            ->alias('A')
-            ->join('[CD_UserDB].[dbo].[T_ProxyCollectData](NOLOCK) B', 'B.ProxyId=A.AccountID', 'LEFT')
-            ->where('Lv1PersonCount','>=',$num)
-            ->where('Mobile','<>','')
-            ->field($field)
-            // ->fetchSql(true)
-            ->select();
-        $roleid_ids = array_column($data, 'AccountID')?:[0];
+        // $roleid_ids = array_column($data, 'AccountID')?:[0];
+        $roleid_ids = "select ProxyId from [CD_UserDB].[dbo].[T_ProxyCollectData](NOLOCK) where Lv1PersonCount>=".$num;
+        $sql1 = "select RoleId,addtime,Amount from T_ProxyMsgLog where id in(select min(id) from T_ProxyMsgLog where RoleId in(".$roleid_ids.") and RecordType=8 and Amount>0 and VerifyState=1 group by RoleId)";
 
-        $sql1 = "select RoleId,addtime,Amount from T_ProxyMsgLog where id in(select min(id) from T_ProxyMsgLog where RoleId in(".implode(',',$roleid_ids).") and RecordType=8 and Amount>0 and VerifyState=1 group by RoleId)";
-
-        $sql2 = "select RoleId,sum(Amount) Amount from T_ProxyMsgLog where RoleId in(".implode(',',$roleid_ids).") and RecordType=8 and Amount>0  and VerifyState=1 group by RoleId";
+        $sql2 = "select RoleId,sum(Amount) Amount from T_ProxyMsgLog where RoleId in(".$roleid_ids.") and RecordType=8 and Amount>0  and VerifyState=1 group by RoleId";
 
         $data1 = (new \app\model\DataChangelogsDB())->DBOriginQuery($sql1) ?? [];
         $data2 = (new \app\model\DataChangelogsDB())->DBOriginQuery($sql2) ?? [];
