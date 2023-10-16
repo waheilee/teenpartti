@@ -2167,7 +2167,38 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
             }
            $order = "AddTime desc";
             $gameOCDB = new GameOCDB();
-            $field = "sum(RunningBonus) RunningBonus,count(case when RunningBonus>0 then RunningBonus else NULL end) RunningBonus_count,sum(InviteBonus) InviteBonus,count(case when InviteBonus>0 then InviteBonus else NULL end) InviteBonus_count,sum(FirstChargeBonus) FirstChargeBonus,count(case when FirstChargeBonus>0 then FirstChargeBonus else NULL end) FirstChargeBonus_count,sum(ReChargeAmount) ReChargeAmount,count(case when ReChargeAmount>0 then ReChargeAmount else NULL end) ReChargeAmount_count,  sum(UserFirstReChargeBonus) UserFirstReChargeBonus,count(case when UserFirstReChargeBonus>0 then UserFirstReChargeBonus else NULL end) UserFirstReChargeBonus_count,sum(ReChargeBonus) ReChargeBonus,count(case when ReChargeBonus>0 then ReChargeBonus else NULL end) ReChargeBonus_count,sum(DailyChargeBonus) DailyChargeBonus,count(case when DailyChargeBonus>0 then DailyChargeBonus else NULL end) DailyChargeBonus_count,sum(VipRechargeBonus) VipRechargeBonus,count(case when VipRechargeBonus>0 then VipRechargeBonus else NULL end) VipRechargeBonus_count,sum(VipUpBonus) VipUpBonus,count(case when VipUpBonus>0 then VipUpBonus else NULL end) VipUpBonus_count,sum(VipDailySignBonus) VipDailySignBonus,count(case when VipDailySignBonus>0 then VipDailySignBonus else NULL end) VipDailySignBonus_count,sum(VipWeeklySignBonus) VipWeeklySignBonus,count(case when VipWeeklySignBonus>0 then VipWeeklySignBonus else NULL end) VipWeeklySignBonus_count,sum(VipMonthlySignBonus) VipMonthlySignBonus,count(case when VipMonthlySignBonus>0 then VipMonthlySignBonus else NULL end) VipMonthlySignBonus_count,sum(UserBetBonus) UserBetBonus,count(case when UserBetBonus>0 then UserBetBonus else NULL end) UserBetBonus_count,sum(MailWithWageBonus) MailWithWageBonus,count(case when MailWithWageBonus>0 then MailWithWageBonus else NULL end) MailWithWageBonus_count,sum(MailNoWageBonus) MailNoWageBonus,count(case when MailNoWageBonus>0 then MailNoWageBonus else NULL end) MailNoWageBonus_count,sum(LotteryBonus) LotteryBonus,count(case when LotteryBonus>0 then LotteryBonus else NULL end) LotteryBonus_count";
+            $field = "sum(RunningBonus) RunningBonus,
+            count(case when RunningBonus>0 then RunningBonus else NULL end) RunningBonus_count,
+            sum(InviteBonus) InviteBonus,
+            count(case when InviteBonus>0 then InviteBonus else NULL end) InviteBonus_count,
+            sum(FirstChargeBonus) FirstChargeBonus,
+            count(case when FirstChargeBonus>0 then FirstChargeBonus else NULL end) FirstChargeBonus_count,
+            sum(ReChargeAmount) ReChargeAmount,
+            count(case when ReChargeAmount>0 then ReChargeAmount else NULL end) ReChargeAmount_count,  
+            sum(UserFirstReChargeBonus) UserFirstReChargeBonus,
+            count(case when UserFirstReChargeBonus>0 then UserFirstReChargeBonus else NULL end) UserFirstReChargeBonus_count,
+            sum(ReChargeBonus) ReChargeBonus,
+            count(case when ReChargeBonus>0 then ReChargeBonus else NULL end) ReChargeBonus_count,
+            sum(DailyChargeBonus) DailyChargeBonus,
+            count(case when DailyChargeBonus>0 then DailyChargeBonus else NULL end) DailyChargeBonus_count,
+            sum(VipRechargeBonus) VipRechargeBonus,
+            count(case when VipRechargeBonus>0 then VipRechargeBonus else NULL end) VipRechargeBonus_count,
+            sum(VipUpBonus) VipUpBonus,
+            count(case when VipUpBonus>0 then VipUpBonus else NULL end) VipUpBonus_count,
+            sum(VipDailySignBonus) VipDailySignBonus,
+            count(case when VipDailySignBonus>0 then VipDailySignBonus else NULL end) VipDailySignBonus_count,
+            sum(VipWeeklySignBonus) VipWeeklySignBonus,
+            count(case when VipWeeklySignBonus>0 then VipWeeklySignBonus else NULL end) VipWeeklySignBonus_count,
+            sum(VipMonthlySignBonus) VipMonthlySignBonus,
+            count(case when VipMonthlySignBonus>0 then VipMonthlySignBonus else NULL end) VipMonthlySignBonus_count,
+            sum(UserBetBonus) UserBetBonus,
+            count(case when UserBetBonus>0 then UserBetBonus else NULL end) UserBetBonus_count,
+            sum(MailWithWageBonus) MailWithWageBonus,
+            count(case when MailWithWageBonus>0 then MailWithWageBonus else NULL end) MailWithWageBonus_count,
+            sum(MailNoWageBonus) MailNoWageBonus,
+            count(case when MailNoWageBonus>0 then MailNoWageBonus else NULL end) MailNoWageBonus_count,
+            sum(LotteryBonus) LotteryBonus,
+            count(case when LotteryBonus>0 then LotteryBonus else NULL end) LotteryBonus_count";
 
             $field .=',sum(GiftCardBonus) as GiftCardBonus,count(case when GiftCardBonus>0 then GiftCardBonus else NULL end) GiftCardBonus_count';
             $data = $gameOCDB->getTableObject('T_ProxyDailyBonus')
