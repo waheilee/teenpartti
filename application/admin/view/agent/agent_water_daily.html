@@ -133,6 +133,7 @@
 
 <script id="msg-bar" type="text/html">
     <input type="button" class="layui-btn layui-btn-xs" lay-event="lookteam" value="{:lang('查看下级成员')}">
+    <input type="button" class="layui-btn layui-btn-xs" lay-event="temReward" value="{:lang('发放团队佣金奖励')}">
 </script>
 <script>
 
@@ -242,16 +243,56 @@
             //操作事件
             extraEvent: function () {
 
-
+                $(document).off('mousedown','.layui-table-grid-down').
+                on('mousedown','.layui-table-grid-down',function (event) {
+                    table._tableTrCurrr = $(this).closest('td');
+                });
+                $(document).off('click','.layui-table-tips-main [lay-event]').
+                on('click','.layui-table-tips-main [lay-event]',function (event) {
+                    //debugger
+                    var elem = $(this);
+                    var tableTrCurrr =  table._tableTrCurrr;
+                    if(!tableTrCurrr){
+                        return;
+                    }
+                    var layerIndex = elem.closest('.layui-table-tips').attr('times');
+                    console.log(layerIndex);
+                    layer.close(layerIndex);
+                    table._tableTrCurrr.find('[lay-event="' + elem.attr('lay-event') +'"]').click();
+                });
                 //编辑&&删除
                 table.on('tool(proxylist)', function (obj) {
-                    var data = obj.data, layEvent = obj.event;
+                    console.log(obj)
+                    // var data = obj.data, layEvent = obj.event;
                     var data = obj.data, layEvent = obj.event;
                     if (layEvent === 'lookteam') {
                         var startdate=$('#LAY-component-form-group-date1').val();
                         var enddate =$('#LAY-component-form-group-date2').val();
                         var url = "{:url('agent/AgentWaterDaily')}" + "?parentid=" + data.ProxyId + '&startdate=' + startdate+'&enddate='+enddate;
                         top.layui.index.openTabsPage(url, data.ProxyId + "{:lang('的下级列表')}");
+                    }
+                    if (layEvent === 'temReward'){
+                        console.log(data.ProxyId)
+                        $.ajax({
+                            type: 'post',
+                            url: "{:url('agent/temReward')}",
+                            data: {
+                                'roleid': data.ProxyId,
+                                'reward': data.reward
+                            },
+                            dataType: 'json',
+                            success: function (res) {
+                                if (res.code === 0) {
+                                    layer.msg("{:lang('设置成功')}", {icon: 1, time: 1000}, function () {
+                                        window.location.reload();
+                                        layer.closeAll();
+                                    });
+                                } else {
+                                    layer.msg(res.msg, {icon: 2});
+                                }
+                            }
+                        });
+                    });
                     }
                 });
 
