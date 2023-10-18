@@ -1071,7 +1071,7 @@ class GameOCDB extends BaseModel
                     $reward = bcadd(bcadd($rewardValueOne,$rewardValueTwo,2),$bel);
                     $v['reward'] = $reward;
                 }else{
-                    $v['needTakePrice'] = 0;
+//                    $v['needTakePrice'] = 0;
                     $v['reward'] = 0;
                 }
 
