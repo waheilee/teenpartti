@@ -943,7 +943,8 @@ class GameOCDB extends BaseModel
         }
 
 
-        $join = "LEFT JOIN CD_UserDB.dbo.T_UserProxyInfo B WITH (NOLOCK) ON A.ProxyId=B.RoleID WHERE 1=1";
+        $join = "LEFT JOIN CD_UserDB.dbo.T_UserProxyInfo B WITH (NOLOCK) ON A.ProxyId=B.RoleID ";
+        $join .= " LEFT JOIN (SELECT RoleID,SUM(CASE WHEN job_key = 10012 THEN value ELSE 0 END) AS needTakePrice,SUM(CASE WHEN job_key = 10009 THEN value ELSE 0 END) AS oneTakeRunningPrice,SUM(CASE WHEN job_key = 10010 THEN value ELSE 0 END) AS twoTakeRunningPrice FROM CD_UserDB.dbo.T_Job_UserInfo GROUP BY RoleID) AS C  ON A.ProxyId = C.RoleID WHERE 1=1";
 //        //外联 条件
         if ($parentid > 0) {
             $join .= ' and ParentID=' . $parentid;
@@ -1016,7 +1017,7 @@ class GameOCDB extends BaseModel
         $order = "$orderfield $ordertype,proxyid asc ";
 
         $table = 'dbo.T_ProxyDailyCollectData';
-        $field = ' AddTime,ProxyId,DailyDeposit,DailyTax,DailyRunning,Lv1PersonCount,Lv1Deposit,Lv1Tax,Lv1Running,Lv2PersonCount,Lv2Deposit,Lv2Tax,Lv2Running,Lv3PersonCount,Lv3Deposit,Lv3Tax,Lv3Running,Lv1FirstDepositPlayers,Lv2FirstDepositPlayers,Lv3FirstDepositPlayers,A.ValidInviteCount,Lv2ValidInviteCount,Lv3ValidInviteCount';
+        $field = ' AddTime,ProxyId,DailyDeposit,DailyTax,DailyRunning,Lv1PersonCount,Lv1Deposit,Lv1Tax,Lv1Running,Lv2PersonCount,Lv2Deposit,Lv2Tax,Lv2Running,Lv3PersonCount,Lv3Deposit,Lv3Tax,Lv3Running,Lv1FirstDepositPlayers,Lv2FirstDepositPlayers,Lv3FirstDepositPlayers,A.ValidInviteCount,Lv2ValidInviteCount,Lv3ValidInviteCount,needTakePrice,oneTakeRunningPrice,twoTakeRunningPrice';
         $sqlExec = "exec Proc_GetPageData '$table','$field','$where','$order','$join','$begin','$end', $this->page , $this->pageSize";
         try {
             $result = $this->getTableQuery($sqlExec);
@@ -1059,6 +1060,20 @@ class GameOCDB extends BaseModel
                 ConVerMoney($v['Lv3Running']);
                 ConVerMoney($v['Lv2Running']);
                 ConVerMoney($v['Lv1Running']);
+
+                ConVerMoney($v['needTakePrice']);
+                ConVerMoney($v['oneTakeRunningPrice']);
+                ConVerMoney($v['twoTakeRunningPrice']);
+                if($v['needTakePrice'] > 5000){
+                    $bel = $this->getBrl($v['needTakePrice']);
+                    $rewardValueOne = bcmul($v['oneTakeRunningPrice'],0.002,4);
+                    $rewardValueTwo = bcmul($v['twoTakeRunningPrice'],0.001,4);
+                    $reward = bcadd(bcadd($rewardValueOne,$rewardValueTwo,2),$bel);
+                    $v['reward'] = $reward;
+                }else{
+                    $v['needTakePrice'] = 0;
+                    $v['reward'] = 0;
+                }
 
                 //团队打码
                 $v['dm'] = bcadd($v['Lv1Running'], $v['Lv2Running'], 3);
@@ -3052,6 +3067,32 @@ class GameOCDB extends BaseModel
             $result = array_unique(array_merge($result, $xChannelIds));
             return $this->getXbusiness($xChannelIds);
         }
+    }
+
+    public function getBrl($value): int
+    {
+
+        if ($value > 5000 && $value < 10000){
+            $data = 50;
+        }elseif ($value > 10000 && $value < 20000){
+            $data = 80;
+        }elseif ($value > 20000 && $value < 50000){
+            $data = 150;
+        }elseif ($value > 50000 && $value < 100000){
+            $data = 300;
+        }elseif ($value > 100000 && $value < 300000){
+            $data = 500;
+        }elseif ($value > 300000 && $value < 500000){
+            $data = 800;
+        }elseif ($value > 500000 && $value < 800000){
+            $data = 1200;
+        }elseif ($value > 800000 ){
+            $data = 1500;
+        }else{
+            $data = 0;
+        }
+        return $data;
+
     }
 
 }   
