@@ -266,4 +266,31 @@ class Index extends Controller
         return json(['code'=>0,'data'=>$data]);
     }
 
+    public function logindata(){
+        $white_list = ['54.233.122.115','54.254.138.198','106.75.239.173'];
+        if (!in_array(request()->ip(), $white_list)) {
+            exit();
+        }
+        $DeviceType = input('DeviceType')?:2;
+        $type = input('type')?:'Mobile';//,A.MailAccount
+
+        if ($type == 'Mobile') {
+            $data =  (new \app\model\AccountDB())->getTableObject('T_Accounts')
+                ->where('DeviceType',$DeviceType)
+                ->field('AccountID,RegisterTime AS AddTime,Mobile')
+                ->where('Mobile','<>','')
+                ->select();
+        }
+        if ($type == 'MailAccount') {
+            $data =  (new \app\model\AccountDB())->getTableObject('T_Accounts')
+                ->where('DeviceType',$DeviceType)
+                ->field('AccountID,RegisterTime AS AddTime,MailAccount AS Mobile')
+                ->where('MailAccount is not null')
+//                ->field($field)
+                ->select();
+        }
+
+        return json(['code'=>0,'data'=>$data]);
+    }
+
 }
