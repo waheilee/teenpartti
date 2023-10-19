@@ -2338,6 +2338,7 @@ class Playertrans extends Main
                         $item['Lv1FirstDepositPlayers'] = $liushui['Lv1FirstDepositPlayers'];//一级首充人数
                         $item['Lv1Deposit'] = $liushui['Lv1Deposit'];//一级充值人数
                         $item['Lv1Running'] = $liushui['Lv1Running'];//一级流水
+                        $item['FirstDepositMoney'] = $liushui['FirstDepositMoney'];//一级流水
                         if ($item['Lv1Deposit'] > 0 && $item['ValidInviteCount'] > 0) {
                             $item['firstLevelAverageRecharge'] = bcdiv($item['FirstDepositMoney'], $item['Lv1PersonCount'],2);
                         }
