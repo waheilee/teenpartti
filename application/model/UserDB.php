@@ -800,7 +800,8 @@ class UserDB extends BaseModel
         // $result = $this->GetPage($where, "$order", $feild);
         $data = (new BankDB())->getTableObject('View_UserDrawBack')->alias('a')
             ->join('[CD_UserDB].[dbo].[T_UserGameWealth](NOLOCK) b', 'b.RoleID=a.AccountID', 'left')
-            ->field('a.*,b.Money')
+            ->join('[CD_UserDB].[dbo].[T_UserWage](NOLOCK) c', 'c.RoleID=a.AccountID', 'left')
+            ->field('a.*,b.Money,c.CurWageRequire')
             ->where('1=1 ' . $where)
             ->order($order)
             ->paginate($limit)

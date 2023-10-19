@@ -275,7 +275,8 @@
 							//         "    <a class=\"layui-btn layui-btn-xs layui-btn-warm\" lay-event=\"freeze\">没收</a>";
 
 						}
-					}
+					},
+                    {field: 'CurWageRequire', align: 'center', title: "{:lang('总打码量')}", minWidth: 200},
 				];
 				table.render({
 					elem: '#proxylist', url: url, page: true, limit: 15,toolbar: '#toolbarDemo',defaultToolbar:[], cols: [cols],where: {Status:0}
