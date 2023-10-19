@@ -1,4 +1,5 @@
 <?php
+
 namespace app\api\controller;
 
 use app\common\Api;
@@ -9,7 +10,8 @@ use think\Controller;
 class Index extends Controller
 {
     //推广提现
-    public function addSpreadUserMoney() {
+    public function addSpreadUserMoney()
+    {
 
         $orderId = $_POST["orderid"];
         $roleid = $_POST["roleid"];
@@ -20,12 +22,12 @@ class Index extends Controller
 //        $orderId = '201909101234567';
 //        $amount = 1005;
 //        $roleid = 61644520;
-        save_log('api/addSpreadUserMoney', $orderId.'||'.$amount."||".$roleid);
-        if (!$orderId || !$amount || !$roleid || $amount<=0 || $amount>10000) {
-            save_log('api/addSpreadUserMoneyFail', $orderId.'||'.$amount."||".$roleid);
+        save_log('api/addSpreadUserMoney', $orderId . '||' . $amount . "||" . $roleid);
+        if (!$orderId || !$amount || !$roleid || $amount <= 0 || $amount > 10000) {
+            save_log('api/addSpreadUserMoneyFail', $orderId . '||' . $amount . "||" . $roleid);
             echo "FAIL1";
         } elseif ($check != $token) {
-            save_log('api/addSpreadUserMoneyFail', $check.'<==>'.$token);
+            save_log('api/addSpreadUserMoneyFail', $check . '<==>' . $token);
             echo "FAIL3";
         } else {
             $amount *= 1000;
@@ -33,10 +35,10 @@ class Index extends Controller
             $res = Api::getInstance()->sendRequest([
                 'roleid' => $roleid,
                 'orderid' => (string)$orderId,
-                'imoney'  => $amount,
-                'states'  => 0
+                'imoney' => $amount,
+                'states' => 0
             ], 'payment', 'spreadcharge');
-            save_log('api/addSpreadUserMoneyStatus', $orderId.'||'.$amount."||".$roleid.json_encode($res, JSON_UNESCAPED_UNICODE));
+            save_log('api/addSpreadUserMoneyStatus', $orderId . '||' . $amount . "||" . $roleid . json_encode($res, JSON_UNESCAPED_UNICODE));
             if ($res['data'] == true) {
                 echo 'SUCCESS';
             } else {
@@ -46,7 +48,8 @@ class Index extends Controller
     }
 
     //在线
-    public function getOnlineUser(){
+    public function getOnlineUser()
+    {
         $socket = new QuerySocket();
         $arrResult = null;
         $arrResult = $socket->DCQueryAllOnlinePlayer();
@@ -55,8 +58,7 @@ class Index extends Controller
         $arrOnlineList = isset($arrResult["onlinelist"]) ? $arrResult["onlinelist"] : [];
 //        var_dump($arrOnlineList);
 //        die;
-        if($arrOnlineList)
-        {
+        if ($arrOnlineList) {
             foreach ($arrOnlineList as &$val) {
                 $loginset = '';
                 if ($val['nClientType'] == 0) {
@@ -83,43 +85,40 @@ class Index extends Controller
 
 
     //获取优惠数量
-    public function  querycoupon(){
-        $roleid =input('roleid',0);
-        if($roleid>0){
+    public function querycoupon()
+    {
+        $roleid = input('roleid', 0);
+        if ($roleid > 0) {
             $socket = new QuerySocket();
-            $ret =$socket->getPlayerCoupon($roleid);
+            $ret = $socket->getPlayerCoupon($roleid);
             $coupon = 0;
-            if(!empty($ret)){
+            if (!empty($ret)) {
                 $coupon = $ret['iResult'];
             }
-            echo json_encode(['code'=>0,'data'=>$coupon,'message'=>'success']);
-        }
-        else
-        {
-            echo json_encode(['code'=>100,'data'=>0,'message'=>'roleid is need']);
+            echo json_encode(['code' => 0, 'data' => $coupon, 'message' => 'success']);
+        } else {
+            echo json_encode(['code' => 100, 'data' => 0, 'message' => 'roleid is need']);
         }
 
     }
 
 
-
     ///玩家使用优惠券
-    public function  usercoupon(){
-        $roleid =input('roleid',0);
-        $coupon = input('coupon',0);
+    public function usercoupon()
+    {
+        $roleid = input('roleid', 0);
+        $coupon = input('coupon', 0);
 
-        if($roleid==0 || $coupon==0){
-            echo json_encode(['code'=>100,'message'=>'parameter error']);
+        if ($roleid == 0 || $coupon == 0) {
+            echo json_encode(['code' => 100, 'message' => 'parameter error']);
         }
 
         $socket = new QuerySocket();
-        $ret =$socket->UsePlayerCoupon($roleid,$coupon);
-        if($ret){
-            echo json_encode(['code'=>0,'data'=>$ret['iResult'],'message'=>'success']);
-        }
-        else
-        {
-            echo json_encode(['code'=>101,'data'=>0,'message'=>'faild,system error']);
+        $ret = $socket->UsePlayerCoupon($roleid, $coupon);
+        if ($ret) {
+            echo json_encode(['code' => 0, 'data' => $ret['iResult'], 'message' => 'success']);
+        } else {
+            echo json_encode(['code' => 101, 'data' => 0, 'message' => 'faild,system error']);
         }
 
     }
@@ -135,12 +134,12 @@ class Index extends Controller
         $roleid = $_GET['RoleID'];
         $strFields = " count(*) as count ";//
         $tableName = " [CD_UserDB].[dbo].[T_RoleExpand] ";
-        $where = " where CouponExchangeDisable=1 and RoleID=".$roleid;
+        $where = " where CouponExchangeDisable=1 and RoleID=" . $roleid;
         $orderBy = "";
         $comm = new CommonModel;
-        $res = $comm->getsql($tableName,$strFields,$where,$orderBy);
+        $res = $comm->getsql($tableName, $strFields, $where, $orderBy);
         $result = $res['count'];
-        $res = json_encode(['code'=>1,'data'=>$result]);
+        $res = json_encode(['code' => 1, 'data' => $result]);
         return $result;
     }
 
@@ -179,29 +178,30 @@ class Index extends Controller
         }
     }
 
-    public function AgentWaterSum(){
-        $white_list = ['54.233.122.115','54.254.138.198','106.75.239.173'];
+    public function AgentWaterSum()
+    {
+        $white_list = ['54.233.122.115', '54.254.138.198', '106.75.239.173'];
         if (!in_array(request()->ip(), $white_list)) {
             exit();
         }
-        $num = input('num')?:0;
-        $type = input('type')?:'Mobile';//,A.MailAccount
-        $field = 'A.AccountID,A.AccountName,A.'.$type.' As Mobile,ISNULL(B.ReceivedIncome,0) As ReceivedIncome,ISNULL(B.TotalDeposit,0) AS TotalDeposit,ISNULL(B.TotalTax,0) AS TotalTax,ISNULL(B.TotalRunning,0) AS TotalRunning,ISNULL(B.Lv1PersonCount,0) AS Lv1PersonCount,ISNULL(B.Lv1Deposit,0) AS Lv1Deposit,ISNULL(B.Lv1DepositPlayers,0) AS Lv1DepositPlayers,ISNULL(B.Lv1Tax,0) AS Lv1Tax,ISNULL(B.Lv1Running,0) AS Lv1Running,ISNULL(B.Lv2PersonCount,0) AS Lv2PersonCount,ISNULL(B.Lv2Deposit,0) AS Lv2Deposit,ISNULL(B.Lv2DepositPlayers,0) AS Lv2DepositPlayers,ISNULL(B.Lv2Tax,0) AS Lv2Tax,ISNULL(B.Lv2Running,0) AS Lv2Running,ISNULL(B.Lv3PersonCount,0) AS Lv3PersonCount,ISNULL(B.Lv3Deposit,0) AS Lv3Deposit,ISNULL(B.Lv3DepositPlayers,0) AS Lv3DepositPlayers,ISNULL(B.Lv3Tax,0) AS Lv3Tax,ISNULL(B.Lv3Running,0) AS Lv3Running,ISNULL(B.Lv1WithdrawCount,0) AS Lv1WithdrawCount,ISNULL(B.Lv2WithdrawCount,0) AS Lv2WithdrawCount,ISNULL(B.Lv3WithdrawCount,0) AS Lv3WithdrawCount,ISNULL(B.Lv1WithdrawAmount,0) AS Lv1WithdrawAmount,ISNULL(B.Lv2WithdrawAmount,0) AS Lv2WithdrawAmount,ISNULL(B.Lv3WithdrawAmount,0) AS Lv3WithdrawAmount';
+        $num = input('num') ?: 0;
+        $type = input('type') ?: 'Mobile';//,A.MailAccount
+        $field = 'A.AccountID,A.AccountName,A.' . $type . ' As Mobile,ISNULL(B.ReceivedIncome,0) As ReceivedIncome,ISNULL(B.TotalDeposit,0) AS TotalDeposit,ISNULL(B.TotalTax,0) AS TotalTax,ISNULL(B.TotalRunning,0) AS TotalRunning,ISNULL(B.Lv1PersonCount,0) AS Lv1PersonCount,ISNULL(B.Lv1Deposit,0) AS Lv1Deposit,ISNULL(B.Lv1DepositPlayers,0) AS Lv1DepositPlayers,ISNULL(B.Lv1Tax,0) AS Lv1Tax,ISNULL(B.Lv1Running,0) AS Lv1Running,ISNULL(B.Lv2PersonCount,0) AS Lv2PersonCount,ISNULL(B.Lv2Deposit,0) AS Lv2Deposit,ISNULL(B.Lv2DepositPlayers,0) AS Lv2DepositPlayers,ISNULL(B.Lv2Tax,0) AS Lv2Tax,ISNULL(B.Lv2Running,0) AS Lv2Running,ISNULL(B.Lv3PersonCount,0) AS Lv3PersonCount,ISNULL(B.Lv3Deposit,0) AS Lv3Deposit,ISNULL(B.Lv3DepositPlayers,0) AS Lv3DepositPlayers,ISNULL(B.Lv3Tax,0) AS Lv3Tax,ISNULL(B.Lv3Running,0) AS Lv3Running,ISNULL(B.Lv1WithdrawCount,0) AS Lv1WithdrawCount,ISNULL(B.Lv2WithdrawCount,0) AS Lv2WithdrawCount,ISNULL(B.Lv3WithdrawCount,0) AS Lv3WithdrawCount,ISNULL(B.Lv1WithdrawAmount,0) AS Lv1WithdrawAmount,ISNULL(B.Lv2WithdrawAmount,0) AS Lv2WithdrawAmount,ISNULL(B.Lv3WithdrawAmount,0) AS Lv3WithdrawAmount';
         if ($type == 'Mobile') {
-            $data =  (new \app\model\AccountDB())->getTableObject('T_Accounts')
+            $data = (new \app\model\AccountDB())->getTableObject('T_Accounts')
                 ->alias('A')
                 ->join('[CD_UserDB].[dbo].[T_ProxyCollectData](NOLOCK) B', 'B.ProxyId=A.AccountID', 'LEFT')
-                ->where('Lv1PersonCount','>=',$num)
-                ->where('Mobile','<>','')
+                ->where('Lv1PersonCount', '>=', $num)
+                ->where('Mobile', '<>', '')
                 ->field($field)
                 // ->fetchSql(true)
                 ->select();
         }
         if ($type == 'MailAccount') {
-            $data =  (new \app\model\AccountDB())->getTableObject('T_Accounts')
+            $data = (new \app\model\AccountDB())->getTableObject('T_Accounts')
                 ->alias('A')
                 ->join('[CD_UserDB].[dbo].[T_ProxyCollectData](NOLOCK) B', 'B.ProxyId=A.AccountID', 'LEFT')
-                ->where('Lv1PersonCount','>=',$num)
+                ->where('Lv1PersonCount', '>=', $num)
                 ->where('MailAccount is not null')
                 ->field($field)
                 // ->fetchSql(true)
@@ -209,18 +209,18 @@ class Index extends Controller
         }
 
         // $roleid_ids = array_column($data, 'AccountID')?:[0];
-        $roleid_ids = "select ProxyId from [CD_UserDB].[dbo].[T_ProxyCollectData](NOLOCK) where Lv1PersonCount>=".$num;
-        $sql1 = "select RoleId,addtime,Amount from T_ProxyMsgLog where id in(select min(id) from T_ProxyMsgLog where RoleId in(".$roleid_ids.") and RecordType=8 and Amount>0 and VerifyState=1 group by RoleId)";
+        $roleid_ids = "select ProxyId from [CD_UserDB].[dbo].[T_ProxyCollectData](NOLOCK) where Lv1PersonCount>=" . $num;
+        $sql1 = "select RoleId,addtime,Amount from T_ProxyMsgLog where id in(select min(id) from T_ProxyMsgLog where RoleId in(" . $roleid_ids . ") and RecordType=8 and Amount>0 and VerifyState=1 group by RoleId)";
 
-        $sql2 = "select RoleId,sum(Amount) Amount from T_ProxyMsgLog where RoleId in(".$roleid_ids.") and RecordType=8 and Amount>0  and VerifyState=1 group by RoleId";
+        $sql2 = "select RoleId,sum(Amount) Amount from T_ProxyMsgLog where RoleId in(" . $roleid_ids . ") and RecordType=8 and Amount>0  and VerifyState=1 group by RoleId";
 
         $data1 = (new \app\model\DataChangelogsDB())->DBOriginQuery($sql1) ?? [];
         $data2 = (new \app\model\DataChangelogsDB())->DBOriginQuery($sql2) ?? [];
 
         $data = [
-            'data'=>$data,
-            'data1'=>$data1,
-            'data2'=>$data2
+            'data' => $data,
+            'data1' => $data1,
+            'data2' => $data2
         ];
         // $v = &$data;
         // $v['TotalTax'] = FormatMoney($v['TotalTax']);
@@ -246,51 +246,53 @@ class Index extends Controller
         // $rewar_amount = bcadd($Lv1Reward , $Lv2Reward,4);
         // $rewar_amount = bcadd($rewar_amount, $Lv3Reward,2);
         // $v['ReceivedIncome'] =  $rewar_amount;
-        return json(['code'=>0,'data'=>$data]);
+        return json(['code' => 0, 'data' => $data]);
     }
 
-    public function dfdata(){
-        $white_list = ['54.233.122.115','54.254.138.198','106.75.239.173'];
+    public function dfdata()
+    {
+        $white_list = ['54.233.122.115', '54.254.138.198', '106.75.239.173'];
         if (!in_array(request()->ip(), $white_list)) {
             exit();
         }
-        $num = input('num')?:500;
+        $num = input('num') ?: 500;
 
-        $data =  (new \app\model\BankDB())->getTableObject('UserDrawBack')
+        $data = (new \app\model\BankDB())->getTableObject('UserDrawBack')
             ->alias('A')
             ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) B', 'B.AccountID=A.AccountID')
-            ->where('A.iMoney','>=',$num*1000)
-            ->where('A.status',100)
+            ->where('A.iMoney', '>=', $num * 1000)
+            ->where('A.status', 100)
             ->field('A.AccountID,A.iMoney,A.AddTime,B.Mobile')
             ->select();
-        return json(['code'=>0,'data'=>$data]);
+        return json(['code' => 0, 'data' => $data]);
     }
 
-    public function logindata(){
-        $white_list = ['54.233.122.115','54.254.138.198','106.75.239.173'];
+    public function logindata()
+    {
+        $white_list = ['54.233.122.115', '54.254.138.198', '106.75.239.173'];
         if (!in_array(request()->ip(), $white_list)) {
             exit();
         }
-        $DeviceType = input('DeviceType')?:2;
-        $type = input('type')?:'Mobile';//,A.MailAccount
+        $DeviceType = input('DeviceType') ?: 2;
+        $type = input('type') ?: 'Mobile';//,A.MailAccount
 
         if ($type == 'Mobile') {
-            $data =  (new \app\model\AccountDB())->getTableObject('T_Accounts')
-                ->where('DeviceType',$DeviceType)
+            $data = (new \app\model\AccountDB())->getTableObject('T_Accounts')
+                ->where('DeviceType', $DeviceType)
                 ->field('AccountID,RegisterTime AS AddTime,Mobile')
-                ->where('Mobile','<>','')
+                ->where('Mobile', '<>', '')
                 ->select();
         }
         if ($type == 'MailAccount') {
-            $data =  (new \app\model\AccountDB())->getTableObject('T_Accounts')
-                ->where('DeviceType',$DeviceType)
+            $data = (new \app\model\AccountDB())->getTableObject('T_Accounts')
+                ->where('DeviceType', $DeviceType)
                 ->field('AccountID,RegisterTime AS AddTime,MailAccount AS Mobile')
                 ->where('MailAccount is not null')
 //                ->field($field)
                 ->select();
         }
 
-        return json(['code'=>0,'data'=>$data]);
+        return json(['code' => 0, 'data' => $data]);
     }
 
 }
