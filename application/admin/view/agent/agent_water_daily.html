@@ -133,7 +133,9 @@
 
 <script id="msg-bar" type="text/html">
     <input type="button" class="layui-btn layui-btn-xs" lay-event="lookteam" value="{:lang('查看下级成员')}">
+    {if(config('reward')==1)}
     <input type="button" class="layui-btn layui-btn-xs" lay-event="temReward" value="{:lang('发放团队佣金奖励')}">
+    {/if}
 </script>
 <script>
 
@@ -182,8 +184,11 @@
                     {field: 'Lv3FirstDepositPlayers', title: "{:lang('三级首充人数')}", width: 150, align: 'center', sort: true},
                     {field: 'Lv3Deposit', title: "{:lang('三级充值')}", width: 120, align: 'center', sort: true},
                     {field: 'Lv3Running', title:"{:lang('三级流水')}", width: 120, align: 'center'},
-                    {field: 'needTakePrice', title:"{:lang('打码量')}", width: 120, align: 'center'},
-                    {field: 'reward', title:"{:lang('奖励')}", width: 120, align: 'center'},
+                    {if(config('reward')=='1')}
+                        {field: 'needTakePrice', title:"{:lang('打码量')}", width: 120, align: 'center'},
+                        {field: 'reward', title:"{:lang('奖励')}", width: 120, align: 'center'},
+                    {/if},
+
                     {fixed: 'right', title: "{:lang('操作')}", align: 'center', width: 150, toolbar: '#msg-bar'}
                 ];
                 table.render({
