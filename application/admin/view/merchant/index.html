@@ -38,6 +38,7 @@
         <a class="layui-btn layui-btn-xs" lay-event="edit">{:lang('编辑')}</a>
         <a class="layui-btn layui-btn-xs" lay-event="ed">{:lang('额度修改')}</a>
         <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="unbind">{:lang('解绑谷歌')}</a>
+        <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="updateStatus">{:lang('删除')}</a>
     </script>
 </div>
 <script type="text/html" id="is_default">
@@ -201,6 +202,27 @@
                     $.ajax({
                         type: 'post',
                         url: "{:url('merchant/unBindGoogle')}",
+                        data: {
+                            OperatorId: data.OperatorId,
+                        },
+                        dataType: 'json',
+                        success: function (res) {
+                            if (res.code === 0) {
+                                layer.msg(res.msg, {icon: 6, time: 1000}, function () {
+                                    window.location.reload();
+                                });
+                            } else {
+                                layer.msg(res.msg, {icon: 5});
+                            }
+                        }
+                    });
+                });
+            }
+            if (obj.event === 'updateStatus') {
+                layer.confirm("{:lang('确认删除？')}", {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
+                    $.ajax({
+                        type: 'post',
+                        url: "{:url('merchant/updateStatus')}",
                         data: {
                             OperatorId: data.OperatorId,
                         },

@@ -36,7 +36,7 @@ class Merchant extends Main
             if ($OperatorName != '') {
                 $where .= " and a.OperatorName like '%".$OperatorName."%'";
             }
-
+            $where .= " and a.status=1";
             $data = (new MasterDB())->getTableObject('T_OperatorLink')->alias('a')
                      ->join('[OM_GameOC].[dbo].[T_OperatorSubAccount](NOLOCK) b', 'a.OperatorId=b.OperatorId', 'LEFT')
                      ->join('[T_GameRoomInfo](NOLOCK) c', 'a.RedirectTypeId=c.RoomID', 'LEFT')
@@ -393,6 +393,19 @@ class Merchant extends Main
         $db =new GameOCDB();
         $where = " OperatorId=$OperatorId and AccountType=0 ";
         $db->updateTable('T_OperatorSubAccount',['google_verify'=>''],$where);
+        return $this->apiReturn(0, '', '操作成功');
+
+    }
+
+    public function  updateStatus(){
+        $OperatorId = input('OperatorId','');
+
+        if(empty($OperatorId)){
+            return $this->apiReturn(100, '', '参数错误');
+        }
+        $db =new MasterDB();
+        $where = "OperatorId=$OperatorId ";
+        $db->updateTable('T_OperatorLink',['status'=>2],$where);
         return $this->apiReturn(0, '', '操作成功');
 
     }
