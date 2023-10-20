@@ -146,6 +146,7 @@
                             </td>
                             <td>{:lang('赠送金币金额')}:</td>
                             <td>{$user.zscoin}</td>
+
                             {if(config('app_type')==3)}
                             <td><span style="color:red">VIP提现限制开关</span></td>
                             <td>
@@ -158,8 +159,8 @@
                                 </div>
                             </td>
                             {else/}
-                            <td></td>
-                            <td></td>
+                            <td>{:lang('总打码量')}:</td>
+                            <td>{$user.wageRequire}</td>
                             {/if}
                             
                         </tr>
