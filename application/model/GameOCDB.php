@@ -1046,9 +1046,9 @@ class GameOCDB extends BaseModel
                     $rewar_amount = bcadd($rewar_amount, $Lv3Reward, 2);
                     $v['RewardAmount'] = $rewar_amount;
                 } else {
-                    $level1profit = bcmul($v['Lv1Tax'], 0.3, 3);
-                    $level2profit = bcmul($v['Lv2Tax'], 0.09, 3);
-                    $level3profit = bcmul($v['Lv3Tax'], 0.027, 3);
+                    $level1profit = bcmul($v['Lv1Tax'], 0.3, 2);
+                    $level2profit = bcmul($v['Lv2Tax'], 0.09, 2);
+                    $level3profit = bcmul($v['Lv3Tax'], 0.027, 2);
                     $v['RewardAmount'] = $level1profit + $level2profit + $level3profit;
                 }
                 ConVerMoney($v['RewardAmount']);

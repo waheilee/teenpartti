@@ -116,8 +116,8 @@ class PaySdk
             Redis::set('PAYOUT_ORDER_SUCCESS_'.$OrderNo,$OrderNo);
         } else {
             $msg = '请求失败';
-            if (isset($res['msg'])){
-                $msg = $res['msg'];
+            if (isset($res['message'])){
+                $msg = $res['message'];
             }
             $result['message'] = $msg;
             $result['status'] = false;
