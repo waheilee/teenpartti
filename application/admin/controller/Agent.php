@@ -345,7 +345,7 @@ class Agent extends Main
             if (config('app_name') == 'igkk356'){
                 $leftJoin = 'left join (SELECT ParentId, COUNT(ParentId) as UnBindCount FROM [CD_UserDB].[dbo].[T_ProxyUnBind]  group by ParentId) as C on A.RoleID=C.ParentId) as t ';
             }
-            $table = '(select ' . $field . '  FROM   CD_UserDB.dbo.T_UserProxyInfo(nolock) as A  left join [CD_UserDB].[dbo].[T_ProxyCollectData](nolock) as B on A.RoleID=B.ProxyId '.$leftJoin;
+            $table = '(select ' . $field . '  FROM   CD_UserDB.dbo.T_UserProxyInfo(nolock) as A  left join [CD_UserDB].[dbo].[T_ProxyCollectData](nolock) as B on A.RoleID=B.ProxyId ';
             // $table='[CD_UserDB].[dbo].[T_ProxyCollectData] (NOLOCK) ';
             $data = $proxyinfo->getProcPageList($table, '*', $filter, $order, $page, $limit);
             $list = [];
