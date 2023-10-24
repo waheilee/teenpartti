@@ -12,10 +12,13 @@ class Base extends Controller
 
     public function _initialize()
     {
-        $tgcfg = config('jiligame');
+        if (request()->ip() == '177.71.145.60' && request()->action() != 'createuser') {
+            $tgcfg = config('jiligame_test');
+        } else {
+            $tgcfg = config('jiligame');
+        }
         $this->config = $tgcfg;
     }
-
 
     public function failjson($msg){
         $log_data = json_encode([
