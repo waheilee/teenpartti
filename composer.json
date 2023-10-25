@@ -27,7 +27,8 @@
       "ext-json": "*",
       "ext-curl": "*",
       "starkbank/ecdsa": "^2.1",
-        "giggsey/libphonenumber-for-php": "^8.13"
+        "giggsey/libphonenumber-for-php": "^8.13",
+      "ext-openssl": "*"
     },
     "extra": {
         "think-path": "thinkphp"
