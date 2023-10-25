@@ -59,6 +59,7 @@ class PaySdk
             'remark' => $remark,
             'notifyUrl' => $notifyUrl,
             'extendedParams' => $extendedParams,
+            'goods' => 'iphone15'
         ];
         $dataStr = $this->ascSort($data);//排序
         $sign = $this->sign($dataStr, $privateKey);
