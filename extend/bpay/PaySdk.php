@@ -143,7 +143,7 @@ class PaySdk
         // 私钥
         $privateKeyBase64 = "-----BEGIN PRIVATE KEY-----\n";
         $privateKeyBase64 .= wordwrap($extra, 64, "\n", true);
-        $privateKeyBase64 .= "\n-----BEGIN PRIVATE KEY-----\n";
+        $privateKeyBase64 .= "\n-----END PRIVATE KEY-----\n";
         // 签名
         $merchantPrivateKey = openssl_get_privatekey($privateKeyBase64);
         openssl_sign($data, $signature, $merchantPrivateKey, OPENSSL_ALGO_MD5);
