@@ -71,8 +71,8 @@ class PaySdk
             'Pragma: no-cache'
         ];
 
-        save_log('bpay', '提交三方参数---' . json_encode($postData));
-        $resultData = $this->curlPostContent($apiUrl, json_encode($postData), $header);//发送http的post请求
+        save_log('bpay', '提交三方参数---' . $postData);
+        $resultData = $this->curlPostContent($apiUrl, $postData, $header);//发送http的post请求
         save_log('bpay', '返回参数---' . json_encode($resultData));
         if (empty($resultData)) {
             $result['message'] = 'error';
@@ -80,7 +80,7 @@ class PaySdk
             return $result;
         }
 
-        save_log('bpay', 'post:' . json_encode($postData) . ',output:' . $resultData);
+        save_log('bpay', 'post:' . $postData . ',output:' . $resultData);
         $res = json_decode($resultData, true);
         if (isset($res) && $res['code'] == '200') {
             $result['system_ref'] = '';
