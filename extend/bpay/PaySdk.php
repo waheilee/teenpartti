@@ -24,12 +24,12 @@ class PaySdk
         $purpose = $order['CardNo'];
         $email = $order['City'];
         $isEmail = $this->isValidEmail($order['CardNo']);
-        if ($isEmail){
+        if ($isEmail) {
             $pixType = 'EMAIL';
             $pixKey = $order['City'];
         }
 
-        if ($order['CardNo'] == $order['RealName']){
+        if ($order['CardNo'] == $order['RealName']) {
             $pixType = 'PHONE';
             $pixKey = '+55' . $order['RealName'];
         }
@@ -46,7 +46,7 @@ class PaySdk
         $notifyUrl = $config['notify_url'] ?? '';
         $extendedParams = "payeeName^$realName|PIX^$pixKey|pixType^$pixType|payeePhone^$realName|payeeEmail^$email|payeeCPF^$purpose";
 
-        save_log('bpay','提交三方订单号:'.$orderNo);
+        save_log('bpay', '提交三方订单号:' . $orderNo);
 
         $data = [
             'merchantNo' => $merchantNo,
@@ -71,10 +71,10 @@ class PaySdk
             'Pragma: no-cache'
         ];
 
-        save_log('bpay','提交三方参数---'.json_encode($postData));
+        save_log('bpay', '提交三方参数---' . json_encode($postData));
         $resultData = $this->curlPostContent($apiUrl, json_encode($postData), $header);//发送http的post请求
-        save_log('bpay','返回参数---'.json_encode($resultData));
-        if(empty($resultData)){
+        save_log('bpay', '返回参数---' . json_encode($resultData));
+        if (empty($resultData)) {
             $result['message'] = 'error';
             $result['status'] = false;
             return $result;
@@ -86,10 +86,10 @@ class PaySdk
             $result['system_ref'] = '';
             $result['status'] = true;
             $result['message'] = 'success';
-            Redis::set('PAYOUT_ORDER_SUCCESS_'.$orderNo,$orderNo);
+            Redis::set('PAYOUT_ORDER_SUCCESS_' . $orderNo, $orderNo);
         } else {
             $msg = '请求失败';
-            if (isset($res['message'])){
+            if (isset($res['message'])) {
                 $msg = $res['message'];
             }
             $result['message'] = $msg;
@@ -123,7 +123,7 @@ class PaySdk
         return $res;
     }
 
-    private function ascSort($data =[])
+    private function ascSort($data = [])
     {
         if (!empty($data)) {
             $p = ksort($data);
@@ -138,6 +138,7 @@ class PaySdk
         }
         return false;
     }
+
     private function sign($data, $extra): string
     {
         // 私钥
@@ -169,7 +170,8 @@ class PaySdk
      * @param $email
      * @return bool
      */
-    function isValidEmail($email) {
+    function isValidEmail($email)
+    {
         // 使用 PHP 的 filter_var 函数和 FILTER_VALIDATE_EMAIL 过滤器验证邮箱格式
 //        $email = "12346878641"; // 替换为要测试的邮箱地址
         $isEmail = filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
