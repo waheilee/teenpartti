@@ -66,7 +66,7 @@ class PaySdk
 
         $postData = [
             'mchId' => $merchant,
-            'passageId' => 101,
+            'passageId' => 24711,
             'orderAmount' => (float)$amount,
             'orderNo' => $orderId,
             'account' => $order['CardNo'] ?? '',
