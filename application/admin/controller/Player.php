@@ -4324,6 +4324,31 @@ class Player extends Main
         GameLog::logData(__METHOD__, $this->request->request());
         return $this->apiReturn(0, [], '设置成功');
     }
+
+    //取消打码
+    public function cancelRateDm()
+    {
+        $accountId = $this->request->param('roleid/a');
+
+        $auth_ids = $this->getAuthIds();
+        if (!in_array(10013, $auth_ids)) {
+            // return $this->apiReturn(2, [], '没有权限');
+        }
+        $db = new GameOCDB();
+        foreach ($accountId as $k => &$roleid) {
+            $this->sendGameMessage('CMD_MD_USER_WAGED_RATE', [$roleid, 1, 0], "DC", 'returnComm');
+            $this->sendGameMessage('CMD_MD_USER_WAGED_RATE', [$roleid, 0, 0], "DC", 'returnComm');
+            $db->setTable('T_PlayerComment')->Insert([
+                'roleid' => $roleid,
+                'adminid' => session('userid'),
+                'type' => 4,
+                'opt_time' => date('Y-m-d H:i:s'),
+                'comment' => '取消打码百分比'
+            ]);
+        }
+        // GameLog::logData(__METHOD__, [$roleid], 1, '取消打码百分比');
+        return $this->apiReturn(0, '', '操作成功');
+    }
     public function getCommentList()
     {
         $roleid = input('roleid', 0, 'intval');

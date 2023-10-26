@@ -141,11 +141,13 @@
                     {field: 'iCurWaged', align: 'center', title: "{:lang('当前完成打码')}", width: 120},
                     {field: 'iNeedWaged', align: 'center', title: "{:lang('打码任务')}", width: 120},
                     {field: 'percentage', align: 'center', title: "{:lang('完成进度')}", width: 120, sort: true},
-                    {if(config('is_dmrateset')=='1')}{field: 'dmrate', align: 'center', title: "{:lang('单控数值')}", width: 200,  templet: function (d) {
-                    return '赢：'+d.win_dmrateset+'%，输：'+d.lose_dmrateset+'%';
-                }
-                },
-                {/if}
+                    {if(config('is_dmrateset')=='1')}
+                    {field: 'dmrate', align: 'center', title: "{:lang('单控数值')}", width: 200,  templet: function (d)
+                        {
+                            return '赢：'+d.win_dmrateset+'%，输：'+d.lose_dmrateset+'%';
+                        }
+                    },
+                    {/if}
                     // {field: 'RegisterTime', align: 'center', title: '注册时间', minWidth: 200},
 
                     {field: 'TotalDeposit', align: 'center', title: "{:lang('总充值')}", width: 120, sort: true},

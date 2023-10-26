@@ -270,16 +270,15 @@ class Ranke extends Main
     }
 
 
-    public function wageClear()
-    {
+    public function wageClear(){
         $accountId = $this->request->param('AccountID/a');
         $auth_ids = $this->getAuthIds();
         if (!in_array(10004, $auth_ids)) {
             return $this->apiReturn(2, [], '没有权限');
         }
-        $success_num = 0;
-        $faild_num = 0;
-        if (empty($accountId)) {
+        $success_num =0;
+        $faild_num =0;
+        if(empty($accountId)){
             return $this->apiReturn(2, [], '参数有误');
         }
         foreach ($accountId as $k => $v) {
@@ -299,7 +298,7 @@ class Ranke extends Main
                 $faild_num++;
             }
         }
-        $str_msg = '处理成功' . $success_num . ',失败：' . $faild_num;
+        $str_msg ='处理成功'.$success_num.',失败：'.$faild_num;
         return $this->successJSON($str_msg);
     }
 
