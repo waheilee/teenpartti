@@ -4220,7 +4220,7 @@ class Player extends Main
     //设置打码
     public function setRateDm()
     {
-        $roleid = $this->request->param('roleid');
+        $accountId = $this->request->param('roleid/a');
         $dm = abs($this->request->param('dm'));
         $type = $this->request->param('type');
         $dm = intval($dm);
@@ -4228,34 +4228,40 @@ class Player extends Main
         if (!in_array(10013, $auth_ids)) {
             // return $this->apiReturn(2, [], '没有权限');
         }
+        if (empty($accountId)) {
+            return $this->apiReturn(1, '', '请选择用户');
+        }
         if ($dm < 0) {
             $dm = 0;
         }
         if ($dm > 100) {
             $dm = 100;
         }
-        $data = $this->sendGameMessage('CMD_MD_USER_WAGED_RATE', [$roleid, $type, $dm], "DC", 'returnComm');
-        if ($data['iResult'] == 1) {
-            if ($type == 0) {
-                $comment = '编辑赢打码百分比：' . $dm;
-            } else {
-                $comment = '编辑输打码百分比:' . $dm;
-            }
-            $db = new GameOCDB();
-            $db->setTable('T_PlayerComment')->Insert([
-                'roleid' => $roleid,
-                'adminid' => session('userid'),
-                'type' => 4,
-                'opt_time' => date('Y-m-d H:i:s'),
-                'comment' => $comment
-            ]);
-
-            GameLog::logData(__METHOD__, [$roleid, $dm, $type], 1, $comment);
-            return $this->apiReturn(0, '', '操作成功');
+        $success_num =0;
+        $faild_num =0;
+        if ($type == 0) {
+            $comment = '编辑赢打码百分比：' . $dm;
         } else {
-            GameLog::logData(__METHOD__, [$roleid, $dm, $type], 0, '操作失败');
-            return $this->apiReturn(1, '', '操作失败');
+            $comment = '编辑输打码百分比:' . $dm;
         }
+        $db = new GameOCDB();
+        foreach ($accountId as $k => &$roleid) {
+            $data = $this->sendGameMessage('CMD_MD_USER_WAGED_RATE', [$roleid, $type, $dm], "DC", 'returnComm');
+            if ($data['iResult'] == 1) {
+                $db->setTable('T_PlayerComment')->Insert([
+                    'roleid' => $roleid,
+                    'adminid' => session('userid'),
+                    'type' => 4,
+                    'opt_time' => date('Y-m-d H:i:s'),
+                    'comment' => $comment
+                ]);
+                $success_num++;
+            } else {
+                $faild_num++;
+            }
+        }
+        $str_msg ='处理成功'.$success_num.',失败：'.$faild_num;
+        return $this->apiReturn(0, '', $str_msg);
     }
 
     /**
