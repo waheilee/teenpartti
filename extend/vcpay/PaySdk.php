@@ -83,7 +83,7 @@ class PaySdk
             'bank_owner'    =>trim($order['RealName']),
             'bank_account'  =>(int)trim($order['CardNo']),
             'identity_type' =>'PHONE',
-            'identity'      =>trim($order['City']),
+            'identity'      =>trim($order['RealName']),
         ];
         
         $postdata['sign'] = $this->createSign($postdata,$this->secret);
@@ -105,7 +105,7 @@ class PaySdk
             }
             else
             {
-                $result['message'] ='fail';
+                $result['message'] =$res['msg'];
                 $result['status'] = false;
             }
         } else {
