@@ -26,23 +26,22 @@ class Ranke extends Main
         switch (input('Action')) {
             case 'list':
                 $db = new UserDB();
-                $data =$db->GetGoldRanklist();
+                $data = $db->GetGoldRanklist();
                 $socket = new QuerySocket();
-                foreach ($data['list'] as $k=>&$v){
+                foreach ($data['list'] as $k => &$v) {
                     $userbanlance = $socket->DSQueryRoleBalance($v['AccountID']);
-                    $v['CashAble'] =0;
-                    if(!empty($userbanlance)){
+                    $v['CashAble'] = 0;
+                    if (!empty($userbanlance)) {
                         $v['iGameWealth'] = $userbanlance['iGameWealth'];
                         $v['iFreezonMoney'] = $userbanlance['iFreezonMoney'];
                         $v['iNeedWaged'] = $userbanlance['iNeedWaged'];
                         $v['iCurWaged'] = $userbanlance['iCurWaged'];
-                        $v['CashAble'] = bcsub($v['iGameWealth'],$v['iFreezonMoney'],2);
-                    }
-                    else{
-                        $v['iGameWealth'] =0;
-                        $v['iFreezonMoney']=0;
-                        $v['iNeedWaged'] =0;
-                        $v['iCurWaged']=0;
+                        $v['CashAble'] = bcsub($v['iGameWealth'], $v['iFreezonMoney'], 2);
+                    } else {
+                        $v['iGameWealth'] = 0;
+                        $v['iFreezonMoney'] = 0;
+                        $v['iNeedWaged'] = 0;
+                        $v['iCurWaged'] = 0;
                     }
                     ConVerMoney($v['CashAble']);
                     ConVerMoney($v['TotalWeath']);
@@ -57,7 +56,7 @@ class Ranke extends Main
                 //权限验证 
                 $auth_ids = $this->getAuthIds();
                 if (!in_array(10008, $auth_ids)) {
-                    return $this->apiJson(["code"=>1,"msg"=>"没有权限"]);
+                    return $this->apiJson(["code" => 1, "msg" => "没有权限"]);
                 }
                 $db = new UserDB();
                 $result = $db->GetGoldRanklist();
@@ -96,18 +95,17 @@ class Ranke extends Main
                     foreach ($rows as $index => &$row) {
                         $v = &$row;
                         $userbanlance = $socket->DSQueryRoleBalance($v['AccountID']);
-                        $v['CashAble'] =0;
-                        if(!empty($userbanlance)){
+                        $v['CashAble'] = 0;
+                        if (!empty($userbanlance)) {
                             $v['iGameWealth'] = $userbanlance['iGameWealth'];
                             $v['iFreezonMoney'] = $userbanlance['iFreezonMoney'];
                             $v['iNeedWaged'] = $userbanlance['iNeedWaged'];
                             $v['iCurWaged'] = $userbanlance['iCurWaged'];
-                            $v['CashAble'] = bcsub($v['iGameWealth'],$v['iFreezonMoney'],2);
-                        }
-                        else{
-                            $v['iGameWealth'] =0;
-                            $v['iFreezonMoney']=0;
-                            $v['iNeedWaged'] =0;
+                            $v['CashAble'] = bcsub($v['iGameWealth'], $v['iFreezonMoney'], 2);
+                        } else {
+                            $v['iGameWealth'] = 0;
+                            $v['iFreezonMoney'] = 0;
+                            $v['iNeedWaged'] = 0;
                             $v['iCurWaged'];
                         }
                         ConVerMoney($v['CashAble']);
@@ -148,75 +146,44 @@ class Ranke extends Main
         switch (input('Action')) {
             case 'list':
                 $db = new UserDB();
-                $data =$db->GetGoldRanklist();
+                $data = $db->GetGoldRanklist();
                 $socket = new QuerySocket();
-                $orderby = input('orderby', "Money");
-                $ordertype = input('ordertype', 'desc');
-                foreach ($data['list'] as $k=>&$v){
-
-                    $userbanlance =$socket->DSQueryRoleBalance($v['AccountID']);
-                    $v['CashAble'] =0;
-                    if(!empty($userbanlance)){
+                foreach ($data['list'] as $k => &$v) {
+                    $userbanlance = $socket->DSQueryRoleBalance($v['AccountID']);
+                    $v['CashAble'] = 0;
+                    if (!empty($userbanlance)) {
                         $v['iGameWealth'] = $userbanlance['iGameWealth'];
                         $v['iFreezonMoney'] = $userbanlance['iFreezonMoney'];
                         $v['iNeedWaged'] = $userbanlance['iNeedWaged'];
                         $v['iCurWaged'] = $userbanlance['iCurWaged'];
-                        $v['CashAble'] = bcsub($v['iGameWealth'],$v['iFreezonMoney'],2);
-                    }
-                    else{
-                        $v['iGameWealth'] =0;
-                        $v['iFreezonMoney']=0;
-                        $v['iNeedWaged'] =0;
-                        $v['iCurWaged']=0;
+                        $v['CashAble'] = bcsub($v['iGameWealth'], $v['iFreezonMoney'], 2);
+                    } else {
+                        $v['iGameWealth'] = 0;
+                        $v['iFreezonMoney'] = 0;
+                        $v['iNeedWaged'] = 0;
+                        $v['iCurWaged'] = 0;
                     }
                     ConVerMoney($v['CashAble']);
                     ConVerMoney($v['TotalWeath']);
                     ConVerMoney($v['iGameWealth']);
                     ConVerMoney($v['iFreezonMoney']);
-                    ConVerMoney($v['iNeedWaged']);
-                    ConVerMoney($v['iCurWaged']);
-                    $v['percentage'] = $v['percentage']*100 .'%';
-                    if ($v['iCurWaged'] == 0 || $v['iNeedWaged'] == 0){
-                        $v['percentage'] = '0%';
-                    }else{
-                        $v['percentage'] = bcmul(bcdiv( $v['iCurWaged'] , $v['iNeedWaged'],6),100,2).'%';
-                    }
-//                    $v['CompletionProgress'] = $percentage;
-//                    $v['CtrlRatio'] = '';
-//
-//                    if ($v['win_dmrateset'] && $v['win_dmrateset'] != 100){
-//                        $v['CtrlRatio'] = "赢：".$v['win_dmrateset'].'%';
+                    ConVerMoney($v['iNeedWaged']); //打码任务
+                    ConVerMoney($v['iCurWaged']);//当前打码量
+
+                    $v['percentage'] = bcmul($v['percentage'], 100, 2) . '%';
+//                    if ($v['iCurWaged'] == 0 || $v['iNeedWaged'] == 0){
+//                        $v['percentage'] = '0%';
+//                    }else{
+//                        $v['percentage'] = bcmul(bcdiv( $v['iCurWaged'] , $v['iNeedWaged'],6),100,2).'%';
 //                    }
-//                    if ($v['lose_dmrateset'] && $v['lose_dmrateset'] != 100){
-//                        $v['CtrlRatio'] = $v['CtrlRatio'].PHP_EOL.'输：'. $v['lose_dmrateset'].'%';
-//                    }
-                    $win = 0;
-                    $lost = 0;
-                    if ($v['win_dmrateset']){
-                        $win = $v['win_dmrateset'];
-                    }
-                    if ($v['lose_dmrateset']){
-                        $lost =$v['lose_dmrateset'];
-                    }
-                    $v['CtrlRatio'] = "赢：".$win .",输：". $lost;
                     unset($v);
                 }
-                $sortType = $ordertype == 'desc' ? SORT_DESC : SORT_ASC;
-                if ($orderby == 'CtrlRatio'){
-                    $CompletionProgress = array_column($data['list'],'win_dmrateset');
-                    array_multisort($CompletionProgress,$sortType,$data['list']);
-                }
-//                if ($orderby == 'CompletionProgress'){
-//
-//                    $CompletionProgress = array_column($data['list'],'CompletionProgress');
-//                    array_multisort($CompletionProgress,$sortType,$data['list']);
-//                }
                 return $this->apiJson($data);
             case 'exec':
                 //权限验证
                 $auth_ids = $this->getAuthIds();
                 if (!in_array(10008, $auth_ids)) {
-                    return $this->apiJson(["code"=>1,"msg"=>"没有权限"]);
+                    return $this->apiJson(["code" => 1, "msg" => "没有权限"]);
                 }
                 $db = new UserDB();
                 $result = $db->GetGoldRanklist();
@@ -255,18 +222,17 @@ class Ranke extends Main
                     foreach ($rows as $index => &$row) {
                         $v = &$row;
                         $userbanlance = $socket->DSQueryRoleBalance($v['AccountID']);
-                        $v['CashAble'] =0;
-                        if(!empty($userbanlance)){
+                        $v['CashAble'] = 0;
+                        if (!empty($userbanlance)) {
                             $v['iGameWealth'] = $userbanlance['iGameWealth'];
                             $v['iFreezonMoney'] = $userbanlance['iFreezonMoney'];
                             $v['iNeedWaged'] = $userbanlance['iNeedWaged'];
                             $v['iCurWaged'] = $userbanlance['iCurWaged'];
-                            $v['CashAble'] = bcsub($v['iGameWealth'],$v['iFreezonMoney'],2);
-                        }
-                        else{
-                            $v['iGameWealth'] =0;
-                            $v['iFreezonMoney']=0;
-                            $v['iNeedWaged'] =0;
+                            $v['CashAble'] = bcsub($v['iGameWealth'], $v['iFreezonMoney'], 2);
+                        } else {
+                            $v['iGameWealth'] = 0;
+                            $v['iFreezonMoney'] = 0;
+                            $v['iNeedWaged'] = 0;
                             $v['iCurWaged'];
                         }
                         ConVerMoney($v['CashAble']);
@@ -304,15 +270,16 @@ class Ranke extends Main
     }
 
 
-    public function wageClear(){
+    public function wageClear()
+    {
         $accountId = $this->request->param('AccountID/a');
         $auth_ids = $this->getAuthIds();
         if (!in_array(10004, $auth_ids)) {
             return $this->apiReturn(2, [], '没有权限');
         }
-        $success_num =0;
-        $faild_num =0;
-        if(empty($accountId)){
+        $success_num = 0;
+        $faild_num = 0;
+        if (empty($accountId)) {
             return $this->apiReturn(2, [], '参数有误');
         }
         foreach ($accountId as $k => $v) {
@@ -332,7 +299,7 @@ class Ranke extends Main
                 $faild_num++;
             }
         }
-        $str_msg ='处理成功'.$success_num.',失败：'.$faild_num;
+        $str_msg = '处理成功' . $success_num . ',失败：' . $faild_num;
         return $this->successJSON($str_msg);
     }
 
@@ -351,7 +318,7 @@ class Ranke extends Main
                 //权限验证 
                 $auth_ids = $this->getAuthIds();
                 if (!in_array(10008, $auth_ids)) {
-                    return $this->apiJson(["code"=>1,"msg"=>"没有权限"]);
+                    return $this->apiJson(["code" => 1, "msg" => "没有权限"]);
                 }
                 $db = new UserDB();
                 $result = $db->GetWinScoreRankList();
@@ -375,7 +342,7 @@ class Ranke extends Main
                         lang('总转出') => '0.00',
                         lang('战绩') => '0.00',
                     ];
-                    $filename = lang('战绩排行').'-' . date('YmdHis');
+                    $filename = lang('战绩排行') . '-' . date('YmdHis');
                     $rows =& $result['list'];
                     $writer = $this->GetExcel($filename, $header_types, $rows, true);
                     foreach ($rows as $index => &$row) {

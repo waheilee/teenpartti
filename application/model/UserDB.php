@@ -186,7 +186,7 @@ class UserDB extends BaseModel
         $orderby = input('orderby', "Money");
         $ordertype = input('ordertype', 'desc');
         $limit = (int)input('limit', 20);
-        $from = input('from', '');
+        $from = input('from','');
 
         $OperatorId = input('OperatorId') ?: '';
         $roleid = input('roleid') ?: '';
@@ -194,12 +194,14 @@ class UserDB extends BaseModel
         $start_date = input('start_date') ?: '';
         $end_date = input('end_date') ?: '';
 
-        $amount_min = input('amount_min', '');
-        $amount_max = input('amount_max', '');
+        $amount_min = input('amount_min','');
+        $amount_max = input('amount_max','');
 
-        $wage_min = input('wage_min', '');
-        $wage_max = input('wage_max', '');
+        $wage_min = input('wage_min','');
+        $wage_max = input('wage_max','');
 
+        $avg_min = input('avg_min','');
+        $avg_max = input('avg_max','');
 
         if (session('merchant_OperatorId') && request()->module() == 'merchant') {
             $OperatorId = session('merchant_OperatorId');
@@ -208,14 +210,14 @@ class UserDB extends BaseModel
         if (session('business_ProxyChannelId') && request()->module() == 'business') {
             $all_ProxyChannelId = $this->getXbusiness(session('business_ProxyChannelId'));
             $all_ProxyChannelId[] = session('business_ProxyChannelId');
-            $where .= " and ProxyChannelId in(" . implode(',', $all_ProxyChannelId) . ")";
+            $where .= " and ProxyChannelId in(".implode(',', $all_ProxyChannelId).")";
         }
 
         if ($OperatorId !== '') {
-            $where .= ' and OperatorId=' . $OperatorId;
+            $where .= ' and OperatorId='.$OperatorId;
         }
         if ($roleid !== '') {
-            $where .= ' and AccountID=' . $roleid;
+            $where .= ' and AccountID='.$roleid;
         }
         if ($start_date != '') {
             $where .= ' and RegisterTime>=\'' . $start_date . '\'';
@@ -224,43 +226,73 @@ class UserDB extends BaseModel
             $where .= ' and RegisterTime<\'' . $end_date . '\'';
         }
 
-        if (trim($amount_min) != '') {
-            if (is_numeric($amount_min)) {
-                $where .= ' and  money>=' . $amount_min * bl;
+        if(trim($amount_min)!=''){
+            if(is_numeric($amount_min)){
+                $where .=' and  money>='.$amount_min*bl;
             }
         }
 
-        if (trim($amount_max) != '') {
-            if (is_numeric($amount_max)) {
-                $where .= ' and money<=' . $amount_max * bl;
+        if(trim($amount_max)!=''){
+            if(is_numeric($amount_max)){
+                $where .=' and money<='.$amount_max*bl;
             }
         }
-        if (strtolower(request()->action()) == 'wagetasklist') {
-            $where .= ' and b.NeedWageRequire<>b.CurWageRequire';
-            if (trim($wage_min) != '') {
-                if (is_numeric($wage_min)) {
-                    $where .= ' and b.NeedWageRequire>=' . $wage_min * bl;
+        if (strtolower(request()->action())  == 'wagetasklist') {
+            $where .=' and b.NeedWageRequire<>b.CurWageRequire';
+            if(trim($wage_min)!=''){
+                if(is_numeric($wage_min)){
+                    $where .=' and b.NeedWageRequire>='.$wage_min*bl;
                 }
             }
 
-            if (trim($wage_max) != '') {
-                if (is_numeric($wage_max)) {
-                    $where .= ' and b.NeedWageRequire<=' . $wage_max * bl;
+            if(trim($wage_max)!=''){
+                if(is_numeric($wage_max)){
+                    $where .=' and b.NeedWageRequire<='.$wage_max*bl;
+                }
+            }
+
+            if(trim($avg_min)!=''){
+                if(is_numeric($avg_min)){
+                    $where .=' and (b.CurWageRequire/CAST(b.NeedWageRequire as FLOAT))>='.$avg_min/100;
+                }
+            }
+
+            if(trim($avg_max)!=''){
+                if(is_numeric($avg_max)){
+                    $where .=' and (b.CurWageRequire/CAST(b.NeedWageRequire as FLOAT))<='.$avg_max/100;
                 }
             }
         }
-
-        $result = $this->getTableObject('[View_Accountinfo](NOLOCK)')->alias('a')
-            ->join('[CD_UserDB].[dbo].[T_UserCtrlData] c', 'c.RoleID=a.AccountID', 'LEFT')
-            ->join('[CD_UserDB].[dbo].[T_Job_UserInfo] d', 'd.RoleID=a.AccountID and d.job_key=3', 'LEFT')
-            ->join('[CD_UserDB].[dbo].[T_Job_UserInfo] e', 'e.RoleID=a.AccountID and e.job_key=4', 'LEFT')
-            ->join('(SELECT * FROM [T_UserWageRequire] where id in(select max(Id) from  [T_UserWageRequire] group by roleid )) as b', 'a.AccountID=b.roleid', 'left')
-            ->where($where)
-            ->order("$orderby $ordertype")
-            ->field('AccountID,Money,OperatorId,TotalDeposit,TotalRollOut,RegisterTime,b.FreezonMoney as iFreezonMoney,b.CurWageRequire/CAST(b.NeedWageRequire as FLOAT) as percentage,c.CtrlRatio,d.value as win_dmrateset,d.job_key as win_key,e.value as lose_dmrateset,e.job_key as lost_key')
-            ->fetchSql(0)
+        if(config('is_dmrateset') == '1'){
+            $result = $this->getTableObject('[View_Accountinfo](NOLOCK)')->alias('a')
+                ->join('(SELECT * FROM [T_UserWageRequire] where id in(select max(Id) from  [T_UserWageRequire] group by roleid )) b','a.AccountID=b.roleid','left')
+                ->join('[CD_UserDB].[dbo].[T_Job_UserInfo] c','c.RoleID=a.AccountID and c.job_key=3','left')
+                ->join('[CD_UserDB].[dbo].[T_Job_UserInfo] d','d.RoleID=a.AccountID and d.job_key=4','left')
+                ->join('(SELECT * FROM [T_UserWage]) e','a.AccountID=e.RoleId','left')
+                ->where($where)
+                ->field('AccountID,Money,OperatorId,TotalDeposit,TotalRollOut,RegisterTime,b.FreezonMoney as iFreezonMoney,e.CurWageRequire as asd,e.NeedWageRequire as dsa,CAST(e.CurWageRequire AS FLOAT) / CAST(e.NeedWageRequire AS FLOAT) as percentage,ISNULL(c.value,0) as win_dmrateset,ISNULL(d.value,0) as lose_dmrateset')
+                ->order("$orderby $ordertype")
+                ->fetchSql(0)
                 ->paginate($limit)
                 ->toArray();
+
+            //  CASE
+            //cast(CASE WHEN b.CurWageRequire=0 OR b.NeedWageRequire=0 THEN 0 Else b.CurWageRequire/b.NeedWageRequire END as percentage)
+            //    WHEN A = 0 OR B = 0 THEN 0
+            //    ELSE A / B
+            //  END AS C b.CurWageRequire as percentage_aa,b.NeedWageRequire as percentage,
+        } else {
+            $result = $this->getTableObject('[View_Accountinfo](NOLOCK)')->alias('a')
+                ->join('(SELECT * FROM [T_UserWageRequire] where id in(select max(Id) from  [T_UserWageRequire] group by roleid )) b','a.AccountID=b.roleid','left')
+                ->where($where)
+                ->field('AccountID,Money,OperatorId,TotalDeposit,TotalRollOut,RegisterTime,b.FreezonMoney as iFreezonMoney,b.CurWageRequire/CAST(b.NeedWageRequire as FLOAT) as percentage')
+                ->order("$orderby $ordertype")
+                ->fetchSql(0)
+                ->paginate($limit)
+                ->toArray();
+        }
+
+
         $result['list'] = $result['data'];
         $result['count'] = $result['total'];
         // $result = $this->GetPage($where, "$orderby $ordertype", 'RoleID AccountID,Money');
