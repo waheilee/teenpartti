@@ -43,8 +43,8 @@ class PaySdk
         } else {
             $this->secret = '';
         }
-        if (!empty($config['apiurl'])) {
-            $this->api_url = $config['apiurl'];
+        if (!empty($config['api_url'])) {
+            $this->api_url = $config['api_url'];
         } else {
             $this->api_url = '';
         }
