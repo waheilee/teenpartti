@@ -146,6 +146,15 @@
                             </div>
                         </div>
                         <div class="layui-inline">
+                            <div class="layui-input-inline">
+                                <select name="drawBackWay" id="drawBackWay">
+                                    <option value="0">=={:lang('提现类型')}==</option>
+                                    <option value="1">{:lang('余额提现')}</option>
+                                    <option value="2">{:lang('活动奖励提现')}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
 		                    <label class="layui-form-label">{:lang('操作人')}</label>
 		                    <div class="layui-input-inline">
 		                        <select name="condition" id="checkUser" name="checkUser">
@@ -402,7 +411,8 @@
 						payChannel: $.trim($('#payChannel').val()),
 						payWay: $.trim($('#payWay').val()),
 						checkUser:$.trim($('#checkUser').val()),
-                        cpf:$.trim($('#cpf').val())
+                        cpf:$.trim($('#cpf').val()),
+                        drawBackWay:$.trim($('#drawBackWay').val()),
 					}
 				});
 			},

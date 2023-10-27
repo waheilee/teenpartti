@@ -782,6 +782,7 @@ class UserDB extends BaseModel
             $ordertype = input('ordertype', '');
             $cpf = input('cpf', '');
             $operatorId = input('OperatorId', '');
+            $drawBackWay = input('drawBackWay', '');
             if (strtotime($start) < strtotime(config('record_start_time'))) {
                 $start = config('record_start_time');
             }
@@ -797,6 +798,7 @@ class UserDB extends BaseModel
                 if ($checkUser != '0') $where .= " and checkUser like '$checkUser'";
             }
             if (!empty($account)) $roleid = $this->GetUserIDByAccount($account);
+            if ($drawBackWay) $where .= " and DrawBackWay=$drawBackWay";
             if ($roleid > 0) $where .= " and AccountID=$roleid";
             if ($status >= 0) $where .= " and status = $status";
             if ($tranNO != 0) $where .= " and OrderNo='$tranNO'";
