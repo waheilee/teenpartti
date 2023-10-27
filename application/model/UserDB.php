@@ -798,7 +798,7 @@ class UserDB extends BaseModel
                 if ($checkUser != '0') $where .= " and checkUser like '$checkUser'";
             }
             if (!empty($account)) $roleid = $this->GetUserIDByAccount($account);
-            if ($drawBackWay) $where .= " and DrawBackWay=$drawBackWay";
+            if ($drawBackWay>0) $where .= " and DrawBackWay=$drawBackWay";
             if ($roleid > 0) $where .= " and AccountID=$roleid";
             if ($status >= 0) $where .= " and status = $status";
             if ($tranNO != 0) $where .= " and OrderNo='$tranNO'";
