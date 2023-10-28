@@ -280,4 +280,27 @@ class Turntable extends Main
         $this->sendGameMessage('CMD_MD_GM_PDD_REFUND', [], "DC", 'returnComm');
         return $this->apiReturn(0, '', '操作成功');
     }
+
+    public function editTurntableNumber()
+    {
+        $roleId = input('roleid');
+        $value = input('value');
+        $data = $this->sendGameMessage('CMD_MD_GM_ADD_JOB', [$roleId,10019,$value], "DC", 'returnComm');
+        if ($data['iResult'] == 0) {
+
+            $db = new GameOCDB();
+            $db->setTable('T_PlayerComment')->Insert([
+                'roleid' => 0,
+                'adminid' => session('userid'),
+                'type' => 2,
+                'opt_time' => date('Y-m-d H:i:s'),
+                'comment' => '玩家转盘增加次数'
+            ]);
+
+            return $this->apiReturn(0, '', '操作成功');
+        } else {
+
+            return $this->apiReturn(1, '', '操作失败');
+        }
+    }
 }

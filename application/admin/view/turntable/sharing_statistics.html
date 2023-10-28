@@ -87,6 +87,7 @@
 <!--    <input type="button" class="layui-btn layui-btn-xs" lay-event="lookteam" value="{:lang('查看下级成员')}">-->
 {if(config('turntable')==1)}
 <a class="layui-btn layui-btn-xs" lay-event="pddReward">{:lang('转盘奖励金')}</a>
+<a class="layui-btn layui-btn-xs" lay-event="turntableNumber">{:lang('转盘次数')}</a>
 {/if}
 </script>
 <script>
@@ -224,6 +225,33 @@
                                 // }
                             });
                         }
+                        if (layEvent === 'turntableNumber') {
+                            var content = "<form class=\"layui-form\" action=\"\">" +
+                                // '<div class="layui-form-item"><label class="layui-form-label" style="width:87px">{:lang("当前值")}</label><div class="layui-input-block"><input type="text" name="title" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" value="'+lCurWaged+'" readonly=""></div></div>'+
+                                '<div class="layui-form-item"><label class="layui-form-label" style="width:87px">{:lang("次数")}</label><div class="layui-input-block"><input type="number" name="title" lay-verify="title" autocomplete="off" placeholder="{:lang(\'请输入次数\')}" class="layui-input" id="lCurWaged" value="0" ></div></div>' +
+                                '</form>';
+                            layer.open({
+                                content: content,
+                                title: '{:lang("转盘次数")}'
+                                , btn: ['{:lang("增加")}']
+                                , yes: function (index, layero) {
+                                    var lCurWaged = $("#lCurWaged").val();
+                                    if (lCurWaged == '') {
+                                        layer.msg("{:lang('请输入值')}");
+                                        return;
+                                    }
+                                    editTurntableNumber(data.ID, lCurWaged);
+                                }
+                                // , btn2: function (index, layero) {
+                                //     var lCurWaged = $("#lCurWaged").val();
+                                //     if (lCurWaged == '') {
+                                //         layer.msg("{:lang('请输入值')}");
+                                //         return;
+                                //     }
+                                //     editPddReward(data.ID, lCurWaged, 2);
+                                // }
+                            });
+                        }
                     });
                     function editPddReward(id, amount, t) {
                         $.ajax({
@@ -240,6 +268,34 @@
                                 'roleid': id,
                                 'amount': amount,
                                 'type': t
+                            },
+                            dataType: 'json',
+                            success: function (res) {
+                                if (res.code == 0) {
+                                    layer.msg("{:lang('设置成功')}", {icon: 1, time: 1000}, function () {
+                                        //window.location.reload();
+                                        layer.closeAll();
+                                    });
+                                } else {
+                                    layer.msg(res['msg'], {icon: 5});
+                                }
+                            }
+                        });
+                    }
+                    function editTurntableNumber(id, value) {
+                        $.ajax({
+                            type: 'post',
+                            url: "{:url('Turntable/editTurntableNumber')}",
+                            beforeSend: function () {
+                                var layindex = layer.msg("{:lang('稍等片刻,马上就好')}", {
+                                    icon:16,
+                                    shade:[0.1, '#fff'],
+                                    time:false //不自动关闭
+                                });
+                            },
+                            data: {
+                                'roleid': id,
+                                'value': value,
                             },
                             dataType: 'json',
                             success: function (res) {
