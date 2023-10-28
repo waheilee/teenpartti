@@ -13,10 +13,36 @@ class Turntable extends Main
     //分享统计
     public function sharingStatistics()
     {
-        //按照降序排序，可以看到该分享人分享的次数/注册人数/充值人数/充值金额/取款金额/存提差
+        //按照降序排序，可以看到该分享人分享的次数/注册人数 Lv1PersonCount /充值人数 Lv1FirstDepositPlayers /充值金额DailyDeposit/取款金额/存提差
         //后面有两个功能 一个是增加第三点的附带金额。
         //如果对方有提交领取申请，则有一个领取审核通过按钮用于发放奖金。
         //具体样式参考代理明细页面，包含筛选。
+        //充值金额： [OM_GameOC].[dbo].[T_BankWeathChangeLog_所有日表
+        // ChangeType = (47)，为这个用户的个人充值金额
+        //个人取款金额   [OM_BankDB].[dbo].[UserDrawBack]  ，玩家id       ,[AccountID]
+        //     金额  ,[iMoney]
+        $roleid = input('roleid');
+        $parentid = input('parentid', 0);
+        $startdate = input('startdate', '');
+        $enddate = input('enddate', '');
+        switch (input('Action')) {
+            case 'list':
+                $db = new GameOCDB();
+                $result = $db->getSharingStatistics(true);
+                $sumdata = $db->GetAgentRecordSum(true);
+                $result['other'] = $sumdata;
+                $result['other']['startdate'] = $result['startdate'];
+                $result['other']['enddate'] = $result['enddate'];
+                return $this->apiJson($result);
+
+        }
+
+        $this->assign('parentid', $parentid);
+        $this->assign('roleid', $roleid);
+        $this->assign('startdate', $startdate);
+        $this->assign('enddate', $enddate);
+        return $this->fetch();
+
     }
 
     //转盘审核记录

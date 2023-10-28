@@ -3095,4 +3095,135 @@ class GameOCDB extends BaseModel
 
     }
 
+
+    /**
+     * 代理日表
+     * @param $roomlist
+     * @return array
+     */
+    public function getSharingStatistics($iswater = false): array
+    {
+        $startdate = input('start', date('Y-m-d', time()));
+        $enddate = input('end', date('Y-m-d', time()));
+        $roleid = input('roleid');
+        $parentid = input('parentid', 0);
+        $where = "";
+
+        $outAll = input('outall', false);
+        if (input('Action') == 'exec' && $outAll == false) {
+            $this->pageSize = 1;
+        }
+
+
+        $join = "LEFT JOIN CD_UserDB.dbo.T_UserProxyInfo B WITH (NOLOCK) ON A.ProxyId=B.RoleID ";
+//        //外联 条件
+        if ($parentid > 0) {
+            $join .= ' and ParentID=' . $parentid;
+        }
+        if (!empty($AccountName)) $join .= " AND AccountName=''$AccountName''";
+//        if (!empty($NickName)) $join .= " AND LoginName=''$NickName''";
+
+        if ($roleid > 0)
+            $where .= ' and proxyid=' . $roleid;
+
+        if (session('merchant_OperatorId') && request()->module() == 'merchant') {
+            $where .= ' and OperatorId=' . session('merchant_OperatorId');
+        }
+        $tab = input('tab') ?: '';
+        switch ($tab) {
+            case 'today':
+                $startdate = date('Y-m-d');
+                $enddate = $startdate;
+                break;
+            case 'yestoday':
+                $startdate = date('Y-m-d', strtotime('-1 days'));
+                $enddate = $startdate;
+                break;
+            case 'month':
+                $startdate = date('Y-m') . '-01';
+                $enddate = date('Y-m-d');
+
+                break;
+            case 'lastmonth':
+                $startdate = date('Y-m-01', strtotime('-1 month'));
+                $enddate = date('Y-m-d', strtotime(date('Y-m') . '-01') - 1);
+
+                break;
+            case 'week':
+                $w = date('w');
+                if ($w == 0) {
+                    $w = 7;
+                }
+                $w = mktime(0, 0, 0, date('m'), date('d') - $w + 1, date('y'));
+                $startdate = date('Y-m-d', $w);
+                $enddate = date('Y-m-d');
+
+                break;
+            case 'lastweek':
+                $w = date('w');
+                if ($w == 0) {
+                    $w = 7;
+                }
+                $w = mktime(0, 0, 0, date('m'), date('d') - $w + 1, date('y'));
+                $startdate = date('Y-m-d', $w - 7 * 86400);
+                $enddate = date('Y-m-d', strtotime(date('Y-m-d', $w)) - 1);
+                break;
+            case 'q_day':
+                $startdate = date('Y-m-d', strtotime($startdate) - 86400);
+                $enddate = $startdate;
+                break;
+            case 'h_day':
+                $enddate = date('Y-m-d', strtotime($enddate) + 86400);
+                $startdate = $enddate;
+                break;
+            default:
+
+                break;
+        }
+        $begin = date('Y-m-d', strtotime($startdate));
+        $end = date('Y-m-d', strtotime($enddate));
+
+        $orderfield = input('orderfield', "AddTime");
+        $ordertype = input('ordertype', 'desc');
+        $order = "$orderfield $ordertype,proxyid asc ";
+// 注册人数 Lv1PersonCount /充值人数 Lv1FirstDepositPlayers /充值金额DailyDeposit
+        $table = 'dbo.T_ProxyDailyCollectData';
+        $field = ' AddTime,ProxyId,DailyDeposit,DailyTax,DailyRunning,Lv1PersonCount,Lv1Deposit,Lv1Tax,Lv1FirstDepositPlayers,Lv1Running,A.ValidInviteCount';
+        $sqlExec = "exec Proc_GetPageData '$table','$field','$where','$order','$join','$begin','$end', $this->page , $this->pageSize";
+        try {
+            $result = $this->getTableQuery($sqlExec);
+        } catch (Exception $exception) {
+            $result['list'] = [];
+            $result['count'] = 0;
+        }
+
+        $res['code'] = 0;
+        $res['debug'] = true;
+        $res["sql"] = $sqlExec;
+        $res['list'] = [];
+        $res['count'] = 0;
+        if (isset($result[1]) && $result[0][0]['count'] > 0) {
+            $res['count'] = $result[0][0]['count'];
+            $res['list'] = $result[1];
+            foreach ($res['list'] as &$v) {
+                $userBankDB = new BankDB();
+                $takeMoney = $userBankDB->getTableObject('UserDrawBack')
+                    ->where('AccountID',$v['ProxyId'])
+                    ->where('AddTime','between time',[date('Y-m-d 00:00:00',strtotime($v['AddTime'])),date('Y-m-d 23:59:59',strtotime($v['AddTime']))])
+                    ->sum('iMoney') ?? 0;
+                $v['takeMoney'] = $takeMoney / bl;
+                if ($v['DailyDeposit'] == 0 && $v['takeMoney'] > 0){
+                    $v['difference'] = '-'.$v['takeMoney'];
+                }else{
+                    $v['difference'] = bcsub($v['DailyDeposit'],$v['takeMoney'],2);
+                }
+
+            }
+            unset($v);
+        }
+        $res['startdate'] = $startdate;
+        $res['enddate'] = $enddate;
+        return $res;
+    }
+
 }   
