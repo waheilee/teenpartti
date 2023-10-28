@@ -80,7 +80,7 @@
                         </div>
                         <div class="layui-inline">
                             <!-- <div class="layui-input-inline"> -->
-                            <a class="layui-btn" id="output">{:lang('导出记录')}</a>
+<!--                            <a class="layui-btn" id="output">{:lang('导出记录')}</a>-->
                             <!-- </div> -->
                         </div>
                     </div>
@@ -97,6 +97,7 @@
     <div class="layui-btn-container">
 <!--        <button class="layui-btn layui-btn-sm layui-bg-green" lay-event="multiCheck">{:lang('批量审核')}</button>-->
         <button class="layui-btn layui-btn-sm layui-bg-green" lay-event="turntableSwitch">{:lang('转盘开关')}</button>
+        <button class="layui-btn layui-btn-sm layui-bg-green" lay-event="onekeyBack">{:lang('一键全网退款')}</button>
 
     </div>
 </script>
@@ -357,17 +358,17 @@
                                 });
                             });
                             break;
-                        case 'onekeyProcessfaild':
-                            var da = checkStatus.data;
-                            if (da.length == 0) {
-                                layer.msg('{:lang("未选择记录")}');
-                                return;
-                            }
-                            var OrderNo = [];
-                            for (var i = da.length - 1; i >= 0; i--) {
-                                OrderNo.push(da[i].OrderNo)
-                            }
-                            layer.confirm('{:lang("确认处理为三方失败返回金币")}？', {
+                        case 'onekeyBack':
+                            // var da = checkStatus.data;
+                            // if (da.length == 0) {
+                            //     layer.msg('{:lang("未选择记录")}');
+                            //     return;
+                            // }
+                            // var OrderNo = [];
+                            // for (var i = da.length - 1; i >= 0; i--) {
+                            //     OrderNo.push(da[i].OrderNo)
+                            // }
+                            layer.confirm('{:lang("确认处理全网退款")}？', {
                                 btn: ['{:lang("确定")}','{:lang("取消")}']
                             }, function(){
                                 var index = layer.msg("{:lang('正在处理...')}" , {
@@ -376,9 +377,9 @@
                                     time: 0 ,
                                 });
                                 $.ajax({
-                                    url:"{:url('playertrans/onekeyProcessfaild')}",
+                                    url:"{:url('turntable/onekeyBack')}",
                                     type:"POST",
-                                    data:{'OrderNo': OrderNo+''},
+                                    data:{},
                                     dataType:'json',
                                     success:function(ret){
                                         if (ret.code == 0) {

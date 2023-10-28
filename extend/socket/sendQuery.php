@@ -87,6 +87,8 @@ define('CMD_MD_GM_ADD_PROXY_COMMISSION', 79);//佣金上下分
 define('CMD_MD_GM_UPDATE_USER_TYPE', 10001);//玩家身上的各种开关  (为了防止以后同步代码发生冲突，从10000开始
 define('CMD_MD_GM_PDD_ADD_MONEY', 10003);// 转盘加减奖励金
 define('CMD_MD_GM_PDD_COMMI_SUC', 10004);// 审核通过
+define('CMD_MD_GM_PDD_REFUND', 10002);//pdd gm  操作 退款
+
 
 
 class sendQuery
@@ -1355,6 +1357,14 @@ class sendQuery
     {
         $this->in_stream->WriteULong($roleid);
         $in_head = $this->comm->MakeSendHead(CMD_MD_GM_PDD_COMMI_SUC, $this->in_stream->len, 0, REQ_OM, REQ_DC);
+        $in = $this->in_stream->data;
+        $res = $socket->request($in_head, $in);
+    }
+
+    public function CMD_MD_GM_PDD_REFUND($socket)
+    {
+
+        $in_head = $this->comm->MakeSendHead(CMD_MD_GM_PDD_REFUND, $this->in_stream->len, 0, REQ_OM, REQ_DC);
         $in = $this->in_stream->data;
         $res = $socket->request($in_head, $in);
     }

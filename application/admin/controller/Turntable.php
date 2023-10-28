@@ -221,7 +221,6 @@ class Turntable extends Main
             }
         }
 
-//        $updateSwitch->CfgValue = $switch;
         $update =  $masterBD->getTableObject('T_GameConfig')
             ->where('CfgType',10140)
             ->update(['CfgValue' => $switch]);
@@ -238,17 +237,21 @@ class Turntable extends Main
                     'comment' => '玩家转盘审核'
                 ]);
 
-//                GameLog::logData(__METHOD__, [$roleId,], 1, '玩家转盘审核成功');
                 return $this->apiReturn(0, '', '操作成功');
             } else {
-//                GameLog::logData(__METHOD__, [$roleId], 0, '操作失败');
+
                 return $this->apiReturn(1, '', '操作失败');
             }
         }else{
             return $this->apiReturn(1, '', '更新操作失败');
         }
 
+    }
 
 
+    public function onekeyBack()
+    {
+        $this->sendGameMessage('CMD_MD_GM_PDD_REFUND', [], "DC", 'returnComm');
+        return $this->apiReturn(0, '', '操作成功');
     }
 }
