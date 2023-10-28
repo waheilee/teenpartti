@@ -286,7 +286,7 @@ class Turntable extends Main
         $roleId = input('roleid');
         $value = input('value');
         $data = $this->sendGameMessage('CMD_MD_GM_ADD_JOB', [$roleId,10019,$value], "DC", 'returnComm');
-        if ($data['iResult'] == 0) {
+        if ($data['iResult'] == 1) {
 
             $db = new GameOCDB();
             $db->setTable('T_PlayerComment')->Insert([
