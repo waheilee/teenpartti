@@ -132,13 +132,22 @@
                 var cols = [ //表头
 
                     {type: 'checkbox', fixed: 'left'},
-                    {field: 'RoleId', align: 'center', title: "{:lang('用户ID')}", width: 320},
-                    {field: 'CommiTime', align: 'center', title: "{:lang('申请时间')}", width: 320},
-                    {field: 'PassTime', align: 'center', title: "{:lang('通过时间')}", width: 320, sort: true},
-                    {field: 'Commi', align: 'center', title: "{:lang('审核人')}", width: 320, sort: true},
-                    {field: 'GetType', align: 'center', title: "{:lang('是否领取')}", width: 320, sort: true},
-
-                    {fixed: 'right', title: "{:lang('备注')}", align: 'center', minWidth: 320, toolbar: '#desc-bar'}
+                    {field: 'id', align: 'center', title: "{:lang('ID')}", width: 100},
+                    {field: 'RoleId', align: 'center', title: "{:lang('用户ID')}", width: 300},
+                    {field: 'CommiTime', align: 'center', title: "{:lang('申请时间')}", width: 300},
+                    {field: 'PassTime', align: 'center', title: "{:lang('通过时间')}", width: 300, sort: true},
+                    {field: 'Commi', align: 'center', title: "{:lang('审核人')}", width: 300, sort: true},
+                    {field: 'GetType', align: 'center', title: "{:lang('是否领取')}", width: 300, sort: true},
+                    {field: '', title: "{:lang('操作')}", width: 120, align: "center",fixed: 'right', templet: function (d) {
+                            if(isEmpty(d.PassTime)) {
+                                return "    <a class=\"layui-btn layui-btn-xs \" lay-event=\"check\">{:lang('审核')}</a>\n" +
+                                    "    <a class=\"layui-btn layui-btn-xs \" lay-event=\"refuse\">{:lang('拒绝')}</a>";
+                            } else {
+                                return "";
+                            }
+                        }
+                    },
+                    // {fixed: 'right', title: "{:lang('备注')}", align: 'center', minWidth: 320, toolbar: '#desc-bar'}
                 ];
                 table.render({
                     elem: '#proxylist'

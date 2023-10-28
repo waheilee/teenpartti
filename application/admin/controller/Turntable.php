@@ -201,6 +201,10 @@ class Turntable extends Main
 //	int 玩家id;
         $roleId = input('role_id');
         $isPass = input('is_pass');
+        $checkName = session('username');//审核人员
+        $userDB = new UserDB();
+        $isCheck = $userDB->getTableObject('T_PDDCommi')
+            ->where('RoleId', $roleId)->find();
         if ($isPass == 1) {
             $data = $this->sendGameMessage('CMD_MD_GM_PDD_COMMI_SUC', [$roleId, 1], "DC", 'returnComm');
             if ($data['iResult'] == 1) {
@@ -214,21 +218,26 @@ class Turntable extends Main
                     'comment' => '玩家转盘审核'
                 ]);
 
-                GameLog::logData(__METHOD__, [$roleId,], 1, '玩家转盘审核成功');
-                return $this->apiReturn(0, '', '操作成功');
+                $update  = $userDB->getTableObject('T_PDDCommi')
+                    ->where('RoleId', $roleId)
+                    ->data(['GetType' => $isPass,'PassTime'=>date('Y-m-d H:i:s'),'Commi'=>$checkName])
+                    ->update();
+                if ($update){
+                    GameLog::logData(__METHOD__, [$roleId,], 1, '玩家转盘审核成功');
+                    return $this->apiReturn(0, '', '操作成功');
+
+                }else{
+                    return $this->apiReturn(1, '', '更新操作失败');
+                }
+
             } else {
                 GameLog::logData(__METHOD__, [$roleId], 0, '操作失败');
                 return $this->apiReturn(1, '', '操作失败');
             }
         }
-        $userDB = new UserDB();
-        $update  = $userDB->getTableObject('T_PDDCommi')->where('RoleId', $roleId)->update(['GetType' => $isPass]);
-        if ($update){
-            return $this->apiReturn(0, '', '操作成功');
 
-        }else{
-            return $this->apiReturn(1, '', '操作失败');
-        }
+
+
 
     }
 
