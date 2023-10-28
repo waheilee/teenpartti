@@ -1062,7 +1062,7 @@ class Player extends Main
                 }
             }
         }
-        $field = "AccountID ID,MachineCode,Mobile,countryCode,AccountName,Locked,LoginName,GmType,RegisterTime,LastLoginIP,LastLoginTime,TotalDeposit,TotalRollOut,Money,RegIP,VipLv,SystemRight,ParentIds,ParentID,OperatorId,ISNULL(ProxyBonus,0) as ProxyBonus,ProxyCommiSwitch";
+        $field = "AccountID ID,MachineCode,Mobile,countryCode,AccountName,Locked,LoginName,GmType,RegisterTime,LastLoginIP,LastLoginTime,TotalDeposit,TotalRollOut,Money,RegIP,VipLv,SystemRight,ParentIds,ParentID,OperatorId,ISNULL(ProxyBonus,0) as ProxyBonus,ProxyCommiSwitch,ItemVal";
         $file_roleid = 'RoleId';
         if (config('is_portrait') == 1) {
             $field .= ',ProxyChannelId';
@@ -1081,6 +1081,11 @@ class Player extends Main
             case 'list':
                 $result = $db->TViewAccount()->GetPage($where, "$orderby $ordertype", $field);
                 foreach ($result['list'] as &$item) {
+                    if($item['ItemVal']){
+                        $item['ItemVal'] = $item['ItemVal'] / bl;
+                    }else{
+                        $item['ItemVal'] = 0;
+                    }
                     $item['AccountName'] = substr_replace($item['AccountName'], '**', -4);
                     if (!empty($item['Mobile'])) {
                         $item['Mobile'] = substr_replace($item['Mobile'], '**', -2);
