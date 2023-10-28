@@ -96,6 +96,7 @@
 <script type="text/html" id="toolbarDemo">
     <div class="layui-btn-container">
 <!--        <button class="layui-btn layui-btn-sm layui-bg-green" lay-event="multiCheck">{:lang('批量审核')}</button>-->
+        <button class="layui-btn layui-btn-sm layui-bg-green" lay-event="turntableSwitch">{:lang('转盘开关')}</button>
 
     </div>
 </script>
@@ -391,6 +392,49 @@
                                 });
                             });
                             break;
+                        case 'turntableSwitch':
+                            layer.open({
+                                // content: content,
+                                title: '{:lang("转盘开关")}'
+                                , btn: ['{:lang("开")}', '{:lang("关")}']
+                                , yes: function (index, layero) {
+                                    console.log(1)
+                                    $.ajax({
+                                        url:"{:url('turntable/turntableSwitch')}",
+                                        type:"POST",
+                                        data:{'switch':10001},
+                                        dataType:'json',
+                                        success:function(ret){
+                                            if (ret.code == 0) {
+                                                layer.msg(ret.msg);
+                                                $(".layui-laypage-btn")[0].click();
+                                                setTimeout(function(){layer.closeAll()},1500);
+                                            } else {
+                                                layer.msg(ret.msg);
+                                            }
+                                        }
+                                    });
+                                }
+                                , btn2: function (index, layero) {
+                                    console.log(2)
+                                    $.ajax({
+                                        url:"{:url('turntable/turntableSwitch')}",
+                                        type:"POST",
+                                        data:{'switch':'0'},
+                                        dataType:'json',
+                                        success:function(ret){
+                                            if (ret.code == 0) {
+                                                layer.msg(ret.msg);
+                                                $(".layui-laypage-btn")[0].click();
+                                                setTimeout(function(){layer.closeAll()},1500);
+                                            } else {
+                                                layer.msg(ret.msg);
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+                            break
                     };
                 });
             },

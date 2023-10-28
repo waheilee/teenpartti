@@ -4,6 +4,7 @@ namespace app\admin\controller;
 
 use app\common\GameLog;
 use app\model\GameOCDB;
+use app\model\MasterDB;
 use app\model\UserDB;
 
 class Turntable extends Main
@@ -202,6 +203,52 @@ class Turntable extends Main
         }else{
             return $this->apiReturn(1, '', '操作失败');
         }
+
+    }
+
+    public function turntableSwitch()
+    {
+        $switch = input('switch','');
+        $masterBD = new MasterDB();
+        $updateSwitch = $masterBD->getTableObject('T_GameConfig')
+            ->where('CfgType',10140)
+            ->find();
+        if ($updateSwitch['CfgValue'] == $switch){
+            if ($updateSwitch['CfgValue'] == 10001){
+                return $this->apiReturn(1, '', '转盘已是开启状态');
+            }else{
+                return $this->apiReturn(1, '', '转盘已是关闭状态');
+            }
+        }
+
+//        $updateSwitch->CfgValue = $switch;
+        $update =  $masterBD->getTableObject('T_GameConfig')
+            ->where('CfgType',10140)
+            ->update(['CfgValue' => $switch]);
+        if ($update){
+            $data = $this->sendGameMessage('CMD_MD_RELOAD_GAME_DATA', [0], "DC", 'returnComm');
+            if ($data['iResult'] == 0) {
+
+                $db = new GameOCDB();
+                $db->setTable('T_PlayerComment')->Insert([
+                    'roleid' => 0,
+                    'adminid' => session('userid'),
+                    'type' => 2,
+                    'opt_time' => date('Y-m-d H:i:s'),
+                    'comment' => '玩家转盘审核'
+                ]);
+
+//                GameLog::logData(__METHOD__, [$roleId,], 1, '玩家转盘审核成功');
+                return $this->apiReturn(0, '', '操作成功');
+            } else {
+//                GameLog::logData(__METHOD__, [$roleId], 0, '操作失败');
+                return $this->apiReturn(1, '', '操作失败');
+            }
+        }else{
+            return $this->apiReturn(1, '', '更新操作失败');
+        }
+
+
 
     }
 }
