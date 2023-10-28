@@ -54,6 +54,84 @@ class Turntable extends Main
     //奖励增加详情
     public function detailsOfRewardIncrease()
     {
+        //11.	后台有一个用户每笔奖励增加的明细表，对应第一点的功能，每增加一个金额 都有一个明细，以及时间。
+        //可筛选用户ID 增加类型 时间区间。T_PDDDrawHistory
+
+        if ($this->request->isAjax()) {
+            $roleId = input('roleid');
+            $tranType = input('tranType');
+            $startTime = input('start');
+            $endTime = input('end');
+            $page = input('page');
+            $limit = input('limit');
+            if (input('Action') == 'list') {
+//                $map['RoleId'] = $roleId ?? '';
+//                $map['Item'] = $tranType ?? '';
+                $start = strtotime($startTime) ?? '';
+                $end = strtotime($endTime) ?? '';
+
+                $userDB = new UserDB();
+                $count = $userDB->getTableObject('T_PDDDrawHistory')->count();
+                $checkRecord = $userDB->getTableObject('T_PDDDrawHistory')
+                    ->where(function ($q) use($roleId){
+                        if (!empty($roleId)){
+                            $q->where('RoleId',$roleId);
+                        }
+                    })
+                    ->where(function ($q) use($tranType){
+                        if (!empty($tranType)){
+                            $q->where('Item',$tranType);
+                        }
+                    })
+                    ->where(function ($q) use($startTime,$endTime){
+                        if (!empty($startTime)){
+                            $q->where('ChangeTime','>',strtotime($startTime));
+                        }
+                        if (!empty($endTime)){
+                            $q->where('ChangeTime','<',strtotime($endTime));
+                        }
+                        if (!empty($startTime) && !empty($endTime)){
+                            $q->where('ChangeTime','between time',[strtotime($startTime),strtotime($endTime)]);
+                        }
+                    })
+                    ->where('ChangeType',1)
+                    ->whereIn('Item',[1,2,6])
+//                    ->whereTime('ChangeTime', 'between', [$start, $end])
+                    ->limit($limit)
+                    ->page($page)
+                    ->select();
+                $temp = [];
+                foreach($checkRecord as $record){
+                    $item = [];
+                    $item['RoleId'] = $record['RoleId'];
+                    $item['ChangeTime'] = date('Y-m-d H:i:s',$record['ChangeTime']);
+                    $recordItem = '';
+                    $recordItemVal = '';
+                    switch ($record['Item']){
+                        case 1:
+                            $recordItem = '大随机金额';
+                            $recordItemVal = $record['ItemVal'] / bl;
+                            break;
+                        case 2:
+                            $recordItem = '小随机金额';
+                            $recordItemVal = $record['ItemVal'] / bl;
+                            break;
+                        case 6:
+                            $recordItem = '获得随机次数';
+                            $recordItemVal = $record['ItemVal'];
+                            break;
+                    }
+                    $item['Item'] = $recordItem;
+                    $item['ItemVal'] = $recordItemVal;
+                    $temp[] = $item;
+                }
+                $data['count'] = $count;
+                $data['list'] = $temp;
+                return $this->apiJson($data);
+            }
+        }
+
+        return $this->fetch();
 
     }
 
