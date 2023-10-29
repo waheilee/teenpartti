@@ -48,10 +48,10 @@ class Turntable extends Main
     //转盘审核记录
     public function checkRecord()
     {
-        $checkName = session('username');//审核人员
+        //$checkName = session('username');//审核人员
 
         if ($this->request->isAjax()) {
-            $roleId = input('role_id');
+            $roleId = input('roleid');
             $commitStartTime = input('commit_start_time');
             $commitEndTime = input('commit_end_time');
             $passStartTime = input('pass_start_time');
@@ -65,22 +65,48 @@ class Turntable extends Main
 //                $where['RoleId'] = $roleId ?? '';
 //                $where['CommiTime'] = $roleId ?? '';
                 $count = $userDB->getTableObject('T_PDDCommi')->count();
+                $checkRecordData = [];
                 if (empty($historyList)){
                     $checkRecord = $userDB->getTableObject('T_PDDCommi')
+                        ->where(function ($q) use($roleId){
+                            if (!empty($roleId)){
+                                $q->where('RoleId',$roleId);
+                            }
+                        })
                         ->where('GetType',0)
                         ->limit($limit)
                         ->page($page)
                         ->select();
                 }else{
                     $checkRecord = $userDB->getTableObject('T_PDDCommi')
+                        ->where(function ($q) use($roleId){
+                            if (!empty($roleId)){
+                                $q->where('RoleId',$roleId);
+                            }
+                        })
                         ->whereIn('GetType',[1,2])
                         ->limit($limit)
                         ->page($page)
                         ->select();
                 }
+                foreach($checkRecord as $record){
+                    $item['id'] = '';
+                    $item['RoleId'] = '';
+                    $item['CommiTime'] = '';
+                    $item['PassTime'] = '';
+                    $item['Commi'] = '';
+                    $item['GetType'] = '';
+                    $turntableMoney =  $userDB->getTableObject('T_PDDDrawHistory')
+                        ->where('RoleId',$record['RoleId'])
+                        ->where('ChangeType',1)
+                        ->whereIn('Item',[1,2])
+                        ->sum('ItemVal') ?? 0;
+                    $item['iMoney'] = $turntableMoney;
+                    $checkRecordData[] = $item;
+                }
 //                var_dump($checkRecord);die();
                 $data['count'] = $count;
-                $data['list'] = $checkRecord;
+                $data['list'] = $checkRecordData;
                 return $this->apiJson($data);
             }
         }

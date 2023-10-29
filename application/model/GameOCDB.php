@@ -3198,7 +3198,7 @@ class GameOCDB extends BaseModel
             $result['list'] = [];
             $result['count'] = 0;
         }
-
+        $userDB = new UserDB();
         $res['code'] = 0;
         $res['debug'] = true;
         $res["sql"] = $sqlExec;
@@ -3219,6 +3219,12 @@ class GameOCDB extends BaseModel
                 }else{
                     $v['difference'] = bcsub($v['DailyDeposit'],$v['takeMoney'],2);
                 }
+                $turntableMoney =  $userDB->getTableObject('T_PDDDrawHistory')
+                    ->where('RoleId',$v['ProxyId'])
+                    ->where('ChangeType',1)
+                    ->whereIn('Item',[1,2])
+                    ->sum('ItemVal') ?? 0;
+                $v['iMoney'] = $turntableMoney;
 
             }
             unset($v);
