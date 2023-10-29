@@ -1085,10 +1085,12 @@ class Player extends Main
             case 'list':
                 $result = $db->TViewAccount()->GetPage($where, "$orderby $ordertype", $field);
                 foreach ($result['list'] as &$item) {
-                    if($item['ItemVal']){
-                        $item['ItemVal'] = $item['ItemVal'] / bl;
-                    }else{
-                        $item['ItemVal'] = 0;
+                    if (isset($item['ItemVal'])){
+                        if($item['ItemVal']){
+                            $item['ItemVal'] = $item['ItemVal'] / bl;
+                        }else{
+                            $item['ItemVal'] = 0;
+                        }
                     }
                     $item['AccountName'] = substr_replace($item['AccountName'], '**', -4);
                     if (!empty($item['Mobile'])) {
