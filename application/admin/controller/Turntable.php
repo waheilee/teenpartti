@@ -65,6 +65,7 @@ class Turntable extends Main
 //                $where['CommiTime'] = $roleId ?? '';
                 $count = $userDB->getTableObject('T_PDDCommi')->count();
                 $checkRecord = $userDB->getTableObject('T_PDDCommi')
+                    ->where('GetType',0)
                     ->limit($limit)
                     ->page($page)
                     ->select();
