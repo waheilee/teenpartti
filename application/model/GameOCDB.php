@@ -1066,8 +1066,10 @@ class GameOCDB extends BaseModel
                 ConVerMoney($v['twoTakeRunningPrice']);
                 if($v['needTakePrice'] > 5000){
                     $bel = $this->getBrl($v['needTakePrice']);
-                    $rewardValueOne = bcmul($v['ValidInviteCount'],0.002,4);
-                    $rewardValueTwo = bcmul($v['Lv2ValidInviteCount'],0.001,4);
+//                    $rewardValueOne = bcmul($v['ValidInviteCount'],0.002,4);
+                    $rewardValueOne = bcmul($v['Lv1Running'],0.002,4);
+//                    $rewardValueTwo = bcmul($v['Lv2ValidInviteCount'],0.001,4);
+                    $rewardValueTwo = bcmul($v['Lv2Running'],0.001,4);
                     $reward = bcadd(bcadd($rewardValueOne,$rewardValueTwo,2),$bel);
                     $v['reward'] = $reward;
                 }else{
