@@ -391,7 +391,7 @@ class Agent extends Main
                         $Lv3Reward = bcmul($v['Lv3Running'], $lv3rate, 4);
                         $rewar_amount = bcadd($Lv1Reward, $Lv2Reward, 4);
                         $rewar_amount = bcadd($rewar_amount, $Lv3Reward, 2);
-                        $v['ReceivedIncome'] = $rewar_amount;
+                        $v['ReceivedIncome'] = 0;
                     }
                 }
                 unset($v);
