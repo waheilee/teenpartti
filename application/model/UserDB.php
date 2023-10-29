@@ -270,7 +270,7 @@ class UserDB extends BaseModel
                 ->join('[CD_UserDB].[dbo].[T_Job_UserInfo] d','d.RoleID=a.AccountID and d.job_key=4','left')
                 ->join('(SELECT * FROM [T_UserWage]) e','a.AccountID=e.RoleId','left')
                 ->where($where)
-                ->field('AccountID,Money,OperatorId,TotalDeposit,TotalRollOut,RegisterTime,b.FreezonMoney as iFreezonMoney,e.CurWageRequire as asd,e.NeedWageRequire as dsa,CAST(e.CurWageRequire AS FLOAT) / CAST(e.NeedWageRequire AS FLOAT) as percentage,ISNULL(c.value,0) as win_dmrateset,ISNULL(d.value,0) as lose_dmrateset')
+                ->field('AccountID,Money,OperatorId,TotalDeposit,TotalRollOut,RegisterTime,b.FreezonMoney as iFreezonMoney,e.CurWageRequire as asd,e.NeedWageRequire as dsa,CASE WHEN CAST(e.NeedWageRequire AS FLOAT) <> 0 THEN CAST(e.CurWageRequire AS FLOAT) / CAST(e.NeedWageRequire AS FLOAT) ELSE 0 END as percentage,ISNULL(c.value,0) as win_dmrateset,ISNULL(d.value,0) as lose_dmrateset')
                 ->order("$orderby $ordertype")
                 ->fetchSql(0)
                 ->paginate($limit)
