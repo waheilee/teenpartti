@@ -984,4 +984,157 @@ class Player extends Main
         }
         return $this->fetch();
     }
+
+    /**Gm充值管理*/
+    public function TransferManager()
+    {
+        switch (input('Action')) {
+            case 'list':
+                $db = new  GameOCDB();
+                return $this->apiJson($db->GMSendMoney());
+                break;
+            case  'add':
+                if (request()->isAjax()) {
+                    //权限验证
+                    $auth_ids = $this->getAuthIds();
+                    if (!in_array(10001, $auth_ids)) {
+                        return $this->apiReturn(2, [], '没有权限');
+                    }
+                    $password = input('password');
+                    $user_controller = new \app\admin\controller\User();
+                    $pwd = $user_controller->rsacheck($password);
+                    if (!$pwd) {
+                        return json(['code' => 2, 'msg' => '密码错误']);
+                    }
+                    $userModel = new userModel();
+                    $userInfo = $userModel->getRow(['id' => session('userid')]);
+                    if (md5($userInfo['salt'] . $pwd) !== $userInfo['password']) {
+                        return json(['code' => 2, 'msg' => '密码有误，请重新输入']);
+                    }
+                    $money = (int)input('Money');
+                    $roleID = input('RoleID');
+                    $operatetype = input('operatetype');
+                    $descript = input('descript');
+
+                    if ($money <= 0)
+                        $this->error('金额不能为0或者负数!');
+
+                    if ($money > 0 && $operatetype == 2) {
+                        $money = 0 - $money;
+                    }
+                    $db = new  GameOCDB();
+                    $row = $db->GMSendMoneyAdd(['RoleId' => $roleID, 'Money' => $money, 'status' => 0, 'Note' => $descript, 'checkUser' => session('username'), 'OperateType' => $operatetype]);
+                    if ($row > 0) {
+                        $res = $db->setTable('T_PlayerComment')->Insert([
+                            'roleid' => $roleID,
+                            'adminid' => session('userid'),
+                            'type' => 1,
+                            'opt_time' => date('Y-m-d H:i:s'),
+                            'comment' => $descript
+                        ]);
+                        return $this->success("添加扣款成功,进入审核状态");
+                    }
+                    return $this->error('添加失败');
+                }
+                return $this->fetch('transfer_item');
+                break;
+            case 'send':
+                if (request()->isAjax()) {
+                    $db = new  GameOCDB();
+                    $data = $db->TGMSendMoney()->GetRow("ID=" . input('ID'));
+                    if ($data['OperateType'] == 1) {
+                        try {
+                            $res = $this->sendGameMessage('CMD_WD_BUY_HAPPYBEAN', [$data['RoleId'], $data['Money']]);
+                            $res = unpack('Lcode/', $res);
+                        } catch (Exception $exception) {
+                            return $this->error('连接服务器失败,请稍后重试!');
+                        }
+                        if ($res['code'] == 0) {
+                            $row = $db->TGMSendMoney()->UPData(["status" => 1, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . $data['ID']);
+                            if ($row > 0) return $this->success("审核成功");
+                        }
+                        return $this->error('审核失败');
+                    } else if ($data['OperateType'] == 2) {
+                        try {
+                            $res = $this->sendGameMessage('CMD_MD_ADD_ROLE_MONERY', [$data['RoleId'], $data['Money'] * bl, 1, 0, getClientIP()]);
+                            $res = unpack('Lcode/', $res);
+                        } catch (Exception $exception) {
+                            return $this->error('连接服务器失败,请稍后重试!');
+                        }
+                        if ($res['code'] == 0) {
+                            $row = $db->TGMSendMoney()->UPData(["status" => 1, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . $data['ID']);
+                            if ($row > 0) return $this->success("审核成功");
+                        }
+                        return $this->error('审核失败');
+                    } else {
+                        return $this->error('不存在的上下分类型');
+                    }
+                }
+                break;
+            case 'deny':
+                $db = new  GameOCDB();
+                $row = $db->TGMSendMoney()->UPData(["status" => 2, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . input('ID'));
+                if ($row > 0) return $this->success("成功");
+                return $this->error('失败');
+            case 'exec':
+                //权限验证
+                // $auth_ids = $this->getAuthIds();
+                // if (!in_array(10008, $auth_ids)) {
+                //     return $this->apiJson(["code"=>1,"msg"=>"没有权限"]);
+                // }
+                $db = new  GameOCDB();
+                $result = $db->GMSendMoney();
+                $outAll = input('outall', false);
+                if ((int)input('exec', 0) == 0) {
+                    if ($result['count'] == 0) {
+                        $result = ["count" => 0, "code" => 1, 'msg' => lang("没有找到任何数据,换个姿势再试试?")];
+                    }
+                    if ($result['count'] >= 5000 && $outAll == false) {
+                        $result = ["code" => 2, 'msg' => lang("数据超过5000行是否全部导出?<br>数据越多速度越慢<br>当前数据一共有") . $result['count'] . lang("行")];
+                    }
+                    unset($result['list']);
+                    return $this->apiJson($result);
+                }
+                //导出表格
+                if ((int)input('exec', 0) == 1 && $outAll = true) {
+                    $header_types = [
+                        'ID' => 'integer',
+                        lang('用户ID') => 'integer',
+                        lang('扣款金币') => '0.00',
+                        lang('备注') => 'string',
+                        lang('状态') => 'string',
+                        lang('操作时间') => 'datetime',
+                        lang('更新时间') => 'datetime',
+                        lang('操作人员') => 'string',
+                    ];
+                    $filename = lang('邮件管理') . '-' . date('YmdHis');
+                    $rows =& $result['list'];
+                    $writer = $this->GetExcel($filename, $header_types, $rows, true);
+                    $str = "";
+                    foreach ($rows as $index => &$row) {
+                        switch ((int)$row['status']) {
+                            case  0:
+                                $str = "未审核";
+                                break;
+                            case  1:
+                                $str = "已审核";
+                                break;
+                            case  2:
+                                $str = "已拒绝";
+                                break;
+                        }
+                        $item = [$row['ID'], $row['RoleId'], $row['Money'], $row['Note'],
+                            $str, $row['InsertTime'], $row['UpdateTime'], $row['checkUser'],];
+                        $writer->writeSheetRow('sheet1', $item, ['height' => 16, 'halign' => 'center',]);
+                        unset($rows[$index]);
+                    }
+                    unset($row, $item);
+                    $writer->writeToStdOut();
+                    exit();
+                }
+
+
+        }
+        return $this->fetch();
+    }
 }
