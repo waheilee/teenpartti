@@ -59,16 +59,25 @@ class Turntable extends Main
             $checkUser = input('check_user');
             $page = input('page');
             $limit = input('limit');
+            $historyList = input('history',0);
             if (input('Action') == 'list') {
                 $userDB = new UserDB();
 //                $where['RoleId'] = $roleId ?? '';
 //                $where['CommiTime'] = $roleId ?? '';
                 $count = $userDB->getTableObject('T_PDDCommi')->count();
-                $checkRecord = $userDB->getTableObject('T_PDDCommi')
-                    ->where('GetType',0)
-                    ->limit($limit)
-                    ->page($page)
-                    ->select();
+                if (empty($historyList)){
+                    $checkRecord = $userDB->getTableObject('T_PDDCommi')
+                        ->where('GetType',0)
+                        ->limit($limit)
+                        ->page($page)
+                        ->select();
+                }else{
+                    $checkRecord = $userDB->getTableObject('T_PDDCommi')
+                        ->whereIn('GetType',[1,2])
+                        ->limit($limit)
+                        ->page($page)
+                        ->select();
+                }
 //                var_dump($checkRecord);die();
                 $data['count'] = $count;
                 $data['list'] = $checkRecord;
