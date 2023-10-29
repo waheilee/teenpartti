@@ -88,6 +88,11 @@ class Turntable extends Main
         return $this->fetch();
     }
 
+    public function historyCheckRecord()
+    {
+        return $this->fetch();
+    }
+
     //奖励增加详情
     public function detailsOfRewardIncrease()
     {
