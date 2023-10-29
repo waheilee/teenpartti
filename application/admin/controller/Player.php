@@ -1062,7 +1062,7 @@ class Player extends Main
                 }
             }
         }
-        $field = "AccountID ID,MachineCode,Mobile,countryCode,AccountName,Locked,LoginName,GmType,RegisterTime,LastLoginIP,LastLoginTime,TotalDeposit,TotalRollOut,Money,RegIP,VipLv,SystemRight,ParentIds,ParentID,OperatorId,ISNULL(ProxyBonus,0) as ProxyBonus,ProxyCommiSwitch,ISNULL(ItemVal,0) as ItemVal";
+        $field = "AccountID ID,MachineCode,Mobile,countryCode,AccountName,Locked,LoginName,GmType,RegisterTime,LastLoginIP,LastLoginTime,TotalDeposit,TotalRollOut,Money,RegIP,VipLv,SystemRight,ParentIds,ParentID,OperatorId,ISNULL(ProxyBonus,0) as ProxyBonus,ProxyCommiSwitch,COALESCE(ItemVal, 0) AS ItemVal";
         $file_roleid = 'RoleId';
         if (config('is_portrait') == 1) {
             $field .= ',ProxyChannelId';
