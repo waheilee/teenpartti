@@ -101,7 +101,7 @@ class Turntable extends Main
                         ->where('ChangeType',1)
                         ->whereIn('Item',[1,2])
                         ->sum('ItemVal') ?? 0;
-                    $item['iMoney'] = $turntableMoney;
+                    $item['Money'] = $turntableMoney / bl;
                     $checkRecordData[] = $item;
                 }
 //                var_dump($checkRecord);die();

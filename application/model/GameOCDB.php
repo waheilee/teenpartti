@@ -3237,7 +3237,7 @@ class GameOCDB extends BaseModel
                     ->where('ChangeType',1)
                     ->whereIn('Item',[1,2])
                     ->sum('ItemVal') ?? 0;
-                $v['iMoney'] = $turntableMoney;
+                $v['Money'] = $turntableMoney / bl;
 
             }
             unset($v);
