@@ -1139,4 +1139,25 @@ class Player extends Main
         }
         return $this->fetch();
     }
+
+    public function setVipRate()
+    {
+        $rate = input('rate');
+        $roleid = input('RoleID');
+        if ($this->request->isAjax()) {
+            if (empty($roleid)) {
+                return $this->failJSON('参数错误');
+            }
+            $iResult = $this->socket->SetRoleVipLevel($roleid, $rate);
+            return $this->successJSON('');
+        }
+        $viplevel = [];
+        for ($i = 0; $i <= 20; $i++) {
+            array_push($viplevel, $i);
+        }
+        $this->assign('viplevel', $viplevel);
+        $this->assign('rate', $rate);
+        $this->assign('roleid', $roleid);
+        return $this->fetch();
+    }
 }

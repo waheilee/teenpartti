@@ -1,0 +1,110 @@
+{extend name="common/base" /}
+
+{block name="title"}{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('player/setVipRate')}" method="post" id="addProxy" >
+    <input type="text" hidden id="RoleID" name="RoleID" value="{$roleid}">
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('VIP等级')}：</label>
+        <div class="layui-input-block">
+
+            <select name="viplevel" id="viplevel" lay-verify="">
+                {volist name="viplevel" id="vo"}
+                <option value="{$vo}"  {if ($rate == $vo)}selected="true" {/if} >{:lang('VIP')}{$vo}</option>
+                {/volist}
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >{:lang('设置')}</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" lay-submit="" lay-filter="cancel" id="cancel" >{:lang('取消')}</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                var RoleID = $.trim(data.field.RoleID),
+                    viplevel = $.trim(data.field.viplevel);
+
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'rate' : viplevel,
+                        'RoleID' : RoleID
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg("{:lang('设置成功')}",{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+                            layer.msg("{:lang('设置失败')}", {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                });
+                //监听等待开始游戏点击事件
+                form.on('select(setrange)', function (data) {
+                    var value = data.value;
+                    if (value == 1) {
+                        $('#showkindidname').hide();
+                        $('#showroomidname').hide();
+                    } else if (value==2){
+                        $('#showroomidname').hide();
+                        $('#showkindidname').show();
+                    } else if (value==3){
+                        $('#showroomidname').show();
+                        $('#showkindidname').hide();
+                    } else {
+                        $('#showkindidname').hide();
+                        $('#showroomidname').hide();
+                    }
+                });
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}
