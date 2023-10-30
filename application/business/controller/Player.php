@@ -1000,17 +1000,16 @@ class Player extends Main
 //                    if (!in_array(10001, $auth_ids)) {
 //                        return $this->apiReturn(2, [], '没有权限');
 //                    }
+                    $username = session('username');
                     $password = input('password');
-                    $user_controller = new \app\admin\controller\User();
-                    $pwd = $user_controller->rsacheck($password);
-                    if (!$pwd) {
-                        return json(['code' => 2, 'msg' => '密码错误']);
+                    $userInfo = (new \app\model\GameOCDB)
+                        ->getTableObject('T_ProxyChannelConfig')
+                        ->where('LoginAccount',$username)
+                        ->find();
+                    if (md5($password) !== $userInfo['PassWord']) {
+                        return json(['code' => 3, 'msg' => lang('密码错误')]);
                     }
-                    $userModel = new userModel();
-                    $userInfo = $userModel->getRow(['id' => session('userid')]);
-                    if (md5($userInfo['salt'] . $pwd) !== $userInfo['password']) {
-                        return json(['code' => 2, 'msg' => '密码有误，请重新输入']);
-                    }
+
                     $money = (int)input('Money');
                     $roleID = input('RoleID');
                     $operatetype = input('operatetype');
