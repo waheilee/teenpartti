@@ -1900,6 +1900,7 @@ class Player extends Main
                     $this->success("审核成功");
                 }else{
                     $id = input('ID');
+                    var_dump($id);
                     $this->GmTransferDeny($id);
                 }
                 break;
