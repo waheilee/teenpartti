@@ -105,7 +105,7 @@ class Turntable extends Main
 
                     $addMoney = $userDB->getTableObject('T_Job_UserInfo')
                         ->where('RoleID', $record['RoleId'])
-                        ->where('job_key',10015)
+                        ->where('job_key', 10015)
                         ->sum('value') ?? 0;
                     $item['addMoney'] = FormatMoney($addMoney);
                     $checkRecordData[] = $item;
@@ -253,6 +253,11 @@ class Turntable extends Main
         $isCheck = $userDB->getTableObject('T_PDDCommi')
             ->where('RoleId', $roleId)->find();
         if ($isPass == 1) {
+            $checkMoney = $userDB->getTableObject('T_Job_UserInfo')
+                ->where('RoleID', $roleId)
+                ->whereIn('job_key', [10014, 10015])
+                ->sum('value') ?? 0;
+
             $data = $this->sendGameMessage('CMD_MD_GM_PDD_COMMI_SUC', [$roleId, 1], "DC", 'returnComm');
             if ($data['iResult'] == 1) {
 
@@ -267,7 +272,12 @@ class Turntable extends Main
 
                 $update = $userDB->getTableObject('T_PDDCommi')
                     ->where('RoleId', $roleId)
-                    ->data(['GetType' => $isPass, 'PassTime' => date('Y-m-d H:i:s'), 'Commi' => $checkName])
+                    ->data([
+                        'GetType' => $isPass,
+                        'PassTime' => date('Y-m-d H:i:s'),
+                        'Commi' => $checkName,
+                        'GetAfter' => $checkMoney
+                    ])
                     ->update();
                 if ($update) {
                     GameLog::logData(__METHOD__, [$roleId,], 1, '玩家转盘审核成功');
