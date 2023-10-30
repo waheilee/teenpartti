@@ -84,6 +84,22 @@ class Turntable extends Main
                                 $q->where('RoleId', $roleId);
                             }
                         })
+                        ->where(function ($q) use ($checkUser) {
+                            if (!empty($checkUser)) {
+                                $q->where('RoleId', 'like','%'.$checkUser.'%');
+                            }
+                        })
+                        ->where(function ($q) use ($commitStartTime, $commitEndTime) {
+                            if (!empty($commitStartTime)) {
+                                $q->where('CommiTime', '>', strtotime($commitStartTime));
+                            }
+                            if (!empty($commitEndTime)) {
+                                $q->where('CommiTime', '<', strtotime($commitEndTime));
+                            }
+                            if (!empty($commitStartTime) && !empty($commitEndTime)) {
+                                $q->where('CommiTime', 'between time', [strtotime($commitStartTime), strtotime($commitEndTime)]);
+                            }
+                        })
                         ->whereIn('GetType', [1, 2])
                         ->limit($limit)
                         ->page($page)
@@ -123,6 +139,15 @@ class Turntable extends Main
 
     public function historyCheckRecord()
     {
+        //操作人员
+        $db = new UserDB();
+        $checkUser = $db->getTableObject('View_UserDrawBack')->group('checkUser')->column('checkUser');
+        $checkUser = array_keys($checkUser);
+        if (!in_array(session('username'), $checkUser)) {
+            $checkUser[] = session('username');
+        }
+        $this->assign('checkUser', $checkUser);
+        $this->assign('adminuser', session('username'));
         return $this->fetch();
     }
 
