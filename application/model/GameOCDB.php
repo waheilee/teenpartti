@@ -1034,6 +1034,7 @@ class GameOCDB extends BaseModel
         if (isset($result[1]) && $result[0][0]['count'] > 0) {
             $res['count'] = $result[0][0]['count'];
             $res['list'] = $result[1];
+            $userBD = new UserDB();
             foreach ($res['list'] as &$v) {
                 if ($iswater) {
                     $lv1rate = config('agent_running_parent_rate')[1];
@@ -1065,11 +1066,19 @@ class GameOCDB extends BaseModel
                 ConVerMoney($v['oneTakeRunningPrice']);
                 ConVerMoney($v['twoTakeRunningPrice']);
                 if($v['needTakePrice'] > 5000){
+                    //这三个字段都放 T_Job_UserInfo 表，打码量：10012， 1级流水，10009，2级流水，10010
                     $bel = $this->getBrl($v['needTakePrice']);
-//                    $rewardValueOne = bcmul($v['ValidInviteCount'],0.002,4);
-                    $rewardValueOne = bcmul($v['Lv1Running'],0.002,4);
-//                    $rewardValueTwo = bcmul($v['Lv2ValidInviteCount'],0.001,4);
-                    $rewardValueTwo = bcmul($v['Lv2Running'],0.001,4);
+                    $oneRunning = $userBD->getTableObject('T_Job_UserInfo')
+                        ->where('RoleID',$v['ProxyId'])
+                        ->where('job_key',10009)
+                        ->value('value') / bl;
+
+                    $rewardValueOne = bcmul($oneRunning,0.002,4);
+                    $twoRunning = $userBD->getTableObject('T_Job_UserInfo')
+                            ->where('RoleID',$v['ProxyId'])
+                            ->where('job_key',10010)
+                            ->value('value') / bl;
+                    $rewardValueTwo = bcmul($twoRunning,0.001,4);
                     $reward = bcadd(bcadd($rewardValueOne,$rewardValueTwo,2),$bel);
                     $v['reward'] = $reward;
                 }else{
