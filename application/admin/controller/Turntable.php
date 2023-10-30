@@ -86,7 +86,7 @@ class Turntable extends Main
                         })
                         ->where(function ($q) use ($checkUser) {
                             if (!empty($checkUser)) {
-                                $q->where('RoleId', 'like','%'.$checkUser.'%');
+                                $q->where('Commi', 'like','%'.$checkUser.'%');
                             }
                         })
                         ->where(function ($q) use ($commitStartTime, $commitEndTime) {
