@@ -5089,7 +5089,7 @@ class Player extends Main
     public function GmTransferDeny($id)
     {
         $db = new  GameOCDB('',true);
-        $row = $db->TGMSendMoney()->UPData(["status" => 2, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . $id);
+        $row = $db->TGMSendMoney()->UPData(["status" => 2, "UpdateTime" => date('Y-m-d H:i:s')], "ID='$id'");
         if ($row > 0) return $this->success("成功");
         return $this->error('失败');
     }
