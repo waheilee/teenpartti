@@ -96,6 +96,7 @@ class Turntable extends Main
                     $item['PassTime'] = $record['PassTime'];
                     $item['Commi'] = $record['Commi'];
                     $item['GetType'] = $record['GetType'];
+                    $item['GetAfter'] = $record['GetAfter'];
                     $turntableMoney = $userDB->getTableObject('T_PDDDrawHistory')
                         ->where('RoleId', $record['RoleId'])
                         ->where('ChangeType', 1)
