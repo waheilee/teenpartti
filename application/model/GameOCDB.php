@@ -3238,6 +3238,11 @@ class GameOCDB extends BaseModel
                     ->whereIn('Item',[1,2])
                     ->sum('ItemVal') ?? 0;
                 $v['Money'] = $turntableMoney / bl;
+                $addMoney = $userDB->getTableObject('T_Job_UserInfo')
+                    ->where('RoleID',$record['RoleId'])
+                    ->where('job_key')
+                    ->sum('value') ?? 0;
+                $v['addMoney'] = $addMoney;
 
             }
             unset($v);
