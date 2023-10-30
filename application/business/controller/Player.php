@@ -1000,7 +1000,7 @@ class Player extends Main
 //                    if (!in_array(10001, $auth_ids)) {
 //                        return $this->apiReturn(2, [], '没有权限');
 //                    }
-                    $username = session('username');
+                    $username = session('business_LoginAccount');
                     $password = input('password');
                     $userInfo = (new \app\model\GameOCDB)
                         ->getTableObject('T_ProxyChannelConfig')
