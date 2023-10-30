@@ -1500,6 +1500,7 @@ class GameOCDB extends BaseModel
         $RoleId = input('RoleId', -1);
         $VerifyState = input('VerifyState', -1);
         $operatortype = input('operatortype', -1);
+        $adminType = input('adminType');
         $Amount = input('Amount');
         $start = input('start');
         $end = input('end', date('Y-m-d'));
@@ -1511,10 +1512,10 @@ class GameOCDB extends BaseModel
         if ($operatortype > 0) {
             $where .= " AND OperateType=" . $operatortype;
         }
-//        if (!empty(session('business_LoginAccount'))){
-//            (string)$businessAccount = session('business_LoginAccount');
-//            $where .= " AND checkUser='$businessAccount'";
-//        }
+        if ($adminType == 'business'){
+            (string)$businessAccount = session('business_LoginAccount');
+            $where .= " AND checkUser='$businessAccount'";
+        }
         $result = $this->GetPage($where, 'ID DESC');
         if (empty($where)) $where = "status=1";
         else $where = "1=1 " . $where;

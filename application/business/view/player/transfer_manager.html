@@ -82,7 +82,7 @@
 
 <script>
     var main;
-	url = "{:url('Player/transferManager')}";
+	url = "{:url('Player/transferManager')}?adminType=business";
 	layui.config({base: '__layui__/'}).extend({index: 'lib/index'}).use(['table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
 		var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
 		main = {
