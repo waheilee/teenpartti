@@ -1889,21 +1889,22 @@ class Player extends Main
                 }
                 break;
             case 'deny':
-                $ids = explode(',', input('Ids'));
-
-                if (isset($ids) && is_array($ids)){
+                $id = input('ID');
+                if (isset($id)){
+                    $db = new  GameOCDB('',true);
+                    $row = $db->TGMSendMoney()->UPData(["status" => 2, "UpdateTime" => date('Y-m-d H:i:s')], "ID=".input('ID'));
+                    if ($row > 0) return $this->success("成功");
+                    return $this->error('失败');
+                }else{
+                    $ids = explode(',', input('Ids'));
                     foreach($ids as $id){
                         $db = new  GameOCDB('',true);
                         $row = $db->TGMSendMoney()->UPData(["status" => 2, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . $id);
 //                        $this->GmTransferDeny($id);
                     }
                     $this->success("审核成功");
-                }else{
 //                    $id = input('ID');
-                    $db = new  GameOCDB('',true);
-                    $row = $db->TGMSendMoney()->UPData(["status" => 2, "UpdateTime" => date('Y-m-d H:i:s')], "ID=".input('ID'));
-                    if ($row > 0) return $this->success("成功");
-                    return $this->error('失败');
+
 //                    var_dump($id);
 //                    $this->GmTransferDeny($id);
                 }
