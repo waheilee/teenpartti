@@ -59,55 +59,55 @@ class Turntable extends Main
             $checkUser = input('check_user');
             $page = input('page');
             $limit = input('limit');
-            $historyList = input('history',0);
+            $historyList = input('history', 0);
             if (input('Action') == 'list') {
                 $userDB = new UserDB();
 //                $where['RoleId'] = $roleId ?? '';
 //                $where['CommiTime'] = $roleId ?? '';
                 $count = $userDB->getTableObject('T_PDDCommi')->count();
                 $checkRecordData = [];
-                if (empty($historyList)){
+                if (empty($historyList)) {
                     $checkRecord = $userDB->getTableObject('T_PDDCommi')
-                        ->where(function ($q) use($roleId){
-                            if (!empty($roleId)){
-                                $q->where('RoleId',$roleId);
+                        ->where(function ($q) use ($roleId) {
+                            if (!empty($roleId)) {
+                                $q->where('RoleId', $roleId);
                             }
                         })
-                        ->where('GetType',0)
+                        ->where('GetType', 0)
                         ->limit($limit)
                         ->page($page)
                         ->select();
-                }else{
+                } else {
                     $checkRecord = $userDB->getTableObject('T_PDDCommi')
-                        ->where(function ($q) use($roleId){
-                            if (!empty($roleId)){
-                                $q->where('RoleId',$roleId);
+                        ->where(function ($q) use ($roleId) {
+                            if (!empty($roleId)) {
+                                $q->where('RoleId', $roleId);
                             }
                         })
-                        ->whereIn('GetType',[1,2])
+                        ->whereIn('GetType', [1, 2])
                         ->limit($limit)
                         ->page($page)
                         ->select();
                 }
-                foreach($checkRecord as $record){
+                foreach ($checkRecord as $record) {
                     $item['id'] = $record['id'];
                     $item['RoleId'] = $record['RoleId'];
                     $item['CommiTime'] = $record['CommiTime'];
                     $item['PassTime'] = $record['PassTime'];
                     $item['Commi'] = $record['Commi'];
                     $item['GetType'] = $record['GetType'];
-                    $turntableMoney =  $userDB->getTableObject('T_PDDDrawHistory')
-                        ->where('RoleId',$record['RoleId'])
-                        ->where('ChangeType',1)
-                        ->whereIn('Item',[1,2])
+                    $turntableMoney = $userDB->getTableObject('T_PDDDrawHistory')
+                        ->where('RoleId', $record['RoleId'])
+                        ->where('ChangeType', 1)
+                        ->whereIn('Item', [1, 2])
                         ->sum('ItemVal') ?? 0;
                     $item['Money'] = $turntableMoney / bl;
                     $checkRecordData[] = $item;
                     $addMoney = $userDB->getTableObject('T_Job_UserInfo')
-                        ->where('RoleID',$record['RoleId'])
-                        ->where('job_key')
+                        ->where('RoleID', $record['RoleId'])
+                        ->where('job_key',10015)
                         ->sum('value') ?? 0;
-                    $item['addMoney'] = $addMoney;
+                    $item['addMoney'] = FormatMoney($addMoney);
                 }
 //                var_dump($checkRecord);die();
                 $data['count'] = $count;
@@ -146,41 +146,41 @@ class Turntable extends Main
                 $userDB = new UserDB();
                 $count = $userDB->getTableObject('T_PDDDrawHistory')->count();
                 $checkRecord = $userDB->getTableObject('T_PDDDrawHistory')
-                    ->where(function ($q) use($roleId){
-                        if (!empty($roleId)){
-                            $q->where('RoleId',$roleId);
+                    ->where(function ($q) use ($roleId) {
+                        if (!empty($roleId)) {
+                            $q->where('RoleId', $roleId);
                         }
                     })
-                    ->where(function ($q) use($tranType){
-                        if (!empty($tranType)){
-                            $q->where('Item',$tranType);
+                    ->where(function ($q) use ($tranType) {
+                        if (!empty($tranType)) {
+                            $q->where('Item', $tranType);
                         }
                     })
-                    ->where(function ($q) use($startTime,$endTime){
-                        if (!empty($startTime)){
-                            $q->where('ChangeTime','>',strtotime($startTime));
+                    ->where(function ($q) use ($startTime, $endTime) {
+                        if (!empty($startTime)) {
+                            $q->where('ChangeTime', '>', strtotime($startTime));
                         }
-                        if (!empty($endTime)){
-                            $q->where('ChangeTime','<',strtotime($endTime));
+                        if (!empty($endTime)) {
+                            $q->where('ChangeTime', '<', strtotime($endTime));
                         }
-                        if (!empty($startTime) && !empty($endTime)){
-                            $q->where('ChangeTime','between time',[strtotime($startTime),strtotime($endTime)]);
+                        if (!empty($startTime) && !empty($endTime)) {
+                            $q->where('ChangeTime', 'between time', [strtotime($startTime), strtotime($endTime)]);
                         }
                     })
-                    ->where('ChangeType',1)
-                    ->whereIn('Item',[1,2,6])
+                    ->where('ChangeType', 1)
+                    ->whereIn('Item', [1, 2, 6])
 //                    ->whereTime('ChangeTime', 'between', [$start, $end])
                     ->limit($limit)
                     ->page($page)
                     ->select();
                 $temp = [];
-                foreach($checkRecord as $record){
+                foreach ($checkRecord as $record) {
                     $item = [];
                     $item['RoleId'] = $record['RoleId'];
-                    $item['ChangeTime'] = date('Y-m-d H:i:s',$record['ChangeTime']);
+                    $item['ChangeTime'] = date('Y-m-d H:i:s', $record['ChangeTime']);
                     $recordItem = '';
                     $recordItemVal = '';
-                    switch ($record['Item']){
+                    switch ($record['Item']) {
                         case 1:
                             $recordItem = '大随机金额';
                             $recordItemVal = $record['ItemVal'] / bl;
@@ -264,15 +264,15 @@ class Turntable extends Main
                     'comment' => '玩家转盘审核'
                 ]);
 
-                $update  = $userDB->getTableObject('T_PDDCommi')
+                $update = $userDB->getTableObject('T_PDDCommi')
                     ->where('RoleId', $roleId)
-                    ->data(['GetType' => $isPass,'PassTime'=>date('Y-m-d H:i:s'),'Commi'=>$checkName])
+                    ->data(['GetType' => $isPass, 'PassTime' => date('Y-m-d H:i:s'), 'Commi' => $checkName])
                     ->update();
-                if ($update){
+                if ($update) {
                     GameLog::logData(__METHOD__, [$roleId,], 1, '玩家转盘审核成功');
                     return $this->apiReturn(0, '', '操作成功');
 
-                }else{
+                } else {
                     return $this->apiReturn(1, '', '更新操作失败');
                 }
 
@@ -283,29 +283,27 @@ class Turntable extends Main
         }
 
 
-
-
     }
 
     public function turntableSwitch()
     {
-        $switch = input('switch','');
+        $switch = input('switch', '');
         $masterBD = new MasterDB();
         $updateSwitch = $masterBD->getTableObject('T_GameConfig')
-            ->where('CfgType',10140)
+            ->where('CfgType', 10140)
             ->find();
-        if ($updateSwitch['CfgValue'] == $switch){
-            if ($updateSwitch['CfgValue'] == 10001){
+        if ($updateSwitch['CfgValue'] == $switch) {
+            if ($updateSwitch['CfgValue'] == 10001) {
                 return $this->apiReturn(1, '', '转盘已是开启状态');
-            }else{
+            } else {
                 return $this->apiReturn(1, '', '转盘已是关闭状态');
             }
         }
 
-        $update =  $masterBD->getTableObject('T_GameConfig')
-            ->where('CfgType',10140)
+        $update = $masterBD->getTableObject('T_GameConfig')
+            ->where('CfgType', 10140)
             ->update(['CfgValue' => $switch]);
-        if ($update){
+        if ($update) {
             $data = $this->sendGameMessage('CMD_MD_RELOAD_GAME_DATA', [0], "DC", 'returnComm');
             if ($data['iResult'] == 0) {
 
@@ -323,7 +321,7 @@ class Turntable extends Main
 
                 return $this->apiReturn(1, '', '操作失败');
             }
-        }else{
+        } else {
             return $this->apiReturn(1, '', '更新操作失败');
         }
 
@@ -340,7 +338,7 @@ class Turntable extends Main
     {
         $roleId = input('roleid');
         $value = input('value');
-        $data = $this->sendGameMessage('CMD_MD_GM_ADD_JOB', [$roleId,10019,$value], "DC", 'returnComm');
+        $data = $this->sendGameMessage('CMD_MD_GM_ADD_JOB', [$roleId, 10019, $value], "DC", 'returnComm');
         if ($data['iResult'] == 1) {
 
             $db = new GameOCDB();
