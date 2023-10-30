@@ -277,24 +277,29 @@
                         top.layui.index.openTabsPage(url, data.ProxyId + "{:lang('的下级列表')}");
                     }
                     if (layEvent === 'temReward'){
-                        console.log(data.reward)
-                        $.ajax({
-                            type: 'post',
-                            url: "{:url('agent/temReward')}",
-                            data: {
-                                'roleid': data.ProxyId,
-                                'reward': data.reward
-                            },
-                            dataType: 'json',
-                            success: function (res) {
-                                if (res.code == 0) {
-                                    layer.msg("{:lang('设置成功')}", {icon: 1, time: 1000}, function () {
-                                        window.location.reload();
-                                        layer.closeAll();
-                                    });
-                                } else {
-                                    layer.msg(res['msg'], {icon: 5});
-                                }
+                        layer.confirm( '是否发放团对奖励', {
+                            btn: ["{:lang('是')}", "{:lang('否')}"] //按钮
+                            , btn1: function (index, layero) {
+                                console.log(data.reward)
+                                $.ajax({
+                                    type: 'post',
+                                    url: "{:url('agent/temReward')}",
+                                    data: {
+                                        'roleid': data.ProxyId,
+                                        'reward': data.reward
+                                    },
+                                    dataType: 'json',
+                                    success: function (res) {
+                                        if (res.code == 0) {
+                                            layer.msg("{:lang('设置成功')}", {icon: 1, time: 1000}, function () {
+                                                window.location.reload();
+                                                layer.closeAll();
+                                            });
+                                        } else {
+                                            layer.msg(res['msg'], {icon: 5});
+                                        }
+                                    }
+                                });
                             }
                         });
                     }
