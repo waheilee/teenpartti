@@ -2405,13 +2405,8 @@ class Agent extends Main
         $amount = $this->request->param('reward');
         $amount = floatval($amount);
         $amount = $amount * bl;
-        try {
-
-            $res = $this->sendGameMessage('CMD_MD_GM_ADD_PROXY_COMMISSION', [$roleid, $amount, 10001]);
-            $res = unpack('LiResult/', $res);
-        } catch (Exception $exception) {
-            return $this->error('连接服务器失败,请稍后重试!');
-        }
+        $res = $this->sendGameMessage('CMD_MD_GM_ADD_PROXY_COMMISSION', [$roleid, $amount, 10001]);
+        $res = unpack('LiResult/', $res);
 //        $data = $this->sendGameMessage('CMD_MD_GM_ADD_PROXY_COMMISSION', [$roleid, $amount, 10001], 1);
         if ($res['iResult'] == 0) {
             return $this->apiReturn(0, '', '操作成功');
