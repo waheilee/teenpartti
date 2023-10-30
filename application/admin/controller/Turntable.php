@@ -102,12 +102,13 @@ class Turntable extends Main
                         ->whereIn('Item', [1, 2])
                         ->sum('ItemVal') ?? 0;
                     $item['Money'] = $turntableMoney / bl;
-                    $checkRecordData[] = $item;
+
                     $addMoney = $userDB->getTableObject('T_Job_UserInfo')
                         ->where('RoleID', $record['RoleId'])
                         ->where('job_key',10015)
                         ->sum('value') ?? 0;
                     $item['addMoney'] = FormatMoney($addMoney);
+                    $checkRecordData[] = $item;
                 }
 //                var_dump($checkRecord);die();
                 $data['count'] = $count;
