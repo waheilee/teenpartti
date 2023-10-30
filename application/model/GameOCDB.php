@@ -1504,7 +1504,7 @@ class GameOCDB extends BaseModel
         }
         if (!empty(session('business_LoginAccount'))){
             (string)$businessAccount = session('business_LoginAccount');
-            $where .= " AND checkUser=" . $businessAccount;
+            $where .= " AND checkUser=  $businessAccount";
         }
         $result = $this->GetPage($where, 'ID DESC');
         if (empty($where)) $where = "status=1";
