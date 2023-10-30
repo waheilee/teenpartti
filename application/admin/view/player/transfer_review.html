@@ -4,6 +4,22 @@
 {block name="css"}{/block}
 {block name="content"}
 <div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-input-inline" style="width: 355px">
+
+                    <input type="text" id="roleid" name="roleid" placeholder="{:lang('玩家ID')}" autocomplete="off"
+                           class="layui-input">
+                </div>
+                <div class="layui-inline">
+                    <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                    <button type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
     <div class="layui-card-body">
 
         <div id="alllist">
@@ -100,7 +116,17 @@
 				}
 
 				//执行重载
-				table.reload('proxylist', {page: {curr: 1}, where: {}});
+                table.reload('proxylist', {
+                    page: {curr: 1},
+                    where: {
+                        RoleId: $.trim($('#roleid').val()),
+                    },
+                    done: function () {
+                        getOnline()
+                        tzTbale()
+                    }
+
+                });
 			},
 
 
