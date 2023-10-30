@@ -91,13 +91,13 @@ class Turntable extends Main
                         })
                         ->where(function ($q) use ($commitStartTime, $commitEndTime) {
                             if (!empty($commitStartTime)) {
-                                $q->where('CommiTime', '>', strtotime($commitStartTime));
+                                $q->where('CommiTime', '>', $commitStartTime);
                             }
                             if (!empty($commitEndTime)) {
-                                $q->where('CommiTime', '<', strtotime($commitEndTime));
+                                $q->where('CommiTime', '<', $commitEndTime);
                             }
                             if (!empty($commitStartTime) && !empty($commitEndTime)) {
-                                $q->where('CommiTime', 'between time', [strtotime($commitStartTime), strtotime($commitEndTime)]);
+                                $q->where('CommiTime', 'between time', [$commitStartTime, $commitEndTime]);
                             }
                         })
                         ->whereIn('GetType', [1, 2])
