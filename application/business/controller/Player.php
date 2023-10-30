@@ -1021,6 +1021,9 @@ class Player extends Main
                     if ($money > 0 && $operatetype == 2) {
                         $money = 0 - $money;
                     }
+                    if ($money > 0 && $operatetype == 4) {
+                        $money = 0 - $money;
+                    }
                     $db = new  GameOCDB();
                     $row = $db->GMSendMoneyAdd(['RoleId' => $roleID, 'Money' => $money, 'status' => 0, 'Note' => $descript, 'checkUser' => session('business_LoginAccount'), 'OperateType' => $operatetype]);
                     if ($row > 0) {
