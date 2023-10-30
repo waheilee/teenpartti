@@ -2405,7 +2405,7 @@ class Agent extends Main
         $amount = $this->request->param('reward');
         $amount = floatval($amount);
         $amount = $amount * bl;
-        $data = $this->sendGameMessage('CMD_MD_GM_ADD_PROXY_COMMISSION', [$roleid, $amount, 10001], "DC", 'returnComm');
+        $data = $this->sendGameMessage('CMD_MD_GM_ADD_PROXY_COMMISSION', [$roleid, $amount, 10001], 0);
         if ($data['iResult'] == 0) {
             return $this->apiReturn(0, '', '操作成功');
         } else {
