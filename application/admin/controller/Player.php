@@ -1899,9 +1899,13 @@ class Player extends Main
                     }
                     $this->success("审核成功");
                 }else{
-                    $id = input('ID');
-                    var_dump($id);
-                    $this->GmTransferDeny($id);
+//                    $id = input('ID');
+                    $db = new  GameOCDB('',true);
+                    $row = $db->TGMSendMoney()->UPData(["status" => 2, "UpdateTime" => date('Y-m-d H:i:s')], "ID=".input('ID'));
+                    if ($row > 0) return $this->success("成功");
+                    return $this->error('失败');
+//                    var_dump($id);
+//                    $this->GmTransferDeny($id);
                 }
                 break;
             case 'exec':
