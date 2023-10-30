@@ -90,12 +90,12 @@ class Turntable extends Main
                         ->select();
                 }
                 foreach($checkRecord as $record){
-                    $item['id'] = '';
-                    $item['RoleId'] = '';
-                    $item['CommiTime'] = '';
-                    $item['PassTime'] = '';
-                    $item['Commi'] = '';
-                    $item['GetType'] = '';
+                    $item['id'] = $record['id'];
+                    $item['RoleId'] = $record['RoleId'];
+                    $item['CommiTime'] = $record['CommiTime'];
+                    $item['PassTime'] = $record['PassTime'];
+                    $item['Commi'] = $record['Commi'];
+                    $item['GetType'] = $record['GetType'];
                     $turntableMoney =  $userDB->getTableObject('T_PDDDrawHistory')
                         ->where('RoleId',$record['RoleId'])
                         ->where('ChangeType',1)
