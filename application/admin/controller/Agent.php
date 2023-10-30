@@ -1492,6 +1492,7 @@ class Agent extends Main
             '2' => lang('佣金转账'),
             '1' => lang('佣金提现'),
             '6' => lang('佣金提现失败返还'),
+            '7' => lang('GM发奖励'),
             '10001' => lang('投注返利'),
         ];
         $action = $this->request->param('action');
