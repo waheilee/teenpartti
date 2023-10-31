@@ -1065,23 +1065,23 @@ class GameOCDB extends BaseModel
                 ConVerMoney($v['needTakePrice']);
                 ConVerMoney($v['oneTakeRunningPrice']);
                 ConVerMoney($v['twoTakeRunningPrice']);
-                if($v['needTakePrice'] > 5000){
+                if ($v['needTakePrice'] > 5000) {
                     //这三个字段都放 T_Job_UserInfo 表，打码量：10012， 1级流水，10009，2级流水，10010
                     $bel = $this->getBrl($v['needTakePrice']);
                     $oneRunning = $userBD->getTableObject('T_Job_UserInfo')
-                        ->where('RoleID',$v['ProxyId'])
-                        ->where('job_key',10009)
-                        ->value('value') / bl;
-
-                    $rewardValueOne = bcmul($oneRunning,0.002,4);
-                    $twoRunning = $userBD->getTableObject('T_Job_UserInfo')
-                            ->where('RoleID',$v['ProxyId'])
-                            ->where('job_key',10010)
+                            ->where('RoleID', $v['ProxyId'])
+                            ->where('job_key', 10009)
                             ->value('value') / bl;
-                    $rewardValueTwo = bcmul($twoRunning,0.001,4);
-                    $reward = bcadd(bcadd($rewardValueOne,$rewardValueTwo,2),$bel);
+
+                    $rewardValueOne = bcmul($oneRunning, 0.002, 4);
+                    $twoRunning = $userBD->getTableObject('T_Job_UserInfo')
+                            ->where('RoleID', $v['ProxyId'])
+                            ->where('job_key', 10010)
+                            ->value('value') / bl;
+                    $rewardValueTwo = bcmul($twoRunning, 0.001, 4);
+                    $reward = bcadd(bcadd($rewardValueOne, $rewardValueTwo, 2), $bel);
                     $v['reward'] = $reward;
-                }else{
+                } else {
 //                    $v['needTakePrice'] = 0;
                     $v['reward'] = 0;
                 }
@@ -1512,7 +1512,7 @@ class GameOCDB extends BaseModel
         if ($operatortype > 0) {
             $where .= " AND OperateType=" . $operatortype;
         }
-        if ($adminType == 'business'){
+        if ($adminType == 'business') {
             (string)$businessAccount = session('business_LoginAccount');
             $where .= " AND checkUser='$businessAccount'";
         }
@@ -3088,23 +3088,23 @@ class GameOCDB extends BaseModel
     public function getBrl($value): int
     {
 
-        if ($value > 5000 && $value < 10000){
+        if ($value > 5000 && $value < 10000) {
             $data = 50;
-        }elseif ($value > 10000 && $value < 20000){
+        } elseif ($value > 10000 && $value < 20000) {
             $data = 80;
-        }elseif ($value > 20000 && $value < 50000){
+        } elseif ($value > 20000 && $value < 50000) {
             $data = 150;
-        }elseif ($value > 50000 && $value < 100000){
+        } elseif ($value > 50000 && $value < 100000) {
             $data = 300;
-        }elseif ($value > 100000 && $value < 300000){
+        } elseif ($value > 100000 && $value < 300000) {
             $data = 500;
-        }elseif ($value > 300000 && $value < 500000){
+        } elseif ($value > 300000 && $value < 500000) {
             $data = 800;
-        }elseif ($value > 500000 && $value < 800000){
+        } elseif ($value > 500000 && $value < 800000) {
             $data = 1200;
-        }elseif ($value > 800000 ){
+        } elseif ($value > 800000) {
             $data = 1500;
-        }else{
+        } else {
             $data = 0;
         }
         return $data;
@@ -3224,24 +3224,23 @@ class GameOCDB extends BaseModel
             foreach ($res['list'] as &$v) {
                 $userBankDB = new BankDB();
                 $takeMoney = $userBankDB->getTableObject('UserDrawBack')
-                    ->where('AccountID',$v['ProxyId'])
-                    ->where('AddTime','between time',[date('Y-m-d 00:00:00',strtotime($v['AddTime'])),date('Y-m-d 23:59:59',strtotime($v['AddTime']))])
+                    ->where('AccountID', $v['ProxyId'])
+                    ->where('AddTime', 'between time', [date('Y-m-d 00:00:00', strtotime($v['AddTime'])), date('Y-m-d 23:59:59', strtotime($v['AddTime']))])
                     ->sum('iMoney') ?? 0;
                 $v['takeMoney'] = $takeMoney / bl;
-                if ($v['DailyDeposit'] == 0 && $v['takeMoney'] > 0){
-                    $v['difference'] = '-'.$v['takeMoney'];
-                }else{
-                    $v['difference'] = bcsub($v['DailyDeposit'],$v['takeMoney'],2);
+                if ($v['DailyDeposit'] == 0 && $v['takeMoney'] > 0) {
+                    $v['difference'] = '-' . $v['takeMoney'];
+                } else {
+                    $v['difference'] = bcsub($v['DailyDeposit'], $v['takeMoney'], 2);
                 }
-                $turntableMoney =  $userDB->getTableObject('T_PDDDrawHistory')
-                    ->where('RoleId',$v['ProxyId'])
-                    ->where('ChangeType',1)
-                    ->whereIn('Item',[1,2])
-                    ->sum('ItemVal') ?? 0;
+                $turntableMoney = $userDB->getTableObject('T_Job_UserInfo')
+                    ->where('RoleID', $v['ProxyId'])
+                    ->whereIn('job_key', [10014, 10015])
+                    ->sum('value') ?? 0;
                 $v['Money'] = $turntableMoney / bl;
                 $addMoney = $userDB->getTableObject('T_Job_UserInfo')
-                    ->where('RoleID',$v['ProxyId'])
-                    ->where('job_key',10015)
+                    ->where('RoleID', $v['ProxyId'])
+                    ->where('job_key', 10015)
                     ->sum('value') ?? 0;
                 $v['addMoney'] = FormatMoney($addMoney);
 
