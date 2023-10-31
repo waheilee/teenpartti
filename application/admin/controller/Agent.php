@@ -1531,7 +1531,7 @@ class Agent extends Main
 
             $data = $db->getTableList('T_ProxyBonusLog', $where, $page, $limit, '*', $order);
             foreach ($data['list'] as $key => &$val) {
-                $val['hd_name'] = $activity_arr[$val['BonusType']] ?? lang('--');
+                $val['hd_name'] = $activity_arr[$val['BonusType']] ?? $val['BonusType'];
                 $val['BonusAmount'] = FormatMoney($val['BonusAmount']);
                 $val['LastProxyBonus'] = FormatMoney($val['LastProxyBonus']);
             }
