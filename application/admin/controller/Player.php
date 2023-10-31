@@ -1875,16 +1875,16 @@ class Player extends Main
                 break;
             case 'send':
                 if (request()->isAjax()) {
-                    $ids = explode(',', input('Ids'));
-
-                    if (isset($ids) && is_array($ids)){
+                    $id = input('ID');
+                    if (isset($id)){
+                        $this->GmTransferSend($id);
+                    }else{
+                        $ids = explode(',', input('Ids'));
                         foreach($ids as $id){
                             $this->GmTransferSend($id);
                         }
                         $this->success("审核成功");
-                    }else{
-                        $id = input('ID');
-                        $this->GmTransferSend($id);
+
                     }
                 }
                 break;
