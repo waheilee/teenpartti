@@ -62,11 +62,11 @@ class Turntable extends Main
             $historyList = input('history', 0);
             if (input('Action') == 'list') {
                 $userDB = new UserDB();
-//                $where['RoleId'] = $roleId ?? '';
-//                $where['CommiTime'] = $roleId ?? '';
-                $count = $userDB->getTableObject('T_PDDCommi')->count();
                 $checkRecordData = [];
                 if (empty($historyList)) {
+                    $count = $userDB->getTableObject('T_PDDCommi')
+                        ->where('GetType', 0)
+                        ->count();
                     $checkRecord = $userDB->getTableObject('T_PDDCommi')
                         ->where(function ($q) use ($roleId) {
                             if (!empty($roleId)) {
@@ -74,10 +74,12 @@ class Turntable extends Main
                             }
                         })
                         ->where('GetType', 0)
-                        ->limit($limit)
-                        ->page($page)
+                        ->page($page, $limit)
                         ->select();
                 } else {
+                    $count = $userDB->getTableObject('T_PDDCommi')
+                        ->whereIn('GetType', [1, 2])
+                        ->count();
                     $checkRecord = $userDB->getTableObject('T_PDDCommi')
                         ->where(function ($q) use ($roleId) {
                             if (!empty($roleId)) {
@@ -86,7 +88,7 @@ class Turntable extends Main
                         })
                         ->where(function ($q) use ($checkUser) {
                             if (!empty($checkUser)) {
-                                $q->where('Commi', 'like','%'.$checkUser.'%');
+                                $q->where('Commi', 'like', '%' . $checkUser . '%');
                             }
                         })
                         ->where(function ($q) use ($commitStartTime, $commitEndTime) {
@@ -101,8 +103,7 @@ class Turntable extends Main
                             }
                         })
                         ->whereIn('GetType', [1, 2])
-                        ->limit($limit)
-                        ->page($page)
+                        ->page($page, $limit)
                         ->select();
                 }
                 foreach ($checkRecord as $record) {
@@ -111,7 +112,7 @@ class Turntable extends Main
                     $item['CommiTime'] = $record['CommiTime'];
                     $item['PassTime'] = $record['PassTime'];
                     $item['Commi'] = $record['Commi'];
-                    $item['GetType'] = $record['GetType'];
+                    $item['GetType'] = $this->getTypeCheck($record['GetType']);
                     $item['GetAfter'] = FormatMoney($record['GetAfter']);
                     $turntableMoney = $userDB->getTableObject('T_PDDDrawHistory')
                         ->where('RoleId', $record['RoleId'])
@@ -278,12 +279,11 @@ class Turntable extends Main
         $userDB = new UserDB();
         $isCheck = $userDB->getTableObject('T_PDDCommi')
             ->where('RoleId', $roleId)->find();
+        $checkMoney = $userDB->getTableObject('T_Job_UserInfo')
+            ->where('RoleID', $roleId)
+            ->whereIn('job_key', [10014, 10015])
+            ->sum('value') ?? 0;
         if ($isPass == 1) {
-            $checkMoney = $userDB->getTableObject('T_Job_UserInfo')
-                ->where('RoleID', $roleId)
-                ->whereIn('job_key', [10014, 10015])
-                ->sum('value') ?? 0;
-
             $data = $this->sendGameMessage('CMD_MD_GM_PDD_COMMI_SUC', [$roleId, 1], "DC", 'returnComm');
             if ($data['iResult'] == 1) {
 
@@ -293,7 +293,7 @@ class Turntable extends Main
                     'adminid' => session('userid'),
                     'type' => 2,
                     'opt_time' => date('Y-m-d H:i:s'),
-                    'comment' => '玩家转盘审核'
+                    'comment' => '玩家转盘审核通过'
                 ]);
 
                 $update = $userDB->getTableObject('T_PDDCommi')
@@ -316,6 +316,32 @@ class Turntable extends Main
             } else {
                 GameLog::logData(__METHOD__, [$roleId], 0, '操作失败');
                 return $this->apiReturn(1, '', '操作失败');
+            }
+        } else {
+            $db = new GameOCDB();
+            $db->setTable('T_PlayerComment')->Insert([
+                'roleid' => $roleId,
+                'adminid' => session('userid'),
+                'type' => 2,
+                'opt_time' => date('Y-m-d H:i:s'),
+                'comment' => '玩家转盘审核拒绝'
+            ]);
+
+            $update = $userDB->getTableObject('T_PDDCommi')
+                ->where('RoleId', $roleId)
+                ->data([
+                    'GetType' => $isPass,
+                    'PassTime' => date('Y-m-d H:i:s'),
+                    'Commi' => $checkName,
+                    'GetAfter' => $checkMoney
+                ])
+                ->update();
+            if ($update) {
+                GameLog::logData(__METHOD__, [$roleId,], 1, '玩家转盘审核成功');
+                return $this->apiReturn(0, '', '操作成功');
+
+            } else {
+                return $this->apiReturn(1, '', '更新操作失败');
             }
         }
 
@@ -392,5 +418,22 @@ class Turntable extends Main
 
             return $this->apiReturn(1, '', '操作失败');
         }
+    }
+
+    public function getTypeCheck($type): string
+    {
+        $str = '';
+        switch ($type) {
+            case 0:
+                $str= '未审核';
+                break;
+            case 1:
+                $str= '已审核领取';
+                break;
+            case 2:
+                $str= '已拒绝';
+                break;
+        }
+        return $str;
     }
 }
