@@ -3235,7 +3235,7 @@ class GameOCDB extends BaseModel
                 }
                 $turntableMoney = $userDB->getTableObject('T_Job_UserInfo')
                     ->where('RoleID', $v['ProxyId'])
-                    ->whereIn('job_key', [10014, 10015])
+                    ->where('job_key', 10014)
                     ->sum('value') ?? 0;
                 $v['Money'] = $turntableMoney / bl;
                 $addMoney = $userDB->getTableObject('T_Job_UserInfo')
