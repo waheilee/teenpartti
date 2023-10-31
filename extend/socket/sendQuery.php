@@ -1354,9 +1354,10 @@ class sendQuery
         $res = $socket->request($in_head, $in);
     }
 
-    public function CMD_MD_GM_PDD_COMMI_SUC($socket, $roleid)
+    public function CMD_MD_GM_PDD_COMMI_SUC($socket, $roleid,$status)
     {
         $this->in_stream->WriteULong($roleid);
+        $this->in_stream->WriteULong($status);
         $in_head = $this->comm->MakeSendHead(CMD_MD_GM_PDD_COMMI_SUC, $this->in_stream->len, 0, REQ_OM, REQ_DC);
         $in = $this->in_stream->data;
         $res = $socket->request($in_head, $in);

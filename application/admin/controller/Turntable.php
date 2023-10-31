@@ -306,7 +306,7 @@ class Turntable extends Main
                     ])
                     ->update();
                 if ($update) {
-                    GameLog::logData(__METHOD__, [$roleId,], 1, '玩家转盘审核成功');
+                    GameLog::logData(__METHOD__, [$roleId], 1, '玩家转盘审核成功');
                     return $this->apiReturn(0, '', '操作成功');
 
                 } else {
@@ -318,31 +318,38 @@ class Turntable extends Main
                 return $this->apiReturn(1, '', '操作失败');
             }
         } else {
-            $db = new GameOCDB();
-            $db->setTable('T_PlayerComment')->Insert([
-                'roleid' => $roleId,
-                'adminid' => session('userid'),
-                'type' => 2,
-                'opt_time' => date('Y-m-d H:i:s'),
-                'comment' => '玩家转盘审核拒绝'
-            ]);
+            $data = $this->sendGameMessage('CMD_MD_GM_PDD_COMMI_SUC', [$roleId, 0], "DC", 'returnComm');
+            if ($data['iResult'] == 1) {
+                $db = new GameOCDB();
+                $db->setTable('T_PlayerComment')->Insert([
+                    'roleid' => $roleId,
+                    'adminid' => session('userid'),
+                    'type' => 2,
+                    'opt_time' => date('Y-m-d H:i:s'),
+                    'comment' => '玩家转盘审核拒绝'
+                ]);
 
-            $update = $userDB->getTableObject('T_PDDCommi')
-                ->where('RoleId', $roleId)
-                ->data([
-                    'GetType' => $isPass,
-                    'PassTime' => date('Y-m-d H:i:s'),
-                    'Commi' => $checkName,
-                    'GetAfter' => $checkMoney
-                ])
-                ->update();
-            if ($update) {
-                GameLog::logData(__METHOD__, [$roleId,], 1, '玩家转盘审核成功');
-                return $this->apiReturn(0, '', '操作成功');
+                $update = $userDB->getTableObject('T_PDDCommi')
+                    ->where('RoleId', $roleId)
+                    ->data([
+                        'GetType' => $isPass,
+                        'PassTime' => date('Y-m-d H:i:s'),
+                        'Commi' => $checkName,
+                        'GetAfter' => $checkMoney
+                    ])
+                    ->update();
+                if ($update) {
+                    GameLog::logData(__METHOD__, [$roleId], 1, '玩家转盘审核拒绝成功');
+                    return $this->apiReturn(0, '', '操作成功');
 
+                } else {
+                    return $this->apiReturn(1, '', '更新操作失败');
+                }
             } else {
-                return $this->apiReturn(1, '', '更新操作失败');
+                GameLog::logData(__METHOD__, [$roleId], 0, '操作失败');
+                return $this->apiReturn(1, '', '操作失败');
             }
+
         }
 
 
@@ -425,13 +432,13 @@ class Turntable extends Main
         $str = '';
         switch ($type) {
             case 0:
-                $str= '未审核';
+                $str = '未审核';
                 break;
             case 1:
-                $str= '已审核领取';
+                $str = '已审核领取';
                 break;
             case 2:
-                $str= '已拒绝';
+                $str = '已拒绝';
                 break;
         }
         return $str;
