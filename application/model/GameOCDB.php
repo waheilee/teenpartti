@@ -1392,30 +1392,32 @@ class GameOCDB extends BaseModel
                 //首充人数
                 $list[0]['FirstDepositPerson'] = (new DataChangelogsDB())
                     ->getTableObject('T_UserTransactionLogs')
+                    ->where('AddTime','between',[
+                        $begin . ' 00:00:00',
+                        $end . ' 23:59:59'
+                    ])
+                    ->where('IfFirstCharge',1)
                     ->where(function($q) use($roleid,$userSubsetList){
                         if($roleid){
                             $q->whereIn('RoleID',$userSubsetList);
                         }
                     })
-                    ->where('IfFirstCharge',1)
-                    ->where('AddTime','between',[
-                        date('Y-m-d 00:00:00', strtotime($startdate)),
-                        date('Y-m-d 23:59:59', strtotime($enddate))
-                    ])
+
                     ->count() ?? 0;
                 //首充金额
                 $list[0]['FirstDepositMoney'] = (new DataChangelogsDB())
                     ->getTableObject('T_UserTransactionLogs')
+                    ->where('IfFirstCharge',1)
+                    ->where('AddTime','between',[
+                        $begin . ' 00:00:00',
+                        $end . ' 23:59:59'
+                    ])
                     ->where(function($q) use($roleid,$userSubsetList){
                         if($roleid){
                             $q->whereIn('RoleID',$userSubsetList);
                         }
                     })
-                    ->where('IfFirstCharge',1)
-                    ->where('AddTime','between',[
-                        date('Y-m-d 00:00:00', strtotime($startdate)),
-                        date('Y-m-d 23:59:59', strtotime($enddate))
-                    ])
+
                     ->sum('TransMoney') ?? 0;
                 unset($v);
             }
