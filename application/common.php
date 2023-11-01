@@ -794,3 +794,15 @@ function getMillisecond() {
     return (float)sprintf('%.0f',(floatval($microsecond)+floatval($time))*1000);
 }
 
+
+function sortList($data,$id=0,&$arr=[])
+{
+    foreach($data as $v){
+        if ($id == $v['ParentID']){
+            $arr[]=$v['RoleID'];
+            $this->sortList($data,$v['RoleID'],$arr);
+        }
+    }
+    return $arr;
+}
+

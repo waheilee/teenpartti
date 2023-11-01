@@ -3,8 +3,9 @@
 namespace app\api\controller;
 
 
-use app\model\DataChangelogsDB;
 use app\model\UserDB;
+
+use redis\Redis;
 use think\Controller;
 
 /**
@@ -235,16 +236,6 @@ class DailyStatistics extends Controller {
 
     public function test()
     {
-        $startdate = '2023-10-30';
-        $enddate = '2023-10-30';
-        $begin = date('Y-m-d 00:00:00', strtotime($startdate));
-        $end = date('Y-m-d 23:59:59', strtotime($enddate));
-            $aa = (new DataChangelogsDB())
-                ->getTableObject('T_UserTransactionLogs')
-                ->where('IfFirstCharge',1)
-                ->where('AddTime','between',[$begin,$end])
-                ->count();
-            var_dump($aa);die();
 
     }
 }

@@ -1365,8 +1365,24 @@ class GameOCDB extends BaseModel
                     ->where('a.IfFirstCharge', 1)
                     ->sum('TransMoney') ?: 0;
 //首充人数
+
                 $list[0]['FirstDepositPerson'] = (new DataChangelogsDB())
                     ->getTableObject('T_UserTransactionLogs')
+                    ->where(function($q) use($roleid){
+                        if($roleid){
+                            $userDB = new UserDB();
+                            $redisKey = 'GET_USER_ALL_LIST';
+                            $userList = Redis::get($redisKey);
+                            if (!$userList){
+                                $data = $userDB->getTableObject('T_UserProxyInfo')
+                                    ->field('RoleID,ParentID')
+                                    ->select();
+                                $userList = Redis::set($redisKey,$data,3600);
+                            }
+                            $list = sortList($userList,$roleid);
+                            $q->whereIn('RoleID',$list);
+                        }
+                    })
                     ->where('IfFirstCharge',1)
                     ->where('AddTime','between',[
                         date('Y-m-d 00:00:00', strtotime($startdate)),
