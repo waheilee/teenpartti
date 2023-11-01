@@ -3,6 +3,7 @@
 namespace app\api\controller;
 
 
+use app\model\DataChangelogsDB;
 use app\model\UserDB;
 use think\Controller;
 
@@ -232,14 +233,18 @@ class DailyStatistics extends Controller {
         return $team;
     }
 
-//    public function test()
-//    {
-//        $day = '2023-10-30';
-//        $userDB = new UserDB();
-//        $start_day = date('Y-m-d 00:00:00', strtotime($day));
-//        $end_day = date('Y-m-d 00:00:00', strtotime("+1 day", strtotime($day)));
-//        $subQuery = "(SELECT SUM(RealMoney) as Money,AccountID FROM [CD_UserDB].[dbo].[T_UserTransactionChannel] WHERE AddTime>'$start_day' AND AddTime<'$end_day' GROUP BY AccountID) as a";
-//        return $userDB->getTableObject($subQuery)->sum('Money');
-//
-//    }
+    public function test()
+    {
+        $startdate = '2023-10-30';
+        $enddate = '2023-10-30';
+        $begin = date('Y-m-d 00:00:00', strtotime($startdate));
+        $end = date('Y-m-d 23:59:59', strtotime($enddate));
+            $aa = (new DataChangelogsDB())
+                ->getTableObject('T_UserTransactionLogs')
+                ->where('IfFirstCharge',1)
+                ->where('AddTime','between',[$begin,$end])
+                ->count();
+            var_dump($aa);die();
+
+    }
 }

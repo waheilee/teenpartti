@@ -1368,7 +1368,10 @@ class GameOCDB extends BaseModel
                 $list[0]['FirstDepositPerson'] = (new DataChangelogsDB())
                     ->getTableObject('T_UserTransactionLogs')
                     ->where('IfFirstCharge',1)
-                    ->where('AddTime','between',[$begin,$end])
+                    ->where('AddTime','between',[
+                        date('Y-m-d 00:00:00', strtotime($startdate)),
+                        date('Y-m-d 23:59:59', strtotime($enddate))
+                    ])
                     ->count() ?? 0;
                 foreach ($list as &$v) {
 
