@@ -372,7 +372,7 @@ class DailyStatisticsLib {
         $start_day = date('Y-m-d 00:00:00', strtotime($day));
         $end_day = date('Y-m-d 00:00:00', strtotime("+1 day", strtotime($day)));
         $subQuery = "(SELECT SUM(RealMoney) as Money,AccountID FROM [CD_UserDB].[dbo].[T_UserTransactionChannel] WHERE AddTime>'$start_day' AND AddTime<'$end_day' GROUP BY AccountID) as a";
-        return $userDB->getTableObject($subQuery)->sum('Money');
+        return $userDB->getTableObject($subQuery)->sum('Money') * bl;
     }
 
 }
