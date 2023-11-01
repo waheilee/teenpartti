@@ -1379,8 +1379,12 @@ class GameOCDB extends BaseModel
                                     ->select();
                                 $userList = Redis::set($redisKey,$data,3600);
                             }
-                            $list = sortList($userList,$roleid);
-                            $q->whereIn('RoleID',$list);
+                            $userSubsetList = Redis::get('USER_SUBSET_LIST_'.$roleid);
+                            if (!$userSubsetList){
+                                $userSubsetList = sortList($userList,$roleid);
+                                Redis::set('USER_SUBSET_LIST_'.$roleid,$userSubsetList,3600);
+                            }
+                            $q->whereIn('RoleID',$userSubsetList);
                         }
                     })
                     ->where('IfFirstCharge',1)
