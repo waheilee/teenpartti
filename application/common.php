@@ -800,7 +800,7 @@ function sortList($data,$id=0,&$arr=[])
     foreach($data as $v){
         if ($id == $v['ParentID']){
             $arr[]=$v['RoleID'];
-            $this->sortList($data,$v['RoleID'],$arr);
+            sortList($data,$v['RoleID'],$arr);
         }
     }
     return $arr;
