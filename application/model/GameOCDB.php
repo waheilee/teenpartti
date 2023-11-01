@@ -1366,6 +1366,13 @@ class GameOCDB extends BaseModel
                     ->sum('TransMoney') ?: 0;
 //首充人数
 
+                foreach ($list as &$v) {
+
+                    ConVerMoney($v['Lv1Running']);
+                    ConVerMoney($v['Lv2Running']);
+                    ConVerMoney($v['Lv3Running']);
+                    ConVerMoney($v['dm']);
+                }
                 $list[0]['FirstDepositPerson'] = (new DataChangelogsDB())
                     ->getTableObject('T_UserTransactionLogs')
                     ->where(function($q) use($roleid){
@@ -1393,13 +1400,6 @@ class GameOCDB extends BaseModel
                         date('Y-m-d 23:59:59', strtotime($enddate))
                     ])
                     ->count() ?? 0;
-                foreach ($list as &$v) {
-
-                    ConVerMoney($v['Lv1Running']);
-                    ConVerMoney($v['Lv2Running']);
-                    ConVerMoney($v['Lv3Running']);
-                    ConVerMoney($v['dm']);
-                }
                 unset($v);
             }
             return $list;
