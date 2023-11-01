@@ -2,6 +2,8 @@
 
 namespace app\admin\lib;
 
+use app\model\UserDB;
+
 class DailyStatisticsLib {
     
     private $GameOCDB;
@@ -85,7 +87,7 @@ class DailyStatisticsLib {
 
                 // 邮件额外补偿金币  目前需从视图中获取 
                 // todo 目前数据存储在视图中, 没有视图时获取不到 故调整视图到sql时需修改方法
-                $new_record['mail_extra_gift_coins'] = $this->UserDB->CountUserDailyMailExtraGiftCoins($day);
+                $new_record['mail_extra_gift_coins'] = $this->UserDB->CountUserDailyMailExtraGiftCoins($day);//邮件赠送
                 
                 // 购买免费游戏的消耗
                 $buy_free_game_type = [$dsModel::SBWCT_BUY_FREE_PROP];
@@ -104,9 +106,9 @@ class DailyStatisticsLib {
                 $total_recharge_type = [
                     $dsModel::SBWCT_USER_CHANNEL_RECHARGE, // 渠道充值
                 ];
-                $new_record['total_recharge'] = $this->countDailyGoldCoinsByChangeType($table, $total_recharge_type)
-                                                + $this->DataChangelogsDB->CountDailyIsPayOrderMailExtraGiftCoins($day);
-
+//                $new_record['total_recharge'] = $this->countDailyGoldCoinsByChangeType($table, $total_recharge_type)
+//                                                + $this->DataChangelogsDB->CountDailyIsPayOrderMailExtraGiftCoins($day);
+                $new_record['total_recharge'] = $this->countTotalRechargeByDay($day);//总充值
                 // UserDrawBack 的 iMoney  筛选 IsDrawback = 100, UpdateTime
                 $new_record['total_withdrawal'] = $this->BankDB->CountTotalDrawBackByDay($day);
                 
@@ -175,7 +177,7 @@ class DailyStatisticsLib {
                 // 新增用户（当天注册用户）
                 $new_record['new_users'] = $this->AccountDB->GetDailyRegistrCountByDay2($day);
 
-                $new_record['AgentReward'] = $this->GameOCDB->GetDailyAgentRewardByDay($day);
+                $new_record['AgentReward'] = $this->GameOCDB->GetDailyAgentRewardByDay($day);//代理佣金
                 
                 // 当天平均在线时长(s) = 当天总在线时长 / 活跃用户',
                 // todo暂缓
@@ -187,7 +189,7 @@ class DailyStatisticsLib {
                     $dsModel::ACTT_FIRST_DEPOSIT_BONUS,
                     $dsModel::ACTT_DAY_DEPOSIT_BONUS
                 ];
-                $new_record['DailyActivyAwardCoin'] = $this->countDailyGoldCoinsByChangeType($table, $daily_award_coin_type);
+                $new_record['DailyActivyAwardCoin'] = $this->countDailyGoldCoinsByChangeType($table, $daily_award_coin_type);//充值赠送
 
                 $new_record['lottery_bonus'] = $this->countDailyGoldCoinsByChangeType($table, [$dsModel::ACTT_DAY_LOTTERY_BONUS]);
 
@@ -358,6 +360,19 @@ class DailyStatisticsLib {
         } else {
             return array('status'=>FALSE, 'msg'=>$day.'不存在日况统计概要记录');
         }
+    }
+
+    /**
+     * 统计某天充值总数
+     * @return int
+     */
+    public function countTotalRechargeByDay($day)
+    {
+        $userDB = new UserDB();
+        $start_day = date('Y-m-d 00:00:00', strtotime($day));
+        $end_day = date('Y-m-d 00:00:00', strtotime("+1 day", strtotime($day)));
+        $subQuery = "(SELECT SUM(RealMoney) as Money,AccountID FROM [CD_UserDB].[dbo].[T_UserTransactionChannel] WHERE AddTime>'$start_day' AND AddTime<'$end_day' GROUP BY AccountID) as a";
+        return $userDB->getTableObject($subQuery)->sum('Money');
     }
 
 }
