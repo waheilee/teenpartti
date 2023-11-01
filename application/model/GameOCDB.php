@@ -1347,10 +1347,11 @@ class GameOCDB extends BaseModel
         $end = date('Y-m-d', strtotime($enddate));
 
         $table = 'dbo.T_ProxyDailyCollectData';
-        $field = '  ISNULL(Sum(FirstDepositPerson),0) as FirstDepositPerson,ISNULL(Sum(FirstDepositMoney),0) as FirstDepositMoney,ISNULL(Sum(Lv1PersonCount),0) as Lv1PersonCount,ISNULL(Sum(Lv1Running),0) as Lv1Running,ISNULL(Sum(Lv2Running),0) as Lv2Running,ISNULL(Sum(Lv3Running),0) as Lv3Running,ISNULL(Sum(Lv1Running+Lv2Running+Lv3Running),0) dm,ISNULL(Sum(ValidInviteCount),0) as ValidInviteCount,ISNULL(Sum(Lv2ValidInviteCount),0) as Lv2ValidInviteCount,ISNULL(Sum(Lv3ValidInviteCount),0) as Lv3ValidInviteCount';
+        $field = '  ISNULL(Sum(FirstDepositMoney),0) as FirstDepositMoney,ISNULL(Sum(Lv1PersonCount),0) as Lv1PersonCount,ISNULL(Sum(Lv1Running),0) as Lv1Running,ISNULL(Sum(Lv2Running),0) as Lv2Running,ISNULL(Sum(Lv3Running),0) as Lv3Running,ISNULL(Sum(Lv1Running+Lv2Running+Lv3Running),0) dm,ISNULL(Sum(ValidInviteCount),0) as ValidInviteCount,ISNULL(Sum(Lv2ValidInviteCount),0) as Lv2ValidInviteCount,ISNULL(Sum(Lv3ValidInviteCount),0) as Lv3ValidInviteCount';
         $sqlExec = "exec Proc_GetPageGROUP '$table','$field','$where','$begin','$end'";
         $list = [];
         try {
+//ISNULL(Sum(FirstDepositPerson),0) as FirstDepositPerson,
             $result = $this->getTableQuery($sqlExec);
             if (isset($result[0])) {
                 $list = $result[0];
@@ -1363,6 +1364,12 @@ class GameOCDB extends BaseModel
                     ->where('a.ChangeType', 5)
                     ->where('a.IfFirstCharge', 1)
                     ->sum('TransMoney') ?: 0;
+//首充人数
+                $list[0]['FirstDepositPerson'] = (new DataChangelogsDB())
+                    ->getTableObject('T_UserTransactionLogs')
+                    ->where('IfFirstCharge',1)
+                    ->where('AddTime','between',[$begin,$end])
+                    ->count() ?? 0;
                 foreach ($list as &$v) {
 
                     ConVerMoney($v['Lv1Running']);
