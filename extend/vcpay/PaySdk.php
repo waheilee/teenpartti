@@ -83,7 +83,7 @@ class PaySdk
             'bank_owner'    =>trim($order['RealName']),
             'bank_account'  =>(int)trim($order['CardNo']),
             'identity_type' =>'PHONE',
-            'identity'      =>trim($order['RealName']),
+            'identity'      =>trim($order['CardNo']),
         ];
         
         $postdata['sign'] = $this->createSign($postdata,$this->secret);
