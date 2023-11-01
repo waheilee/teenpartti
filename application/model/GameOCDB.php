@@ -1347,7 +1347,7 @@ class GameOCDB extends BaseModel
         $end = date('Y-m-d', strtotime($enddate));
 
         $table = 'dbo.T_ProxyDailyCollectData';
-        $field = '  ISNULL(Sum(FirstDepositMoney),0) as FirstDepositMoney,ISNULL(Sum(Lv1PersonCount),0) as Lv1PersonCount,ISNULL(Sum(Lv1Running),0) as Lv1Running,ISNULL(Sum(Lv2Running),0) as Lv2Running,ISNULL(Sum(Lv3Running),0) as Lv3Running,ISNULL(Sum(Lv1Running+Lv2Running+Lv3Running),0) dm,ISNULL(Sum(ValidInviteCount),0) as ValidInviteCount,ISNULL(Sum(Lv2ValidInviteCount),0) as Lv2ValidInviteCount,ISNULL(Sum(Lv3ValidInviteCount),0) as Lv3ValidInviteCount';
+        $field = 'ISNULL(Sum(FirstDepositPerson),0) as FirstDepositPerson,ISNULL(Sum(FirstDepositMoney),0) as FirstDepositMoney,ISNULL(Sum(Lv1PersonCount),0) as Lv1PersonCount,ISNULL(Sum(Lv1Running),0) as Lv1Running,ISNULL(Sum(Lv2Running),0) as Lv2Running,ISNULL(Sum(Lv3Running),0) as Lv3Running,ISNULL(Sum(Lv1Running+Lv2Running+Lv3Running),0) dm,ISNULL(Sum(ValidInviteCount),0) as ValidInviteCount,ISNULL(Sum(Lv2ValidInviteCount),0) as Lv2ValidInviteCount,ISNULL(Sum(Lv3ValidInviteCount),0) as Lv3ValidInviteCount';
         $sqlExec = "exec Proc_GetPageGROUP '$table','$field','$where','$begin','$end'";
         $list = [];
         try {
@@ -1402,7 +1402,6 @@ class GameOCDB extends BaseModel
                             $q->whereIn('RoleID',$userSubsetList);
                         }
                     })
-
                     ->count() ?? 0;
                 //首充金额
                 $list[0]['FirstDepositMoney'] = (new DataChangelogsDB())
@@ -1417,7 +1416,6 @@ class GameOCDB extends BaseModel
                             $q->whereIn('RoleID',$userSubsetList);
                         }
                     })
-
                     ->sum('TransMoney') ?? 0;
                 unset($v);
             }
