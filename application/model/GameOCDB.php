@@ -1347,7 +1347,7 @@ class GameOCDB extends BaseModel
         $end = date('Y-m-d', strtotime($enddate));
 
         $table = 'dbo.T_ProxyDailyCollectData';
-        $field = '  ISNULL(Sum(FirstDepositMoney),0) as FirstDepositMoney,ISNULL(Sum(Lv1PersonCount),0) as Lv1PersonCount,ISNULL(Sum(Lv1Running),0) as Lv1Running,ISNULL(Sum(Lv2Running),0) as Lv2Running,ISNULL(Sum(Lv3Running),0) as Lv3Running,ISNULL(Sum(Lv1Running+Lv2Running+Lv3Running),0) dm,ISNULL(Sum(ValidInviteCount),0) as ValidInviteCount,ISNULL(Sum(Lv2ValidInviteCount),0) as Lv2ValidInviteCount,ISNULL(Sum(Lv3ValidInviteCount),0) as Lv3ValidInviteCount';
+        $field = 'ISNULL(Sum(FirstDepositPerson),0) as FirstDepositPerson,ISNULL(Sum(FirstDepositMoney),0) as FirstDepositMoney,ISNULL(Sum(Lv1PersonCount),0) as Lv1PersonCount,ISNULL(Sum(Lv1Running),0) as Lv1Running,ISNULL(Sum(Lv2Running),0) as Lv2Running,ISNULL(Sum(Lv3Running),0) as Lv3Running,ISNULL(Sum(Lv1Running+Lv2Running+Lv3Running),0) dm,ISNULL(Sum(ValidInviteCount),0) as ValidInviteCount,ISNULL(Sum(Lv2ValidInviteCount),0) as Lv2ValidInviteCount,ISNULL(Sum(Lv3ValidInviteCount),0) as Lv3ValidInviteCount';
         $sqlExec = "exec Proc_GetPageGROUP '$table','$field','$where','$begin','$end'";
         $list = [];
         try {
@@ -1355,40 +1355,16 @@ class GameOCDB extends BaseModel
             $result = $this->getTableQuery($sqlExec);
             if (isset($result[0])) {
                 $list = $result[0];
-                $list[0]['FirstDepositMoney'] = (new \app\model\DataChangelogsDB())
-                    ->getTableObject('T_UserTransactionLogs')->alias('a')
-                    ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) c', 'c.AccountID=a.RoleID', 'left')
-                    ->where($where2)
-                    ->whereTime('a.AddTime', '>=', $begin . ' 00:00:00')
-                    ->whereTime('a.AddTime', '<=', $end . ' 23:59:59')
-                    ->where('a.ChangeType', 5)
-                    ->where('a.IfFirstCharge', 1)
-                    ->sum('TransMoney') ?: 0;
-//首充人数
+//                $list[0]['FirstDepositMoney'] = (new \app\model\DataChangelogsDB())
+//                    ->getTableObject('T_UserTransactionLogs')->alias('a')
+//                    ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) c', 'c.AccountID=a.RoleID', 'left')
+//                    ->where($where2)
+//                    ->whereTime('a.AddTime', '>=', $begin . ' 00:00:00')
+//                    ->whereTime('a.AddTime', '<=', $end . ' 23:59:59')
+//                    ->where('a.ChangeType', 5)
+//                    ->where('a.IfFirstCharge', 1)
+//                    ->sum('TransMoney') ?: 0;
 
-                $list[0]['FirstDepositPerson'] = (new DataChangelogsDB())
-                    ->getTableObject('T_UserTransactionLogs')
-                    ->where(function($q) use($roleid){
-                        if($roleid){
-                            $userDB = new UserDB();
-                            $redisKey = 'GET_USER_ALL_LIST';
-                            $userList = Redis::get($redisKey);
-                            if (!$userList){
-                                $data = $userDB->getTableObject('T_UserProxyInfo')
-                                    ->field('RoleID,ParentID')
-                                    ->select();
-                                $userList = Redis::set($redisKey,$data,3600);
-                            }
-                            $list = sortList($userList,$roleid);
-                            $q->whereIn('RoleID',$list);
-                        }
-                    })
-                    ->where('IfFirstCharge',1)
-                    ->where('AddTime','between',[
-                        date('Y-m-d 00:00:00', strtotime($startdate)),
-                        date('Y-m-d 23:59:59', strtotime($enddate))
-                    ])
-                    ->count() ?? 0;
                 foreach ($list as &$v) {
 
                     ConVerMoney($v['Lv1Running']);
@@ -1396,6 +1372,51 @@ class GameOCDB extends BaseModel
                     ConVerMoney($v['Lv3Running']);
                     ConVerMoney($v['dm']);
                 }
+                $userDB = new UserDB();
+                $redisKey = 'GET_USER_ALL_LIST';
+                $userList = Redis::get($redisKey);
+                if (!$userList){
+                    $data = $userDB->getTableObject('T_UserProxyInfo')
+                        ->field('RoleID,ParentID')
+                        ->select();
+                    $userList = Redis::set($redisKey,$data,3600);
+                }
+                $userSubsetList = '';
+                if (!empty($roleid)){
+                    $userSubsetList = Redis::get('USER_SUBSET_LIST_'.$roleid);
+                    if (!$userSubsetList){
+                        $userSubsetList = sortList($userList,$roleid);
+                        Redis::set('USER_SUBSET_LIST_'.$roleid,$userSubsetList,3600);
+                    }
+                }
+                //首充人数
+                $list[0]['FirstDepositPerson'] = (new DataChangelogsDB())
+                    ->getTableObject('T_UserTransactionLogs')
+                    ->where('AddTime','between',[
+                        $begin . ' 00:00:00',
+                        $end . ' 23:59:59'
+                    ])
+                    ->where('IfFirstCharge',1)
+                    ->where(function($q) use($roleid,$userSubsetList){
+                        if($roleid){
+                            $q->whereIn('RoleID',$userSubsetList);
+                        }
+                    })
+                    ->count() ?? 0;
+                //首充金额
+                $list[0]['FirstDepositMoney'] = (new DataChangelogsDB())
+                    ->getTableObject('T_UserTransactionLogs')
+                    ->where('IfFirstCharge',1)
+                    ->where('AddTime','between',[
+                        $begin . ' 00:00:00',
+                        $end . ' 23:59:59'
+                    ])
+                    ->where(function($q) use($roleid,$userSubsetList){
+                        if($roleid){
+                            $q->whereIn('RoleID',$userSubsetList);
+                        }
+                    })
+                    ->sum('TransMoney') ?? 0;
                 unset($v);
             }
             return $list;
