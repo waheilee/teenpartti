@@ -1144,7 +1144,7 @@ class Player extends Main
                 return $this->apiJson(['list' => $this->GetOnlineUserlist2()['total']]);
                 break;
             case 'exec':
-                $field = "AccountID ID,MachineCode,AccountName,LoginName,RegisterTime,LastLoginIP,TotalDeposit,TotalRollOut,Money,ProxyBonus";
+                $field = "AccountID ID,AccountName,LoginName,RegisterTime,LastLoginIP,TotalDeposit,TotalRollOut,Money,ProxyBonus";
                 $result = $db->TViewAccount()->GetPage($where, "$orderby $ordertype", $field);
                 foreach ($result['list'] as &$item) {
                     ConVerMoney($item['Money']);
@@ -1172,7 +1172,7 @@ class Player extends Main
                 if ((int)input('exec', 0) == 1 && $outAll = true) {
                     $header_types = [
                         lang('ID') => 'integer',//ID
-                        lang('机器码') => 'string',//MachineCode
+                        //lang('机器码') => 'string',//MachineCode
                         // lang('手机号') => 'string',//AccountName
                         lang('账号') => 'string',//AccountName
 //                        '是否禁用' => "string",//Locked
