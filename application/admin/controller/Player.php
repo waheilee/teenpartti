@@ -1151,6 +1151,9 @@ class Player extends Main
                     if (!empty($item['Mobile'])) {
                         $item['Mobile'] = substr_replace($item['Mobile'], '**', -2);
                     }
+                    if (config('accountName') == 1){
+                        $item['AccountName'] = substr_replace($item['AccountName'], '**', -4);
+                    }
 //                    ConVerMoney($item['TotalRollOut']);
 //                    ConVerMoney($item['TotalDeposit']);
                 }
