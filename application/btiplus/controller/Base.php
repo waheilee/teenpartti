@@ -86,16 +86,11 @@ class Base
     }
 
 
-    public function apiReturn($code, $data = [], $msg = '')
+    public function apiReturn($data = [] ): \think\response\Json
     {
-        return json([
-            'error' => $code,
-            'data' => $data,
-            'code'=>0,
-            'msg'=>'success',
-            'description'  => $msg
-
-        ]);
+        // 设置Content-Type为text/plain
+        header('Content-Type: text/plain');
+        return json($data);
     }
 
 }

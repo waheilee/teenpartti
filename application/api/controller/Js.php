@@ -18,7 +18,9 @@ class Js extends Controller
         $m = $socket->DSQueryRoleBalance($roleId);
         $gameMoney = $m['iGameWealth'] ?? 0;
         $balance = bcdiv($gameMoney, bl, 3);
-        return floor($balance * 100) / 100;
+        $num = floor($balance * 100) / 100;
+        header('Content-Type: text/plain');
+        return json($num);
     }
 
     //解密
