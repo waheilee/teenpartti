@@ -40,62 +40,6 @@ class Index extends Base
 
 
 
-    private function curl($url, $post_data = '', $header = [], $type = 'get')
-    {
-        if ($post_data) {
-            $type = 'post';
-        }
-        //初始化
-        $curl = curl_init();
-        //设置抓取的url
-        curl_setopt($curl, CURLOPT_URL, $url);
-        //设置头文件的信息作为数据流输出
-        curl_setopt($curl, CURLOPT_HEADER, 0);
-        //设置获取的信息以文件流的形式返回，而不是直接输出。
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-        if ($type == 'post') {
-            //设置post方式提交
-            curl_setopt($curl, CURLOPT_POST, 1);
-            if (is_array($post_data)) {
-                $post_data = http_build_query($post_data);
-            }
-            curl_setopt($curl, CURLOPT_POSTFIELDS, $post_data);
-        }
-        if ($header) {
-            curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
-        }
-        //https
-        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
-        //执行命令
-        $data = curl_exec($curl);
-        save_log('pplay', '===' . request()->url() . '===三方返回数据===' . $data);
-        //关闭URL请求
-        curl_close($curl);
-        //显示获得的数据
-        return $data;
-    }
-
-    //签名函数
-    private function createsign($data, $Md5key)
-    {
-        ksort($data);
-        $md5str = '';
-        foreach ($data as $key => $val) {
-            if ($val !== null) {
-                if ($md5str) {
-                    $md5str = $md5str . '&' . $key . '=' . $val;
-                } else {
-                    $md5str = $key . '=' . $val;
-                }
-
-            }
-        }
-        $str = $md5str . $Md5key;
-        return md5($str);
-    }
-
-
 
 
     /**
@@ -104,12 +48,17 @@ class Index extends Base
      */
     public function createusertest()
     {
+        $second = 60;
+        $minute = 60 * $second;
+        $hour = 24 * $minute;
+        $day = 30 * $hour;//一个月
+
         $param = jsonRequest(['roleid', 'gameid', 'language', 'session_id', 'ip', 'time', 'sign']);
         save_log('btiplus', '===' . request()->url() . '===接口请求数据===' . json_encode($param));
         $roleId = $param['roleid'];
         $encry = $this->encry($roleId);
-        $url = $this->API_Host.'?operatorToken='.$encry;
-        Redis::set($encry, $encry, 2592000);
+        $url = $this->API_Host . '?operatorToken=' . $encry;
+        Redis::set($encry, $encry, $day);
         return $this->succjson($url);
 
     }
@@ -130,7 +79,7 @@ class Index extends Base
             }
             $userId = $this->decry($authToken);
             if (empty($userId)) {
-                return $this->failjson(-3, 'auth_token error');
+                return $this->failjson(-3, 'auth_token error!');
             }
             $balance = $this->getBalance($userId);
             $response = [
@@ -138,15 +87,13 @@ class Index extends Base
                 "error_message" => "Success",
                 "cust_id" => $userId,
                 "balance" => round($balance, 2),
-                "cust_login" => "",
-                "city" => "",
-                "country" => "",
-                "currency_code" => "",
-                "extSessionID" => "",
-                "data" => ""
+                "cust_login" => $userId,
+                "city" => "BR",
+                "country" => "BR",
+                "currency_code" => "BRL"
             ];
             save_log('bti_plus', '===' . request()->url() . '===响应成功数据===' . json_encode($response));
-            return json($response);
+            return $this->apiReturn($response);
         } catch (Exception $ex) {
             save_log('bti_plus_error', '===' . $ex->getMessage() . $ex->getTraceAsString() . $ex->getLine());
             return $this->failjsonpp('api error');
@@ -176,7 +123,7 @@ class Index extends Base
                     "balance" => 0,
                     "trx_id" => $this->makeOrderId(00),
                 ];
-                return json($response);
+                return $this->apiReturn($response);
             }
             $accountInfo = $accountDB->getTableObject('T_Accounts')
                 ->where('AccountID', $accountId)
@@ -193,7 +140,7 @@ class Index extends Base
             }
             $balance = $this->getBalance($accountId);
             //资金不足
-            if ($balance < $amount || $amount !== 0) {
+            if ($balance < $amount) {
                 $response = [
                     "error_code" => -4,
                     "error_message" => "Insufficient Amount",
@@ -201,7 +148,7 @@ class Index extends Base
                     "trx_id" => $this->makeOrderId($accountId),
                 ];
                 save_log('btiplus', '===' . request()->url() . '===响应资金不足数据===' . json_encode($response));
-                return json($response);
+                return $this->apiReturn($response);
             }
 //            var_dump($accountInfo);die();
 
@@ -220,7 +167,7 @@ class Index extends Base
                     "trx_id" => $this->makeOrderId($accountId),
                 ];
                 save_log('btiplus', '===' . request()->url() . '===响应扣款失败数据===' . json_encode($response));
-                return json($response);
+                return $this->apiReturn($response);
             }
 
             Redis::set($this->reserveAmountBetRedisKey . $accountId . $reserveId, $amount, 86400);//记录下注数量
@@ -234,7 +181,7 @@ class Index extends Base
 
             Redis::set($this->reserveRedisKey . $accountId . $reserveId, $response, 86400);//记录订单是否执行，防止重复
             save_log('btiplus', '===' . request()->url() . '===响应成功数据===' . json_encode($response));
-            return json($response);
+            return $this->apiReturn($response);
         } catch (Exception $ex) {
             save_log('btiplus_error', '===' . $ex->getMessage() . $ex->getTraceAsString() . $ex->getLine());
             return $this->failjson(-1, 'api error');
@@ -266,7 +213,7 @@ class Index extends Base
                 "balance" => $balance,
                 "trx_id" => $this->makeOrderId($accountId),
             ];
-            return json($response);
+            return $this->apiReturn($response);
         }
 
         //查看相同一次投注订单是否重复提交
@@ -278,7 +225,7 @@ class Index extends Base
                 "balance" => $balance,
                 "trx_id" => $this->makeOrderId($accountId),
             ];
-            return json($response);
+            return $this->apiReturn($response);
         }
 
         //相同reserve的多次投注
@@ -300,7 +247,7 @@ class Index extends Base
                 "balance" => $balance,
                 "trx_id" => $this->makeOrderId($accountId),
             ];
-            return json($response);
+            return $this->apiReturn($response);
         }
         Redis::set($this->debitTotalRedisKey . $accountId . $reserveId . $orderId, $debitTotal, 84600);
         Redis::set($this->reqIdRedisKey . $accountId . $reserveId . $orderId . $reqId, $amount, 84600);
@@ -313,7 +260,7 @@ class Index extends Base
                 "balance" => $balance,
                 "trx_id" => $this->makeOrderId($accountId),
             ];
-            return json($response);
+            return $this->apiReturn($response);
         }
 
         //已提交的预留
@@ -324,7 +271,7 @@ class Index extends Base
                 "balance" => $balance,
                 "trx_id" => $this->makeOrderId($accountId),
             ];
-            return json($response);
+            return $this->apiReturn($response);
         }
 
         //debit reserve(借方准备金) 总金额小于储备金额
@@ -335,7 +282,7 @@ class Index extends Base
             "balance" => $balance,
             "trx_id" => $this->makeOrderId($accountId),
         ];
-        return json($response);
+        return $this->apiReturn($response);
 
 
     }
@@ -365,7 +312,7 @@ class Index extends Base
                 "error_message" => "Already Debitted Reserve",
                 "balance" => $balance,
             ];
-            return json($response);
+            return $this->apiReturn($response);
         }
         //不存在的reserve
         if (!Redis::has($reserveRedisKey)) {
@@ -374,7 +321,7 @@ class Index extends Base
                 "error_message" => "ReserveID not exists",
                 "balance" => $balance,
             ];
-            return json($response);
+            return $this->apiReturn($response);
         }
         //reserveID重复请求
         if (Redis::has($reserveCancelRedisKey)) {
@@ -383,7 +330,7 @@ class Index extends Base
                 "error_message" => "No Error",
                 "balance" => $balance,
             ];
-            return json($response);
+            return $this->apiReturn($response);
         }
         $reserveAmount = Redis::get($reserveAmountBetRedisKey);//玩家投注扣款金额
         $socket->UpScore2($accountId, bcmul($reserveAmount, bl, 0), $reserveId, 59000, 0);
@@ -395,7 +342,7 @@ class Index extends Base
         ];
         Redis::set($reserveCancelRedisKey, $response, 86400);
         Redis::rm($reserveRedisKey);
-        return json($response);
+        return $this->apiReturn($response);
         //
     }
 
@@ -425,12 +372,12 @@ class Index extends Base
                 "balance" => $balance,
                 "trx_id" => $this->makeOrderId($accountId),
             ];
-            return json($response);
+            return $this->apiReturn($response);
         }
         //reserveID重复请求
         $lastCommitReserveDate = Redis::get($commitReserveRedisKey);
         if ($lastCommitReserveDate) {
-            return json($lastCommitReserveDate);
+            return $this->apiReturn($lastCommitReserveDate);
         }
         $debitTotal = Redis::get($debitTotalRedisKey) ?? 0;//获取多次DebitReserve后的总额
         $reserveAmount = Redis::get($reserveAmountBetRedisKey);//玩家投注总额
@@ -446,7 +393,7 @@ class Index extends Base
             "balance" => $lastBalance,
         ];
         Redis::set($commitReserveRedisKey, $response, 86400);
-        return json($response);
+        return $this->apiReturn($response);
     }
 
     /**
@@ -483,7 +430,7 @@ class Index extends Base
             "balance" => $result,
         ];
         Redis::set($debitCustomerRedisKey, $response, 86400);
-        return json($response);
+        return $this->apiReturn($response);
     }
 
     /**
@@ -516,7 +463,7 @@ class Index extends Base
             "balance" => $result,
         ];
         Redis::set($creditCustomerRedisKey, $response, 86400);
-        return json($response);
+        return $this->apiReturn($response);
     }
 
     //获取玩家账号余额
@@ -548,6 +495,7 @@ class Index extends Base
     //解密
     private function decry($str, $key = 'btiplus')
     {
+        $str = trim($str);
         return think_decrypt($str, $key);
     }
 }
