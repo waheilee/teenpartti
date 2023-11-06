@@ -6,6 +6,23 @@ use think\Controller;
 
 class Base
 {
+    public function succjson($data){
+        $data = json_encode([
+            'error' => 0,
+            'code'=>0,
+            'msg'=>'success',
+            'description' => 'success',
+            'data'=>$data
+        ]);
+        save_log('bti_plus', '===='.request()->url().'====响应成功数据====' . $data);
+        return json([
+            'error' => 0,
+            'code'=>0,
+            'msg'=>'success',
+            'description' => 'success',
+            'data'=>$data
+        ]);
+    }
 
     public function apiReturnText($errorCode, $errorMsg, $balance, $trxId = "")
     {

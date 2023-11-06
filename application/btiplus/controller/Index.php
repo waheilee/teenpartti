@@ -52,7 +52,7 @@ class Index extends Base
         save_log('btiplus', '===' . request()->url() . '===接口请求数据===' . json_encode($param));
         $roleId = $param['roleid'];
         $encry = $this->encry($roleId);
-        $url = $this->API_Host . '?operatorToken=' . $encry;
+        $url = "https://bit.com" . '?operatorToken=' . $encry;
         Redis::set($encry, $encry, $day);
         return $this->succjson($url);
 
@@ -61,37 +61,41 @@ class Index extends Base
     /**
      * 令牌验证
      * @param Request $request
-     * @return \think\response\Json
+     * @return string
      */
-    public function ValidateToken(Request $request): \think\response\Json
+    public function ValidateToken(Request $request)
     {
         try {
             $authToken = $request->get('auth_token');
             save_log('bti_plus', '===' . request()->url() . '===接口请求数据===' . json_encode($authToken));
             $getRedisToken = Redis::get($authToken);
             if (empty($authToken) || $authToken != $getRedisToken) {
-                return $this->failjson(-3, 'auth_token error');
+                return 'error_code=-3' . PHP_EOL .
+                    'error_message=Generic Error';
+//                    $this->failjson(-3, 'auth_token error');
             }
             $userId = $this->decry($authToken);
             if (empty($userId)) {
-                return $this->failjson(-3, 'auth_token error!');
+                return 'error_code=-3' . PHP_EOL .
+                    'error_message=Generic Error!';
+//                return $this->failjson(-3, 'auth_token error!');
             }
             $balance = $this->getBalance($userId);
-            $response = [
-                "error_code" => 0,
-                "error_message" => "Success",
-                "cust_id" => $userId,
-                "balance" => round($balance, 2),
-                "cust_login" => $userId,
-                "city" => "BR",
-                "country" => "BR",
-                "currency_code" => "BRL"
-            ];
-            save_log('bti_plus', '===' . request()->url() . '===响应成功数据===' . json_encode($response));
-            return $this->apiReturn($response);
+            $response =
+                "error_code=0" . PHP_EOL .
+                "error_message=No error" . PHP_EOL .
+                "cust_id=" . $userId . PHP_EOL .
+                "balance=" . round($balance, 2) . PHP_EOL .
+                "cust_login=" . $userId . PHP_EOL .
+                "city=BR" . PHP_EOL .
+                "country=BR" . PHP_EOL .
+                "currency_code=BRL";
+            save_log('bti_plus', '===' . request()->url() . '===响应成功数据===' . $response);
+            return $response;
         } catch (Exception $ex) {
             save_log('bti_plus_error', '===' . $ex->getMessage() . $ex->getTraceAsString() . $ex->getLine());
-            return $this->failjsonpp('api error');
+            return 'error_code=-1' . PHP_EOL .
+                'error_message=api Error';
         }
     }
 
@@ -164,7 +168,7 @@ class Index extends Base
 
         } catch (Exception $ex) {
             save_log('btiplus_error', '===' . $ex->getMessage() . $ex->getTraceAsString() . $ex->getLine());
-            return $this->failjson(-1, 'api error');
+            return $this->apiReturnText(-1, "Error", 0, $this->makeOrderId($accountId));
         }
     }
 
