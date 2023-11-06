@@ -1,23 +1,21 @@
 <?php
 
-namespace app\habagame\controller;
+namespace app\yesbingo\controller;
 
 use think\Controller;
 
 class Base extends Controller
 {
-    public $operator_id ='';
-    public $securykey ='';
+
     public $config = [];
 
     public function _initialize()
     {
         if (request()->ip() == '177.71.145.60' && request()->action() != 'createuser') {
-            $tgcfg = config('habagame_test');
+            $tgcfg = config('yesbingo_test');
         } else {
-            $tgcfg = config('habagame');
+            $tgcfg = config('yesbingo');
         }
-
         $this->config = $tgcfg;
     }
 
@@ -27,7 +25,7 @@ class Base extends Controller
             'code'=>100,
             'msg'=>$msg,
         ]);
-        save_log('habagame', '===='.request()->url().'====响应失败数据====' . $log_data);
+        save_log('yesbingo', '===='.request()->url().'====响应失败数据====' . $log_data);
         return json([
             'code'=>100,
             'msg'=>$msg,
@@ -40,11 +38,25 @@ class Base extends Controller
             'msg'=>'success',
             'data'=>$data
         ]);
-        save_log('habagame', '===='.request()->url().'====响应成功数据====' . $log_data);
+        save_log('yesbingo', '===='.request()->url().'====响应成功数据====' . $log_data);
         return json([
             'code'=>0,
             'msg'=>'success',
             'data'=>$log_data
         ]);
     }
+
+
+    public function apiReturn($code, $msg = '',$data = 0,$logname='yesbingo')
+    {
+        $retdata = [
+            'status'   => $code,
+            'err_text' => $msg,
+            'balance'  => $data,
+        ];
+        save_log($logname, '==='.request()->url().'===响应成功数据===' . json_encode($retdata));
+        return json($retdata);
+        exit();
+    }
+
 }

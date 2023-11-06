@@ -18,7 +18,7 @@ class Base
 
     public $config = [];
     public $intotime = '';
-    
+
     public function __construct()
     {
         //从API合并转发测试服 接送到请求，使用测试配置
@@ -42,7 +42,7 @@ class Base
             $this->language       = config('pggame.language');
             $this->country        = config('pggame.country');
             $this->url            = $this->API_Host;
-        } 
+        }
     }
 
 
@@ -73,7 +73,7 @@ class Base
     }
 
 
-     public function apiReturn($data=null,$code="0",$msg='success'){
+    public function apiReturn($data=null,$code="0",$msg='success'){
         $log_data = json_encode([
             'data'=>$data,
             'error'=>[

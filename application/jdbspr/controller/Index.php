@@ -33,7 +33,7 @@ class Index extends Base
     public function createuser()
     {
         try {
-            $param = jsonRequest(['roleid', 'gameid', 'language','session_id', 'ip','time', 'sign']);
+            $param = jsonRequest(['roleid', 'gameid', 'language','session_id', 'ip','time', 'sign','gType']);
             $clientkey = config('clientkey');
             $key = md5($param['roleid'] . $param['gameid'] . $param['language'] . $param['time'] . $clientkey);
             if(empty($param['roleid']) || empty($param['gameid']) ||empty($param['time']) ||empty($param['sign'])){
@@ -44,7 +44,7 @@ class Index extends Base
             }
             $roleid = $param['roleid'];
             $test_uidarr = config('test_uidarr') ?: [];
-            if (strlen($roleid) == 7 || in_array($roleid, $test_uidarr)) {
+            if ((strlen($roleid)==7) || in_array($roleid, $test_uidarr)) {
                 $this->config = config('jdbspr_test');
                 config('trans_url_other',config('test_trans_url'));
             }
@@ -63,7 +63,7 @@ class Index extends Base
                 'uid'=>config('platform_name').'abc'.$roleid,
                 'balance'=>$balance,
                 'lang'=>$language,
-                'gType'=>"22",
+                'gType'=>$param['gType'] ?: "22",
                 'mType'=>$gameid ?: "22001",
             ];
             $params = $this->encrypt(json_encode($params),$this->config['Secret_Key'],$this->config['Operator_Token']);
@@ -85,7 +85,7 @@ class Index extends Base
             return $this->succjson($gameURL);
 
         } catch (Exception $ex) {
-            save_log('spribe_error', '==='.$ex->getMessage() . $ex->getTraceAsString() . $ex->getLine());
+            save_log('jdbspr_error', '==='.$ex->getMessage() . $ex->getTraceAsString() . $ex->getLine());
             return $this->failjson('api error');
         }
     }
@@ -121,7 +121,73 @@ class Index extends Base
                 return json($respons);
             }
             if ($action == 8) {
+                $bet_amount = $params['bet'];
+                $win_amount = $params['win'];
+                $gameId = $params['mType'];
+                $transaction_id = $reference = $params['transferId'];
 
+                if (Redis::get('jdbspr_is_exec_result_'.$user_id.$reference)) {
+                    $respons = [
+                        "status"=>"9999",
+                        'balance'=>$balance,
+                        'err_text'=>'Request duplicate'
+                    ];
+                    save_log('jdbspr', '==='.request()->url().'===响应成功数据===' . json_encode($respons));
+                    return json($respons);
+                } else {
+                    Redis::set('jdbspr_is_exec_result_'.$user_id.$reference,1,3600);
+                }
+
+                $socket = new QuerySocket();
+                $bet_amount = bcmul($bet_amount,bl,0);
+
+                $state = $socket->downScore($user_id, $bet_amount, $reference,39400);
+                if ($state['iResult']!=0) {
+                    $respons = [
+                        "status"=>"9999",
+                        'balance'=>$balance,
+                        "err_text"=>"api error"
+                    ];
+                    save_log('jdbspr', '==='.request()->url().'===响应成功数据===' . json_encode($respons));
+                    return json($respons);
+                }
+
+                $win_amount  = bcmul($win_amount,bl,0);
+                $state = $socket->UpScore2($user_id, $win_amount, $transaction_id,39400,$bet_amount);
+
+                $clear_data = Redis::get('jdbspr_game_id_'.$user_id) ?: [];
+                if (empty($clear_data)) {
+                    $state = $socket->ClearLablel($user_id,39400);
+                    Redis::rm('jdbspr_game_id_'.$user_id);
+                }
+
+                if (config('need_third_rank') == 1) {
+                    Redis::lpush('third_game_rank_list',json_encode([
+                        'PlatformId'=>39400,
+                        'PlatformName'=>'SPRIBE',
+                        'GameId'=>$gameId,
+                    ]));
+                }
+
+                $left_balance = $this->getSocketBalance($user_id);
+                $respons = [
+                    "status"=>"0000",
+                    'balance'=>$left_balance,
+                    "err_text"=>""
+                ];
+                save_log('jdbspr', '==='.request()->url().'===响应成功数据===' . json_encode($respons));
+                return json($respons);
+            }
+            if ($action == 4) {
+                //取消下注
+                $left_balance = $this->getSocketBalance($user_id);
+                $respons = [
+                    "status"=>"0000",
+                    'balance'=>$left_balance,
+                    "err_text"=>""
+                ];
+                save_log('jdbspr', '==='.request()->url().'===响应成功数据===' . json_encode($respons));
+                return json($respons);
             }
             if ($action == 9) {
                 $amount = $params['amount'];

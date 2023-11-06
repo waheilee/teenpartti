@@ -62,7 +62,7 @@ class Index extends Base
                 $language = 'pt';
             }
             $test_uidarr = config('test_uidarr') ?: [];
-            if (strlen($roleid) == 7 || in_array($roleid, $test_uidarr)) {
+            if (strlen($roleid)==7 || in_array($roleid, $test_uidarr)) {
                 $this->GAME_URL = config('pggame_test.GAME_URL');
                 $this->Operator_Token = config('pggame_test.Operator_Token');
             }

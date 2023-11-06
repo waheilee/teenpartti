@@ -47,7 +47,7 @@ class Index extends Base
             $roleid = $param['roleid'];
 
             $test_uidarr = config('test_uidarr') ?: [];
-            if (strlen($roleid) == 7 || in_array($roleid, $test_uidarr)) {
+            if ((strlen($roleid)==7) || in_array($roleid, $test_uidarr)) {
                 $this->country = config('evolution_test.country');
                 $this->Currency = config('evolution_test.Currency');
                 $this->language = config('evolution_test.language');

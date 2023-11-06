@@ -43,7 +43,7 @@ class Index extends Base
 
             $roleid = $param['roleid'];
             $test_uidarr = config('test_uidarr') ?: [];
-            if (strlen($roleid) == 7 || in_array($roleid, $test_uidarr)) {
+            if ((strlen($roleid)==7) || in_array($roleid, $test_uidarr)) {
                 $this->config = config('habagame_test');
                 // config('trans_url_other',config('test_trans_url'));
             }

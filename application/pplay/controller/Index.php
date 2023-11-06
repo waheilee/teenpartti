@@ -56,7 +56,7 @@ class Index extends Base
                 $param['language'] = 'pt';
             }
             $test_uidarr = config('test_uidarr') ?: [];
-            if (strlen($roleid) == 7 || in_array($roleid, $test_uidarr)) {
+            if ((strlen($roleid)==7) || in_array($roleid, $test_uidarr)) {
                 $this->Merchant_ID = config('pplay_test.Merchant_ID');
                 $this->API_Token   = config('pplay_test.API_Token');
                 $this->Currency    = config('pplay_test.Currency');
