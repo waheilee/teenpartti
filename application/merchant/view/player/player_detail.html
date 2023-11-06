@@ -75,6 +75,8 @@
                             <td>{:lang('上级ID')}:</td>
                             {if(config('merchantParentId') == 1)}
                             <td><a class="layui-bg-green" id="parentIdDetail" lay-event="detail">{$user.parentId}</a></td>
+                            {else /}
+                            <td>{$user.parentId}</td>
                             {/if}
                         </tr>
                         <tr>

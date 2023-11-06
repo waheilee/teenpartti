@@ -73,7 +73,11 @@
                             <td>{:lang('VIP等级')}:</td>
                             <td>VIP{$user.VipLv}&nbsp;&nbsp;&nbsp;[<a href="#" id="editlevel" >{:lang('修改')}</a>]</td>
                             <td>{:lang('上级ID')}:</td>
+                            {if(config('merchantParentId') == 1)}
+                            <td><a class="layui-bg-green" id="parentIdDetail" lay-event="detail">{$user.parentId}</a></td>
+                            {else /}
                             <td>{$user.parentId}</td>
+                            {/if}
                         </tr>
                         <tr>
                             <td>{:lang('手机号')}:</td>
@@ -968,7 +972,13 @@
         var url ='{:url("player/setVipRate",["RoleID"=>$user.AccountID])}?rate={$user.VipLv}';
         x_admin_show("{:lang('修改vip等级')}", url, 500,450);
     });
-
+    $('#parentIdDetail').click(function(){
+        console.log('{$user.parentId}')
+        if ('{$user.parentId}' != 0){
+            var url ='{:url("playerDetail")}?roleid={$user.parentId}';
+            x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.7);
+        }
+    });
 
 </script>
 {/block}
