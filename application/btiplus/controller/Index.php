@@ -146,7 +146,7 @@ class Index extends Base
                 return $reserve;
             }
 
-            $state = $socket->downScore($accountId, $amount, $reserveId, 38000);
+            $state = $socket->downScore($accountId, $amount * bl, $reserveId, 38000);
             if ($state['iResult'] != 0) {
 //                $response = [
 //                    "error_code" => -4,
