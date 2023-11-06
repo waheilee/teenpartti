@@ -1609,7 +1609,8 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
 
             $total = $db->getTableObject('T_Operator_GameStatisticTotal')->alias('a')
                 ->where($where)
-                ->field('sum(convert(bigint,a.TotalBatchMail)) TotalBatchMail,sum(convert(bigint,a.TotalGMPoint)) TotalGMPoint,sum(convert(bigint,a.TotalMailCoin)) TotalMailCoin')->find();
+                ->field('sum(convert(bigint,a.TotalBatchMail)) TotalBatchMail,sum(convert(bigint,a.TotalGMPoint)) TotalGMPoint,
+                sum(convert(bigint,a.TotalMailCoin)) TotalMailCoin')->find();
             $pay = $db->getTableObject('T_Operator_GameStatisticPay')->alias('a')
                 ->join('[OM_MasterDB].[dbo].[T_OperatorLink](NOLOCK) b', 'a.OperatorId=b.OperatorId')
                 ->where($where)
@@ -1650,7 +1651,15 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                 $strwhere = ' mydate>=\'' . $date . '-01\'';
                 $strwhere .= ' and mydate<\'' . date('Y-m-d', strtotime('+1 month', strtotime($date))) . '\'';
                 $strwhere .= ' and OperatorId=\'' . $val['OperatorId'] . '\'';
-                $field ='sum(ppgamewin) as ppgamewin,sum(pggamewin) as pggamewin,sum(evolivewin) as evolivewin,sum(spribe) as spribewin,sum(habawin) as habawin';
+                $field ='sum(ppgamewin) as ppgamewin,
+                        sum(pggamewin) as pggamewin,
+                        sum(evolivewin) as evolivewin,
+                        sum(spribe) as spribewin,
+                        sum(habawin) as habawin,                        
+                        sum(hacksaw) as hacksaw,
+                        sum(yesbingo) as yesbingo,
+                        sum(jiliwin) as jiliwin                      
+                        ';
                 if(config('app_type')==3){
                     $field.=',sum(jiliwin) as jiliwin';
                 }
@@ -1661,18 +1670,22 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                     $APIFee[0] = $APIFee[0] ?? 0; //pp
                     $APIFee[1] = $APIFee[1] ?? 0; //pg
                     $APIFee[2] = $APIFee[2] ?? 0; //evo
-                    $APIFee[3] = $APIFee[3] ?? 0; //spribe
+                    $APIFee[3] = $APIFee[3] ?? 0; //jdb
                     $APIFee[4] = $APIFee[4] ?? 0; //haba
+                    $APIFee[5] = $APIFee[5] ?? 0; //HackSaw
+                    $APIFee[6] = $APIFee[6] ?? 0; //JILI
+                    $APIFee[7] = $APIFee[7] ?? 0; //BINGO
 
                     $totalpp = bcmul($APIFee[0], $api_data['ppgamewin'], 4);
                     $totalpg = bcmul($APIFee[1], $api_data['pggamewin'], 4);
                     $totalevo = bcmul($APIFee[2], $api_data['evolivewin'], 4);
                     $spribewin = bcmul($APIFee[3], $api_data['spribewin'], 4);
                     $habawin = bcmul($APIFee[4], $api_data['habawin'], 4);
-                    $totaljili =0;
-                    if(config('app_type')==3){
-                        $totaljili = bcmul($APIFee[3], $api_data['jiliwin'], 4);
-                    }
+
+                    $hacksaw = bcmul($APIFee[4], $api_data['hacksaw'], 4);
+                    $yesbingo = bcmul($APIFee[4], $api_data['yesbingo'], 4);
+                    $totaljili = bcmul($APIFee[4], $api_data['jiliwin'], 4);
+
                     if ($totalpp < 0) {//系统赢算费用
                         $TotalAPICost += abs($totalpp);
                     }
@@ -1693,6 +1706,15 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                     if ($totaljili < 0) {//系统赢算费用
                         $TotalAPICost += abs($totaljili);
                     }
+
+                    if ($hacksaw < 0) {//系统赢算费用
+                        $TotalAPICost += abs($hacksaw);
+                    }
+
+                    if ($yesbingo < 0) {//系统赢算费用
+                        $TotalAPICost += abs($yesbingo);
+                    }
+
                 }
             }
             $data['TotalAPICost'] = bcdiv($TotalAPICost, 1000, 3);
@@ -1773,10 +1795,11 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
             ,sum(convert(bigint,ppgamewin)) as ppgamewin
              ,sum(convert(bigint,pggamewin)) as pggamewin
              ,sum(convert(bigint,evolivewin)) as evolivewin
-             ,sum(convert(bigint,spribe)) as spribe';
+             ,sum(convert(bigint,spribe)) as spribe
+             ,sum(convert(bigint,habawin)) as habawin';
 
-        if(config('app_type')==3){
-            $field.=',sum(convert(bigint,jiliwin)) as jiliwin';
+        if(config('has_hacksaw')==1){
+            $field.=',sum(convert(bigint,hacksaw)) as hacksaw';
         }
 
         $db = new UserDB();
@@ -1789,7 +1812,7 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
         if (empty($data)) {
             return $this->apiReturn(0, [], 'success', 0);
         }
-
+        $item = [];
         foreach ($data as $k=>&$v)
         {
             $db=new MasterDB();
@@ -1802,26 +1825,26 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
             ConVerMoney($v['pggamewin']);
             ConVerMoney($v['evolivewin']);
             ConVerMoney($v['spribe']);
-            if(config('app_type')==3){
-                ConVerMoney($v['jiliwin']);
-            }
+            ConVerMoney($v['habawin']);
+            ConVerMoney($v['hacksaw']);
+
             $TotalAPICost =0;
             if (strpos($info['APIFee'], ',') !== false) {
                 $APIFee = explode(',', $info['APIFee']);
                 $APIFee[0] = $APIFee[0] ?? 0; //pp
                 $APIFee[1] = $APIFee[1] ?? 0; //pg
                 $APIFee[2] = $APIFee[2] ?? 0; //evo
-                $APIFee[3] = $APIFee[3] ?? 0; //spribe
+                $APIFee[3] = $APIFee[3] ?? 0; //jili
+                $APIFee[4] = $APIFee[4] ?? 0; //habawin
+                $APIFee[5] = $APIFee[5] ?? 0; //hacksaw
 
                 $totalpp = bcmul($APIFee[0], $v['ppgamewin'], 4);
                 $totalpg = bcmul($APIFee[1], $v['pggamewin'], 4);
                 $totalevo = bcmul($APIFee[2], $v['evolivewin'], 4);
                 $totalspribe = bcmul($APIFee[3], $v['spribe'], 4);
-                $totaljili =0;
-                if(config('app_type')==3){
-                    $APIFee[3] = $APIFee[3] ?? 0; //jili
-                    $totaljili = bcmul($APIFee[3], $v['jiliwin'], 4);
-                }
+                $totalhabawin = bcmul($APIFee[4], $v['habawin'], 4);
+                $totalhacksaw = bcmul($APIFee[5], $v['hacksaw'], 4);
+
                 if ($totalpp < 0) {//系统赢算费用
                     $TotalAPICost += abs($totalpp);
                 }
@@ -1831,12 +1854,16 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                 if ($totalevo < 0) {//系统赢算费用
                     $TotalAPICost += abs($totalevo);
                 }
-                if ($totaljili < 0) {//系统赢算费用
-                    $TotalAPICost += abs($totaljili);
-                }
-
                 if ($totalspribe < 0) {//系统赢算费用
                     $TotalAPICost += abs($totalspribe);
+                }
+
+                if ($totalhabawin < 0) {//系统赢算费用
+                    $TotalAPICost += abs($totalhabawin);
+                }
+
+                if ($totalhacksaw < 0) {//系统赢算费用
+                    $TotalAPICost += abs($totalhacksaw);
                 }
             }
 
@@ -1848,8 +1875,17 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
             $fee = bcadd($fee,$v['apicost'] ,3);
             $v['totalprofit'] = bcsub($v['totalprofit'],$fee,2);
 
+            $v['versionfee']  =0;
+            $v['channelshare'] = 0;
+            if( $v['totalprofit'] >0 ){
+                $divite_rate =$info['DivideFee']??0;
+                $v['versionfee'] = bcmul($v['totalprofit'],$divite_rate,2);
+            }
+            $v['channelshare'] = bcsub($v['totalprofit'],$v['versionfee'],2);
+            $item[]=$v;
         }
-        return $this->apiReturn(0, $data, 'success');
+
+        return $this->apiReturn(0, $item, 'success');
 
     }
 
@@ -2109,7 +2145,7 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
         if ($action == 'list') {
             $limit = $this->request->param('limit')?:15;
 
-            
+
             $startdate = $this->request->param('startdate');
             $enddate = $this->request->param('enddate');
 
@@ -2156,49 +2192,37 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                     $startdate   = $enddate;
                     break;
                 default:
-                    
+
                     break;
             }
+            $regwhere=' 1=1 ';
             if ($startdate != '') {
-               $where .= ' and AddTime>=\''.$startdate.'\'';
+                $where .= ' and AddTime>=\''.$startdate.' 00:00:00\'';
+                $regwhere .= ' and RegisterTime>=\''.$startdate.'\'';
             }
             if ($enddate != '') {
                 $where .= ' and AddTime<=\''.$enddate.'\'';
+                $regwhere .= ' and RegisterTime<=\''.$enddate.' 23:59:59\'';
             }
-           $order = "AddTime desc";
+            $order = "AddTime desc";
             $gameOCDB = new GameOCDB();
-            $field = "sum(RunningBonus) RunningBonus,
-            count(case when RunningBonus>0 then RunningBonus else NULL end) RunningBonus_count,
-            sum(InviteBonus) InviteBonus,
-            count(case when InviteBonus>0 then InviteBonus else NULL end) InviteBonus_count,
-            sum(FirstChargeBonus) FirstChargeBonus,
-            count(case when FirstChargeBonus>0 then FirstChargeBonus else NULL end) FirstChargeBonus_count,
-            sum(ReChargeAmount) ReChargeAmount,
-            count(case when ReChargeAmount>0 then ReChargeAmount else NULL end) ReChargeAmount_count,  
-            sum(UserFirstReChargeBonus) UserFirstReChargeBonus,
-            count(case when UserFirstReChargeBonus>0 then UserFirstReChargeBonus else NULL end) UserFirstReChargeBonus_count,
-            sum(ReChargeBonus) ReChargeBonus,
-            count(case when ReChargeBonus>0 then ReChargeBonus else NULL end) ReChargeBonus_count,
-            sum(DailyChargeBonus) DailyChargeBonus,
-            count(case when DailyChargeBonus>0 then DailyChargeBonus else NULL end) DailyChargeBonus_count,
-            sum(VipRechargeBonus) VipRechargeBonus,
-            count(case when VipRechargeBonus>0 then VipRechargeBonus else NULL end) VipRechargeBonus_count,
-            sum(VipUpBonus) VipUpBonus,
-            count(case when VipUpBonus>0 then VipUpBonus else NULL end) VipUpBonus_count,
-            sum(VipDailySignBonus) VipDailySignBonus,
-            count(case when VipDailySignBonus>0 then VipDailySignBonus else NULL end) VipDailySignBonus_count,
-            sum(VipWeeklySignBonus) VipWeeklySignBonus,
-            count(case when VipWeeklySignBonus>0 then VipWeeklySignBonus else NULL end) VipWeeklySignBonus_count,
-            sum(VipMonthlySignBonus) VipMonthlySignBonus,
-            count(case when VipMonthlySignBonus>0 then VipMonthlySignBonus else NULL end) VipMonthlySignBonus_count,
-            sum(UserBetBonus) UserBetBonus,
-            count(case when UserBetBonus>0 then UserBetBonus else NULL end) UserBetBonus_count,
-            sum(MailWithWageBonus) MailWithWageBonus,
+            $field = "sum(RunningBonus) RunningBonus,count(case when RunningBonus>0 then RunningBonus else NULL end) RunningBonus_count,
+            sum(InviteBonus) InviteBonus,count(case when InviteBonus>0 then InviteBonus else NULL end) InviteBonus_count,sum(FirstChargeBonus) FirstChargeBonus,
+            count(case when FirstChargeBonus>0 then FirstChargeBonus else NULL end) FirstChargeBonus_count,sum(ReChargeAmount) ReChargeAmount,
+            count(case when ReChargeAmount>0 then ReChargeAmount else NULL end) ReChargeAmount_count,  sum(UserFirstReChargeBonus) UserFirstReChargeBonus,
+            count(case when UserFirstReChargeBonus>0 then UserFirstReChargeBonus else NULL end) UserFirstReChargeBonus_count,sum(ReChargeBonus) ReChargeBonus,
+            count(case when ReChargeBonus>0 then ReChargeBonus else NULL end) ReChargeBonus_count,sum(DailyChargeBonus) DailyChargeBonus,
+            count(case when DailyChargeBonus>0 then DailyChargeBonus else NULL end) DailyChargeBonus_count,sum(VipRechargeBonus) VipRechargeBonus,
+            count(case when VipRechargeBonus>0 then VipRechargeBonus else NULL end) VipRechargeBonus_count,sum(VipUpBonus) VipUpBonus,
+            count(case when VipUpBonus>0 then VipUpBonus else NULL end) VipUpBonus_count,sum(VipDailySignBonus) VipDailySignBonus,
+            count(case when VipDailySignBonus>0 then VipDailySignBonus else NULL end) VipDailySignBonus_count,sum(VipWeeklySignBonus) VipWeeklySignBonus,
+            count(case when VipWeeklySignBonus>0 then VipWeeklySignBonus else NULL end) VipWeeklySignBonus_count,sum(VipMonthlySignBonus) VipMonthlySignBonus,
+            count(case when VipMonthlySignBonus>0 then VipMonthlySignBonus else NULL end) VipMonthlySignBonus_count,sum(UserBetBonus) UserBetBonus,
+            count(case when UserBetBonus>0 then UserBetBonus else NULL end) UserBetBonus_count,sum(MailWithWageBonus) MailWithWageBonus,
             count(case when MailWithWageBonus>0 then MailWithWageBonus else NULL end) MailWithWageBonus_count,
-            sum(MailNoWageBonus) MailNoWageBonus,
-            count(case when MailNoWageBonus>0 then MailNoWageBonus else NULL end) MailNoWageBonus_count,
-            sum(LotteryBonus) LotteryBonus,
-            count(case when LotteryBonus>0 then LotteryBonus else NULL end) LotteryBonus_count";
+            sum(MailNoWageBonus) MailNoWageBonus,count(case when MailNoWageBonus>0 then MailNoWageBonus else NULL end) MailNoWageBonus_count,
+            sum(AppLoginBonusAmount) AppLoginBonusAmount,count(case when AppLoginBonusAmount>0 then AppLoginBonusAmount else NULL end) AppLoginBonusAmount_count,
+            sum(LotteryBonus) LotteryBonus,count(case when LotteryBonus>0 then LotteryBonus else NULL end) LotteryBonus_count";
 
             $field .=',sum(GiftCardBonus) as GiftCardBonus,count(case when GiftCardBonus>0 then GiftCardBonus else NULL end) GiftCardBonus_count';
             $data = $gameOCDB->getTableObject('T_ProxyDailyBonus')
@@ -2225,6 +2249,7 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
             $val['InviteBonus']            = FormatMoney($val['InviteBonus'] ?? 0);
             $val['FirstChargeBonus']       = FormatMoney($val['FirstChargeBonus'] ?? 0);
             $val['GiftCardBonus']          = FormatMoney($val['GiftCardBonus'] ?? 0);
+            $val['AppLoginBonusAmount']          = FormatMoney($val['AppLoginBonusAmount'] ?? 0);
 
             $val['UserFirstReChargeBonus_avr'] = $val['UserFirstReChargeBonus_count'] == 0 ? 0 : round($val['UserFirstReChargeBonus']/$val['UserFirstReChargeBonus_count'],2);
             $val['ReChargeBonus_avr']       = $val['ReChargeBonus_count'] == 0 ? 0 : round($val['ReChargeBonus']/$val['ReChargeBonus_count'],2);
@@ -2244,6 +2269,12 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
 
             $val['GiftCardBonus_avr']    = $val['GiftCardBonus_count'] == 0 ? 0 : round($val['GiftCardBonus']/$val['GiftCardBonus_count'],2);
 
+
+            $accountdb=new AccountDB();
+            $reg_count = $accountdb->getTableObject('T_Accounts(nolock)')->where($regwhere)->count();
+            $reg_count=$reg_count??0;
+            $val['AppLoginBonusAmount_avr']    = $reg_count == 0 ? 0 : round($val['AppLoginBonusAmount_count']*100/$reg_count,2);
+
             $data['startdate'] = $startdate;
             $data['enddate'] = $enddate;
             return json(['code'=>0,'data'=>$data]);
@@ -2256,7 +2287,7 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
     //     if ($action == 'list') {
     //         $limit = $this->request->param('limit')?:15;
 
-            
+
     //         $start_date = $this->request->param('strartdate');
     //         $end_date = $this->request->param('enddate');
 

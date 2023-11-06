@@ -38,7 +38,6 @@
         <a class="layui-btn layui-btn-xs" lay-event="edit">{:lang('编辑')}</a>
         <a class="layui-btn layui-btn-xs" lay-event="ed">{:lang('额度修改')}</a>
         <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="unbind">{:lang('解绑谷歌')}</a>
-        <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="updateStatus">{:lang('删除')}</a>
     </script>
 </div>
 <script type="text/html" id="is_default">
@@ -99,17 +98,15 @@
                 {field: 'ChannelRoom', title: "{:lang('独立房间')}", minWidth: 220, align: 'center'},
                 {field: 'RechargeFee', title: "{:lang('充值手续费比例')}", minWidth: 150, align: 'center'},
                 {field: 'WithdrawalFee', title: "{:lang('提现手续费比例')}", minWidth: 150, align: 'center'},
-                {field: 'APIFee', title: APIFee, minWidth: 300, align: 'center'},
+                {field: 'APIFee', title: APIFee, minWidth: 450, align: 'center'},
+                // {field: 'DivideFee', title: "{:lang('分成比例')}", minWidth: 200, align: 'center'},
                 {field: 'SingleUrl', title: "{:lang('独立域名')}", minWidth: 200, align: 'center'},
-
-                {field: 'YouTubeShareLink', title: "{:lang('YouTube分享连接')}", minWidth: 200, align: 'center'},
-                {field: 'TwitterShareLink', title: "{:lang('Twitter分享连接')}", minWidth: 200, align: 'center'},
-                {field: 'TelegramShareLink', title: "{:lang('Telegram分享连接')}", minWidth: 200, align: 'center'},
-                {field: 'InstagramShareLink', title: "{:lang('Instagram分享连接')}", minWidth: 200, align: 'center'},
-
                 {field: 'AddTime', title: "{:lang('添加时间')}", minWidth: 200, align: 'center'},
                 {fixed: 'right', title: "{:lang('操作')}", toolbar: '#toolbar', minWidth: 250, align: 'center'}
             ]]
+            ,done: function (res) {
+                tzTbale()
+            }
         });
         // 搜索
         $("#search").on('click', function () {
@@ -157,11 +154,11 @@
                         if (ret.code == 0) {
                             window.open("{:url('/admin/merchant/toIndex2')}?OperatorId=" + data.OperatorId);
                         } else {
-    
+
                         }
                     }
                 });
-                // 
+                //
             }
             if (obj.event === 'ed') {
                 layer.prompt({
@@ -218,27 +215,6 @@
                     });
                 });
             }
-            if (obj.event === 'updateStatus') {
-                layer.confirm("{:lang('确认删除？')}", {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
-                    $.ajax({
-                        type: 'post',
-                        url: "{:url('merchant/updateStatus')}",
-                        data: {
-                            OperatorId: data.OperatorId,
-                        },
-                        dataType: 'json',
-                        success: function (res) {
-                            if (res.code === 0) {
-                                layer.msg(res.msg, {icon: 6, time: 1000}, function () {
-                                    window.location.reload();
-                                });
-                            } else {
-                                layer.msg(res.msg, {icon: 5});
-                            }
-                        }
-                    });
-                });
-            }
         });
     });
 
@@ -254,7 +230,7 @@
     }
 
     function add() {
-        x_admin_show('{:lang(\'添加渠道\')}', "{:url('/admin/merchant/edit')}", 600, 600);
+        x_admin_show('{:lang(\'添加渠道\')}', "{:url('/admin/merchant/edit')}", 600, 700);
     }
 </script>
 {/block}
