@@ -3,7 +3,7 @@
 namespace app\btiplus\controller;
 
 use think\Controller;
-
+use think\Response;
 class Base
 {
     public function succjson($data){
@@ -28,16 +28,30 @@ class Base
     {
         header('Content-Type: text/plain');
         if (!empty($trxId)) {
-            return 'error_code=' . $errorCode . PHP_EOL .
+            $data = 'error_code=' . $errorCode . PHP_EOL .
                 'error_message=' . $errorMsg . PHP_EOL .
                 'balance=' . $balance . PHP_EOL .
                 'trx_id=' . $trxId;
         } else {
-            return 'error_code=' . $errorCode . PHP_EOL .
+            $data = 'error_code=' . $errorCode . PHP_EOL .
                 'error_message=' . $errorMsg . PHP_EOL .
                 'balance=' . $balance . PHP_EOL;
         }
+        // 创建一个Response实例
+        return $this->setHeader($data);
 
     }
+
+    public function setHeader($data)
+    {
+        $response = Response::create($data, 'text/plain', 200);
+
+        // 设置字符集
+        $response->header('Content-Type', 'text/plain; charset=utf-8');
+
+        return $response;
+    }
+
+
 
 }

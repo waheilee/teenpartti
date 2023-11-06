@@ -8,6 +8,7 @@ use socket\QuerySocket;
 use think\Exception;
 use redis\Redis;
 use think\Request;
+use think\Response;
 
 class Index extends Base
 {
@@ -61,7 +62,7 @@ class Index extends Base
     /**
      * 令牌验证
      * @param Request $request
-     * @return string
+     * @return Response|\think\response\Json|\think\response\Jsonp|\think\response\Redirect|\think\response\View|\think\response\Xml
      */
     public function ValidateToken(Request $request)
     {
@@ -70,18 +71,20 @@ class Index extends Base
             save_log('bti_plus', '===' . request()->url() . '===接口请求数据===' . json_encode($authToken));
             $getRedisToken = Redis::get($authToken);
             if (empty($authToken) || $authToken != $getRedisToken) {
-                return 'error_code=-3' . PHP_EOL .
+                $data = 'error_code=-3' . PHP_EOL .
                     'error_message=Generic Error';
 //                    $this->failjson(-3, 'auth_token error');
+                return $this->setHeader($data);
             }
             $userId = $this->decry($authToken);
             if (empty($userId)) {
-                return 'error_code=-3' . PHP_EOL .
+                $data = 'error_code=-3' . PHP_EOL .
                     'error_message=Generic Error!';
-//                return $this->failjson(-3, 'auth_token error!');
+
+                return $this->setHeader($data);
             }
             $balance = $this->getBalance($userId);
-            $response =
+            $data =
                 "error_code=0" . PHP_EOL .
                 "error_message=No error" . PHP_EOL .
                 "cust_id=" . $userId . PHP_EOL .
@@ -90,19 +93,22 @@ class Index extends Base
                 "city=BR" . PHP_EOL .
                 "country=BR" . PHP_EOL .
                 "currency_code=BRL";
-            save_log('bti_plus', '===' . request()->url() . '===响应成功数据===' . $response);
-            return $response;
+            save_log('bti_plus', '===' . request()->url() . '===响应成功数据===' . $data);
+            return $this->setHeader($data);
+
+
         } catch (Exception $ex) {
             save_log('bti_plus_error', '===' . $ex->getMessage() . $ex->getTraceAsString() . $ex->getLine());
-            return 'error_code=-1' . PHP_EOL .
+            $data = 'error_code=-1' . PHP_EOL .
                 'error_message=api Error';
+            return $this->setHeader($data);
         }
     }
 
     /**
      * 扣款
      * @param Request $request
-     * @return mixed|\think\response\Json
+     * @return mixed|Response|\think\response\Json|\think\response\Jsonp|\think\response\Redirect|\think\response\View|\think\response\Xml
      */
     public function Reserve(Request $request)
     {
@@ -175,7 +181,7 @@ class Index extends Base
     /**
      * 注单资讯指令
      * @param Request $request
-     * @return string
+     * @return Response|\think\response\Json|\think\response\Jsonp|\think\response\Redirect|\think\response\View|\think\response\Xml
      */
     public function DebitReserve(Request $request)
     {
@@ -279,7 +285,7 @@ class Index extends Base
     /**
      * 取消投注指令
      * @param Request $request
-     * @return string
+     * @return Response|\think\response\Json|\think\response\Jsonp|\think\response\Redirect|\think\response\View|\think\response\Xml
      */
     public function CancelReserve(Request $request)
     {
@@ -342,7 +348,7 @@ class Index extends Base
     /**
      * 投注确认指令
      * @param Request $request
-     * @return mixed|string
+     * @return mixed|Response|\think\response\Json|\think\response\Jsonp|\think\response\Redirect|\think\response\View|\think\response\Xml
      */
     public function CommitReserve(Request $request)
     {
@@ -395,7 +401,7 @@ class Index extends Base
     /**
      * 重新结算回收彩金指令
      * @param Request $request
-     * @return mixed|\think\response\Json
+     * @return mixed|Response|\think\response\Json|\think\response\Jsonp|\think\response\Redirect|\think\response\View|\think\response\Xml
      */
     public function DebitCustomer(Request $request)
     {
@@ -433,7 +439,7 @@ class Index extends Base
     /**
      * 结算派彩指令
      * @param Request $request
-     * @return mixed|\think\response\Json
+     * @return mixed|Response|\think\response\Json|\think\response\Jsonp|\think\response\Redirect|\think\response\View|\think\response\Xml
      */
     public function CreditCustomer(Request $request)
     {
