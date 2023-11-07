@@ -68,7 +68,7 @@ class Index extends Base
     {
         try {
             $authToken = $request->get('auth_token');
-            save_log('bti_plus', '===' . request()->url() . '===接口请求数据===' . json_encode($authToken));
+            save_log('btiplus', '===' . request()->url() . '===接口请求数据===' . json_encode($authToken));
             $getRedisToken = Redis::get($authToken);
             if (empty($authToken) || $authToken != $getRedisToken) {
                 $data = 'error_code=-3' . PHP_EOL .
@@ -93,12 +93,12 @@ class Index extends Base
                 "city=BR" . PHP_EOL .
                 "country=BR" . PHP_EOL .
                 "currency_code=BRL";
-            save_log('bti_plus', '===' . request()->url() . '===响应成功数据===' . $data);
+            save_log('btiplus', '===' . request()->url() . '===响应成功数据===' . $data);
             return $this->setHeader($data);
 
 
         } catch (Exception $ex) {
-            save_log('bti_plus_error', '===' . $ex->getMessage() . $ex->getTraceAsString() . $ex->getLine());
+            save_log('btiplus_error', '===' . $ex->getMessage() . $ex->getTraceAsString() . $ex->getLine());
             $data = 'error_code=-1' . PHP_EOL .
                 'error_message=api Error';
             return $this->setHeader($data);
@@ -295,7 +295,7 @@ class Index extends Base
         $customerId = $request->param('customer_id');
         $orderId = $request->param('purchase_id');
         $balance = $this->getBalance($accountId);
-        $reserveRedisKey = 'RESERVE_BET_' . $accountId . $reserveId;
+        $reserveRedisKey = $this->reserveRedisKey . $accountId . $reserveId;
         $reserveCancelRedisKey = 'RESERVE_BET_CANCEL' . $accountId . $reserveId;
         $reserveAmountBetRedisKey = 'RESERVE_AMOUNT_BET_' . $accountId . $reserveId;
         $commitReserveRedisKey = 'USER_COMMIT_FOR_RESERVE_ID_' . $accountId . $reserveId . $orderId;
@@ -358,7 +358,7 @@ class Index extends Base
         $customerId = $request->param('customer_id');
         $orderId = $request->param('purchase_id');
         $balance = $this->getBalance($accountId);
-        $reserveRedisKey = 'RESERVE_BET_' . $accountId . $reserveId;
+        $reserveRedisKey = $this->reserveRedisKey . $accountId . $reserveId;
         $debitTotalRedisKey = 'DEBIT_TOTAL_FOR_RESERVE_ID_' . $accountId . $reserveId . $orderId;
         $commitReserveRedisKey = 'USER_COMMIT_FOR_RESERVE_ID_' . $accountId . $reserveId . $orderId;
         $reserveAmountBetRedisKey = 'RESERVE_AMOUNT_BET_' . $accountId . $reserveId;//投注金额
