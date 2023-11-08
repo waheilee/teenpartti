@@ -1376,69 +1376,43 @@ class GameOCDB extends BaseModel
                 $userDB = new UserDB();
                 $redisKey = 'GET_USER_ALL_LIST';
                 $userList = Redis::get($redisKey);
-                if (!$userList){
+                if (!$userList) {
                     $data = $userDB->getTableObject('T_UserProxyInfo')
                         ->field('RoleID,ParentID')
                         ->select();
-                    $userList = Redis::set($redisKey,$data,3600);
+                    $userList = Redis::set($redisKey, $data, 3600);
                 }
                 $userSubsetList = '';
-                if (!empty($roleid)){
-                    $userSubsetList = Redis::get('USER_SUBSET_LIST_'.$roleid);
-                    if (!$userSubsetList){
-                        $userSubsetList = sortList($userList,$roleid);
-                        Redis::set('USER_SUBSET_LIST_'.$roleid,$userSubsetList,3600);
+                if (!empty($roleid)) {
+                    $userSubsetList = Redis::get('USER_SUBSET_LIST_' . $roleid);
+                    if (!$userSubsetList) {
+                        $userSubsetList = sortList($userList, $roleid);
+                        Redis::set('USER_SUBSET_LIST_' . $roleid, $userSubsetList, 3600);
                     }
                 }
                 $operatorIdUserList = '';
-                if (!empty($operatorId)){
-                    $operatorIdUserList = Redis::get('USER_OPERATOR_SUBSET_LIST_'.$operatorId);
-                    if (!$operatorIdUserList){
-                        $accountDB = new AccountDB();
-                        $operatorIdUserList = $accountDB->getTableObject('T_Accounts')
+                if (!empty($operatorId)) {
+                    $operatorIdUserList = Redis::get('USER_OPERATOR_SUBSET_LIST_' . $operatorId);
+                    if (!$operatorIdUserList) {
+                        $accountDB = new UserDB();
+                        $operatorIdUserList = $accountDB->getTableObject('View_Accountinfo')
                             ->where('OperatorId', '=', $operatorId)
                             ->column('AccountID');
-                        Redis::set('USER_OPERATOR_SUBSET_LIST_'.$operatorId,$operatorIdUserList,3600);
+                        $flippedData = array_flip($operatorIdUserList);
+                        Redis::set('USER_OPERATOR_SUBSET_LIST_' . $operatorId, $flippedData, 3600);
                     }
                 }
-                //首充人数
-                $list[0]['FirstDepositPerson'] = (new DataChangelogsDB())
-                    ->getTableObject('T_UserTransactionLogs')
-                    ->where('AddTime','between',[
-                        $begin . ' 00:00:00',
-                        $end . ' 23:59:59'
-                    ])
-                    ->where('IfFirstCharge',1)
-                    ->where(function($q) use($roleid,$userSubsetList){
-                        if($roleid){
-                            $q->whereIn('RoleID',$userSubsetList);
-                        }
-                    })
-                    ->where(function($q) use($operatorId,$operatorIdUserList){
-                        if($operatorId){
-                            $q->whereIn('RoleID',$operatorIdUserList);
-                        }
-                    })
-                    ->count() ?? 0;
-                //首充金额
-                $list[0]['FirstDepositMoney'] = (new DataChangelogsDB())
-                    ->getTableObject('T_UserTransactionLogs')
-                    ->where('IfFirstCharge',1)
-                    ->where('AddTime','between',[
-                        $begin . ' 00:00:00',
-                        $end . ' 23:59:59'
-                    ])
-                    ->where(function($q) use($roleid,$userSubsetList){
-                        if($roleid){
-                            $q->whereIn('RoleID',$userSubsetList);
-                        }
-                    })
-                    ->where(function($q) use($operatorId,$operatorIdUserList){
-                        if($operatorId){
-                            $q->whereIn('RoleID',$operatorIdUserList);
-                        }
-                    })
-                    ->sum('TransMoney') ?? 0;
+                if ($roleid) {
+                    //首充人数
+                    $list[0]['FirstDepositPerson'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 1);
+                    //首充金额
+                    $list[0]['FirstDepositMoney'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 2);
+                } else {
+                    $list[0]['FirstDepositPerson'] = $this->getFirstDeposit('', $operatorId, $operatorIdUserList, $begin, $end, 1);
+                    $list[0]['FirstDepositMoney'] = $this->getFirstDeposit('', $operatorId, $userSubsetList, $begin, $end, 2);
+                }
+
+
                 unset($v);
             }
             return $list;
@@ -1446,6 +1420,118 @@ class GameOCDB extends BaseModel
             //var_dump($exception->getMessage());
             return $list;
         }
+    }
+
+    /**
+     * 处理首充人数与首充金额
+     * @param $roleId
+     * @param $operatorId
+     * @param $list
+     * @param $begin
+     * @param $end
+     * @param $type
+     * @return float|int|string
+     */
+    public function getFirstDeposit($roleId, $operatorId, $list, $begin, $end, $type)
+    {
+        $batchSize = 100;
+// 计算数据集的总数
+        $totalRecords = count($list);
+
+// 计算需要分成多少批次
+        $numBatches = ceil($totalRecords / $batchSize);
+
+// 分批处理数据
+        $number = 0;
+        for ($batch = 0; $batch < $numBatches; $batch++) {
+            $start = $batch * $batchSize;
+            $end = min(($batch + 1) * $batchSize, $totalRecords);
+
+            // 获取当前批次的数据
+            $batchData = array_slice($list, $start, $end - $start);
+
+            // 处理当前批次的数据
+            if ($type == 1) {
+                //处理首充人数
+                if ($roleId) {
+                    $number += $this->getFirstDepositPerson($roleId, '', $batchData, $begin, $end);
+                } else {
+                    $number += $this->getFirstDepositPerson('', $operatorId, $batchData, $begin, $end);
+                }
+            } else {
+                //处理首充金额
+                if ($roleId) {
+                    $number += $this->getFirstDepositMoney($roleId, '', $batchData, $begin, $end);
+                } else {
+                    $number += $this->getFirstDepositMoney('', $operatorId, $batchData, $begin, $end);
+                }
+            }
+
+        }
+        return $number;
+    }
+
+    /**
+     * 统计首充人数
+     * @param $roleId
+     * @param $operatorId
+     * @param $list
+     * @param $begin
+     * @param $end
+     * @return int|string
+     * @throws Exception
+     */
+    public function getFirstDepositPerson($roleId, $operatorId, $list, $begin, $end)
+    {
+        return (new DataChangelogsDB())
+            ->getTableObject('T_UserTransactionLogs')
+            ->where('AddTime', 'between', [
+                $begin . ' 00:00:00',
+                $end . ' 23:59:59'
+            ])
+            ->where('IfFirstCharge', 1)
+            ->where(function ($q) use ($roleId, $list) {
+                if ($roleId) {
+                    $q->whereIn('RoleID', $list);
+                }
+            })
+            ->where(function ($q) use ($operatorId, $list) {
+                if ($operatorId) {
+                    $q->whereIn('RoleID', $list);
+                }
+            })
+            ->count() ?? 0;
+    }
+
+    /**
+     * 统计首充金额
+     * @param $roleId
+     * @param $operatorId
+     * @param $list
+     * @param $begin
+     * @param $end
+     * @return float|int|string
+     */
+    public function getFirstDepositMoney($roleId, $operatorId, $list, $begin, $end)
+    {
+        return (new DataChangelogsDB())
+            ->getTableObject('T_UserTransactionLogs')
+            ->where('IfFirstCharge', 1)
+            ->where('AddTime', 'between', [
+                $begin . ' 00:00:00',
+                $end . ' 23:59:59'
+            ])
+            ->where(function ($q) use ($roleId, $list) {
+                if ($roleId) {
+                    $q->whereIn('RoleID', $list);
+                }
+            })
+            ->where(function ($q) use ($operatorId, $list) {
+                if ($operatorId) {
+                    $q->whereIn('RoleID', $list);
+                }
+            })
+            ->sum('TransMoney') ?? 0;
     }
 
 
