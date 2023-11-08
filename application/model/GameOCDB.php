@@ -1294,10 +1294,11 @@ class GameOCDB extends BaseModel
             $where .= ' and proxyid=' . $roleid;
             $where2 .= ' and a.RoleID=' . $roleid;
         }
-
+        $operatorId = '';
         if (session('merchant_OperatorId') && request()->module() == 'merchant') {
             $where .= ' and OperatorId=' . session('merchant_OperatorId');
             $where2 .= ' and c.OperatorId=' . session('merchant_OperatorId');
+            $operatorId = session('merchant_OperatorId');
         }
         $tab = input('tab') ?: '';
         switch ($tab) {
@@ -1389,6 +1390,17 @@ class GameOCDB extends BaseModel
                         Redis::set('USER_SUBSET_LIST_'.$roleid,$userSubsetList,3600);
                     }
                 }
+                $operatorIdUserList = '';
+                if (!empty($operatorId)){
+                    $operatorIdUserList = Redis::get('USER_OPERATOR_SUBSET_LIST_'.$operatorId);
+                    if (!$operatorIdUserList){
+                        $accountDB = new AccountDB();
+                        $operatorIdUserList = $accountDB->getTableObject('T_Accounts')
+                            ->where('OperatorId', '=', $operatorId)
+                            ->column('AccountID');
+                        Redis::set('USER_OPERATOR_SUBSET_LIST_'.$operatorId,$operatorIdUserList,3600);
+                    }
+                }
                 //首充人数
                 $list[0]['FirstDepositPerson'] = (new DataChangelogsDB())
                     ->getTableObject('T_UserTransactionLogs')
@@ -1400,6 +1412,11 @@ class GameOCDB extends BaseModel
                     ->where(function($q) use($roleid,$userSubsetList){
                         if($roleid){
                             $q->whereIn('RoleID',$userSubsetList);
+                        }
+                    })
+                    ->where(function($q) use($operatorId,$operatorIdUserList){
+                        if($operatorId){
+                            $q->whereIn('RoleID',$operatorIdUserList);
                         }
                     })
                     ->count() ?? 0;
@@ -1414,6 +1431,11 @@ class GameOCDB extends BaseModel
                     ->where(function($q) use($roleid,$userSubsetList){
                         if($roleid){
                             $q->whereIn('RoleID',$userSubsetList);
+                        }
+                    })
+                    ->where(function($q) use($operatorId,$operatorIdUserList){
+                        if($operatorId){
+                            $q->whereIn('RoleID',$operatorIdUserList);
                         }
                     })
                     ->sum('TransMoney') ?? 0;
