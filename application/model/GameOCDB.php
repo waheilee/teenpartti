@@ -1384,17 +1384,7 @@ class GameOCDB extends BaseModel
 //                        Redis::set('USER_OPERATOR_SUBSET_LIST_' . $operatorId, $flippedData, 3600);
 //                    }
                 }
-                $list[0]['first_deposit_per'] = $this->getFirstDeposit('', '', '', $begin, $end, 1);
-                $list[0]['first_deposit_mon'] = $this->getFirstDeposit('', '', '', $begin, $end, 2);
-                if ($roleid) {
-                    //首充人数
-                    $list[0]['first_deposit_per'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 1);
-                    //首充金额
-                    $list[0]['first_deposit_mon'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 2);
-                } elseif($operatorId) {
-                    $list[0]['first_deposit_per'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 1);
-                    $list[0]['first_deposit_mon'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 2);
-                }
+
 //                $list[0]['FirstDepositMoney'] = (new \app\model\DataChangelogsDB())
 //                    ->getTableObject('T_UserTransactionLogs')->alias('a')
 //                    ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) c', 'c.AccountID=a.RoleID', 'left')
@@ -1411,6 +1401,17 @@ class GameOCDB extends BaseModel
                     ConVerMoney($v['Lv2Running']);
                     ConVerMoney($v['Lv3Running']);
                     ConVerMoney($v['dm']);
+                    $v['first_deposit_per'] = $this->getFirstDeposit('', '', '', $begin, $end, 1);
+                    $v['first_deposit_mon'] = $this->getFirstDeposit('', '', '', $begin, $end, 2);
+                    if ($roleid) {
+                        //首充人数
+                        $v['first_deposit_per'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 1);
+                        //首充金额
+                        $v['first_deposit_mon'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 2);
+                    } elseif($operatorId) {
+                        $v['first_deposit_per'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 1);
+                        $v['first_deposit_mon'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 2);
+                    }
                 }
 
 
