@@ -1406,9 +1406,12 @@ class GameOCDB extends BaseModel
                     $list[0]['FirstDepositPersons'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 1);
                     //首充金额
                     $list[0]['FirstDepositMoneys'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 2);
-                } else {
+                } elseif($operatorId) {
                     $list[0]['FirstDepositPersons'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 1);
                     $list[0]['FirstDepositMoneys'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 2);
+                }else{
+                    $list[0]['FirstDepositPersons'] = $this->getFirstDeposit('', '', '', $begin, $end, 1);
+                    $list[0]['FirstDepositMoneys'] = $this->getFirstDeposit('', '', '', $begin, $end, 2);
                 }
 
                 unset($v);
