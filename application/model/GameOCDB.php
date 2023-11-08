@@ -1302,8 +1302,8 @@ class GameOCDB extends BaseModel
                         //首充金额
                         $item['FirstDepositMoneys'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 2);
                     } else {
-                        $item['FirstDepositPersons'] = $this->getFirstDeposit('', $businessOperatorId, $flippedData, $begin, $end, 1);
-                        $item['FirstDepositMoneys'] = $this->getFirstDeposit('', $businessOperatorId, $flippedData, $begin, $end, 2);
+                        $item['FirstDepositPersons'] = $this->getFirstDeposit('', $businessProxyChannelId, $flippedData, $begin, $end, 1);
+                        $item['FirstDepositMoneys'] = $this->getFirstDeposit('', $businessProxyChannelId, $flippedData, $begin, $end, 2);
                     }
                     $item['Lv1PersonCount'] = $v['Lv1PersonCount'];
                     $item['Lv2ValidInviteCount'] = $v['Lv2ValidInviteCount'];
