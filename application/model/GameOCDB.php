@@ -1394,8 +1394,7 @@ class GameOCDB extends BaseModel
                 if (!empty($operatorId)) {
 //                    $flippedData = Redis::get('USER_OPERATOR_SUBSET_LIST_' . $operatorId);
 //                    if (!$flippedData) {
-                        $accountDB = new UserDB();
-                        $operatorIdUserList = $accountDB->getTableObject('View_Accountinfo')
+                        $operatorIdUserList = $userDB->getTableObject('View_Accountinfo')
                             ->where('OperatorId', '=', $operatorId)
                             ->column('AccountID');
                         $flippedData = array_flip($operatorIdUserList);
@@ -1404,13 +1403,13 @@ class GameOCDB extends BaseModel
                 }
                 if ($roleid) {
                     //首充人数
-                    $list[0]['FirstDepositPerson'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 1);
+                    $list[0]['FirstDepositPersons'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 1);
                     //首充金额
-                    $list[0]['FirstDepositMoney'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 2);
+                    $list[0]['FirstDepositMoneys'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 2);
                 } else {
-                    $list[0]['FirstDepositPerson'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 1);
-                    $list[0]['FirstDepositMoney'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 2);
-                    $list[0]['operatorId'] = $operatorId;
+                    $list[0]['FirstDepositPersons'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 1);
+                    $list[0]['FirstDepositMoneys'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 2);
+                    $list[0]['operatorIds'] = $operatorId;
                 }
 
                 unset($v);
