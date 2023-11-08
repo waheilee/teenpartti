@@ -1227,9 +1227,9 @@ class GameOCDB extends BaseModel
             $where .= ' and OperatorId=' . session('merchant_OperatorId');
             $where2 .= ' and c.OperatorId=' . session('merchant_OperatorId');
         }
-        $businessOperatorId = '';
-        if (session('business_OperatorId') && request()->module() == 'business') {
-            $businessOperatorId = session('business_OperatorId');
+        $businessProxyChannelId = '';
+        if (session('business_ProxyChannelId') && request()->module() == 'business') {
+            $businessProxyChannelId = session('business_ProxyChannelId');
         }
         $begin = date('Y-m-d', strtotime($startdate));
         $end = date('Y-m-d', strtotime($enddate));
@@ -1260,12 +1260,22 @@ class GameOCDB extends BaseModel
                         Redis::set('USER_SUBSET_LIST_' . $roleid, $userSubsetList, 3600);
                     }
                 }
+
+
+
                 $flippedData = '';
-                if (!empty($businessOperatorId)) {
+                if (!empty($businessProxyChannelId)) {
+                    $channelIds = $this->getTableObject('T_ProxyChannelConfig')
+                        ->where('pid',$businessProxyChannelId)
+                        ->column('ProxyChannelId');
+                    if (!empty($channelIds)){
+                        $businessProxyChannelIdArray = array_flip($channelIds);
+                    }
+                    $businessProxyChannelIdArray[] = $businessProxyChannelId;
 //                    $flippedData = Redis::get('USER_OPERATOR_SUBSET_LIST_' . $operatorId);
 //                    if (!$flippedData) {
                     $operatorIdUserList = $userDB->getTableObject('View_Accountinfo')
-                        ->where('ProxyChannelId', '=', $businessOperatorId)
+                        ->wherein('ProxyChannelId',  $businessProxyChannelIdArray)
                         ->column('AccountID');
                     $flippedData = array_flip($operatorIdUserList);
 //                        Redis::set('USER_OPERATOR_SUBSET_LIST_' . $operatorId, $flippedData, 3600);
