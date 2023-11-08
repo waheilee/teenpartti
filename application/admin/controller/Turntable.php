@@ -501,6 +501,14 @@ class Turntable extends Main
         return $str;
     }
 
+    /**
+     * 转盘手机号码列表
+     * @return mixed|\think\response\Json
+     * @throws \think\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
     public function phoneList()
     {
         if($this->request->isAjax()){
@@ -519,6 +527,11 @@ class Turntable extends Main
         return $this->fetch();
     }
 
+    /**
+     * 转盘手机号码列表添加号码
+     * @return mixed
+     * @throws \think\exception\PDOException
+     */
     public function phoneListAdd()
     {
         $phone = input('phone');
@@ -553,6 +566,12 @@ class Turntable extends Main
 
     }
 
+    /**
+     * 转盘手机号码删除号码
+     * @return mixed
+     * @throws \think\Exception
+     * @throws \think\exception\PDOException
+     */
     public function phoneListDelete()
     {
         $id = input('id');
