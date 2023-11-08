@@ -1401,6 +1401,8 @@ class GameOCDB extends BaseModel
 //                        Redis::set('USER_OPERATOR_SUBSET_LIST_' . $operatorId, $flippedData, 3600);
 //                    }
                 }
+                $list[0]['FirstDepositPersons'] = $this->getFirstDeposit('', '', '', $begin, $end, 1);
+                $list[0]['FirstDepositMoneys'] = $this->getFirstDeposit('', '', '', $begin, $end, 2);
                 if ($roleid) {
                     //首充人数
                     $list[0]['FirstDepositPersons'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 1);
@@ -1409,9 +1411,6 @@ class GameOCDB extends BaseModel
                 } elseif($operatorId) {
                     $list[0]['FirstDepositPersons'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 1);
                     $list[0]['FirstDepositMoneys'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 2);
-                }else{
-                    $list[0]['FirstDepositPersons'] = $this->getFirstDeposit('', '', '', $begin, $end, 1);
-                    $list[0]['FirstDepositMoneys'] = $this->getFirstDeposit('', '', '', $begin, $end, 2);
                 }
 
                 unset($v);
