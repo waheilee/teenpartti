@@ -1354,6 +1354,7 @@ class GameOCDB extends BaseModel
         try {
 //ISNULL(Sum(FirstDepositPerson),0) as FirstDepositPerson,
             $result = $this->getTableQuery($sqlExec);
+            $temp = [];
             if (isset($result[0])) {
                 $list = $result[0];
                 $userDB = new UserDB();
@@ -1394,7 +1395,7 @@ class GameOCDB extends BaseModel
 //                    ->where('a.ChangeType', 5)
 //                    ->where('a.IfFirstCharge', 1)
 //                    ->sum('TransMoney') ?: 0;
-                $data = [];
+
                 foreach ($list as &$v) {
                     $item = [];
                     $item['Lv1Running'] = FormatMoney($v['Lv1Running']);
@@ -1412,13 +1413,13 @@ class GameOCDB extends BaseModel
                         $item['FirstDepositPersons'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 1);
                         $item['FirstDepositMoneys'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 2);
                     }
-                    $data[] = $item;
+                    $temp[] = $item;
                 }
 
 
                 unset($v);
             }
-            return $data;
+            return $temp;
         } catch (Exception $exception) {
             //var_dump($exception->getMessage());
             return $list;
