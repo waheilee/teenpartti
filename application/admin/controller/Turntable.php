@@ -609,4 +609,54 @@ class Turntable extends Main
         }
 
     }
+
+    /**
+     * 周亏损奖励领取列表
+     * @return mixed|\think\response\Json
+     * @throws \think\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public function cashLostBack()
+    {
+        if($this->request->isAjax()){
+            $page = input('page');
+            $limit = input('limit');
+            $beginTime = input('begin_time');
+            $endTime = input('end_time');
+            $roleId = input('roleid');
+            $masterDB = new UserDB();
+            $count = $masterDB->getTableObject('T_UserCashLoseBack')
+                ->count();
+            $lists = $masterDB->getTableObject('T_UserCashLoseBack')
+                ->where(function ($q) use($roleId){
+                    if ($roleId){
+                        $q->where('RoleId',$roleId);
+                    }
+                })
+                ->where(function ($q) use($beginTime,$endTime){
+                    if (!empty($beginTime) && !empty($endTime)){
+                        $beginTime = strtotime($beginTime);
+                        $endTime = strtotime($endTime);
+                        $q->where('BeginTime','between',[$beginTime,$endTime])
+                            ->whereOr('EndTime','between',[$beginTime,$endTime]);
+                    }
+                })
+
+                ->page($page, $limit)
+                ->select();
+            $temp = [];
+            foreach($lists as &$list){
+                $list['GetTime'] = date('Y-m-d',$list['GetTime']);
+                $list['cycle'] = date('Y-m-d',$list['BeginTime']).'--'.date('Y-m-d',$list['EndTime']);
+                $temp[] = $list;
+
+            }
+            $data['count'] = $count;
+            $data['list'] = $temp;
+            return $this->apiJson($data);
+        }
+        return $this->fetch();
+    }
 }
