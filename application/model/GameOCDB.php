@@ -1228,8 +1228,8 @@ class GameOCDB extends BaseModel
             $where2 .= ' and c.OperatorId=' . session('merchant_OperatorId');
         }
         $businessOperatorId = '';
-        if (session('business_OperatorId') && request()->module() == 'business') {
-            $businessOperatorId = session('business_OperatorId');
+        if (session('business_ProxyChannelId') && request()->module() == 'business') {
+            $businessOperatorId = session('business_ProxyChannelId');
         }
         $begin = date('Y-m-d', strtotime($startdate));
         $end = date('Y-m-d', strtotime($enddate));
