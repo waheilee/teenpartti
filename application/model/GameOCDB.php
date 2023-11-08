@@ -1299,7 +1299,7 @@ class GameOCDB extends BaseModel
                     $item['Lv2ValidInviteCount'] = $v['Lv2ValidInviteCount'];
                     $item['Lv3ValidInviteCount'] = $v['Lv3ValidInviteCount'];
                     $item['ValidInviteCount'] = $v['ValidInviteCount'];
-                    $item['business_ProxyChannelId'] = $v['business_ProxyChannelId'];
+                    $item['business_ProxyChannelId'] = session('business_ProxyChannelId');
                     $item['business_OperatorId'] = session('business_OperatorId');
                     $temp[] = $item;
                 }
