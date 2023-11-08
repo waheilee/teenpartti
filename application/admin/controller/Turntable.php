@@ -506,10 +506,10 @@ class Turntable extends Main
         if($this->request->isAjax()){
             $page = input('page');
             $limit = input('limit');
-            $userDB = new UserDB();
-            $count = $userDB->getTableObject('T_UserTurntablePhone')
+            $masterDB = new MasterDB();
+            $count = $masterDB->getTableObject('T_PDDCode')
                 ->count();
-            $phoneList = $userDB->getTableObject('T_UserTurntablePhone')
+            $phoneList = $masterDB->getTableObject('T_PDDCode')
                 ->page($page, $limit)
                 ->select();
             $data['count'] = $count;
@@ -523,33 +523,33 @@ class Turntable extends Main
     {
         $phone = input('phone');
         $phones = explode(',', $phone);
-        $userDB = new UserDB();
-        $userDB->startTrans();
-        try{
+        $masterDB = new MasterDB();
+        $masterDB->startTrans();
+//        try{
             $data = [];
             foreach($phones as $phone){
                 if (empty($phone)){
                     continue;
                 }
                 $item = [];
-                $item['phone'] = $phone;
+                $item['Code'] = $phone;
                 $data[] = $item;
             }
 
-            $add = $userDB->getTableObject('T_UserTurntablePhone')
+            $add = $masterDB->getTableObject('T_PDDCode')
                 ->insertAll($data);
             // 提交事务
-            $userDB->commit();
+            $masterDB->commit();
             if ($add) {
                 return $this->apiReturn(0, '', '操作成功');
             } else {
                 return $this->apiReturn(1, '', '操作失败');
             }
-        } catch (\Exception $e) {
-            // 回滚事务
-            $userDB->rollback();
-            return $this->apiReturn(1, '', '添加操作失败');
-        }
+//        } catch (\Exception $e) {
+//            // 回滚事务
+//            $masterDB->rollback();
+//            return $this->apiReturn(1, '', '添加操作失败');
+//        }
 
     }
 
@@ -557,10 +557,10 @@ class Turntable extends Main
     {
         $id = input('id');
         $type = input('type');
-        $userDB = new UserDB();
+        $masterDB = new MasterDB();
         if ($type == 1){
             //单个删除
-            $del = $userDB->getTableObject('T_UserTurntablePhone')
+            $del = $masterDB->getTableObject('T_PDDCode')
                 ->delete($id);
             if ($del) {
                 return $this->apiReturn(0, '', '操作成功');
@@ -570,12 +570,12 @@ class Turntable extends Main
         }else{
             //批量删除
             $ids = explode(',', $id);
-            $userDB->startTrans();
+            $masterDB->startTrans();
             try{
-                $del = $userDB->getTableObject('T_UserTurntablePhone')
+                $del = $masterDB->getTableObject('T_PDDCode')
                     ->delete($ids);
                 // 提交事务
-                $userDB->commit();
+                $masterDB->commit();
                 if ($del) {
                     return $this->apiReturn(0, '', '操作成功');
                 } else {
@@ -583,7 +583,7 @@ class Turntable extends Main
                 }
             } catch (\Exception $e) {
                 // 回滚事务
-                $userDB->rollback();
+                $masterDB->rollback();
                 return $this->apiReturn(1, '', '操作失败');
             }
 
