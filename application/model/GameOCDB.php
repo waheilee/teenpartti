@@ -1475,11 +1475,22 @@ class GameOCDB extends BaseModel
             }
         }else{
             $number = 0;
-            if ($roleId) {
-                $number += $this->getFirstDepositMoney($roleId, '', [], $beginTime, $endTime);
+            if ($type == 1) {
+                //处理首充人数
+                if ($roleId) {
+                    $number += $this->getFirstDepositPerson($roleId, '', [], $beginTime, $endTime);
+                } else {
+                    $number += $this->getFirstDepositPerson('', $operatorId, [], $beginTime, $endTime);
+                }
             } else {
-                $number += $this->getFirstDepositMoney('', $operatorId, [], $beginTime, $endTime);
+                //处理首充金额
+                if ($roleId) {
+                    $number += $this->getFirstDepositMoney($roleId, '', [], $beginTime, $endTime);
+                } else {
+                    $number += $this->getFirstDepositMoney('', $operatorId, [], $beginTime, $endTime);
+                }
             }
+
         }
 
         return $number;
