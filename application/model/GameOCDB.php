@@ -1390,10 +1390,10 @@ class GameOCDB extends BaseModel
                         Redis::set('USER_SUBSET_LIST_' . $roleid, $userSubsetList, 3600);
                     }
                 }
-                $operatorIdUserList = '';
+                $flippedData = '';
                 if (!empty($operatorId)) {
-                    $operatorIdUserList = Redis::get('USER_OPERATOR_SUBSET_LIST_' . $operatorId);
-                    if (!$operatorIdUserList) {
+                    $flippedData = Redis::get('USER_OPERATOR_SUBSET_LIST_' . $operatorId);
+                    if (!$flippedData) {
                         $accountDB = new UserDB();
                         $operatorIdUserList = $accountDB->getTableObject('View_Accountinfo')
                             ->where('OperatorId', '=', $operatorId)
@@ -1408,8 +1408,8 @@ class GameOCDB extends BaseModel
                     //首充金额
                     $list[0]['FirstDepositMoney'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 2);
                 } else {
-                    $list[0]['FirstDepositPerson'] = $this->getFirstDeposit('', $operatorId, $operatorIdUserList, $begin, $end, 1);
-                    $list[0]['FirstDepositMoney'] = $this->getFirstDeposit('', $operatorId, $userSubsetList, $begin, $end, 2);
+                    $list[0]['FirstDepositPerson'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 1);
+                    $list[0]['FirstDepositMoney'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 2);
                 }
 
 
