@@ -6,11 +6,15 @@ use app\common\GameLog;
 use app\model\GameOCDB;
 use app\model\MasterDB;
 use app\model\UserDB;
+use think\Db;
 
 class Turntable extends Main
 {
 
-    //分享统计
+    /**
+     * 分享统计
+     * @return mixed|\think\response\Json
+     */
     public function sharingStatistics()
     {
         //按照降序排序，可以看到该分享人分享的次数/注册人数 Lv1PersonCount /充值人数 Lv1FirstDepositPlayers /充值金额DailyDeposit/取款金额/存提差
@@ -45,7 +49,14 @@ class Turntable extends Main
 
     }
 
-    //转盘审核记录
+    /**
+     * 转盘审核记录
+     * @return mixed|\think\response\Json
+     * @throws \think\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
     public function checkRecord()
     {
         //$checkName = session('username');//审核人员
@@ -138,11 +149,17 @@ class Turntable extends Main
         return $this->fetch();
     }
 
+    /**
+     * 审核历史记录
+     * @return mixed
+     */
     public function historyCheckRecord()
     {
         //操作人员
         $db = new UserDB();
-        $checkUser = $db->getTableObject('View_UserDrawBack')->group('checkUser')->column('checkUser');
+        $checkUser = $db->getTableObject('View_UserDrawBack')
+            ->group('checkUser')
+            ->column('checkUser');
         $checkUser = array_keys($checkUser);
         if (!in_array(session('username'), $checkUser)) {
             $checkUser[] = session('username');
@@ -152,7 +169,14 @@ class Turntable extends Main
         return $this->fetch();
     }
 
-    //奖励增加详情
+    /**
+     * 奖励增加详情
+     * @return mixed|\think\response\Json
+     * @throws \think\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
     public function detailsOfRewardIncrease()
     {
         //11.	后台有一个用户每笔奖励增加的明细表，对应第一点的功能，每增加一个金额 都有一个明细，以及时间。
@@ -236,6 +260,10 @@ class Turntable extends Main
 
     }
 
+    /**
+     * 手动发放奖励
+     * @return mixed
+     */
     public function handleAddReward()
     {
         $roleid = $this->request->param('roleid');
@@ -268,11 +296,18 @@ class Turntable extends Main
     }
 
 
+    /**
+     * 审核
+     * @return mixed
+     * @throws \think\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     * @throws \think\exception\PDOException
+     */
     public function check()
     {
-//        CMD_MD_GM_PDD_COMMI_SUC			= 10004,		//pdd 审批通过
-//
-//	int 玩家id;
+
         $roleId = input('role_id');
         $isPass = input('is_pass');
         $checkName = session('username');//审核人员
@@ -355,6 +390,15 @@ class Turntable extends Main
 
     }
 
+    /**
+     * 转盘开关
+     * @return mixed
+     * @throws \think\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     * @throws \think\exception\PDOException
+     */
     public function turntableSwitch()
     {
         $switch = input('switch', '');
@@ -398,12 +442,20 @@ class Turntable extends Main
     }
 
 
+    /**
+     * 全网一键退款
+     * @return mixed
+     */
     public function onekeyBack()
     {
         $this->sendGameMessage('CMD_MD_GM_PDD_REFUND', [], "DC", 'returnComm');
         return $this->apiReturn(0, '', '操作成功');
     }
 
+    /**
+     * 修改玩家转盘次数
+     * @return mixed
+     */
     public function editTurntableNumber()
     {
         $roleId = input('roleid');
@@ -427,6 +479,11 @@ class Turntable extends Main
         }
     }
 
+    /**
+     * 获取审核类型
+     * @param $type
+     * @return string
+     */
     public function getTypeCheck($type): string
     {
         $str = '';
@@ -442,5 +499,95 @@ class Turntable extends Main
                 break;
         }
         return $str;
+    }
+
+    public function phoneList()
+    {
+        if($this->request->isAjax()){
+            $page = input('page');
+            $limit = input('limit');
+            $userDB = new UserDB();
+            $count = $userDB->getTableObject('T_UserTurntablePhone')
+                ->count();
+            $phoneList = $userDB->getTableObject('T_UserTurntablePhone')
+                ->page($page, $limit)
+                ->select();
+            $data['count'] = $count;
+            $data['list'] = $phoneList;
+            return $this->apiJson($data);
+        }
+        return $this->fetch();
+    }
+
+    public function phoneListAdd()
+    {
+        $phone = input('phone');
+        $phones = explode(',', $phone);
+        $userDB = new UserDB();
+        $userDB->startTrans();
+        try{
+            $data = [];
+            foreach($phones as $phone){
+                if (empty($phone)){
+                    continue;
+                }
+                $item = [];
+                $item['phone'] = $phone;
+                $data[] = $item;
+            }
+
+            $add = $userDB->getTableObject('T_UserTurntablePhone')
+                ->insertAll($data);
+            // 提交事务
+            $userDB->commit();
+            if ($add) {
+                return $this->apiReturn(0, '', '操作成功');
+            } else {
+                return $this->apiReturn(1, '', '操作失败');
+            }
+        } catch (\Exception $e) {
+            // 回滚事务
+            $userDB->rollback();
+            return $this->apiReturn(1, '', '添加操作失败');
+        }
+
+    }
+
+    public function phoneListDelete()
+    {
+        $id = input('id');
+        $type = input('type');
+        $userDB = new UserDB();
+        if ($type == 1){
+            //单个删除
+            $del = $userDB->getTableObject('T_UserTurntablePhone')
+                ->delete($id);
+            if ($del) {
+                return $this->apiReturn(0, '', '操作成功');
+            } else {
+                return $this->apiReturn(1, '', '操作失败');
+            }
+        }else{
+            //批量删除
+            $ids = explode(',', $id);
+            $userDB->startTrans();
+            try{
+                $del = $userDB->getTableObject('T_UserTurntablePhone')
+                    ->delete($ids);
+                // 提交事务
+                $userDB->commit();
+                if ($del) {
+                    return $this->apiReturn(0, '', '操作成功');
+                } else {
+                    return $this->apiReturn(1, '', '操作失败');
+                }
+            } catch (\Exception $e) {
+                // 回滚事务
+                $userDB->rollback();
+                return $this->apiReturn(1, '', '操作失败');
+            }
+
+        }
+
     }
 }
