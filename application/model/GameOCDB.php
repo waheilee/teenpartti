@@ -1356,23 +1356,6 @@ class GameOCDB extends BaseModel
             $result = $this->getTableQuery($sqlExec);
             if (isset($result[0])) {
                 $list = $result[0];
-//                $list[0]['FirstDepositMoney'] = (new \app\model\DataChangelogsDB())
-//                    ->getTableObject('T_UserTransactionLogs')->alias('a')
-//                    ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) c', 'c.AccountID=a.RoleID', 'left')
-//                    ->where($where2)
-//                    ->whereTime('a.AddTime', '>=', $begin . ' 00:00:00')
-//                    ->whereTime('a.AddTime', '<=', $end . ' 23:59:59')
-//                    ->where('a.ChangeType', 5)
-//                    ->where('a.IfFirstCharge', 1)
-//                    ->sum('TransMoney') ?: 0;
-
-                foreach ($list as &$v) {
-
-                    ConVerMoney($v['Lv1Running']);
-                    ConVerMoney($v['Lv2Running']);
-                    ConVerMoney($v['Lv3Running']);
-                    ConVerMoney($v['dm']);
-                }
                 $userDB = new UserDB();
                 $redisKey = 'GET_USER_ALL_LIST';
                 $userList = Redis::get($redisKey);
@@ -1394,10 +1377,10 @@ class GameOCDB extends BaseModel
                 if (!empty($operatorId)) {
 //                    $flippedData = Redis::get('USER_OPERATOR_SUBSET_LIST_' . $operatorId);
 //                    if (!$flippedData) {
-                        $operatorIdUserList = $userDB->getTableObject('View_Accountinfo')
-                            ->where('OperatorId', '=', $operatorId)
-                            ->column('AccountID');
-                        $flippedData = array_flip($operatorIdUserList);
+                    $operatorIdUserList = $userDB->getTableObject('View_Accountinfo')
+                        ->where('OperatorId', '=', $operatorId)
+                        ->column('AccountID');
+                    $flippedData = array_flip($operatorIdUserList);
 //                        Redis::set('USER_OPERATOR_SUBSET_LIST_' . $operatorId, $flippedData, 3600);
 //                    }
                 }
@@ -1412,6 +1395,24 @@ class GameOCDB extends BaseModel
                     $list[0]['FirstDepositPersons'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 1);
                     $list[0]['FirstDepositMoneys'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 2);
                 }
+//                $list[0]['FirstDepositMoney'] = (new \app\model\DataChangelogsDB())
+//                    ->getTableObject('T_UserTransactionLogs')->alias('a')
+//                    ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) c', 'c.AccountID=a.RoleID', 'left')
+//                    ->where($where2)
+//                    ->whereTime('a.AddTime', '>=', $begin . ' 00:00:00')
+//                    ->whereTime('a.AddTime', '<=', $end . ' 23:59:59')
+//                    ->where('a.ChangeType', 5)
+//                    ->where('a.IfFirstCharge', 1)
+//                    ->sum('TransMoney') ?: 0;
+
+                foreach ($list as &$v) {
+
+                    ConVerMoney($v['Lv1Running']);
+                    ConVerMoney($v['Lv2Running']);
+                    ConVerMoney($v['Lv3Running']);
+                    ConVerMoney($v['dm']);
+                }
+
 
                 unset($v);
             }
