@@ -1402,8 +1402,8 @@ class GameOCDB extends BaseModel
                     $item['Lv2Running'] = FormatMoney($v['Lv2Running']);
                     $item['Lv3Running'] = FormatMoney($v['Lv3Running']);
                     $item['dm'] = FormatMoney($v['dm']);
-                    $item['FirstDepositPersons'] = $this->getFirstDeposit('', '', '', $begin, $end, 1);
-                    $item['FirstDepositMoneys'] = $this->getFirstDeposit('', '', '', $begin, $end, 2);
+                    $item['FirstDepositPersons'] = $this->getFirstDeposit('', '', [], $begin, $end, 1);
+                    $item['FirstDepositMoneys'] = $this->getFirstDeposit('', '', [], $begin, $end, 2);
                     if ($roleid) {
                         //首充人数
                         $item['FirstDepositPersons'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 1);
@@ -1427,7 +1427,6 @@ class GameOCDB extends BaseModel
     }
 
     /**
-     * 处理首充人数与首充金额
      * @param $roleId
      * @param $operatorId
      * @param $list
@@ -1439,40 +1438,50 @@ class GameOCDB extends BaseModel
      */
     public function getFirstDeposit($roleId, $operatorId, $list, $beginTime, $endTime, $type)
     {
-        $batchSize = 100;
+        if (!empty($list)){
+            $batchSize = 100;
 // 计算数据集的总数
-        $totalRecords = count($list);
+            $totalRecords = count($list)??0;
 
 // 计算需要分成多少批次
-        $numBatches = ceil($totalRecords / $batchSize);
+            $numBatches = ceil($totalRecords / $batchSize);
 
 // 分批处理数据
-        $number = 0;
-        for ($batch = 0; $batch < $numBatches; $batch++) {
-            $start = $batch * $batchSize;
-            $end = min(($batch + 1) * $batchSize, $totalRecords);
+            $number = 0;
+            for ($batch = 0; $batch < $numBatches; $batch++) {
+                $start = $batch * $batchSize;
+                $end = min(($batch + 1) * $batchSize, $totalRecords);
 
-            // 获取当前批次的数据
-            $batchData = array_slice($list, $start, $end - $start);
+                // 获取当前批次的数据
+                $batchData = array_slice($list, $start, $end - $start);
 
-            // 处理当前批次的数据
-            if ($type == 1) {
-                //处理首充人数
-                if ($roleId) {
-                    $number += $this->getFirstDepositPerson($roleId, '', $batchData, $beginTime, $endTime);
+                // 处理当前批次的数据
+                if ($type == 1) {
+                    //处理首充人数
+                    if ($roleId) {
+                        $number += $this->getFirstDepositPerson($roleId, '', $batchData, $beginTime, $endTime);
+                    } else {
+                        $number += $this->getFirstDepositPerson('', $operatorId, $batchData, $beginTime, $endTime);
+                    }
                 } else {
-                    $number += $this->getFirstDepositPerson('', $operatorId, $batchData, $beginTime, $endTime);
+                    //处理首充金额
+                    if ($roleId) {
+                        $number += $this->getFirstDepositMoney($roleId, '', $batchData, $beginTime, $endTime);
+                    } else {
+                        $number += $this->getFirstDepositMoney('', $operatorId, $batchData, $beginTime, $endTime);
+                    }
                 }
-            } else {
-                //处理首充金额
-                if ($roleId) {
-                    $number += $this->getFirstDepositMoney($roleId, '', $batchData, $beginTime, $endTime);
-                } else {
-                    $number += $this->getFirstDepositMoney('', $operatorId, $batchData, $beginTime, $endTime);
-                }
+
             }
-
+        }else{
+            $number = 0;
+            if ($roleId) {
+                $number += $this->getFirstDepositMoney($roleId, '', [], $beginTime, $endTime);
+            } else {
+                $number += $this->getFirstDepositMoney('', $operatorId, [], $beginTime, $endTime);
+            }
         }
+
         return $number;
     }
 
