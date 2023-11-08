@@ -1426,12 +1426,13 @@ class GameOCDB extends BaseModel
      * @param $roleId
      * @param $operatorId
      * @param $list
-     * @param $begin
-     * @param $end
+     * @param $beginTime
+     * @param $endTime
      * @param $type
      * @return float|int|string
+     * @throws Exception
      */
-    public function getFirstDeposit($roleId, $operatorId, $list, $begin, $end, $type)
+    public function getFirstDeposit($roleId, $operatorId, $list, $beginTime, $endTime, $type)
     {
         $batchSize = 100;
 // 计算数据集的总数
@@ -1453,16 +1454,16 @@ class GameOCDB extends BaseModel
             if ($type == 1) {
                 //处理首充人数
                 if ($roleId) {
-                    $number += $this->getFirstDepositPerson($roleId, '', $batchData, $begin, $end);
+                    $number += $this->getFirstDepositPerson($roleId, '', $batchData, $beginTime, $endTime);
                 } else {
-                    $number += $this->getFirstDepositPerson('', $operatorId, $batchData, $begin, $end);
+                    $number += $this->getFirstDepositPerson('', $operatorId, $batchData, $beginTime, $endTime);
                 }
             } else {
                 //处理首充金额
                 if ($roleId) {
-                    $number += $this->getFirstDepositMoney($roleId, '', $batchData, $begin, $end);
+                    $number += $this->getFirstDepositMoney($roleId, '', $batchData, $beginTime, $endTime);
                 } else {
-                    $number += $this->getFirstDepositMoney('', $operatorId, $batchData, $begin, $end);
+                    $number += $this->getFirstDepositMoney('', $operatorId, $batchData, $beginTime, $endTime);
                 }
             }
 
