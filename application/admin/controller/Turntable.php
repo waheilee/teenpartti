@@ -538,7 +538,7 @@ class Turntable extends Main
         $phones = explode(',', $phone);
         $masterDB = new MasterDB();
         $masterDB->startTrans();
-//        try{
+        try{
             $data = [];
             foreach($phones as $phone){
                 if (empty($phone)){
@@ -558,11 +558,11 @@ class Turntable extends Main
             } else {
                 return $this->apiReturn(1, '', '操作失败');
             }
-//        } catch (\Exception $e) {
-//            // 回滚事务
-//            $masterDB->rollback();
-//            return $this->apiReturn(1, '', '添加操作失败');
-//        }
+        } catch (\Exception $e) {
+            // 回滚事务
+            $masterDB->rollback();
+            return $this->apiReturn(1, '', '添加操作失败');
+        }
 
     }
 
