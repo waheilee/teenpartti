@@ -1228,8 +1228,8 @@ class GameOCDB extends BaseModel
             $where2 .= ' and c.OperatorId=' . session('merchant_OperatorId');
         }
         $businessOperatorId = '';
-        if (session('business_ProxyChannelId') && request()->module() == 'business') {
-            $businessOperatorId = session('business_ProxyChannelId');
+        if (session('business_OperatorId') && request()->module() == 'business') {
+            $businessOperatorId = session('business_OperatorId');
         }
         $begin = date('Y-m-d', strtotime($startdate));
         $end = date('Y-m-d', strtotime($enddate));
@@ -1299,6 +1299,8 @@ class GameOCDB extends BaseModel
                     $item['Lv2ValidInviteCount'] = $v['Lv2ValidInviteCount'];
                     $item['Lv3ValidInviteCount'] = $v['Lv3ValidInviteCount'];
                     $item['ValidInviteCount'] = $v['ValidInviteCount'];
+                    $item['business_ProxyChannelId'] = $v['business_ProxyChannelId'];
+                    $item['business_OperatorId'] = session('business_OperatorId');
                     $temp[] = $item;
                 }
                 unset($v);
