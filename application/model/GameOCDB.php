@@ -1392,14 +1392,14 @@ class GameOCDB extends BaseModel
                 }
                 $flippedData = '';
                 if (!empty($operatorId)) {
-                    $flippedData = Redis::get('USER_OPERATOR_SUBSET_LIST_' . $operatorId);
+//                    $flippedData = Redis::get('USER_OPERATOR_SUBSET_LIST_' . $operatorId);
                     if (!$flippedData) {
                         $accountDB = new UserDB();
                         $operatorIdUserList = $accountDB->getTableObject('View_Accountinfo')
                             ->where('OperatorId', '=', $operatorId)
                             ->column('AccountID');
                         $flippedData = array_flip($operatorIdUserList);
-                        Redis::set('USER_OPERATOR_SUBSET_LIST_' . $operatorId, $flippedData, 3600);
+//                        Redis::set('USER_OPERATOR_SUBSET_LIST_' . $operatorId, $flippedData, 3600);
                     }
                 }
                 if ($roleid) {
