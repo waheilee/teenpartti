@@ -257,15 +257,6 @@
                             });
                             break;
                         case 'onekeyBack':
-                            // var da = checkStatus.data;
-                            // if (da.length == 0) {
-                            //     layer.msg('{:lang("未选择记录")}');
-                            //     return;
-                            // }
-                            // var OrderNo = [];
-                            // for (var i = da.length - 1; i >= 0; i--) {
-                            //     OrderNo.push(da[i].OrderNo)
-                            // }
                             layer.confirm('{:lang("确认处理全网退款")}？', {
                                 btn: ['{:lang("确定")}','{:lang("取消")}']
                             }, function(){
@@ -352,13 +343,6 @@
             $.ajax({
                 type: 'post',
                 url: "{:url('turntable/phoneListAdd')}",
-                // beforeSend: function () {
-                //     var layindex = layer.msg("{:lang('稍等片刻,马上就好')}", {
-                //         icon:16,
-                //         shade:[0.1, '#fff'],
-                //         time:false //不自动关闭
-                //     });
-                // },
                 data: {
                     'phone': phone,
                 },
