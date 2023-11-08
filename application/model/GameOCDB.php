@@ -1394,30 +1394,31 @@ class GameOCDB extends BaseModel
 //                    ->where('a.ChangeType', 5)
 //                    ->where('a.IfFirstCharge', 1)
 //                    ->sum('TransMoney') ?: 0;
-
+                $data = [];
                 foreach ($list as &$v) {
-
-                    ConVerMoney($v['Lv1Running']);
-                    ConVerMoney($v['Lv2Running']);
-                    ConVerMoney($v['Lv3Running']);
-                    ConVerMoney($v['dm']);
-                    $v['first_deposit_per'] = $this->getFirstDeposit('', '', '', $begin, $end, 1);
-                    $v['first_deposit_mon'] = $this->getFirstDeposit('', '', '', $begin, $end, 2);
+                    $item = [];
+                    $item['Lv1Running'] = FormatMoney($v['Lv1Running']);
+                    $item['Lv2Running'] = FormatMoney($v['Lv2Running']);
+                    $item['Lv3Running'] = FormatMoney($v['Lv3Running']);
+                    $item['dm'] = FormatMoney($v['dm']);
+                    $item['FirstDepositPersons'] = $this->getFirstDeposit('', '', '', $begin, $end, 1);
+                    $item['FirstDepositMoneys'] = $this->getFirstDeposit('', '', '', $begin, $end, 2);
                     if ($roleid) {
                         //首充人数
-                        $v['first_deposit_per'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 1);
+                        $item['FirstDepositPersons'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 1);
                         //首充金额
-                        $v['first_deposit_mon'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 2);
-                    } elseif($operatorId) {
-                        $v['first_deposit_per'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 1);
-                        $v['first_deposit_mon'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 2);
+                        $item['FirstDepositMoneys'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 2);
+                    } elseif ($operatorId) {
+                        $item['FirstDepositPersons'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 1);
+                        $item['FirstDepositMoneys'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 2);
                     }
+                    $data[] = $item;
                 }
 
 
                 unset($v);
             }
-            return $list;
+            return $data;
         } catch (Exception $exception) {
             //var_dump($exception->getMessage());
             return $list;
