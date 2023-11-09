@@ -1227,6 +1227,10 @@ class GameOCDB extends BaseModel
             $where .= ' and OperatorId=' . session('merchant_OperatorId');
             $where2 .= ' and c.OperatorId=' . session('merchant_OperatorId');
         }
+        $businessProxyChannelId = '';
+        if (session('business_ProxyChannelId') && request()->module() == 'business') {
+            $businessProxyChannelId = session('business_ProxyChannelId');
+        }
         $begin = date('Y-m-d', strtotime($startdate));
         $end = date('Y-m-d', strtotime($enddate));
 
@@ -1236,27 +1240,82 @@ class GameOCDB extends BaseModel
         $list = [];
         try {
             $result = $this->getTableQuery($sqlExec);
+            $temp = [];
             if (isset($result[0])) {
                 $list = $result[0];
-                $list[0]['FirstDepositMoney'] = (new \app\model\DataChangelogsDB())
-                    ->getTableObject('T_UserTransactionLogs')->alias('a')
-                    ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) c', 'c.AccountID=a.RoleID', 'left')
-                    ->where($where2)
-                    ->whereTime('a.AddTime', '>=', $begin . ' 00:00:00')
-                    ->whereTime('a.AddTime', '<=', $end . ' 23:59:59')
-                    ->where('a.ChangeType', 5)
-                    ->where('a.IfFirstCharge', 1)
-                    ->sum('TransMoney') ?: 0;
-                foreach ($list as &$v) {
+                $userDB = new UserDB();
+                $redisKey = 'GET_USER_ALL_LIST';
+                $userList = Redis::get($redisKey);
+                if (!$userList) {
+                    $data = $userDB->getTableObject('T_UserProxyInfo')
+                        ->field('RoleID,ParentID')
+                        ->select();
+                    $userList = Redis::set($redisKey, $data, 3600);
+                }
+                $userSubsetList = '';
+                if (!empty($roleid)) {
+                    $userSubsetList = Redis::get('USER_SUBSET_LIST_' . $roleid);
+                    if (!$userSubsetList) {
+                        $userSubsetList = sortList($userList, $roleid);
+                        Redis::set('USER_SUBSET_LIST_' . $roleid, $userSubsetList, 3600);
+                    }
+                }
 
-                    ConVerMoney($v['Lv1Running']);
-                    ConVerMoney($v['Lv2Running']);
-                    ConVerMoney($v['Lv3Running']);
-                    ConVerMoney($v['dm']);
+
+
+                $flippedData = '';
+                if (!empty($businessProxyChannelId)) {
+                    $channelIds = $this->getTableObject('T_ProxyChannelConfig')
+                        ->where('pid',$businessProxyChannelId)
+                        ->column('ProxyChannelId');
+                    if (!empty($channelIds)){
+                        $businessProxyChannelIdArray = array_flip($channelIds);
+                    }
+                    $businessProxyChannelIdArray[] = $businessProxyChannelId;
+//                    $flippedData = Redis::get('USER_OPERATOR_SUBSET_LIST_' . $operatorId);
+//                    if (!$flippedData) {
+                    $operatorIdUserList = $userDB->getTableObject('View_Accountinfo')
+                        ->wherein('ProxyChannelId',  $businessProxyChannelIdArray)
+                        ->column('AccountID');
+                    $flippedData = array_flip($operatorIdUserList);
+//                        Redis::set('USER_OPERATOR_SUBSET_LIST_' . $operatorId, $flippedData, 3600);
+//                    }
+                }
+//                $list[0]['FirstDepositMoney'] = (new \app\model\DataChangelogsDB())
+//                    ->getTableObject('T_UserTransactionLogs')->alias('a')
+//                    ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) c', 'c.AccountID=a.RoleID', 'left')
+//                    ->where($where2)
+//                    ->whereTime('a.AddTime', '>=', $begin . ' 00:00:00')
+//                    ->whereTime('a.AddTime', '<=', $end . ' 23:59:59')
+//                    ->where('a.ChangeType', 5)
+//                    ->where('a.IfFirstCharge', 1)
+//                    ->sum('TransMoney') ?: 0;
+                foreach ($list as &$v) {
+                    $item = [];
+                    $item['Lv1Running'] = FormatMoney($v['Lv1Running']);
+                    $item['Lv2Running'] = FormatMoney($v['Lv2Running']);
+                    $item['Lv3Running'] = FormatMoney($v['Lv3Running']);
+                    $item['dm'] = FormatMoney($v['dm']);
+                    if ($roleid) {
+                        //首充人数
+                        $item['FirstDepositPersons'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 1);
+                        //首充金额
+                        $item['FirstDepositMoneys'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 2);
+                    } else {
+                        $item['FirstDepositPersons'] = $this->getFirstDeposit('', $businessProxyChannelId, $flippedData, $begin, $end, 1);
+                        $item['FirstDepositMoneys'] = $this->getFirstDeposit('', $businessProxyChannelId, $flippedData, $begin, $end, 2);
+                    }
+                    $item['Lv1PersonCount'] = $v['Lv1PersonCount'];
+                    $item['Lv2ValidInviteCount'] = $v['Lv2ValidInviteCount'];
+                    $item['Lv3ValidInviteCount'] = $v['Lv3ValidInviteCount'];
+                    $item['ValidInviteCount'] = $v['ValidInviteCount'];
+                    $item['business_ProxyChannelId'] = session('business_ProxyChannelId');
+                    $item['business_OperatorId'] = session('business_OperatorId');
+                    $temp[] = $item;
                 }
                 unset($v);
             }
-            return $list;
+            return $temp;
         } catch (Exception $exception) {
             //var_dump($exception->getMessage());
             return $list;
@@ -1354,25 +1413,9 @@ class GameOCDB extends BaseModel
         try {
 //ISNULL(Sum(FirstDepositPerson),0) as FirstDepositPerson,
             $result = $this->getTableQuery($sqlExec);
+            $temp = [];
             if (isset($result[0])) {
                 $list = $result[0];
-//                $list[0]['FirstDepositMoney'] = (new \app\model\DataChangelogsDB())
-//                    ->getTableObject('T_UserTransactionLogs')->alias('a')
-//                    ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) c', 'c.AccountID=a.RoleID', 'left')
-//                    ->where($where2)
-//                    ->whereTime('a.AddTime', '>=', $begin . ' 00:00:00')
-//                    ->whereTime('a.AddTime', '<=', $end . ' 23:59:59')
-//                    ->where('a.ChangeType', 5)
-//                    ->where('a.IfFirstCharge', 1)
-//                    ->sum('TransMoney') ?: 0;
-
-                foreach ($list as &$v) {
-
-                    ConVerMoney($v['Lv1Running']);
-                    ConVerMoney($v['Lv2Running']);
-                    ConVerMoney($v['Lv3Running']);
-                    ConVerMoney($v['dm']);
-                }
                 $userDB = new UserDB();
                 $redisKey = 'GET_USER_ALL_LIST';
                 $userList = Redis::get($redisKey);
@@ -1394,26 +1437,52 @@ class GameOCDB extends BaseModel
                 if (!empty($operatorId)) {
 //                    $flippedData = Redis::get('USER_OPERATOR_SUBSET_LIST_' . $operatorId);
 //                    if (!$flippedData) {
-                        $operatorIdUserList = $userDB->getTableObject('View_Accountinfo')
-                            ->where('OperatorId', '=', $operatorId)
-                            ->column('AccountID');
-                        $flippedData = array_flip($operatorIdUserList);
+                    $operatorIdUserList = $userDB->getTableObject('View_Accountinfo')
+                        ->where('OperatorId', '=', $operatorId)
+                        ->column('AccountID');
+                    $flippedData = array_flip($operatorIdUserList);
 //                        Redis::set('USER_OPERATOR_SUBSET_LIST_' . $operatorId, $flippedData, 3600);
 //                    }
                 }
-                if ($roleid) {
-                    //首充人数
-                    $list[0]['FirstDepositPersons'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 1);
-                    //首充金额
-                    $list[0]['FirstDepositMoneys'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 2);
-                } else {
-                    $list[0]['FirstDepositPersons'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 1);
-                    $list[0]['FirstDepositMoneys'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 2);
+
+//                $list[0]['FirstDepositMoney'] = (new \app\model\DataChangelogsDB())
+//                    ->getTableObject('T_UserTransactionLogs')->alias('a')
+//                    ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) c', 'c.AccountID=a.RoleID', 'left')
+//                    ->where($where2)
+//                    ->whereTime('a.AddTime', '>=', $begin . ' 00:00:00')
+//                    ->whereTime('a.AddTime', '<=', $end . ' 23:59:59')
+//                    ->where('a.ChangeType', 5)
+//                    ->where('a.IfFirstCharge', 1)
+//                    ->sum('TransMoney') ?: 0;
+//
+                foreach ($list as &$v) {
+                    $item = [];
+                    $item['Lv1Running'] = FormatMoney($v['Lv1Running']);
+                    $item['Lv2Running'] = FormatMoney($v['Lv2Running']);
+                    $item['Lv3Running'] = FormatMoney($v['Lv3Running']);
+                    $item['dm'] = FormatMoney($v['dm']);
+                    $item['FirstDepositPersons'] = $this->getFirstDeposit('', '', [], $begin, $end, 1);
+                    $item['FirstDepositMoneys'] = $this->getFirstDeposit('', '', [], $begin, $end, 2);
+                    if ($roleid) {
+                        //首充人数
+                        $item['FirstDepositPersons'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 1);
+                        //首充金额
+                        $item['FirstDepositMoneys'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 2);
+                    } elseif ($operatorId) {
+                        $item['FirstDepositPersons'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 1);
+                        $item['FirstDepositMoneys'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 2);
+                    }
+                    $item['Lv1PersonCount'] = $v['Lv1PersonCount'];
+                    $item['Lv2ValidInviteCount'] = $v['Lv2ValidInviteCount'];
+                    $item['Lv3ValidInviteCount'] = $v['Lv3ValidInviteCount'];
+                    $item['ValidInviteCount'] = $v['ValidInviteCount'];
+                    $temp[] = $item;
                 }
+
 
                 unset($v);
             }
-            return $list;
+            return $temp;
         } catch (Exception $exception) {
             //var_dump($exception->getMessage());
             return $list;
@@ -1421,7 +1490,6 @@ class GameOCDB extends BaseModel
     }
 
     /**
-     * 处理首充人数与首充金额
      * @param $roleId
      * @param $operatorId
      * @param $list
@@ -1433,40 +1501,61 @@ class GameOCDB extends BaseModel
      */
     public function getFirstDeposit($roleId, $operatorId, $list, $beginTime, $endTime, $type)
     {
-        $batchSize = 100;
+        if (!empty($list)) {
+            $batchSize = 100;
 // 计算数据集的总数
-        $totalRecords = count($list);
+            $totalRecords = count($list) ?? 0;
 
 // 计算需要分成多少批次
-        $numBatches = ceil($totalRecords / $batchSize);
+            $numBatches = ceil($totalRecords / $batchSize);
 
 // 分批处理数据
-        $number = 0;
-        for ($batch = 0; $batch < $numBatches; $batch++) {
-            $start = $batch * $batchSize;
-            $end = min(($batch + 1) * $batchSize, $totalRecords);
+            $number = 0;
+            for ($batch = 0; $batch < $numBatches; $batch++) {
+                $start = $batch * $batchSize;
+                $end = min(($batch + 1) * $batchSize, $totalRecords);
 
-            // 获取当前批次的数据
-            $batchData = array_slice($list, $start, $end - $start);
+                // 获取当前批次的数据
+                $batchData = array_slice($list, $start, $end - $start);
 
-            // 处理当前批次的数据
+                // 处理当前批次的数据
+                if ($type == 1) {
+                    //处理首充人数
+                    if ($roleId) {
+                        $number += $this->getFirstDepositPerson($roleId, '', $batchData, $beginTime, $endTime);
+                    } else {
+                        $number += $this->getFirstDepositPerson('', $operatorId, $batchData, $beginTime, $endTime);
+                    }
+                } else {
+                    //处理首充金额
+                    if ($roleId) {
+                        $number += $this->getFirstDepositMoney($roleId, '', $batchData, $beginTime, $endTime);
+                    } else {
+                        $number += $this->getFirstDepositMoney('', $operatorId, $batchData, $beginTime, $endTime);
+                    }
+                }
+
+            }
+        } else {
+            $number = 0;
             if ($type == 1) {
                 //处理首充人数
                 if ($roleId) {
-                    $number += $this->getFirstDepositPerson($roleId, '', $batchData, $beginTime, $endTime);
+                    $number += $this->getFirstDepositPerson($roleId, '', [], $beginTime, $endTime);
                 } else {
-                    $number += $this->getFirstDepositPerson('', $operatorId, $batchData, $beginTime, $endTime);
+                    $number += $this->getFirstDepositPerson('', $operatorId, [], $beginTime, $endTime);
                 }
             } else {
                 //处理首充金额
                 if ($roleId) {
-                    $number += $this->getFirstDepositMoney($roleId, '', $batchData, $beginTime, $endTime);
+                    $number += $this->getFirstDepositMoney($roleId, '', [], $beginTime, $endTime);
                 } else {
-                    $number += $this->getFirstDepositMoney('', $operatorId, $batchData, $beginTime, $endTime);
+                    $number += $this->getFirstDepositMoney('', $operatorId, [], $beginTime, $endTime);
                 }
             }
 
         }
+
         return $number;
     }
 
