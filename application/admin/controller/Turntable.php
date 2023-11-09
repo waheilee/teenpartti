@@ -516,10 +516,12 @@ class Turntable extends Main
         if($this->request->isAjax()){
             $page = input('page');
             $limit = input('limit');
+            $phone = input('phone');
             $masterDB = new MasterDB();
             $count = $masterDB->getTableObject('T_PDDCode')
                 ->count();
             $phoneList = $masterDB->getTableObject('T_PDDCode')
+                ->where('Code',$phone)
                 ->page($page, $limit)
                 ->select();
             $data['count'] = $count;
@@ -662,68 +664,5 @@ class Turntable extends Main
         return $this->fetch();
     }
 
-    public function test()
-    {
-        $accountDB = new UserDB();
-        $operatorIdUserList = $accountDB->getTableObject('View_Accountinfo')
-            ->where('OperatorId', '=', 572309)
-            ->column('AccountID');
-        $flippedData = array_flip($operatorIdUserList);
-        $batchSize = 100;
 
-// 查询大数据集，例如从数据库中获取数据
-        $data = $flippedData;
-
-// 计算数据集的总数
-        $totalRecords = count($data);
-
-// 计算需要分成多少批次
-        $numBatches = ceil($totalRecords / $batchSize);
-
-// 分批处理数据
-        $number = 0;
-        for ($batch = 0; $batch < $numBatches; $batch++) {
-            $start = $batch * $batchSize;
-            $end = min(($batch + 1) * $batchSize, $totalRecords);
-
-            // 获取当前批次的数据
-            $batchData = array_slice($data, $start, $end - $start);
-
-            // 处理当前批次的数据
-//            dump($batchData);
-            $number += $this->getFirstDepositPerson('',572309,$batchData,'2023-11-08','2023-11-08');
-        }
-dump($number);
-    }
-
-    /**
-     * @param $roleId
-     * @param $operatorId
-     * @param $list
-     * @param $begin
-     * @param $end
-     * @return int|string
-     * @throws \think\Exception
-     */
-    public function getFirstDepositPerson($roleId,$operatorId,$list,$begin,$end)
-    {
-            return (new DataChangelogsDB())
-                ->getTableObject('T_UserTransactionLogs')
-                ->where('AddTime','between',[
-                    $begin . ' 00:00:00',
-                    $end . ' 23:59:59'
-                ])
-                ->where('IfFirstCharge',1)
-                ->where(function($q) use($roleId,$list){
-                    if($roleId){
-                        $q->whereIn('RoleID',$list);
-                    }
-                })
-                ->where(function($q) use($operatorId,$list){
-                    if($operatorId){
-                        $q->whereIn('RoleID',$list);
-                    }
-                })
-                ->count() ?? 0;
-    }
 }

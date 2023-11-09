@@ -21,11 +21,11 @@
             <div class="layui-card-header layuiadmin-card-header-auto">
                 <form class="layui-form" lay-filter="component-form-group">
                     <div class="layui-form-item">
-<!--                        <div class="layui-inline">-->
-<!--                            <div class="layui-input-inline">-->
-<!--                                <input type="number" id="roleid" name="roleid" autocomplete="off" placeholder="{:lang('玩家ID')}" class="layui-input">-->
-<!--                            </div>-->
-<!--                        </div>-->
+                        <div class="layui-inline">
+                            <div class="layui-input-inline">
+                                <input type="number" id="phone" name="phone" autocomplete="off" placeholder="{:lang('号码搜索')}" class="layui-input">
+                            </div>
+                        </div>
                         <div class="layui-inline">
                             <!-- <div class="layui-input-inline"> -->
                             <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
@@ -134,6 +134,7 @@
                         curr: 1 //重新从第 1 页开始
                     },
                     where: {
+                        phone: $.trim($('#phone').val()),
                     }
                 });
             },
