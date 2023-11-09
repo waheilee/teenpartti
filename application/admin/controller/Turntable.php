@@ -523,7 +523,11 @@ class Turntable extends Main
             $count = $masterDB->getTableObject('T_PDDCode')
                 ->count();
             $phoneList = $masterDB->getTableObject('T_PDDCode')
-                ->where('Code',$phone)
+                ->where(function ($q) use($phone){
+                    if ($phone){
+                        $q->where('Code','Code',$phone);
+                    }
+                })
                 ->page($page, $limit)
                 ->select();
             $data['count'] = $count;
