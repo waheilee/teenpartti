@@ -246,7 +246,11 @@
                             $.ajax({
                                 url:"{:url('turntable/check')}",
                                 type:"POST",
-                                data:{'role_id': data.RoleId,'is_pass':1},
+                                data:{
+                                    'id': data.id,
+                                    'role_id': data.RoleId,
+                                    'is_pass':1
+                                },
                                 dataType:'json',
                                 success:function(ret){
                                     if (ret.code == 0) {
@@ -271,7 +275,10 @@
                             $.ajax({
                                 url:"{:url('turntable/check')}",
                                 type:"POST",
-                                data:{'role_id': data.RoleId,'is_pass':2},
+                                data:{
+                                    'id': data.id,
+                                    'role_id': data.RoleId,
+                                    'is_pass':2},
                                 dataType:'json',
                                 success:function(ret){
                                     if (ret.code == 0) {

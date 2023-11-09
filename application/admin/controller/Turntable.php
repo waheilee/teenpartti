@@ -309,7 +309,7 @@ class Turntable extends Main
      */
     public function check()
     {
-
+        $id = input('id');
         $roleId = input('role_id');
         $isPass = input('is_pass');
         $checkName = session('username');//审核人员
@@ -334,6 +334,7 @@ class Turntable extends Main
                 ]);
 
                 $update = $userDB->getTableObject('T_PDDCommi')
+                    ->where('id',$id)
                     ->where('RoleId', $roleId)
                     ->data([
                         'GetType' => $isPass,
@@ -367,6 +368,7 @@ class Turntable extends Main
                 ]);
 
                 $update = $userDB->getTableObject('T_PDDCommi')
+                    ->where('id',$id)
                     ->where('RoleId', $roleId)
                     ->data([
                         'GetType' => $isPass,
