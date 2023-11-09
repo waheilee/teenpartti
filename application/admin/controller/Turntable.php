@@ -660,7 +660,11 @@ class Turntable extends Main
                 ->select();
             $temp = [];
             foreach($lists as &$list){
-                $list['GetTime'] = date('Y-m-d',$list['GetTime']);
+                if($list['GetTime']){
+                    $list['GetTime'] = date('Y-m-d',$list['GetTime']);
+                }else{
+                    $list['GetTime'] = '未领取';
+                }
                 $list['cycle'] = date('Y-m-d',$list['BeginTime']).'--'.date('Y-m-d',$list['EndTime']);
                 $list['WeekLoseMoney'] = FormatMoney($list['WeekLoseMoney']);
                 $list['CashBackMoney'] = FormatMoney($list['CashBackMoney']);
