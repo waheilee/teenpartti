@@ -650,7 +650,9 @@ class Turntable extends Main
                         $beginTime = strtotime($beginTime);
                         $endTime = strtotime($endTime);
                         $q->where('BeginTime','between',[$beginTime,$endTime])
-                            ->whereOr('EndTime','between',[$beginTime,$endTime]);
+                            ->whereOr('EndTime','between',[$beginTime,$endTime])
+                        ->whereOr('BeginTime','<',$beginTime)
+                        ->whereOr('EndTime','>',$endTime);
                     }
                 })
 
