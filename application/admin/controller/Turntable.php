@@ -656,6 +656,9 @@ class Turntable extends Main
             foreach($lists as &$list){
                 $list['GetTime'] = date('Y-m-d',$list['GetTime']);
                 $list['cycle'] = date('Y-m-d',$list['BeginTime']).'--'.date('Y-m-d',$list['EndTime']);
+                $list['WeekLoseMoney'] = FormatMoney($list['WeekLoseMoney']);
+                $list['CashBackMoney'] = FormatMoney($list['CashBackMoney']);
+                $list['CashBackRate'] = bcdiv($list['CashBackRate'] , 100).'%';
                 $temp[] = $list;
 
             }
