@@ -334,7 +334,7 @@ class Turntable extends Main
                 ]);
 
                 $update = $userDB->getTableObject('T_PDDCommi')
-                    ->where('id',$id)
+                    ->where('id', $id)
                     ->where('RoleId', $roleId)
                     ->data([
                         'GetType' => $isPass,
@@ -368,7 +368,7 @@ class Turntable extends Main
                 ]);
 
                 $update = $userDB->getTableObject('T_PDDCommi')
-                    ->where('id',$id)
+                    ->where('id', $id)
                     ->where('RoleId', $roleId)
                     ->data([
                         'GetType' => $isPass,
@@ -515,7 +515,7 @@ class Turntable extends Main
      */
     public function phoneList()
     {
-        if($this->request->isAjax()){
+        if ($this->request->isAjax()) {
             $page = input('page');
             $limit = input('limit');
             $phone = input('phone');
@@ -523,9 +523,9 @@ class Turntable extends Main
             $count = $masterDB->getTableObject('T_PDDCode')
                 ->count();
             $phoneList = $masterDB->getTableObject('T_PDDCode')
-                ->where(function ($q) use($phone){
-                    if ($phone){
-                        $q->where('Code','Code',$phone);
+                ->where(function ($q) use ($phone) {
+                    if ($phone) {
+                        $q->where('Code', 'Code', $phone);
                     }
                 })
                 ->page($page, $limit)
@@ -548,10 +548,10 @@ class Turntable extends Main
         $phones = explode(',', $phone);
         $masterDB = new MasterDB();
         $masterDB->startTrans();
-        try{
+        try {
             $data = [];
-            foreach($phones as $phone){
-                if (empty($phone)){
+            foreach ($phones as $phone) {
+                if (empty($phone)) {
                     continue;
                 }
                 $item = [];
@@ -587,7 +587,7 @@ class Turntable extends Main
         $id = input('id');
         $type = input('type');
         $masterDB = new MasterDB();
-        if ($type == 1){
+        if ($type == 1) {
             //单个删除
             $del = $masterDB->getTableObject('T_PDDCode')
                 ->delete($id);
@@ -596,11 +596,11 @@ class Turntable extends Main
             } else {
                 return $this->apiReturn(1, '', '操作失败');
             }
-        }else{
+        } else {
             //批量删除
             $ids = explode(',', $id);
             $masterDB->startTrans();
-            try{
+            try {
                 $del = $masterDB->getTableObject('T_PDDCode')
                     ->delete($ids);
                 // 提交事务
@@ -630,45 +630,53 @@ class Turntable extends Main
      */
     public function cashLostBack()
     {
-        if($this->request->isAjax()){
+        if ($this->request->isAjax()) {
             $page = input('page');
             $limit = input('limit');
             $beginTime = input('begin_time');
             $endTime = input('end_time');
             $roleId = input('roleid');
+            $takeStatus = input('take_status');
             $masterDB = new UserDB();
             $count = $masterDB->getTableObject('T_UserCashLoseBack')
                 ->count();
             $lists = $masterDB->getTableObject('T_UserCashLoseBack')
-                ->where(function ($q) use($roleId){
-                    if ($roleId){
-                        $q->where('RoleId',$roleId);
+                ->where(function ($q) use ($roleId) {
+                    if ($roleId) {
+                        $q->where('RoleId', $roleId);
                     }
                 })
-                ->where(function ($q) use($beginTime,$endTime){
-                    if (!empty($beginTime) && !empty($endTime)){
+                ->where(function ($q) use ($beginTime, $endTime) {
+                    if (!empty($beginTime) && !empty($endTime)) {
                         $beginTime = strtotime($beginTime);
                         $endTime = strtotime($endTime);
-                        $q->where('BeginTime','between',[$beginTime,$endTime])
-                            ->whereOr('EndTime','between',[$beginTime,$endTime])
-                        ->whereOr('BeginTime','<',$beginTime)
-                        ->whereOr('EndTime','>',$endTime);
+                        $q->where('BeginTime', 'between', [$beginTime, $endTime])
+                            ->whereOr('EndTime', 'between', [$beginTime, $endTime])
+                            ->whereOr('BeginTime', '<', $beginTime)
+                            ->whereOr('EndTime', '>', $endTime);
                     }
                 })
-
+                ->where(function ($q) use ($takeStatus) {
+                    if ($takeStatus == 1) {
+                        $q->where('GetTime', '>', 0);
+                    }
+                    if ($takeStatus == 2) {
+                        $q->where('GetTime', 0);
+                    }
+                })
                 ->page($page, $limit)
                 ->select();
             $temp = [];
-            foreach($lists as &$list){
-                if($list['GetTime']){
-                    $list['GetTime'] = date('Y-m-d',$list['GetTime']);
-                }else{
+            foreach ($lists as &$list) {
+                if ($list['GetTime']) {
+                    $list['GetTime'] = date('Y-m-d', $list['GetTime']);
+                } else {
                     $list['GetTime'] = '未领取';
                 }
-                $list['cycle'] = date('Y-m-d',$list['BeginTime']).'--'.date('Y-m-d',$list['EndTime']);
+                $list['cycle'] = date('Y-m-d', $list['BeginTime']) . '--' . date('Y-m-d', $list['EndTime']);
                 $list['WeekLoseMoney'] = FormatMoney($list['WeekLoseMoney']);
                 $list['CashBackMoney'] = FormatMoney($list['CashBackMoney']);
-                $list['CashBackRate'] = bcdiv($list['CashBackRate'] , 100).'%';
+                $list['CashBackRate'] = bcdiv($list['CashBackRate'], 100) . '%';
                 $temp[] = $list;
 
             }
@@ -677,6 +685,54 @@ class Turntable extends Main
             return $this->apiJson($data);
         }
         return $this->fetch();
+    }
+
+    public function getTotal()
+    {
+        $beginTime = input('begin_time');
+        $endTime = input('end_time');
+        $takeStatus = input('take_status');
+        $userDB = new UserDB();
+        $data = $userDB->getTableObject('T_UserCashLoseBack')
+            ->where(function ($q) use ($beginTime, $endTime) {
+                if (!empty($beginTime) && !empty($endTime)) {
+                    $beginTime = strtotime($beginTime);
+                    $endTime = strtotime($endTime);
+                    $q->where('BeginTime', 'between', [$beginTime, $endTime])
+                        ->whereOr('EndTime', 'between', [$beginTime, $endTime])
+                        ->whereOr('BeginTime', '<', $beginTime)
+                        ->whereOr('EndTime', '>', $endTime);
+                }
+            })
+            ->where(function ($q) use ($takeStatus) {
+                if ($takeStatus == 1) {
+                    $q->where('GetTime', '>', 0);
+                }
+                if ($takeStatus == 2) {
+                    $q->where('GetTime', 0);
+                }
+            })
+            ->select()
+            ->toArray();
+
+        $resultArray = array_filter($data, function ($item) {
+            return $item['GetTime'] > 0;
+        });
+
+        $cashBackMoneyTotal = $this->getArraySum($data, 'CashBackMoney');//总金额
+
+        $cashMoneyTotal = $this->getArraySum($resultArray, 'CashBackMoney');
+
+        return $this->apiReturn(200,[
+            'cashBackMoneyTotal' => FormatMoney($cashBackMoneyTotal),
+            'cashMoneyTotal' => FormatMoney($cashMoneyTotal),
+        ]);
+    }
+
+    public function getArraySum($data, $key)
+    {
+        $amounts = array_column($data, $key);
+        return array_sum($amounts);
     }
 
 
