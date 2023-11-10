@@ -712,8 +712,7 @@ class Turntable extends Main
                     $q->where('GetTime', 0);
                 }
             })
-            ->select()
-            ->toArray();
+            ->select();
 
         $resultArray = array_filter($data, function ($item) {
             return $item['GetTime'] > 0;
