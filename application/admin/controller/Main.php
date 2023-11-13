@@ -341,7 +341,6 @@ SELECT  TypeId as RoomID,NodeName+'-('+CONVERT(VARCHAR,TypeId)+')' RoomName
 //                    unset($rsult[$index]);
 //                }
 //            }
-            $jili = ['RoomID' => 39000, 'RoomName' => 'JILI-(39000)'];
             $apiroom = [
                 ['RoomID' => 36000, 'RoomName' => 'PG-(36000)'],
                 ['RoomID' => 37000, 'RoomName' => 'EvoLive-(37000)'],
@@ -349,18 +348,36 @@ SELECT  TypeId as RoomID,NodeName+'-('+CONVERT(VARCHAR,TypeId)+')' RoomName
                 // ['RoomID' => 39400, 'RoomName' => 'Spribe-(39400)'],
                 // ['RoomID' => 40000, 'RoomName' => 'HaBa-(40000)']
             ];
+
+            if (config('has_jili') == 1) {
+                $apiroom[] = ['RoomID' => 39000, 'RoomName' => 'JILI-(39000)'];
+            }
+
             if (config('has_spr') == 1) {
-                $apiroom[] = ['RoomID' => 39400, 'RoomName' => 'Spribe-(39400)'];
+                $apiroom[] = ['RoomID' => 39400, 'RoomName' => 'JDB-(39400)'];
             }
             if (config('has_haba') == 1) {
                 $apiroom[] = ['RoomID' => 40000, 'RoomName' => 'HaBa-(40000)'];
             }
-            if (config('app_type') == 3) {
-                $apiroom[] = $jili;
+            if (config('has_hacksaw') == 1) {
+                $apiroom[] = ['RoomID' => 41000, 'RoomName' => 'HackSaw-(41000)'];
             }
-            if (config('hsa_pplive') == 1) {
-                $apiroom[] = ['RoomID' => 4300, 'RoomName' => 'PPLIVE-(4300)'];
+
+            if (config('has_yesbingo') == 1) {
+                $apiroom[] = ['RoomID' => 42000, 'RoomName' => 'YESBINGO-(42000)'];
             }
+
+            if (config('has_fcgame') == 1) {
+                $apiroom[] = ['RoomID' => 44000, 'RoomName' => 'YESBINGO-(44000)'];
+            }
+
+            if (config('has_tadagame') == 1) {
+                $apiroom[] = ['RoomID' => 45000, 'RoomName' => 'TaDa-(45000)'];
+            }
+            if (config('has_pplive') == 1) {
+                $apiroom[] = ['RoomID' => 43000, 'RoomName' => 'PPLIVE-(43000)'];
+            }
+
             $rsult = array_merge($rsult, $apiroom);
             unset($item);
             Cache::set($key, $rsult, 86400);
