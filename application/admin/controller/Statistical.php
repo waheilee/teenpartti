@@ -1656,6 +1656,7 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                         sum(evolivewin) as evolivewin,
                         sum(spribe) as spribewin,
                         sum(habawin) as habawin,                        
+                        sum(hacksaw) as hacksaw,
                         sum(yesbingo) as yesbingo,
                         sum(jiliwin) as jiliwin                      
                         ';
@@ -1681,7 +1682,7 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                     $spribewin = bcmul($APIFee[3], $api_data['spribewin'], 4);
                     $habawin = bcmul($APIFee[4], $api_data['habawin'], 4);
 
-//                    $hacksaw = bcmul($APIFee[4], $api_data['hacksaw'], 4);
+                    $hacksaw = bcmul($APIFee[4], $api_data['hacksaw'], 4);
                     $yesbingo = bcmul($APIFee[4], $api_data['yesbingo'], 4);
                     $totaljili = bcmul($APIFee[4], $api_data['jiliwin'], 4);
 
@@ -1706,9 +1707,9 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                         $TotalAPICost += abs($totaljili);
                     }
 
-//                    if ($hacksaw < 0) {//系统赢算费用
-//                        $TotalAPICost += abs($hacksaw);
-//                    }
+                    if ($hacksaw < 0) {//系统赢算费用
+                        $TotalAPICost += abs($hacksaw);
+                    }
 
                     if ($yesbingo < 0) {//系统赢算费用
                         $TotalAPICost += abs($yesbingo);
