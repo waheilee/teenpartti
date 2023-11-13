@@ -113,12 +113,8 @@ class Merchant extends Main
             $data['RechargeFee'] = $this->request->param('RechargeFee') ?: 0;
             $data['WithdrawalFee'] = $this->request->param('WithdrawalFee') ?: 0;
             $data['APIFee'] = $this->request->param('APIFee') ?: 0;
+            $data['DivideFee'] = $this->request->param('DivideFee') ?: 0;
             $data['SingleUrl'] = $this->request->param('SingleUrl');
-
-            $data['YouTubeShareLink'] = $this->request->param('YouTubeShareLink');
-            $data['TwitterShareLink'] = $this->request->param('TwitterShareLink');
-            $data['TelegramShareLink'] = $this->request->param('TelegramShareLink');
-            $data['InstagramShareLink'] = $this->request->param('InstagramShareLink');
             $sub = [];
             $sub['OperatorName'] = $OperatorName;
             if (!empty($password)) {
@@ -167,17 +163,33 @@ class Merchant extends Main
             $data['WithdrawalFee'] /= 1;
         }
         $APIFee = "API费用(PP,PG,EVO";
-        if (config('app_type') == 3) {
-            $APIFee .= ",JiLi)";
-        } else if (config('app_type') == 2) {
-            if (config('has_spr') == 1) {
-                $APIFee .= ",SPRIBE";
-            }
-            if (config('has_haba') == 1) {
-                $APIFee .= ",HABA";
-            }
-            $APIFee .= ")";
+        if (config('has_spr') == 1) {
+            $APIFee .= ",JDB";
         }
+        if (config('has_haba') == 1) {
+            $APIFee .= ",HABA";
+        }
+        if (config('has_hacksaw') == 1) {
+            $APIFee .= ",HackSaw";
+        }
+        if (config('has_jili') == 1) {
+            $APIFee .= ",JILI";
+        }
+
+        if (config('has_yesbingo') == 1) {
+            $APIFee .= ",YES!BINGO";
+        }
+        if (config('has_tadagame') == 1) {
+            $APIFee .= ",TADA";
+        }
+
+        if (config('has_fcgame') == 1) {
+            $APIFee .= ",FCGame";
+        }
+
+
+        $APIFee .= ")";
+
         $this->assign('APIFee', $APIFee);
         $this->assign('data', $data);
         return $this->fetch();
