@@ -99,17 +99,23 @@ class GameOCDB extends BaseModel
                         case 39200:
                             $v['RoomName'] = 'CQ9';
                             break;
-                        case 39300:
-                            $v['RoomName'] = 'Haba';
-                            break;
+//                        case 39300:
+//                            $v['RoomName'] = 'Haba';
+//                            break;
                         case 39400:
-                            $v['RoomName'] = 'Spribe';
+                            $v['RoomName'] = 'JDB';
                             break;
                         case 40000:
                             $v['RoomName'] = 'Haba';
                             break;
                         case 41000:
                             $v['RoomName'] = 'HackSaw';
+                            break;
+                        case 42000:
+                            $v['RoomName'] = 'YES!BinGo';
+                            break;
+                        case 43000:
+                            $v['RoomName'] = 'PPLIVE';
                             break;
                     }
                 }

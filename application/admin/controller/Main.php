@@ -358,6 +358,9 @@ SELECT  TypeId as RoomID,NodeName+'-('+CONVERT(VARCHAR,TypeId)+')' RoomName
             if (config('app_type') == 3) {
                 $apiroom[] = $jili;
             }
+            if (config('hsa_pplive') == 1) {
+                $apiroom[] = ['RoomID' => 4300, 'RoomName' => 'PPLIVE-(4300)'];
+            }
             $rsult = array_merge($rsult, $apiroom);
             unset($item);
             Cache::set($key, $rsult, 86400);
