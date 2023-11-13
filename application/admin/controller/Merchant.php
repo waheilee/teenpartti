@@ -115,7 +115,7 @@ class Merchant extends Main
             $data['RechargeFee'] = $this->request->param('RechargeFee') ?: 0;
             $data['WithdrawalFee'] = $this->request->param('WithdrawalFee') ?: 0;
             $data['APIFee'] = $this->request->param('APIFee') ?: 0;
-            $data['DivideFee'] = $this->request->param('DivideFee') ?: 0;
+//            $data['DivideFee'] = $this->request->param('DivideFee') ?: 0;
             $data['SingleUrl'] = $this->request->param('SingleUrl');
             $sub = [];
             $sub['OperatorName'] = $OperatorName;
