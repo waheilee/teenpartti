@@ -85,6 +85,13 @@ class Merchant extends Main
                 $APIFee .= ",YES!BINGO";
             }
 
+            if (config('has_tadagame') == 1) {
+                $APIFee .= ",TADA";
+            }
+            if (config('has_fcgame') == 1) {
+                $APIFee .= ",FCGame";
+            }
+
             $APIFee .= ")";
             $this->assign('APIFee', $APIFee);
             return $this->fetch();
