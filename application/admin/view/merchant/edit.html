@@ -46,55 +46,38 @@
             <input type="text" id="APIFee" name='APIFee' lay-verify="required" placeholder="{:lang('API费用')},逗号隔开" autocomplete="off" class="layui-input" value="{$data['APIFee'] ?? ''}">
         </div>
     </div>
+
+    <!-- <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('分成比例')}：</label>
+        <div class="layui-input-block">
+            <input type="number" id="DivideFee" name='DivideFee' lay-verify="required" placeholder="{:lang('分成比例')}" autocomplete="off" class="layui-input" value="{$data['DivideFee'] ?? 0}">
+        </div>
+    </div> -->
+
     <div class="layui-form-item">
         <label class="layui-form-label">{:lang('独立域名')}：</label>
         <div class="layui-input-block">
             <input type="text" id="SingleUrl" name='SingleUrl' placeholder="{:lang('独立域名')}" autocomplete="off" class="layui-input" value="{$data['SingleUrl'] ?? config('platform_domain')}">
         </div>
     </div>
-
-    <div class="layui-form-item">
-        <label class="layui-form-label">{:lang('YouTube分享链接')}：</label>
-        <div class="layui-input-block">
-            <input type="text" id="YouTubeShareLink" name='YouTubeShareLink' placeholder="{:lang('YouTube分享链接')}" autocomplete="off" class="layui-input" value="{$data['YouTubeShareLink'] ?? ''}">
-        </div>
-    </div>
-    <div class="layui-form-item">
-        <label class="layui-form-label">{:lang('Twitter分享链接')}：</label>
-        <div class="layui-input-block">
-            <input type="text" id="TwitterShareLink" name='TwitterShareLink' placeholder="{:lang('Twitter分享链接')}" autocomplete="off" class="layui-input" value="{$data['TwitterShareLink'] ?? ''}">
-        </div>
-    </div>
-    <div class="layui-form-item">
-        <label class="layui-form-label">{:lang('Telegram分享链接')}：</label>
-        <div class="layui-input-block">
-            <input type="text" id="TelegramShareLink" name='TelegramShareLink' placeholder="{:lang('Telegram分享链接')}" autocomplete="off" class="layui-input" value="{$data['TelegramShareLink'] ?? ''}">
-        </div>
-    </div>
-    <div class="layui-form-item">
-        <label class="layui-form-label">{:lang('Instagram分享链接')}：</label>
-        <div class="layui-input-block">
-            <input type="text" id="InstagramShareLink" name='InstagramShareLink' placeholder="{:lang('Instagram分享链接')}" autocomplete="off" class="layui-input" value="{$data['InstagramShareLink'] ?? ''}">
-        </div>
-    </div>
-   <!--  <div class="layui-form-item">
-        <label class="layui-form-label">{:lang('代理邀请WhatsApp分享链接')}：</label>
-        <div class="layui-input-block">
-            <input type="text" id="WhatsAppShareLink" name='WhatsAppShareLink' lay-verify="required" placeholder="{:lang('请输入代理邀请WhatsApp分享链接')}" autocomplete="off" class="layui-input"  value="{$data['WhatsAppShareLink'] ?? ''}">
-        </div>
-    </div>
-    <div class="layui-form-item">
-        <label class="layui-form-label">{:lang('代理邀请FaceBook分享链接')}：</label>
-        <div class="layui-input-block">
-            <input type="text" id="FBShareLink" name='FBShareLink' lay-verify="required" placeholder="{:lang('请输入代理邀请FaceBook分享链接')}" autocomplete="off" class="layui-input" value="{$data['FBShareLink'] ?? ''}">
-        </div>
-    </div>
-    <div class="layui-form-item">
-        <label class="layui-form-label">{:lang('渠道额度')}：</label>
-        <div class="layui-input-block">
-            <input type="text" id="WithdrawRemain" name='WithdrawRemain' lay-verify="required" placeholder="{:lang('请输入渠道额度')}" autocomplete="off" class="layui-input"   value="{$data['WithdrawRemain'] ?? ''}">
-        </div>
-    </div> -->
+    <!--  <div class="layui-form-item">
+         <label class="layui-form-label">{:lang('代理邀请WhatsApp分享链接')}：</label>
+         <div class="layui-input-block">
+             <input type="text" id="WhatsAppShareLink" name='WhatsAppShareLink' lay-verify="required" placeholder="{:lang('请输入代理邀请WhatsApp分享链接')}" autocomplete="off" class="layui-input"  value="{$data['WhatsAppShareLink'] ?? ''}">
+         </div>
+     </div>
+     <div class="layui-form-item">
+         <label class="layui-form-label">{:lang('代理邀请FaceBook分享链接')}：</label>
+         <div class="layui-input-block">
+             <input type="text" id="FBShareLink" name='FBShareLink' lay-verify="required" placeholder="{:lang('请输入代理邀请FaceBook分享链接')}" autocomplete="off" class="layui-input" value="{$data['FBShareLink'] ?? ''}">
+         </div>
+     </div>
+     <div class="layui-form-item">
+         <label class="layui-form-label">{:lang('渠道额度')}：</label>
+         <div class="layui-input-block">
+             <input type="text" id="WithdrawRemain" name='WithdrawRemain' lay-verify="required" placeholder="{:lang('请输入渠道额度')}" autocomplete="off" class="layui-input"   value="{$data['WithdrawRemain'] ?? ''}">
+         </div>
+     </div> -->
     <div class="layui-form-item">
         <div class="layui-input-block">
             <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >{:lang('保存')}</a>
@@ -130,12 +113,8 @@
                 var RechargeFee     = $.trim(data.field.RechargeFee);
                 var WithdrawalFee   = $.trim(data.field.WithdrawalFee);
                 var APIFee          = $.trim(data.field.APIFee);
+                // var DivideFee          = $.trim(data.field.DivideFee);
                 var SingleUrl       = $.trim(data.field.SingleUrl);
-
-                var YouTubeShareLink       = $.trim(data.field.YouTubeShareLink);
-                var TwitterShareLink       = $.trim(data.field.TwitterShareLink);
-                var TelegramShareLink       = $.trim(data.field.TelegramShareLink);
-                var InstagramShareLink       = $.trim(data.field.InstagramShareLink);
                 // var WhatsAppShareLink = $.trim(data.field.WhatsAppShareLink);
                 // var FBShareLink = $.trim(data.field.FBShareLink);
                 // var WithdrawRemain = $.trim(data.field.WithdrawRemain);
@@ -172,15 +151,11 @@
                         'WithdrawalFee':WithdrawalFee,
                         'APIFee':APIFee,
                         'SingleUrl':SingleUrl,
+                        // 'DivideFee':DivideFee,
                         // 'WhatsAppShareLink' : WhatsAppShareLink,
                         // 'FBShareLink' : FBShareLink,
                         // 'WithdrawRemain' : WithdrawRemain,
-                        'PassWord':PassWord,
-                        'YouTubeShareLink':YouTubeShareLink,
-                        'TwitterShareLink':TwitterShareLink,
-                        'TelegramShareLink':TelegramShareLink,
-                        'InstagramShareLink':InstagramShareLink,
-
+                        'PassWord':PassWord
                     },
                     dataType:'json',
                     success: function(res) {
