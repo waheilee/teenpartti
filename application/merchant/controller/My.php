@@ -24,22 +24,22 @@ class My extends Main
 
 
     //系统盈利报表
-	// 总充值
-	// 批量赠送
-	// 手动上分
-	// 邮件赠送
-	// 总提现
-	// 充值手续费
-	// 提现手续费
-	// API费用
-	// 总利润
-	// 汇率计算
+    // 总充值
+    // 批量赠送
+    // 手动上分
+    // 邮件赠送
+    // 总提现
+    // 充值手续费
+    // 提现手续费
+    // API费用
+    // 总利润
+    // 汇率计算
 
     public function monthReport()
     {
         $date = $this->request->param('date');
         if(empty($date)){
-        	$date = date('Y-m');
+            $date = date('Y-m');
         }
         $db = new GameOCDB();
         $where = ' OperatorId='.session('merchant_OperatorId');
@@ -48,12 +48,24 @@ class My extends Main
         $lasttime = strtotime("$firstdate +1 month -1 day");
         $lastdate = date('Y-m-d',$lasttime);
         $where .= " and mydate<='$lastdate'";
-        $total = $db->getTableObject('T_Operator_GameStatisticTotal')->where($where)->field('sum(convert(bigint,TotalBatchMail)) TotalBatchMail,sum(convert(bigint,TotalGMPoint)) TotalGMPoint,sum(convert(bigint,TotalMailCoin)) TotalMailCoin,sum(convert(bigint,ppgamewin)) as ppgamewin,sum(convert(bigint,pggamewin)) as pggamewin,sum(convert(bigint,evolivewin)) as evolivewin,sum(convert(bigint,habawin)) as habawin,sum(convert(bigint,spribe)) as spribewin')->find();
-       	$pay = $db->getTableObject('T_Operator_GameStatisticPay')->where($where)->field('sum(convert(bigint,totalpay)) totalpay')->find();
-       	$out = $db->getTableObject('T_Operator_GameStatisticPayOut')->where($where)->field('sum(convert(bigint,totalpayout)) totalpayout')->find();
-       	// $user = $db->getTableObject('T_Operator_GameStatisticTotal')->where($where)->find();
+        $field = 'sum(convert(bigint,TotalBatchMail)) TotalBatchMail,
+        sum(convert(bigint,TotalGMPoint)) TotalGMPoint,
+        sum(convert(bigint,TotalMailCoin)) TotalMailCoin,
+        sum(convert(bigint,ppgamewin)) as ppgamewin,
+        sum(convert(bigint,pggamewin)) as pggamewin,
+        sum(convert(bigint,evolivewin)) as evolivewin,
+        sum(convert(bigint,habawin)) as habawin,
+        sum(convert(bigint,spribe)) as spribewin,     
+        sum(convert(bigint,jiliwin)) as jiliwin,
+        sum(convert(bigint,yesbingo)) as yesbingo        
+        ';
+
+        $total = $db->getTableObject('T_Operator_GameStatisticTotal')->where($where)->field($field)->find();
+        $pay = $db->getTableObject('T_Operator_GameStatisticPay')->where($where)->field('sum(convert(bigint,totalpay)) totalpay')->find();
+        $out = $db->getTableObject('T_Operator_GameStatisticPayOut')->where($where)->field('sum(convert(bigint,totalpayout)) totalpayout')->find();
+        // $user = $db->getTableObject('T_Operator_GameStatisticTotal')->where($where)->find();
         $config = (new MasterDB)->getTableObject('T_OperatorLink')->where('OperatorId',session('merchant_OperatorId'))->find();
-       	$data = [];
+        $data = [];
 
         $data['total_recharge'] = FormatMoney($pay['totalpay'] ?? 0);
         $data['TotalBatchMail'] = FormatMoney($total['TotalBatchMail'] ?? 0);
@@ -66,6 +78,9 @@ class My extends Main
         $total['evolivewin'] = FormatMoney($total['evolivewin'] ?? 0);
         $total['spribewin'] = FormatMoney($total['spribewin'] ?? 0);
         $total['habawin'] = FormatMoney($total['habawin'] ?? 0);
+        $total['jiliwin'] = FormatMoney($total['jiliwin'] ?? 0);
+        $total['hacksaw'] = FormatMoney($total['hacksaw'] ?? 0);
+        $total['yesbingo'] = FormatMoney($total['yesbingo'] ?? 0);
 
         $data['recharge_fee'] =bcmul($data['total_recharge'] , $config['RechargeFee'],3);
         $data['payout_fee'] = bcmul($data['totalpayout'] ,$config['WithdrawalFee'],3);
@@ -75,6 +90,8 @@ class My extends Main
         $APIFee[2] = $APIFee[2] ?? 0; //evo
         $APIFee[3] = $APIFee[3] ?? 0; //spribe
         $APIFee[4] = $APIFee[4] ?? 0; //haba
+        $APIFee[5] = $APIFee[5] ?? 0; //jiliwin
+        $APIFee[6] = $APIFee[6] ?? 0; //yesbingo
 
         $TotalAPICost =0;
         $totalpp=bcmul($APIFee[0],$total['ppgamewin'],4);
@@ -82,6 +99,12 @@ class My extends Main
         $totalevo=bcmul($APIFee[2],$total['evolivewin'],4);
         $spribewin=bcmul($APIFee[3],$total['spribewin'],4);
         $totalhaba=bcmul($APIFee[4],$total['habawin'],4);
+//        $totalhacksaw = bcmul($APIFee[5], $total['hacksaw'], 4);
+        $totaljiliwin = bcmul($APIFee[5], $total['jiliwin'], 4);
+        $totalyesbingo = bcmul($APIFee[6], $total['yesbingo'], 4);
+
+
+
         if($totalpp<0){//系统赢算费用
             $TotalAPICost+= abs($totalpp);
         }
@@ -97,17 +120,28 @@ class My extends Main
         if($totalhaba<0){//系统赢算费用
             $TotalAPICost+= abs($totalhaba);
         }
+//        if ($totalhacksaw < 0) {//系统赢算费用
+//            $TotalAPICost += abs($totalhacksaw);
+//        }
+
+        if ($totaljiliwin < 0) {//系统赢算费用
+            $TotalAPICost += abs($totaljiliwin);
+        }
+
+        if ($totalyesbingo < 0) {//系统赢算费用
+            $TotalAPICost += abs($totalyesbingo);
+        }
 
 
-        $data['TotalAPICost'] = $TotalAPICost;
+        $data['TotalAPICost'] = round($TotalAPICost,3);
         $data['totalprofit'] = round(($data['total_recharge'])-($data['totalpayout']+$data['recharge_fee']+$data['payout_fee']+$data['TotalAPICost']),3);
-        
+
         if ($this->request->isAjax()) {
             if (empty($total)) {
-            	return $this->failJSON(lang('该月份没有任何数据'));
-                
+                return $this->failJSON(lang('该月份没有任何数据'));
+
             } else {
-            	$data['onlinedata'] = config('record_start_time');
+                $data['onlinedata'] = config('record_start_time');
                 return $this->successJSON($data);
             }
         }

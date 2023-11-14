@@ -360,7 +360,16 @@ class Channel extends Main
         $lastdate = date('Y-m-d', $lasttime);
         $where .= " and Date<='$lastdate'";
 
-        $total = $db->getTableObject('T_ChannelDailyCollect')->where($where)->field('sum(convert(bigint,TotalRecharge)) TotalRecharge,sum(convert(bigint,TotalDrawMoney)) TotalPayOut,sum(convert(bigint,PPBet)) as ppgamewin,sum(convert(bigint,PGBet)) as pggamewin,sum(convert(bigint,EvoLiveBet)) as evolivewin,sum(convert(bigint,Spribe)) as spribegamewin,sum(convert(bigint,JiLiBet)) as jiligamewin')->find();
+        $total = $db->getTableObject('T_ChannelDailyCollect')->where($where)->field('sum(convert(bigint,TotalRecharge)) TotalRecharge,
+        sum(convert(bigint,TotalDrawMoney)) TotalPayOut,
+        sum(convert(bigint,PPBet)) as ppgamewin,
+        sum(convert(bigint,PGBet)) as pggamewin,
+        sum(convert(bigint,EvoLiveBet)) as evolivewin,      
+        sum(convert(bigint,JiLiBet)) as jiligamewin,      
+         sum(convert(bigint,habawin)) as habawin,
+        sum(convert(bigint,yesbingo)) as yesbingo,
+         sum(convert(bigint,Spribe)) as Spribe
+        ')->find();
 
         $data['total_recharge'] = FormatMoney($total['TotalRecharge'] ?? 0);
         $data['totalpayout'] = FormatMoney($total['TotalPayOut'] ?? 0);
@@ -374,11 +383,23 @@ class Channel extends Main
         $APIFee[1] = $APIFee[1] ?? 0; //pg
         $APIFee[2] = $APIFee[2] ?? 0; //evo
 
+        $APIFee[3] = $APIFee[3] ?? 0; //spribegamewin
+        $APIFee[4] = $APIFee[4] ?? 0; //habawin
+//        $APIFee[5] = $APIFee[5] ?? 0; //hacksaw
+        $APIFee[5] = $APIFee[5] ?? 0; //JILI
+        $APIFee[6] = $APIFee[6] ?? 0; //yesbingo
+
 
         $TotalAPICost = 0;
         $totalpp = bcmul($APIFee[0], $total['ppgamewin'], 4);
         $totalpg = bcmul($APIFee[1], $total['pggamewin'], 4);
         $totalevo = bcmul($APIFee[2], $total['evolivewin'], 4);
+
+        $totaSpribe = bcmul($APIFee[3], $total['Spribe'], 4);
+        $totalhabawin = bcmul($APIFee[4], $total['habawin'], 4);
+//        $totalhacksaw = bcmul($APIFee[5], $total['hacksaw'], 4);
+        $totaljiligamewin = bcmul($APIFee[5], $total['jiligamewin'], 4);
+        $totalyesbingo = bcmul($APIFee[6], $total['yesbingo'], 4);
 
         if ($totalpp < 0) {//系统赢算费用
             $TotalAPICost += abs($totalpp);
@@ -390,20 +411,24 @@ class Channel extends Main
             $TotalAPICost += abs($totalevo);
         }
 
-        if (config('app_type') == 2) {
-            $APIFee[3] = $APIFee[3] ?? 0; //spribe游戏
-            $totalspribe = bcmul($APIFee[3], $total['spribegamewin'], 4);
-            if ($totalspribe < 0) {//系统赢算费用
-                $TotalAPICost += abs($totalspribe);
-            }
+        if ($totaSpribe < 0) {//系统赢算费用
+            $TotalAPICost += abs($totaSpribe);
         }
 
-        if (config('app_type') == 3) {
-            $APIFee[3] = $APIFee[3] ?? 0; //spribe游戏
-            $totaljili = bcmul($APIFee[3], $total['jiligamewin'], 4);
-            if ($totaljili < 0) {//系统赢算费用
-                $TotalAPICost += abs($totaljili);
-            }
+        if ($totalhabawin < 0) {//系统赢算费用
+            $TotalAPICost += abs($totalhabawin);
+        }
+
+//        if ($totalhacksaw < 0) {//系统赢算费用
+//            $TotalAPICost += abs($totalhacksaw);
+//        }
+
+        if ($totaljiligamewin < 0) {//系统赢算费用
+            $TotalAPICost += abs($totaljiligamewin);
+        }
+
+        if ($totalyesbingo < 0) {//系统赢算费用
+            $TotalAPICost += abs($totalyesbingo);
         }
 
 

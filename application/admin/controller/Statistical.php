@@ -1656,7 +1656,6 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                         sum(evolivewin) as evolivewin,
                         sum(spribe) as spribewin,
                         sum(habawin) as habawin,                        
-                        sum(hacksaw) as hacksaw,
                         sum(yesbingo) as yesbingo,
                         sum(jiliwin) as jiliwin                      
                         ';
@@ -1672,9 +1671,9 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                     $APIFee[2] = $APIFee[2] ?? 0; //evo
                     $APIFee[3] = $APIFee[3] ?? 0; //jdb
                     $APIFee[4] = $APIFee[4] ?? 0; //haba
-                    $APIFee[5] = $APIFee[5] ?? 0; //HackSaw
-                    $APIFee[6] = $APIFee[6] ?? 0; //JILI
-                    $APIFee[7] = $APIFee[7] ?? 0; //BINGO
+//                    $APIFee[5] = $APIFee[5] ?? 0; //HackSaw
+                    $APIFee[5] = $APIFee[5] ?? 0; //JILI
+                    $APIFee[6] = $APIFee[6] ?? 0; //BINGO
 
                     $totalpp = bcmul($APIFee[0], $api_data['ppgamewin'], 4);
                     $totalpg = bcmul($APIFee[1], $api_data['pggamewin'], 4);
@@ -1682,9 +1681,10 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                     $spribewin = bcmul($APIFee[3], $api_data['spribewin'], 4);
                     $habawin = bcmul($APIFee[4], $api_data['habawin'], 4);
 
-                    $hacksaw = bcmul($APIFee[4], $api_data['hacksaw'], 4);
-                    $yesbingo = bcmul($APIFee[4], $api_data['yesbingo'], 4);
-                    $totaljili = bcmul($APIFee[4], $api_data['jiliwin'], 4);
+//                    $hacksaw = bcmul($APIFee[4], $api_data['hacksaw'], 4);
+                    $totaljili = bcmul($APIFee[5], $api_data['jiliwin'], 4);
+                    $yesbingo = bcmul($APIFee[6], $api_data['yesbingo'], 4);
+
 
                     if ($totalpp < 0) {//系统赢算费用
                         $TotalAPICost += abs($totalpp);
@@ -1836,14 +1836,14 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                 $APIFee[2] = $APIFee[2] ?? 0; //evo
                 $APIFee[3] = $APIFee[3] ?? 0; //jili
                 $APIFee[4] = $APIFee[4] ?? 0; //habawin
-                $APIFee[5] = $APIFee[5] ?? 0; //hacksaw
+//                $APIFee[5] = $APIFee[5] ?? 0; //hacksaw
 
                 $totalpp = bcmul($APIFee[0], $v['ppgamewin'], 4);
                 $totalpg = bcmul($APIFee[1], $v['pggamewin'], 4);
                 $totalevo = bcmul($APIFee[2], $v['evolivewin'], 4);
                 $totalspribe = bcmul($APIFee[3], $v['spribe'], 4);
                 $totalhabawin = bcmul($APIFee[4], $v['habawin'], 4);
-                $totalhacksaw = bcmul($APIFee[5], $v['hacksaw'], 4);
+//                $totalhacksaw = bcmul($APIFee[5], $v['hacksaw'], 4);
 
                 if ($totalpp < 0) {//系统赢算费用
                     $TotalAPICost += abs($totalpp);
@@ -1862,9 +1862,9 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                     $TotalAPICost += abs($totalhabawin);
                 }
 
-                if ($totalhacksaw < 0) {//系统赢算费用
-                    $TotalAPICost += abs($totalhacksaw);
-                }
+//                if ($totalhacksaw < 0) {//系统赢算费用
+//                    $TotalAPICost += abs($totalhacksaw);
+//                }
             }
 
             $v['apicost'] = $TotalAPICost;
