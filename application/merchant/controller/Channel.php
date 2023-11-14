@@ -1731,7 +1731,9 @@ class Channel extends Main
         }
         $db = new GameOCDB();
         $where = ' OperatorId=' . session('merchant_OperatorId');
-        $where .= ' and channelid=' . $proxychannelId;
+        if ($proxychannelId) {
+            $where .= ' and channelid=' . $proxychannelId;
+        }
 
         $firstdate = $date . '-01';
         $where .= " and Date>='$firstdate' ";
@@ -1739,8 +1741,7 @@ class Channel extends Main
         $lastdate = date('Y-m-d', $lasttime);
         $where .= " and Date<='$lastdate'";
 
-        $total = $db->getTableObject('T_ChannelDailyCollect')->where($where)->field('sum(convert(bigint,TotalRecharge)) TotalRecharge,sum(convert(bigint,TotalDrawMoney)) TotalPayOut,sum(convert(bigint,PPBet)) as ppgamewin,sum(convert(bigint,PGBet)) as pggamewin,sum(convert(bigint,EvoLiveBet)) as evolivewin,sum(convert(bigint,Spribe)) as spribegamewin,sum(convert(bigint,habawin)) as habawin,sum(convert(bigint,hacksaw)) as hacksaw')->find();
-
+        $total = $db->getTableObject('T_ChannelDailyCollect')->where($where)->field('sum(convert(bigint,TotalRecharge)) TotalRecharge,sum(convert(bigint,TotalDrawMoney)) TotalPayOut,sum(convert(bigint,PPBet)) as ppgamewin,sum(convert(bigint,PGBet)) as pggamewin,sum(convert(bigint,EvoLiveBet)) as evolivewin,sum(convert(bigint,Spribe)) as spribegamewin,sum(convert(bigint,habawin)) as habawin')->find();
 
         $data['total_recharge'] = FormatMoney($total['TotalRecharge'] ?? 0);
         $data['totalpayout'] = FormatMoney($total['TotalPayOut'] ?? 0);
@@ -1753,9 +1754,9 @@ class Channel extends Main
         $APIFee[0] = $APIFee[0] ?? 0; //pp
         $APIFee[1] = $APIFee[1] ?? 0; //pg
         $APIFee[2] = $APIFee[2] ?? 0; //evo
-        $APIFee[3] = $APIFee[3] ?? 0; //spribe游戏
-        $APIFee[4] = $APIFee[4] ?? 0; //haba
-        $APIFee[5] = $APIFee[5] ?? 0; //hacksaw
+        $APIFee[3] = $APIFee[3] ?? 0; //jili
+        $APIFee[4] = $APIFee[4] ?? 0; //habawin
+//                $APIFee[5] = $APIFee[5] ?? 0; //hacksaw
 
         $TotalAPICost = 0;
         $totalpp = bcmul($APIFee[0], $total['ppgamewin'], 4);
@@ -1763,7 +1764,7 @@ class Channel extends Main
         $totalevo = bcmul($APIFee[2], $total['evolivewin'], 4);
         $totalspribe = bcmul($APIFee[3], $total['spribegamewin'], 4);
         $totalhaba = bcmul($APIFee[4], $total['habawin'], 4);
-        $totalhacksaw = bcmul($APIFee[5], $total['hacksaw'], 4);
+//        $totalhacksaw = bcmul($APIFee[5], $total['hacksaw'], 4);
 
         if ($totalpp < 0) {//系统赢算费用
             $TotalAPICost += abs($totalpp);
@@ -1779,9 +1780,9 @@ class Channel extends Main
             $TotalAPICost += abs($totalhaba);
         }
 
-        if ($totalhacksaw < 0) {//系统赢算费用
-            $TotalAPICost += abs($totalhacksaw);
-        }
+//        if ($totalhacksaw < 0) {//系统赢算费用
+//            $TotalAPICost += abs($totalhacksaw);
+//        }
 
         if ($totalspribe < 0) {//系统赢算费用
             $TotalAPICost += abs($totalspribe);
@@ -1812,7 +1813,7 @@ class Channel extends Main
     {
 
         $ProxyChannelId = request()->param('ProxyChannelId');
-        $userInfo = (new \app\model\GameOCDB)->getTableObject('T_ProxyChannelConfig')->where('ProxyChannelId',$ProxyChannelId)->find();
+        $userInfo = (new \app\model\GameOCDB)->getTableObject('T_ProxyChannelConfig')->where('ProxyChannelId', $ProxyChannelId)->find();
         if ($userInfo) {
             session('business_LoginAccount', $userInfo['LoginAccount']);
             session('business_ProxyChannelId', $userInfo['ProxyChannelId']);
@@ -1838,19 +1839,20 @@ class Channel extends Main
     }
 
     //运营商详情
-    public function operatorSummaryData(){
+    public function operatorSummaryData()
+    {
         $proxychannelId = $this->request->param('proxychannelId');
         $date = $this->request->param('date');
         if (empty($date)) {
             $date = date('Y-m');
         }
         $db = new GameOCDB();
-        $proxy_channel_info = $db->getTableObject('T_ProxyChannelConfig')->where('OperatorId',session('merchant_OperatorId'))->column('ProxyChannelId,AccountName','ProxyChannelId');
+        $proxy_channel_info = $db->getTableObject('T_ProxyChannelConfig')->where('OperatorId', session('merchant_OperatorId'))->column('ProxyChannelId,AccountName', 'ProxyChannelId');
         $channelIds = array_column($proxy_channel_info, 'ProxyChannelId');
         if (empty($channelIds)) {
             return $this->apiReturn(0, [], 'success');
         }
-        $where = ' ChannelId in(' . implode(',', $channelIds).')';
+        $where = ' ChannelId in(' . implode(',', $channelIds) . ')';
         if ($proxychannelId != '') {
             $where .= ' and ChannelId=' . $proxychannelId;
         }
@@ -1917,5 +1919,125 @@ class Channel extends Main
 
         return $this->apiReturn(0, $total_data, 'success');
 
+    }
+
+
+    /**
+     * 业务员对账
+     * @return mixed
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public function channelReconciliation()
+    {
+        if ($this->request->isAjax()){
+            $OperatorSessionId = session('merchant_OperatorId');
+            $time = $this->request->param('time');
+            $channelId = $this->request->param('channel_id');
+            $GameOCDB = new GameOCDB();
+            //业务员
+            $channels = $GameOCDB->getTableObject('T_ProxyChannelConfig')
+                ->where('OperatorId', $OperatorSessionId)
+                ->where(function ($q) use($channelId){
+                    if($channelId){
+                        $q->where('ProxyChannelId',$channelId);
+                    }
+                })
+                ->where('type', 1)
+                ->column('ProxyChannelId,AccountName');
+//dump($channels);die();
+            $channelIds = [];
+            foreach ($channels as $id){
+                $channelIds[] = $id['ProxyChannelId'];
+            }
+            $data = [];
+            if (!empty($channelIds)) {
+                $channelDaliyCollect = $GameOCDB->getTableObject('T_ChannelDailyCollect')
+                    ->field('ChannelId,sum(convert(bigint,TotalRecharge)) totalrecharge,
+                sum(convert(bigint,TotalDrawMoney)) totalpayout,
+                sum(convert(bigint,PPBet)) as ppgamewin,
+                sum(convert(bigint,PGBet)) as pggamewin,
+                sum(convert(bigint,EvoLiveBet)) as evolivewin,
+                sum(convert(bigint,Spribe)) as spribegamewin,
+                sum(convert(bigint,habawin)) as habawin')
+                    ->where(function ($q) use ($time){
+                        if ($time){
+                            $beginTime = date('Y-m-01 00:00:00',strtotime($time));
+                            $endTime = date('Y-m-31 23:59:59',strtotime($time));
+                            $q->where('Date','between time',[$beginTime,$endTime]);
+                        }
+                    })
+                    ->whereIn('ChannelId', $channelIds)
+                    ->group('ChannelId')
+                    ->select();
+                $config = (new MasterDB)->getTableObject('T_OperatorLink')
+                    ->where('OperatorId',$OperatorSessionId)
+                    ->find();
+                foreach ($channelDaliyCollect as $channel) {
+                    $item = [];
+                    foreach ($channels as $id){
+                        if ($id['ProxyChannelId'] == $channel['ChannelId']){
+                            $item['AccountName'] = $id['AccountName'];
+                        }
+                    }
+                    $item['ProxyChannelId'] = $channel['ChannelId'];
+                    $item['totalInCash'] = FormatMoney($channel['totalrecharge']);
+                    $item['totalOutCah'] = FormatMoney($channel['totalpayout']);
+                    $item['rechargeCommission'] = bcmul($item['totalInCash'], $config['RechargeFee'], 3);
+                    $item['withdrawalCommission'] = bcmul($item['totalOutCah'], $config['WithdrawalFee'], 3);
+                    $item['apiCommission'] = $this->getTotalAPICost($config,$channel);
+                    $item['totalProfit'] = bcsub(($item['totalInCash']) , $item['totalOutCah'], 3);
+
+                    $data[] = $item;
+                }
+            }
+            return $this->apiReturn(0, $data, 'success');
+        }
+        $this->assign('thismonth', date('Y-m'));
+        return $this->fetch();
+
+    }
+
+    public function getTotalAPICost($config,$data)
+    {
+        $APIFee = explode(',', $config['APIFee']);
+        $APIFee[0] = $APIFee[0] ?? 0; //pp
+        $APIFee[1] = $APIFee[1] ?? 0; //pg
+        $APIFee[2] = $APIFee[2] ?? 0; //evo
+        $APIFee[3] = $APIFee[3] ?? 0; //spribe游戏
+        $APIFee[4] = $APIFee[4] ?? 0; //haba
+//            $APIFee[5] = $APIFee[5] ?? 0; //hacksaw
+
+        $TotalAPICost = 0;
+        $totalpp = bcmul($APIFee[0], $data['ppgamewin'], 4);
+        $totalpg = bcmul($APIFee[1], $data['pggamewin'], 4);
+        $totalevo = bcmul($APIFee[2], $data['evolivewin'], 4);
+        $totalspribe = bcmul($APIFee[3], $data['spribegamewin'], 4);
+        $totalhaba = bcmul($APIFee[4], $data['habawin'], 4);
+//            $totalhacksaw = bcmul($APIFee[5], $data['hacksaw'], 4);
+
+        if ($totalpp < 0) {//系统赢算费用
+            $TotalAPICost += abs($totalpp);
+        }
+        if ($totalpg < 0) {//系统赢算费用
+            $TotalAPICost += abs($totalpg);
+        }
+        if ($totalevo < 0) {//系统赢算费用
+            $TotalAPICost += abs($totalevo);
+        }
+
+        if ($totalhaba < 0) {//系统赢算费用
+            $TotalAPICost += abs($totalhaba);
+        }
+
+//            if ($totalhacksaw < 0) {//系统赢算费用
+//                $TotalAPICost += abs($totalhacksaw);
+//            }
+
+        if ($totalspribe < 0) {//系统赢算费用
+            $TotalAPICost += abs($totalspribe);
+        }
+        return FormatMoney($TotalAPICost);
     }
 }

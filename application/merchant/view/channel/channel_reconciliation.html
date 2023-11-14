@@ -1,0 +1,266 @@
+{extend name="common/base" /}
+{block name="title"}游戏盈亏结算{/block}
+{block name="css"}
+<style type="text/css">
+  .layui-table-highlight {
+    /*background-color:#1E90FF;*/
+    color: #e60000;font-weight: bold;
+  }
+
+  .layui-table-highlight:hover {
+    background-color: #7ebd90 !important;
+  }
+  .layui-anim{
+    max-height: 500px !important;
+  }
+</style>
+{/block}
+{block name="content"}
+
+
+<div class="layui-card" style="margin-top: 20px">
+  <div class="layui-card-header layuiadmin-card-header-auto">
+    <form class="layui-form" lay-filter="component-form-group">
+      <div class="layui-form-item">
+        <div class="layui-inline">
+          <label class="layui-form-label">{:lang('渠道ID')}：</label>
+          <div class="layui-input-inline">
+            <input autocomplete="off" class="layui-input" id="channelId" name="start_date" type="text">
+          </div>
+        </div>
+
+        <div class="layui-inline">
+          <label class="layui-form-label">{:lang('日期')}</label>
+          <div class="layui-input-inline" style="width: 150px;">
+            <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date" name="start" type="text" value="{:date('Y-m')}">
+          </div>
+        </div>
+        <div class="layui-inline">
+          <!-- <div class="layui-input-inline"> -->
+          <a class="layui-btn" id="search2">{:lang('搜索')}</a>
+          <!-- </div> -->
+        </div>
+      </div>
+    </form>
+
+  </div>
+  <div class="layui-card-body">
+    <div id="alllist">
+      <table id="proxylist" lay-filter="proxylist"></table>
+    </div>
+  </div>
+</div>
+
+{/block}
+{block name="script"}
+
+<script id="msg-bar" type="text/html">
+  <input type="button" class="layui-btn layui-btn-xs" lay-event="roomInfo" value="{:lang('查看明细')}">
+</script>
+<script>
+
+  url = "{:url('Channel/channelReconciliation')}";
+  layui.config({
+    base: '__layui__/' //静态资源所在路径
+  }).extend({
+    index: 'lib/index' //主入口模块
+  }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+    var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
+    var main = {
+      renderData: function () {
+        var cols = [ //表头
+          {field: 'ProxyChannelId', align: "center", title: "{:lang('业务员ID')}", minWidth: 110},
+          {field: 'AccountName', align: 'center', title: "{:lang('业务员名称')}", minWidth: 100, sort: true},
+          {field: 'totalInCash', align: 'center', title: "{:lang('总充值')}", minWidth: 200},
+          {field: 'totalOutCah', align: 'center', title: "{:lang('总提现')}", minWidth: 120, sort: true},
+
+          {field: 'rechargeCommission', align: "center", title: "{:lang('充值手续费')}", minWidth: 120, sort: true},
+          {field: 'withdrawalCommission', align: "center", title: "{:lang('提现手续费')}", minWidth: 100, sort: true},
+          {field: 'apiCommission', align: "center", title: "{:lang('API费用')}", minWidth: 150, sort: true},
+          {field: 'totalProfit', align: "center", title: "{:lang('总利润')}", minWidth: 100, sort: true},
+        ];
+        table.render({
+          elem: '#proxylist', url: url,where:{
+            Action:'list'
+          } , page: true /*开启分页*/, limit: 15, cols: [cols], sort: true,
+          autoSort: false,
+          done: function (res, curr, count) {
+            $('#total_in').html(res.other.total_Water);
+            $('#total_win').html(res.other.total_Win);
+            $('#total_SystemWin').html(res.other.total_SystemWin);
+
+            $('#total_tax').html(Math.floor(res.other.total_Tax * 100) / 100);//税
+            $('#total_re').html(res.other.total_WinRate); //回报率
+            $('#total_gcount').html(res.other.total_GCount);
+            $('#total_gnum').html(res.other.total_Gnum);
+            $('#nums').html(count);
+            $('#total_recharge').html(res.other.total_recharge);
+            $('#total_killRate').html(res.other.total_killRate);
+            let data = res.data;
+            layui.each(data,function (i) {
+              if (data[i].warning === true){
+                let trs = $('div[lay-id=proxylist] .layui-table-body tr');
+                layui.each(trs,function (j){
+                  if (trs.eq(j).data('index') === i){
+                    trs.eq(j).addClass('layui-table-highlight');
+                  }
+                });
+              }
+            });
+            tzTbale()
+          }
+        });
+      },
+
+      //搜索
+      search: function () {
+
+        //执行重载
+        table.reload('proxylist', {
+          page: {curr: 1},
+          where: {
+            channel_id: $.trim($('#channelId').val()),
+            time: $.trim($('#LAY-component-form-group-date').val()),
+          }
+        });
+      },
+      //操作事件
+      extraEvent: function () {
+
+        //排序
+        table.on('sort(proxylist)', function (obj) {
+          var roleid = $.trim($('#roleid').val());
+          var roomid = $.trim($('#roomid').val());
+          //执行重载
+          table.reload('proxylist', {
+            initSort: obj,
+            page: {curr: 1},
+            where: {
+              'orderytpe': obj.type,
+              'roomid': roomid,
+              'orderby': obj.field,
+            }
+          });
+
+        });
+        //编辑&&删除
+        table.on('tool(proxylist)', function (obj) {
+          var data = obj.data, layEvent = obj.event;
+          if (layEvent === 'roomInfo') {
+            // console.info(data);
+            title = "{:lang('明细')}-" + data.RoomName + "-" + data.AddTime;
+            url = "{:url('statistical/TotalRoominfo')}?roomid=" + data.RoomID + "&date=" + data.AddTime;
+            x_admin_show(title, url, 780, 800);
+          }
+
+        });
+      },
+
+      init: function () {
+        main.renderData();
+        main.extraEvent();
+        laydate.render({
+          elem: '#LAY-component-form-group-date'
+          , format: 'yyyy-MM'
+          , max: 1
+          , lang:'{$datelang ?: "cn"}'
+          , btns: ['clear', 'confirm']
+          // , value: new Date()
+        });
+        laydate.render({
+          elem: '#LAY-component-form-group-date2'
+          , format: 'yyyy-MM'
+          , max: 1
+          , lang:'{$datelang ?: "cn"}'
+          , btns: ['clear', 'confirm']
+          // , value: new Date()
+        });
+        $('#search').on('click', function (e) {
+          e.preventDefault();
+          main.search();
+        });
+      }
+    };
+    main.init();
+    $('#today').click(function () {
+      $('#today').addClass('layui-btn-danger');
+      $('#yestoday').removeClass('layui-btn-danger');
+      $('#thirdday').removeClass('layui-btn-danger');
+      $('#LAY-component-form-group-date').val("{:date('Y-m')}");
+      $('#LAY-component-form-group-date2').val("{:date('Y-m')}");
+      main.search();
+    });
+    $('#yestoday').click(function () {
+      $('#yestoday').addClass('layui-btn-danger');
+      $('#today').removeClass('layui-btn-danger');
+      $('#thirdday').removeClass('layui-btn-danger');
+      $('#LAY-component-form-group-date').val("{:date('Y-m-d',strtotime('-1 days'))}");
+      $('#LAY-component-form-group-date2').val("{:date('Y-m-d',strtotime('-1 days'))}");
+      main.search();
+    });
+    $('#thirdday').click(function () {
+      $('#thirdday').addClass('layui-btn-danger');
+      $('#yestoday').removeClass('layui-btn-danger');
+      $('#today').removeClass('layui-btn-danger');
+      $('#LAY-component-form-group-date').val("{:date('Y-m-d',strtotime('-2 days'))}");
+      $('#LAY-component-form-group-date2').val("{:date('Y-m-d',strtotime('-2 days'))}");
+      main.search();
+    });
+    $('#search2').click(function () {
+      $('#thirdday').removeClass('layui-btn-danger');
+      $('#yestoday').removeClass('layui-btn-danger');
+      $('#today').removeClass('layui-btn-danger');
+      main.search();
+    });
+  });
+  $('#output').click(function () {
+    where = {
+      roleid: $.trim($('#roleid').val()),
+      roomid: $.trim($('#roomid').val()),
+      strartdate: $.trim($('#LAY-component-form-group-date').val()),
+      enddate: $.trim($('#LAY-component-form-group-date2').val()),
+      limit: 10000000,
+      Action: 'exec',
+    }
+
+    download();
+
+    function download() {
+      var params = Object.keys(where).map(function (key) {
+        return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+      }).join("&");
+      url = url + "?" + params;
+      $.ajax({
+        type: 'POST',
+        dataType: 'json',
+        async: true,
+        url: url, // 生成文件，保存在服务器
+        success: function (data) {
+          var result = data;
+          // console.info(data);
+          switch (result["code"]) {
+            case 0:
+              parent.parent.open(url + "&exec=1&outall=true");
+              break;
+            case 1:
+              layer.msg(result["message"]);
+              break;
+            case 2:
+              layer.confirm(result['message'], {
+                btn: ["{:lang('是')}", "{:lang('否')}"] //按钮
+              }, function () {
+                parent.parent.open(url + "&exec=1&outall=true");
+                layer.msg('', {icon: 6, time: 1000}, function () {
+                  window.location.reload();
+                });
+              });
+          }
+        },
+        error: function (XMLHttpRequest, textStatus, e) {
+          console.log("oilDetection.js  method exportOilDetection" + e);
+        }
+      });
+    }
+  });
+</script>
+{/block}
