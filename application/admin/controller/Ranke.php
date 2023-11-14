@@ -169,8 +169,9 @@ class Ranke extends Main
                     ConVerMoney($v['iFreezonMoney']);
                     ConVerMoney($v['iNeedWaged']); //打码任务
                     ConVerMoney($v['iCurWaged']);//当前打码量
+                    $number = number_format($v['percentage'],4,'.','');
+                    $v['percentage'] = bcmul($number, 100, 2) . '%';
 
-                    $v['percentage'] = bcmul($v['percentage'], 100, 2) . '%';
 //                    if ($v['iCurWaged'] == 0 || $v['iNeedWaged'] == 0){
 //                        $v['percentage'] = '0%';
 //                    }else{
