@@ -1707,9 +1707,9 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                         $TotalAPICost += abs($totaljili);
                     }
 
-                    if ($hacksaw < 0) {//系统赢算费用
-                        $TotalAPICost += abs($hacksaw);
-                    }
+//                    if ($hacksaw < 0) {//系统赢算费用
+//                        $TotalAPICost += abs($hacksaw);
+//                    }
 
                     if ($yesbingo < 0) {//系统赢算费用
                         $TotalAPICost += abs($yesbingo);
