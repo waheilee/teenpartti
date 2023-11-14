@@ -91,9 +91,6 @@ class Merchant extends Main
             if (config('has_fcgame') == 1) {
                 $APIFee .= ",FCGame";
             }
-            if (config('has_pplive') == 1) {
-                $APIFee .= ",PPLIVE";
-            }
             $APIFee .= ")";
             $this->assign('APIFee', $APIFee);
             return $this->fetch();
@@ -187,9 +184,6 @@ class Merchant extends Main
 
         if (config('has_fcgame') == 1) {
             $APIFee .= ",FCGame";
-        }
-        if (config('has_pplive') == 1) {
-            $APIFee .= ",PPLIVE";
         }
 
         $APIFee .= ")";
