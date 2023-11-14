@@ -1944,7 +1944,6 @@ class Channel extends Main
                         $q->where('ProxyChannelId',$channelId);
                     }
                 })
-                ->where('type', 1)
                 ->column('ProxyChannelId,AccountName');
 //dump($channels);die();
             $channelIds = [];
