@@ -1500,6 +1500,9 @@ class Gamemanage extends Main
                 if ($kingid == 40000) {
                     $where = ' KindID>40000 and KindID<41000 ';
                 }
+                if ($kingid == 42000) {
+                    $where = ' KindID>42000 and KindID<43000 ';
+                }
                 $status = $db->updateTable('T_GameType', ['Maintain' => $status], $where);
                 $this->synconfig();
                 return $this->apiReturn(0, '', '设置成功');
