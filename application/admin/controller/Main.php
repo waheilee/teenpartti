@@ -374,9 +374,6 @@ SELECT  TypeId as RoomID,NodeName+'-('+CONVERT(VARCHAR,TypeId)+')' RoomName
             if (config('has_tadagame') == 1) {
                 $apiroom[] = ['RoomID' => 45000, 'RoomName' => 'TaDa-(45000)'];
             }
-            if (config('has_pplive') == 1) {
-                $apiroom[] = ['RoomID' => 43000, 'RoomName' => 'PPLIVE-(43000)'];
-            }
 
             $rsult = array_merge($rsult, $apiroom);
             unset($item);
