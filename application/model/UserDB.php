@@ -270,7 +270,8 @@ class UserDB extends BaseModel
                 ->join('[CD_UserDB].[dbo].[T_Job_UserInfo] d','d.RoleID=a.AccountID and d.job_key=4','left')
                 ->join('(SELECT * FROM [T_UserWage]) e','a.AccountID=e.RoleId','left')
                 ->where($where)
-                ->field('AccountID,Money,OperatorId,TotalDeposit,TotalRollOut,RegisterTime,b.FreezonMoney as iFreezonMoney,e.CurWageRequire as asd,e.NeedWageRequire as dsa,CASE WHEN CAST(e.NeedWageRequire AS FLOAT) <> 0 THEN CAST(e.CurWageRequire AS FLOAT) / CAST(e.NeedWageRequire AS FLOAT) ELSE 0 END as percentage,ISNULL(c.value,0) as win_dmrateset,ISNULL(d.value,0) as lose_dmrateset')
+                ->field('AccountID,Money,OperatorId,TotalDeposit,TotalRollOut,RegisterTime,b.FreezonMoney as iFreezonMoney,CASE WHEN CAST(e.NeedWageRequire AS FLOAT) <> 0 THEN CAST(e.CurWageRequire AS FLOAT) / CAST(e.NeedWageRequire AS FLOAT) ELSE 0 END as percentage,ISNULL(c.value,0) as win_dmrateset,ISNULL(d.value,0) as lose_dmrateset')
+
                 ->order("$orderby $ordertype")
                 ->fetchSql(0)
                 ->paginate($limit)
@@ -782,7 +783,6 @@ class UserDB extends BaseModel
             $ordertype = input('ordertype', '');
             $cpf = input('cpf', '');
             $operatorId = input('OperatorId', '');
-            $drawBackWay = input('drawBackWay', '');
             if (strtotime($start) < strtotime(config('record_start_time'))) {
                 $start = config('record_start_time');
             }
@@ -798,7 +798,6 @@ class UserDB extends BaseModel
                 if ($checkUser != '0') $where .= " and checkUser like '$checkUser'";
             }
             if (!empty($account)) $roleid = $this->GetUserIDByAccount($account);
-            if ($drawBackWay>0) $where .= " and DrawBackWay=$drawBackWay";
             if ($roleid > 0) $where .= " and AccountID=$roleid";
             if ($status >= 0) $where .= " and status = $status";
             if ($tranNO != 0) $where .= " and OrderNo='$tranNO'";
