@@ -3848,7 +3848,8 @@ class Player extends Main
                 $ServiceFeeRate = input('ServiceFeeRate', 0);
                 $SevenDaysCharge = input('SevenDaysCharge', 0);
                 $NeedCharge = input('NeedCharge', 0);
-                $ValidInviteCounts = input('ValidInviteCounts',0);
+                $WeekLossRate = input('WeekLossRate', 0);
+
 
                 $savedata = [
                     'NeedPoint' => intval($NeedPoint) * bl,
@@ -3862,7 +3863,7 @@ class Player extends Main
                     'ServiceFeeRate' => $ServiceFeeRate * 10,
                     'SevenDaysCharge' => $SevenDaysCharge,
                     'NeedCharge' => $NeedCharge,
-                    'ValidInviteCounts'=>$ValidInviteCounts
+                    'WeekLossRate' => $WeekLossRate
 
                 ];
 
@@ -3918,11 +3919,6 @@ class Player extends Main
             $level['SlotRunningReturnRate'] = bcdiv($level['SlotRunningReturnRate'], 100, 3);
             $level['LiveRunningReturnRate'] = bcdiv($level['LiveRunningReturnRate'], 100, 3);
             $level['SportRunningReturnRate'] = bcdiv($level['SportRunningReturnRate'], 100, 3);
-
-            if(empty($level['ValidInviteCounts']))
-            {
-                $level['ValidInviteCounts'] =0;
-            }
 
             $running_return = [
                 $level['OrignalRunningReturnRate'],
