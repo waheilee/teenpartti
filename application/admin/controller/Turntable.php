@@ -37,6 +37,7 @@ class Turntable extends Main
         switch (input('Action')) {
             case 'list':
                 $userDB = new UserDB();
+                $count = $userDB->getTableObject('View_Accountinfo')->count();
                 $users = $userDB->getTableObject('View_Accountinfo')
                     ->page($page,$limit)
                     ->select();
@@ -91,6 +92,7 @@ class Turntable extends Main
                     $item['ProxyId'] = $user['AccountID'];
                     $data[] = $item;
                 }
+                $result['count'] = $count;
                 $result['list'] = $data;
 //                dump($data);die();
 //                $db = new GameOCDB();
