@@ -64,8 +64,18 @@ class Turntable extends Main
                                 }
                             })
                             ->sum('TransMoney') ?? 0;
+                        $item['Lv1FirstDepositPlayers']  = (new DataChangelogsDB())
+                            ->getTableObject('T_UserTransactionLogs')
+                            ->where('IfFirstCharge', 1)
+                            ->where(function ($q) use ($flippedData) {
+                                if ($flippedData) {
+                                    $q->whereIn('RoleID', $flippedData);
+                                }
+                            })
+                            ->count() ?? 0;
                     }else{
                         $item['DailyDeposit'] = 0;
+                        $item['Lv1FirstDepositPlayers'] = 0;
                     }
 
                     $item['Lv1PersonCount']  = count($flippedData);
@@ -700,10 +710,14 @@ class Turntable extends Main
             $endTime = input('end_time');
             $roleId = input('roleid');
             $takeStatus = input('take_status');
+            $orderBy = input('orderby');
+            $orderByType = input('ordertype');
+            $order = "$orderBy $orderByType";
             $masterDB = new UserDB();
             $count = $masterDB->getTableObject('T_UserCashLoseBack')
                 ->count();
             $lists = $masterDB->getTableObject('T_UserCashLoseBack')
+                ->order($order)
                 ->where(function ($q) use ($roleId) {
                     if ($roleId) {
                         $q->where('RoleId', $roleId);
@@ -728,6 +742,7 @@ class Turntable extends Main
                     }
                 })
                 ->page($page, $limit)
+
                 ->select();
             $temp = [];
             foreach ($lists as &$list) {
