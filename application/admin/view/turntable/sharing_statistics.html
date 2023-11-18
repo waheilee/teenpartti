@@ -31,38 +31,38 @@
                 <!--lay-verify="number" name="reward_amount" type="text"></div>-->
                 <!--</div>-->
 
-                <div class="layui-inline">
-                    <label class="layui-form-label">{:lang('时间')}</label>
-                    <div class="layui-input-inline" style="width: 120px;">
-                        <input type="text" name="start_date" id="LAY-component-form-group-date1" autocomplete="off"
-                               class="layui-input" value="{:date('Y-m-d')}">
-                    </div>
-                    <div class="layui-form-mid">
-                        -
-                    </div>
-                    <div class="layui-input-inline" style="width: 120px;">
-                        <input type="text" name="end_date" id="LAY-component-form-group-date2" autocomplete="off"
-                               class="layui-input" value="{:date('Y-m-d')}">
-                    </div>
-                </div>
+<!--                <div class="layui-inline">-->
+<!--                    <label class="layui-form-label">{:lang('时间')}</label>-->
+<!--                    <div class="layui-input-inline" style="width: 120px;">-->
+<!--                        <input type="text" name="start_date" id="LAY-component-form-group-date1" autocomplete="off"-->
+<!--                               class="layui-input" value="{:date('Y-m-d')}">-->
+<!--                    </div>-->
+<!--                    <div class="layui-form-mid">-->
+<!--                        - -->
+<!--                    </div>-->
+<!--                    <div class="layui-input-inline" style="width: 120px;">-->
+<!--                        <input type="text" name="end_date" id="LAY-component-form-group-date2" autocomplete="off"-->
+<!--                               class="layui-input" value="{:date('Y-m-d')}">-->
+<!--                    </div>-->
+<!--                </div>-->
 
 
-                <input type="hidden" name="tab" id="searchtab" value="total">
-                <div class="layui-inline">
-                    <!-- <div class="layui-input-inline"> -->
-                    <a class="layui-btn" id="search">{:lang('搜索')}</a>
-                    <a class="layui-btn layui-btn-normal" id="output">{:lang('导出记录')}</a>
+<!--                <input type="hidden" name="tab" id="searchtab" value="total">-->
+<!--                <div class="layui-inline">-->
+<!--                    &lt;!&ndash; <div class="layui-input-inline"> &ndash;&gt;-->
+<!--                    <a class="layui-btn" id="search">{:lang('搜索')}</a>-->
+<!--                    <a class="layui-btn layui-btn-normal" id="output">{:lang('导出记录')}</a>-->
 
-                    <a class="layui-btn" id="today">{:lang('今日')}</a>
-                    <a class="layui-btn" id="yestoday">{:lang('昨日')}</a>
-                    <a class="layui-btn" id="q_day">{:lang('前一天')}</a>
-                    <a class="layui-btn" id="h_day">{:lang('后一天')}</a>
-                    <a class="layui-btn" id="week">{:lang('本周')}</a>
-                    <a class="layui-btn" id="lastweek">{:lang('上周')}</a>
-                    <a class="layui-btn" id="month">{:lang('本月')}</a>
-                    <a class="layui-btn" id="lastmonth">{:lang('上个月')}</a>
-                    <!-- </div> -->
-                </div>
+<!--                    <a class="layui-btn" id="today">{:lang('今日')}</a>-->
+<!--                    <a class="layui-btn" id="yestoday">{:lang('昨日')}</a>-->
+<!--                    <a class="layui-btn" id="q_day">{:lang('前一天')}</a>-->
+<!--                    <a class="layui-btn" id="h_day">{:lang('后一天')}</a>-->
+<!--                    <a class="layui-btn" id="week">{:lang('本周')}</a>-->
+<!--                    <a class="layui-btn" id="lastweek">{:lang('上周')}</a>-->
+<!--                    <a class="layui-btn" id="month">{:lang('本月')}</a>-->
+<!--                    <a class="layui-btn" id="lastmonth">{:lang('上个月')}</a>-->
+<!--                    &lt;!&ndash; </div> &ndash;&gt;-->
+<!--                </div>-->
             </div>
         </form>
 
@@ -103,7 +103,7 @@
         var main = {
             renderData: function () {
                 var cols = [ //表头  注册人数 Lv1PersonCount /充值人数 Lv1FirstDepositPlayers /充值金额DailyDeposit
-                    {field: 'AddTime', title: "{:lang('日期')}", width: 210, align: 'center', fixed: 'left', sort: true},
+                    // {field: 'AddTime', title: "{:lang('日期')}", width: 210, align: 'center', fixed: 'left', sort: true},
                     {field: 'ProxyId', title: "{:lang('玩家id')}", width: 200, align: 'center', fixed: 'left'},
                     {field: 'DailyDeposit', title: "{:lang('充值金额')}", width: 200, align: 'center', sort: true},
                     {field: 'Lv1PersonCount', title: "{:lang('注册人数')}", width: 200, align: 'center', sort: true},

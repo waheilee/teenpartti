@@ -4,6 +4,7 @@ namespace app\admin\controller;
 
 use app\common\GameLog;
 use app\model\AccountDB;
+use app\model\BankDB;
 use app\model\DataChangelogsDB;
 use app\model\GameOCDB;
 use app\model\MasterDB;
@@ -31,14 +32,73 @@ class Turntable extends Main
         $parentid = input('parentid', 0);
         $startdate = input('startdate', '');
         $enddate = input('enddate', '');
+        $page = input('page');
+        $limit = input('limit');
         switch (input('Action')) {
             case 'list':
-                $db = new GameOCDB();
-                $result = $db->getSharingStatistics(true);
-                $sumdata = $db->GetAgentRecordSum(true);
-                $result['other'] = $sumdata;
-                $result['other']['startdate'] = $result['startdate'];
-                $result['other']['enddate'] = $result['enddate'];
+                $userDB = new UserDB();
+                $users = $userDB->getTableObject('View_Accountinfo')
+                    ->page($page,$limit)
+                    ->select();
+                $data = [];
+                foreach($users as $user){
+                    $item = [];
+                    $subId = $userDB->getTableObject('View_Accountinfo')
+                        ->where(function ($q) use($roleid){
+                            if ($roleid){
+                                $q->where('AccountID',$roleid);
+                            }
+                        })
+                        ->where('ParentID',$user['AccountID'])
+                        ->column('AccountID');
+                    $flippedData = array_flip($subId);
+                    if (!empty($flippedData)){
+                        $item['DailyDeposit']  = (new DataChangelogsDB())
+                            ->getTableObject('T_UserTransactionLogs')
+                            ->where('IfFirstCharge', 1)
+                            ->where(function ($q) use ($flippedData) {
+                                if ($flippedData) {
+                                    $q->whereIn('RoleID', $flippedData);
+                                }
+                            })
+                            ->sum('TransMoney') ?? 0;
+                    }else{
+                        $item['DailyDeposit'] = 0;
+                    }
+
+                    $item['Lv1PersonCount']  = count($flippedData);
+
+                    $userBankDB = new BankDB();
+                    $takeMoney = $userBankDB->getTableObject('UserDrawBack')
+                        ->where('AccountID',$user['AccountID'])
+                        ->sum('iMoney') ?? 0;
+                    $item['takeMoney'] = $takeMoney / bl;
+                    if ($item['DailyDeposit'] == 0 && $item['takeMoney'] > 0) {
+                        $item['difference'] = '-' . $item['takeMoney'];
+                    } else {
+                        $item['difference'] = bcsub($item['DailyDeposit'], $item['takeMoney'], 2);
+                    }
+                    $turntableMoney = $userDB->getTableObject('T_Job_UserInfo')
+                        ->where('RoleID',$user['AccountID'])
+                        ->where('job_key', 10014)
+                        ->sum('value') ?? 0;
+                    $item['Money'] = $turntableMoney / bl;
+                    $addMoney = $userDB->getTableObject('T_Job_UserInfo')
+                        ->where('RoleID', $user['AccountID'])
+                        ->where('job_key', 10015)
+                        ->sum('value') ?? 0;
+                    $item['addMoney'] = FormatMoney($addMoney);
+                    $item['ProxyId'] = $user['AccountID'];
+                    $data[] = $item;
+                }
+                $result['list'] = $data;
+//                dump($data);die();
+//                $db = new GameOCDB();
+//                $result = $db->getSharingStatistics(true);
+//                $sumdata = $db->GetAgentRecordSum(true);
+//                $result['other'] = $sumdata;
+//                $result['other']['startdate'] = $result['startdate'];
+//                $result['other']['enddate'] = $result['enddate'];
                 return $this->apiJson($result);
 
         }
