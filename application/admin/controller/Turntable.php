@@ -39,17 +39,18 @@ class Turntable extends Main
                 $userDB = new UserDB();
                 $count = $userDB->getTableObject('View_Accountinfo')->count();
                 $users = $userDB->getTableObject('View_Accountinfo')
+                    ->where(function ($q) use($roleid){
+                        if ($roleid){
+                            $q->where('AccountID',$roleid);
+                        }
+                    })
                     ->page($page,$limit)
                     ->select();
                 $data = [];
                 foreach($users as $user){
                     $item = [];
                     $subId = $userDB->getTableObject('View_Accountinfo')
-                        ->where(function ($q) use($roleid){
-                            if ($roleid){
-                                $q->where('AccountID',$roleid);
-                            }
-                        })
+
                         ->where('ParentID',$user['AccountID'])
                         ->column('AccountID');
                     $flippedData = array_flip($subId);
