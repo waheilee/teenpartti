@@ -516,6 +516,10 @@ class GameOCDB extends BaseModel
                     $v['RoomID'] = 41000;
                     $v['RoomName'] = 'HackSaw';
                 }
+                if ($v['ServerID'] == 42000) {
+                    $v['RoomID'] = 42000;
+                    $v['RoomName'] = 'YES!BINGO';
+                }
                 $v['AwardMoney'] = FormatMoney($v['RoundBets'] + $v['Money']);
                 ConVerMoney($v['Money']);
                 ConVerMoney($v['GameRoundRunning']);
