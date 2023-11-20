@@ -711,12 +711,48 @@ class Turntable extends Main
             $roleId = input('roleid');
             $takeStatus = input('take_status');
             $orderBy = input('orderby');
-
+            $orderType = input('ordertype');
             $masterDB = new UserDB();
+
+//            $beginTime = strtotime($beginTime);
+//            $endTime = strtotime($endTime);
+//            $where = "1=1";
             $count = $masterDB->getTableObject('T_UserCashLoseBack')
                 ->count();
-            $lists = $masterDB->getTableObject('T_UserCashLoseBack')
+            if (empty($orderBy)){
+                $orderBy = "WeekLoseMoney asc";
+            }else{
+                $orderBy = "$orderBy $orderType";
+            }
+//
+//            if (!empty($beginTime) && !empty($endTime)){
+//                $where .= "AND (
+//        (BeginTime BETWEEN $beginTime AND $endTime)
+//        OR (EndTime BETWEEN $beginTime AND $endTime)
+//        OR (BeginTime < $beginTime AND EndTime > $endTime)
+//        OR ($beginTime IS NULL AND $endTime IS NULL)
+//    ) ";
+//            }
+//            if (!empty($takeStatus)){
+//                $where .= "AND (
+//        ($takeStatus = 1 AND GetTime > 0)
+//        OR ($takeStatus = 2 AND GetTime = 0)
+//        OR ($takeStatus IS NULL)
+//    ) ";
+//            }
+//            if (!empty($roleId)){
+//                $where .= "AND (RoleId = $roleId OR $roleId IS NULL)";
+//            }
 
+////            $sqlQuery = "SELECT * FROM T_UserCashLoseBack WHERE $where order by  $orderBy  OFFSET " . ($page - 1) * $limit . " ROWS FETCH NEXT $limit ROWS ONLY ";
+//////            $sqlQuery ='SELECT * FROM T_UserCashLoseBack nolock WHERE 1=1  order by '.$orderBy.' asc   OFFSET ' . ($page - 1) * $limit . " ROWS FETCH NEXT $limit ROWS ONLY  ";
+////
+////
+////            $lists = $masterDB->getTableQuery($sqlQuery);
+
+
+            $lists = $masterDB->getTableObject('T_UserCashLoseBack')
+                ->order($orderBy)
                 ->where(function ($q) use ($roleId) {
                     if ($roleId) {
                         $q->where('RoleId', $roleId);
@@ -743,6 +779,7 @@ class Turntable extends Main
                 ->page($page, $limit)
 
                 ->select();
+
             $temp = [];
             foreach ($lists as &$list) {
                 if ($list['GetTime']) {

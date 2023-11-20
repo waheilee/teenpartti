@@ -132,7 +132,7 @@
                     , toolbar: '#toolbarDemo'
                     , defaultToolbar: []
                     , where: {Action: 'list', 'classid': -1}
-                    , cols: [cols]
+                    , cols: [cols], sort: true, autoSort: false
                     , done: function (res, curr, count) {
                         tzTbale()
                         $.ajax({
@@ -241,10 +241,7 @@
 
                 table.on('sort(proxylist)', function (obj) {
                     var roleid = $.trim($('#roleid').val());
-                    var start = $.trim($('#LAY-component-form-group-date').val());
-                    var end = $.trim($('#LAY-component-form-group-date2').val());
-                    var payChannel = $.trim($('#payChannel').val());
-                    var payWay = $.trim($('#payWay').val());
+
                     //执行重载
                     table.reload('proxylist', {
                         initSort: obj,
@@ -254,12 +251,6 @@
                         where: {
                             'orderby': obj.field,
                             'ordertype': obj.type,
-                            'roleid': roleid,//AccountID
-                            'start': start, //AddTime
-                            'end': end,
-                            'payChannel': payChannel,//支付方式
-                            'payWay': payWay,
-                            'checkUser': $.trim($('#checkUser').val())
                         }
                     });
 
