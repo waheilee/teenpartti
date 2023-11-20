@@ -711,13 +711,12 @@ class Turntable extends Main
             $roleId = input('roleid');
             $takeStatus = input('take_status');
             $orderBy = input('orderby');
-            $orderByType = input('ordertype');
-            $order = "$orderBy $orderByType";
+
             $masterDB = new UserDB();
             $count = $masterDB->getTableObject('T_UserCashLoseBack')
                 ->count();
             $lists = $masterDB->getTableObject('T_UserCashLoseBack')
-                ->order($order)
+
                 ->where(function ($q) use ($roleId) {
                     if ($roleId) {
                         $q->where('RoleId', $roleId);
