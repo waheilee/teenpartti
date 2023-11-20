@@ -34,6 +34,7 @@ class Index extends Base
     {
         try {
             $param = jsonRequest(['roleid', 'gameid', 'language','session_id', 'ip','time', 'sign','gType']);
+            save_log('yesbingo', '===='.request()->url().'====参数接收====' . json_encode($param));
             $clientkey = config('clientkey');
             $key = md5($param['roleid'] . $param['gameid'] . $param['language'] . $param['time'] . $clientkey);
             if(empty($param['roleid']) || empty($param['gameid']) ||empty($param['time']) ||empty($param['sign'])){
