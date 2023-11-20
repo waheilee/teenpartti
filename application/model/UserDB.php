@@ -571,7 +571,8 @@ class UserDB extends BaseModel
                     }
                 }
                 continue;
-            } else {
+            }
+            else {
                 for ($i = 1; $i <= 9; $i++) {
                     $item['TotalUser'] = 0;
                     $j = $i;

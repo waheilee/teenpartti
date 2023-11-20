@@ -1575,7 +1575,7 @@ class Channel extends Main
         $typeid =input('typeid','');
         $where = " and typeid=".$typeid;
         if ($start != null && $end != null) {
-            $where = "and mydate BETWEEN '$start' And '$end'";
+            $where .= "and mydate BETWEEN '$start' And '$end'";
         }
         if($roleid>0){
             $where.=' and  ChannelID='.$roleid;

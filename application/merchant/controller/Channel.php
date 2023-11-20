@@ -1671,7 +1671,8 @@ class Channel extends Main
         $roleid = input('RoleID', 0);
         $start = input('strartdate');
         $end = input('enddate');
-        $where = "";
+        $typeid =input('typeid',111);
+        $where = " and typeid=".$typeid;
         if ($start != null && $end != null) {
             $where = "And mydate BETWEEN '$start' And '$end'";
         }
