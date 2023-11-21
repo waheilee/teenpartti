@@ -181,10 +181,10 @@ class Index extends Controller
     public function AgentWaterSum()
     {
         $white_list = ['54.233.122.115', '54.254.138.198', '106.75.239.173'];
-        if (!in_array(request()->ip(), $white_list)) {
-            exit();
-        }
-        $num = input('num') ?: 0;
+//        if (!in_array(request()->ip(), $white_list)) {
+//            exit();
+//        }
+        $num = input('num') ?: 10;
         $type = input('type') ?: 'Mobile';//,A.MailAccount
         $field = 'A.AccountID,A.AccountName,A.' . $type . ' As Mobile,ISNULL(B.ReceivedIncome,0) As ReceivedIncome,ISNULL(B.TotalDeposit,0) AS TotalDeposit,ISNULL(B.TotalTax,0) AS TotalTax,ISNULL(B.TotalRunning,0) AS TotalRunning,ISNULL(B.Lv1PersonCount,0) AS Lv1PersonCount,ISNULL(B.Lv1Deposit,0) AS Lv1Deposit,ISNULL(B.Lv1DepositPlayers,0) AS Lv1DepositPlayers,ISNULL(B.Lv1Tax,0) AS Lv1Tax,ISNULL(B.Lv1Running,0) AS Lv1Running,ISNULL(B.Lv2PersonCount,0) AS Lv2PersonCount,ISNULL(B.Lv2Deposit,0) AS Lv2Deposit,ISNULL(B.Lv2DepositPlayers,0) AS Lv2DepositPlayers,ISNULL(B.Lv2Tax,0) AS Lv2Tax,ISNULL(B.Lv2Running,0) AS Lv2Running,ISNULL(B.Lv3PersonCount,0) AS Lv3PersonCount,ISNULL(B.Lv3Deposit,0) AS Lv3Deposit,ISNULL(B.Lv3DepositPlayers,0) AS Lv3DepositPlayers,ISNULL(B.Lv3Tax,0) AS Lv3Tax,ISNULL(B.Lv3Running,0) AS Lv3Running,ISNULL(B.Lv1WithdrawCount,0) AS Lv1WithdrawCount,ISNULL(B.Lv2WithdrawCount,0) AS Lv2WithdrawCount,ISNULL(B.Lv3WithdrawCount,0) AS Lv3WithdrawCount,ISNULL(B.Lv1WithdrawAmount,0) AS Lv1WithdrawAmount,ISNULL(B.Lv2WithdrawAmount,0) AS Lv2WithdrawAmount,ISNULL(B.Lv3WithdrawAmount,0) AS Lv3WithdrawAmount';
         if ($type == 'Mobile') {
