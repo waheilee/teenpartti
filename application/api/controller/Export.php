@@ -149,16 +149,16 @@ class Export
                 }
                 return $carry;
             }, 0);
-//            $msg = (new DataChangelogsDB())
-//                ->getTableObject('T_ProxyMsgLog')
-//                ->field('RoleID,addtime')
-//                ->where('RoleID',$user['AccountID'])
-//                ->order('addtime desc')
-//                ->find();
+            $msg = (new DataChangelogsDB())
+                ->getTableObject('T_ProxyMsgLog')
+                ->field('RoleID,addtime')
+                ->where('RoleID',$user['AccountID'])
+                ->order('addtime desc')
+                ->find();
             $addTime = '';
-//            if ($msg){
-//                $addTime = $msg['addtime'];
-//            }
+            if ($msg){
+                $addTime = $msg['addtime'];
+            }
             $item['msgTime'] = $addTime;
             $item['firstPlayerCount'] = count($subUser);
             $item['firstPlayerDepositCount'] = count($firstPlayerDepositCount);
