@@ -184,8 +184,8 @@ class Export
             $item = [
                 $row['mobile'],
                 $row['personTotalMoney'],
-                $row['personDrawbackTotalMoney'],
                 $row['msgTime'],
+                $row['personDrawbackTotalMoney'],
                 $row['firstPlayerCount'],
                 $row['firstPlayerDepositCount'],
                 $row['firstPlayerDepositSum'],
