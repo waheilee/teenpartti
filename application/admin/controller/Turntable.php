@@ -10,7 +10,6 @@ use app\model\GameOCDB;
 use app\model\MasterDB;
 use app\model\UserDB;
 use think\Db;
-
 class Turntable extends Main
 {
 
@@ -34,6 +33,9 @@ class Turntable extends Main
         $enddate = input('enddate', '');
         $page = input('page');
         $limit = input('limit');
+        $orderField = input('orderfield','DailyDeposit');
+        $orderType = input('ordertype','desc');
+        $orderBy = "$orderField $orderType";
         switch (input('Action')) {
             case 'list':
                 $userDB = new UserDB();
@@ -44,7 +46,7 @@ class Turntable extends Main
                             $q->where('AccountID',$roleid);
                         }
                     })
-                    ->page($page,$limit)
+//                    ->page($page,$limit)
                     ->select();
                 $data = [];
                 foreach($users as $user){
@@ -103,15 +105,21 @@ class Turntable extends Main
                     $item['ProxyId'] = $user['AccountID'];
                     $data[] = $item;
                 }
+                // 从 $data 数组中提取  列
+                $dailyDeposit = array_column($data, $orderField);
+                if ($orderType == 'asc'){
+                    $sort = SORT_ASC;
+                }else{
+                    $sort = SORT_DESC;
+                }
+// 对 $data 数组进行 排序
+                array_multisort($dailyDeposit, $sort, $data);
+                $offset = ($page - 1) * $limit;
+// 使用 array_slice 进行分页
+                $pagedData = array_slice($data, $offset, $limit);
                 $result['count'] = $count;
-                $result['list'] = $data;
-//                dump($data);die();
-//                $db = new GameOCDB();
-//                $result = $db->getSharingStatistics(true);
-//                $sumdata = $db->GetAgentRecordSum(true);
-//                $result['other'] = $sumdata;
-//                $result['other']['startdate'] = $result['startdate'];
-//                $result['other']['enddate'] = $result['enddate'];
+                $result['list'] = $pagedData;
+
                 return $this->apiJson($result);
 
         }
