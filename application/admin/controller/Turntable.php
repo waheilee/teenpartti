@@ -34,52 +34,91 @@ class Turntable extends Main
         $enddate = input('enddate', '');
         $page = input('page');
         $limit = input('limit');
+        $orderField = input('orderfield','DailyDeposit');
+        $orderType = input('ordertype','desc');
+        $order = "$orderField $orderType";
+        $where = '1=1';
+        if ($roleid){
+            $where .= ' and Parent.AccountID = '.$roleid;
+        }
+
         switch (input('Action')) {
             case 'list':
                 $userDB = new UserDB();
                 $count = $userDB->getTableObject('View_Accountinfo')->count();
-                $users = $userDB->getTableObject('View_Accountinfo')
-                    ->where(function ($q) use($roleid){
-                        if ($roleid){
-                            $q->where('AccountID',$roleid);
-                        }
-                    })
-                    ->page($page,$limit)
-                    ->select();
+                $sql = "SELECT
+                                Parent.AccountID AS AccountID,
+                                COUNT(DISTINCT Child.AccountID) AS DirectSubordinatesCount,
+                                depo.DailyDeposit,
+                                depo.Lv1FirstDepositPlayers
+                            FROM
+                                View_Accountinfo Parent
+                            LEFT JOIN
+                                View_Accountinfo Child ON Parent.AccountID = Child.ParentID
+                            LEFT JOIN (
+                                SELECT
+                                    p.ParentID,
+                                    COALESCE(SUM(Child.TransMoney), 0) AS DailyDeposit,
+                                    COALESCE(COUNT(*), 0) AS Lv1FirstDepositPlayers
+                                FROM
+                                    View_Accountinfo p
+                                LEFT JOIN
+                                    [CD_DataChangelogsDB].[dbo].[T_UserTransactionLogs] Child ON p.AccountID = Child.RoleID
+                                WHERE
+                                    Child.IfFirstCharge = 1
+                                GROUP BY
+                                    p.ParentID
+                            ) AS depo ON depo.ParentID = Parent.AccountID
+                            where $where
+                            GROUP BY
+                                Parent.AccountID, depo.DailyDeposit, depo.Lv1FirstDepositPlayers
+                            ORDER BY $order OFFSET $page ROWS FETCH NEXT $limit ROWS ONLY";
+                $users = $userDB->getTableQuery($sql);
+//                dump($users);die();
+//
+//                $users = $userDB->getTableObject('View_Accountinfo')
+//                    ->where(function ($q) use($roleid){
+//                        if ($roleid){
+//                            $q->where('AccountID',$roleid);
+//                        }
+//                    })
+//                    ->page($page,$limit)
+//                    ->select();
                 $data = [];
                 foreach($users as $user){
                     $item = [];
-                    $subId = $userDB->getTableObject('View_Accountinfo')
+//                    $subId = $userDB->getTableObject('View_Accountinfo')
+//
+//                        ->where('ParentID',$user['AccountID'])
+//                        ->column('AccountID');
+//                    $flippedData = array_flip($subId);
+//                    if (!empty($flippedData)){
+//                        $item['DailyDeposit']  = (new DataChangelogsDB())
+//                            ->getTableObject('T_UserTransactionLogs')
+//                            ->where('IfFirstCharge', 1)
+//                            ->where(function ($q) use ($flippedData) {
+//                                if ($flippedData) {
+//                                    $q->whereIn('RoleID', $flippedData);
+//                                }
+//                            })
+//                            ->sum('TransMoney') ?? 0;
+//                        $item['Lv1FirstDepositPlayers']  = (new DataChangelogsDB())
+//                            ->getTableObject('T_UserTransactionLogs')
+//                            ->where('IfFirstCharge', 1)
+//                            ->where(function ($q) use ($flippedData) {
+//                                if ($flippedData) {
+//                                    $q->whereIn('RoleID', $flippedData);
+//                                }
+//                            })
+//                            ->count() ?? 0;
+//                    }else{
+//                        $item['DailyDeposit'] = 0;
+//                        $item['Lv1FirstDepositPlayers'] = 0;
+//                    }
 
-                        ->where('ParentID',$user['AccountID'])
-                        ->column('AccountID');
-                    $flippedData = array_flip($subId);
-                    if (!empty($flippedData)){
-                        $item['DailyDeposit']  = (new DataChangelogsDB())
-                            ->getTableObject('T_UserTransactionLogs')
-                            ->where('IfFirstCharge', 1)
-                            ->where(function ($q) use ($flippedData) {
-                                if ($flippedData) {
-                                    $q->whereIn('RoleID', $flippedData);
-                                }
-                            })
-                            ->sum('TransMoney') ?? 0;
-                        $item['Lv1FirstDepositPlayers']  = (new DataChangelogsDB())
-                            ->getTableObject('T_UserTransactionLogs')
-                            ->where('IfFirstCharge', 1)
-                            ->where(function ($q) use ($flippedData) {
-                                if ($flippedData) {
-                                    $q->whereIn('RoleID', $flippedData);
-                                }
-                            })
-                            ->count() ?? 0;
-                    }else{
-                        $item['DailyDeposit'] = 0;
-                        $item['Lv1FirstDepositPlayers'] = 0;
-                    }
-
-                    $item['Lv1PersonCount']  = count($flippedData);
-
+                    $item['Lv1PersonCount']  = $user['DirectSubordinatesCount'];
+                    $item['DailyDeposit'] = $user['DailyDeposit'] ?? 0;
+                    $item['Lv1FirstDepositPlayers'] = $user['Lv1FirstDepositPlayers'] ?? 0;
                     $userBankDB = new BankDB();
                     $takeMoney = $userBankDB->getTableObject('UserDrawBack')
                         ->where('AccountID',$user['AccountID'])
