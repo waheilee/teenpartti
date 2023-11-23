@@ -48,7 +48,7 @@ class Turntable extends Main
                 $count = $userDB->getTableObject('View_Accountinfo')->count();
                 $sql = "SELECT
                                 Parent.AccountID AS AccountID,
-                                COUNT(DISTINCT Child.AccountID) AS DirectSubordinatesCount,
+                                COUNT(DISTINCT Child.AccountID) AS Lv1PersonCount,
                                 depo.DailyDeposit,
                                 depo.Lv1FirstDepositPlayers
                             FROM
@@ -116,7 +116,7 @@ class Turntable extends Main
 //                        $item['Lv1FirstDepositPlayers'] = 0;
 //                    }
 
-                    $item['Lv1PersonCount']  = $user['DirectSubordinatesCount'];
+                    $item['Lv1PersonCount']  = $user['Lv1PersonCount'];
                     $item['DailyDeposit'] = $user['DailyDeposit'] ?? 0;
                     $item['Lv1FirstDepositPlayers'] = $user['Lv1FirstDepositPlayers'] ?? 0;
                     $userBankDB = new BankDB();
