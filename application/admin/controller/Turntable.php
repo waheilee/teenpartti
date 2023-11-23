@@ -34,6 +34,9 @@ class Turntable extends Main
         $enddate = input('enddate', '');
         $page = input('page');
         $limit = input('limit');
+        $orderField = input('orderfield');
+        $orderType = input('ordertype');
+        $orderBy = "$orderField $orderType";
         switch (input('Action')) {
             case 'list':
                 $userDB = new UserDB();
@@ -44,6 +47,7 @@ class Turntable extends Main
                             $q->where('AccountID',$roleid);
                         }
                     })
+                    ->order($orderBy)
                     ->page($page,$limit)
                     ->select();
                 $data = [];
