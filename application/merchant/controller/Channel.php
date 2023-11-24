@@ -1755,9 +1755,13 @@ class Channel extends Main
         $APIFee[0] = $APIFee[0] ?? 0; //pp
         $APIFee[1] = $APIFee[1] ?? 0; //pg
         $APIFee[2] = $APIFee[2] ?? 0; //evo
-        $APIFee[3] = $APIFee[3] ?? 0; //jili
-        $APIFee[4] = $APIFee[4] ?? 0; //habawin
-//                $APIFee[5] = $APIFee[5] ?? 0; //hacksaw
+        $APIFee[3] = $APIFee[3] ?? 0; //spribe游戏
+        $APIFee[4] = $APIFee[4] ?? 0; //haba
+        $APIFee[5] = $APIFee[5] ?? 0; //hacksaw
+        $APIFee[6] = $APIFee[6] ?? 0; //jiliwin
+        $APIFee[7] = $APIFee[7] ?? 0; //yesbingo
+        $APIFee[8] = $APIFee[8] ?? 0; //jiliwin
+        $APIFee[9] = $APIFee[9] ?? 0; //yesbingo
 
         $TotalAPICost = 0;
         $totalpp = bcmul($APIFee[0], $total['ppgamewin'], 4);
@@ -1765,7 +1769,11 @@ class Channel extends Main
         $totalevo = bcmul($APIFee[2], $total['evolivewin'], 4);
         $totalspribe = bcmul($APIFee[3], $total['spribegamewin'], 4);
         $totalhaba = bcmul($APIFee[4], $total['habawin'], 4);
-//        $totalhacksaw = bcmul($APIFee[5], $total['hacksaw'], 4);
+        $totalhacksaw = bcmul($APIFee[5], $total['hacksaw'], 4);
+        $totaljiliwin = bcmul($APIFee[6], $total['jiliwin'], 4);
+        $totalyesbingo = bcmul($APIFee[7], $total['yesbingo'], 4);
+        $tadagame = bcmul($APIFee[8], $total['tadagame'], 4);
+        $fcgame = bcmul($APIFee[9], $total['fcgame'], 4);
 
         if ($totalpp < 0) {//系统赢算费用
             $TotalAPICost += abs($totalpp);
@@ -1781,12 +1789,25 @@ class Channel extends Main
             $TotalAPICost += abs($totalhaba);
         }
 
-//        if ($totalhacksaw < 0) {//系统赢算费用
-//            $TotalAPICost += abs($totalhacksaw);
-//        }
+        if ($totalhacksaw < 0) {//系统赢算费用
+            $TotalAPICost += abs($totalhacksaw);
+        }
 
         if ($totalspribe < 0) {//系统赢算费用
             $TotalAPICost += abs($totalspribe);
+        }
+        if ($totaljiliwin < 0) {//系统赢算费用
+            $TotalAPICost += abs($totaljiliwin);
+        }
+
+        if ($totalyesbingo < 0) {//系统赢算费用
+            $TotalAPICost += abs($totalyesbingo);
+        }
+        if ($tadagame < 0) {//系统赢算费用
+            $TotalAPICost += abs($tadagame);
+        }
+        if ($fcgame < 0) {//系统赢算费用
+            $TotalAPICost += abs($fcgame);
         }
 
         $data['TotalAPICost'] = FormatMoney($TotalAPICost);
