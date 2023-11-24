@@ -39,7 +39,10 @@ class Turntable extends Main
         $order = "$orderField $orderType";
         $where = '1=1';
         if ($roleid){
-            $where .= ' and Parent.AccountID = '.$roleid;
+            $where .= ' and Parent.AccountID='.$roleid;
+            $offset = "";
+        }else {
+            $offset = "OFFSET $page ROWS FETCH NEXT $limit ROWS ONLY";
         }
 
         switch (input('Action')) {
@@ -47,32 +50,34 @@ class Turntable extends Main
                 $userDB = new UserDB();
                 $count = $userDB->getTableObject('View_Accountinfo')->count();
                 $sql = "SELECT
-                                Parent.AccountID AS AccountID,
-                                COUNT(DISTINCT Child.AccountID) AS Lv1PersonCount,
-                                depo.DailyDeposit,
-                                depo.Lv1FirstDepositPlayers
+                            Parent.AccountID AS AccountID,
+                            COUNT(DISTINCT Child.AccountID) AS Lv1PersonCount,
+                            depo.DailyDeposit,
+                            depo.Lv1FirstDepositPlayers
+                        FROM
+                            View_Accountinfo Parent
+                        LEFT JOIN
+                            View_Accountinfo Child ON Parent.AccountID = Child.ParentID
+                        LEFT JOIN (
+                            SELECT
+                                p.ParentID,
+                                COALESCE(SUM(Child.TransMoney), 0) AS DailyDeposit,
+                                COALESCE(COUNT(*), 0) AS Lv1FirstDepositPlayers
                             FROM
-                                View_Accountinfo Parent
+                                View_Accountinfo p
                             LEFT JOIN
-                                View_Accountinfo Child ON Parent.AccountID = Child.ParentID
-                            LEFT JOIN (
-                                SELECT
-                                    p.ParentID,
-                                    COALESCE(SUM(Child.TransMoney), 0) AS DailyDeposit,
-                                    COALESCE(COUNT(*), 0) AS Lv1FirstDepositPlayers
-                                FROM
-                                    View_Accountinfo p
-                                LEFT JOIN
-                                    [CD_DataChangelogsDB].[dbo].[T_UserTransactionLogs] Child ON p.AccountID = Child.RoleID
-                                WHERE
-                                    Child.IfFirstCharge = 1
-                                GROUP BY
-                                    p.ParentID
-                            ) AS depo ON depo.ParentID = Parent.AccountID
-                            where $where
+                                [CD_DataChangelogsDB].[dbo].[T_UserTransactionLogs] Child ON p.AccountID = Child.RoleID
+                            WHERE
+                                Child.IfFirstCharge = 1
                             GROUP BY
-                                Parent.AccountID, depo.DailyDeposit, depo.Lv1FirstDepositPlayers
-                            ORDER BY $order OFFSET $page ROWS FETCH NEXT $limit ROWS ONLY";
+                                p.ParentID
+                        ) AS depo ON depo.ParentID = Parent.AccountID
+                        WHERE $where
+                        GROUP BY
+                            Parent.AccountID,
+                            depo.DailyDeposit,
+                            depo.Lv1FirstDepositPlayers
+                        ORDER BY depo.$order $offset ;";
                 $users = $userDB->getTableQuery($sql);
 //                dump($users);die();
 //
