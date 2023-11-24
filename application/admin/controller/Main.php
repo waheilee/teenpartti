@@ -368,13 +368,13 @@ SELECT  TypeId as RoomID,NodeName+'-('+CONVERT(VARCHAR,TypeId)+')' RoomName
             }
 
             if (config('has_fcgame') == 1) {
-                $apiroom[] = ['RoomID' => 44000, 'RoomName' => 'YESBINGO-(44000)'];
+                $apiroom[] = ['RoomID' => 44000, 'RoomName' => 'FCGame-(44000)'];
             }
 
             if (config('has_tadagame') == 1) {
                 $apiroom[] = ['RoomID' => 45000, 'RoomName' => 'TaDa-(45000)'];
             }
-
+            $apiroom[] = ['RoomID' => 46000, 'RoomName' => 'PPLive-(46000)'];
             $rsult = array_merge($rsult, $apiroom);
             unset($item);
             Cache::set($key, $rsult, 86400);

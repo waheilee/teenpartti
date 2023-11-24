@@ -54,11 +54,14 @@ class My extends Main
         sum(convert(bigint,ppgamewin)) as ppgamewin,
         sum(convert(bigint,pggamewin)) as pggamewin,
         sum(convert(bigint,evolivewin)) as evolivewin,
+         sum(convert(bigint,spribe)) as spribewin, 
         sum(convert(bigint,habawin)) as habawin,
-        sum(convert(bigint,spribe)) as spribewin,     
-        sum(convert(bigint,jiliwin)) as jiliwin,
-        sum(convert(bigint,yesbingo)) as yesbingo        
-        ';
+        sum(convert(bigint,hacksaw)) as hacksaw,           
+        sum(convert(bigint,jiliwin)) as jiliwin,        
+        sum(convert(bigint,yesbingo)) as yesbingo,
+        sum(convert(bigint,fcgame)) as fcgame,
+        sum(convert(bigint,tadagame)) as tadagame,
+        sum(convert(bigint,pplive)) as pplive';
 
         $total = $db->getTableObject('T_Operator_GameStatisticTotal')->where($where)->field($field)->find();
         $pay = $db->getTableObject('T_Operator_GameStatisticPay')->where($where)->field('sum(convert(bigint,totalpay)) totalpay')->find();
@@ -81,6 +84,9 @@ class My extends Main
         $total['jiliwin'] = FormatMoney($total['jiliwin'] ?? 0);
         $total['hacksaw'] = FormatMoney($total['hacksaw'] ?? 0);
         $total['yesbingo'] = FormatMoney($total['yesbingo'] ?? 0);
+        $total['fcgame'] = FormatMoney($total['fcgame'] ?? 0);
+        $total['tadagame'] = FormatMoney($total['tadagame'] ?? 0);
+        $total['pplive'] = FormatMoney($total['pplive'] ?? 0);
 
         $data['recharge_fee'] =bcmul($data['total_recharge'] , $config['RechargeFee'],3);
         $data['payout_fee'] = bcmul($data['totalpayout'] ,$config['WithdrawalFee'],3);
@@ -88,48 +94,66 @@ class My extends Main
         $APIFee[0] = $APIFee[0] ?? 0; //pp
         $APIFee[1] = $APIFee[1] ?? 0; //pg
         $APIFee[2] = $APIFee[2] ?? 0; //evo
-        $APIFee[3] = $APIFee[3] ?? 0; //spribe
-        $APIFee[4] = $APIFee[4] ?? 0; //haba
-        $APIFee[5] = $APIFee[5] ?? 0; //jiliwin
-        $APIFee[6] = $APIFee[6] ?? 0; //yesbingo
+        $APIFee[3] = $APIFee[3] ?? 0; //JDB
+        $APIFee[4] = $APIFee[4] ?? 0; //habawin
+        $APIFee[5] = $APIFee[5] ?? 0; //hacksaw
+        $APIFee[6] = $APIFee[6] ?? 0; //JILI
+        $APIFee[7] = $APIFee[7] ?? 0; //YES!BINGO
+        $APIFee[8] = $APIFee[8] ?? 0; //tadagame
+        $APIFee[9] = $APIFee[9] ?? 0; //fcgame
+        $APIFee[10] = $APIFee[10] ?? 0; //pplive
 
-        $TotalAPICost =0;
-        $totalpp=bcmul($APIFee[0],$total['ppgamewin'],4);
-        $totalpg=bcmul($APIFee[1],$total['pggamewin'],4);
-        $totalevo=bcmul($APIFee[2],$total['evolivewin'],4);
-        $spribewin=bcmul($APIFee[3],$total['spribewin'],4);
-        $totalhaba=bcmul($APIFee[4],$total['habawin'],4);
-//        $totalhacksaw = bcmul($APIFee[5], $total['hacksaw'], 4);
-        $totaljiliwin = bcmul($APIFee[5], $total['jiliwin'], 4);
-        $totalyesbingo = bcmul($APIFee[6], $total['yesbingo'], 4);
+        $totalpp = bcmul($APIFee[0], $total['ppgamewin'], 4);
+        $totalpg = bcmul($APIFee[1], $total['pggamewin'], 4);
+        $totalevo = bcmul($APIFee[2], $total['evolivewin'], 4);
+        $totalspribe = bcmul($APIFee[3], $total['spribewin'], 4);
+        $habawin = bcmul($APIFee[4], $total['habawin'], 4);
+        $hackSaw = bcmul($APIFee[5], $total['hacksaw'], 4);
+        $jiliwin = bcmul($APIFee[6], $total['jiliwin'], 4);
+        $yesbingo = bcmul($APIFee[7], $total['yesbingo'], 4);
+        $tadagame = bcmul($APIFee[8], $total['tadagame'], 4);
+        $fcgame = bcmul($APIFee[9], $total['fcgame'], 4);
+        $pplive = bcmul($APIFee[10], $total['pplive'], 4);
 
-
-
-        if($totalpp<0){//系统赢算费用
-            $TotalAPICost+= abs($totalpp);
+        $TotalAPICost = 0;
+        if ($totalpp < 0) {//系统赢算费用
+            $TotalAPICost += abs($totalpp);
         }
-        if($totalpg<0){//系统赢算费用
-            $TotalAPICost+= abs($totalpg);
+        if ($totalpg < 0) {//系统赢算费用
+            $TotalAPICost += abs($totalpg);
         }
-        if($totalevo<0){//系统赢算费用
-            $TotalAPICost+= abs($totalevo);
+        if ($totalevo < 0) {//系统赢算费用
+            $TotalAPICost += abs($totalevo);
         }
-        if($spribewin<0){//系统赢算费用
-            $TotalAPICost+= abs($spribewin);
-        }
-        if($totalhaba<0){//系统赢算费用
-            $TotalAPICost+= abs($totalhaba);
-        }
-//        if ($totalhacksaw < 0) {//系统赢算费用
-//            $TotalAPICost += abs($totalhacksaw);
-//        }
-
-        if ($totaljiliwin < 0) {//系统赢算费用
-            $TotalAPICost += abs($totaljiliwin);
+        if ($totalspribe < 0) {//系统赢算费用
+            $TotalAPICost += abs($totalspribe);
         }
 
-        if ($totalyesbingo < 0) {//系统赢算费用
-            $TotalAPICost += abs($totalyesbingo);
+        if ($habawin < 0) {//系统赢算费用
+            $TotalAPICost += abs($habawin);
+        }
+
+        if ($hackSaw < 0) {//系统赢算费用
+            $TotalAPICost += abs($hackSaw);
+        }
+        if ($jiliwin < 0) {//系统赢算费用
+            $TotalAPICost += abs($jiliwin);
+        }
+
+        if ($yesbingo < 0) {//系统赢算费用
+            $TotalAPICost += abs($yesbingo);
+        }
+
+        if ($tadagame < 0) {//系统赢算费用
+            $TotalAPICost += abs($tadagame);
+        }
+
+        if ($fcgame < 0) {//系统赢算费用
+            $TotalAPICost += abs($fcgame);
+        }
+
+        if ($pplive < 0) {//系统赢算费用
+            $TotalAPICost += abs($pplive);
         }
 
 

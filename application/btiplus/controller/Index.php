@@ -18,7 +18,9 @@ class Index extends Base
     protected $reserveAmountBetRedisKey;
     protected $debitTotalRedisKey;
     protected $reqIdRedisKey;
-
+    protected $moon;
+    protected $day;
+    protected $hour;
 
     public function __construct()
     {
@@ -27,6 +29,9 @@ class Index extends Base
         $this->reserveAmountBetRedisKey = 'RESERVE_AMOUNT_BET_';//投注金额
         $this->debitTotalRedisKey = 'DEBIT_TOTAL_FOR_RESERVE_ID_';//单注总额
         $this->reqIdRedisKey = 'ACCOUNT_NUMBER_OF_BETS_FOR_REQ_ID_';//单注请求标识
+        $this->hour = 60 * 60;
+        $this->day = $this->hour * 24;
+        $this->moon = $this->day * 30;
         header('Access-Control-Allow-Origin:*');
 //允许的请求头信息
         header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authorization");
@@ -54,7 +59,7 @@ class Index extends Base
         $roleId = $param['roleid'];
         $encry = $this->encry($roleId);
         $url = "https://bit.com" . '?operatorToken=' . $encry;
-        Redis::set($encry, $encry, $day);
+        Redis::set($encry, $encry, $this->moon);
         return $this->succjson($url);
 
     }
@@ -159,7 +164,7 @@ class Index extends Base
 
             }
 
-            Redis::set($this->reserveAmountBetRedisKey . $accountId . $reserveId, $amount, 86400);//记录下注数量
+            Redis::set($this->reserveAmountBetRedisKey . $accountId . $reserveId, $amount, $this->moon);//记录下注数量
             $lastBalance = $this->getBalance($accountId);
 //            $response = [
 //                "error_code" => 0,
@@ -168,7 +173,7 @@ class Index extends Base
 //                "trx_id" => $this->makeOrderId($accountId),
 //            ];
             $response = $this->apiReturnText(0, "No Error", $lastBalance, $this->makeOrderId($accountId));
-            Redis::set($this->reserveRedisKey . $accountId . $reserveId, $response, 86400);//记录订单是否执行，防止重复
+            Redis::set($this->reserveRedisKey . $accountId . $reserveId, $response, $this->moon);//记录订单是否执行，防止重复
             save_log('btiplus', '===' . request()->url() . '===响应成功数据===' . json_encode($response));
             return $response;
 
@@ -232,7 +237,7 @@ class Index extends Base
         //的 url 可以传&amount=10.01，只需读取 Reserve
         //URL 中的金额即可。
         $reserveBets = Redis::get($this->reserveAmountBetRedisKey . $accountId . $reserveId);//玩家reserve总金额
-        if ($reserveBets < bcadd($debitTotal, 0.01, 2)) {
+        if ( bcadd($reserveBets, 0.01, 2) < $debitTotal) {
 //            $response = [
 //                "error_code" => 0,
 //                "error_message" => "Total DebitReserve amount larger than",
@@ -242,8 +247,8 @@ class Index extends Base
             return $this->apiReturnText(0, "Total DebitReserve amount larger than", $balance, $this->makeOrderId($accountId));
 
         }
-        Redis::set($this->debitTotalRedisKey . $accountId . $reserveId . $orderId, $debitTotal, 84600);
-        Redis::set($this->reqIdRedisKey . $accountId . $reserveId . $orderId . $reqId, $amount, 84600);
+        Redis::set($this->debitTotalRedisKey . $accountId . $reserveId . $orderId, $debitTotal, $this->moon);
+        Redis::set($this->reqIdRedisKey . $accountId . $reserveId . $orderId . $reqId, $amount, $this->moon);
         //已取消预留
         $cancelDebitReserve = Redis::get('RESERVE_BET_CANCEL' . $accountId . $reserveId);
         if ($cancelDebitReserve) {
@@ -339,7 +344,7 @@ class Index extends Base
 //            "balance" => $lastBalance,
 //        ];
         $response = $this->apiReturnText(0, "No Error", $lastBalance);
-        Redis::set($reserveCancelRedisKey, $response, 86400);
+        Redis::set($reserveCancelRedisKey, $response, $this->moon);
         Redis::rm($reserveRedisKey);
         return $response;
         //
@@ -364,7 +369,8 @@ class Index extends Base
         $reserveAmountBetRedisKey = 'RESERVE_AMOUNT_BET_' . $accountId . $reserveId;//投注金额
         $socket = new QuerySocket();
         //不存在的reserveID
-        if (Redis::has($reserveRedisKey)) {
+
+        if (!Redis::has($reserveRedisKey)) {
 //            $response = [
 //                "error_code" => 0,
 //                "error_message" => "ReserveID Not Exist",
@@ -392,8 +398,8 @@ class Index extends Base
 //            "error_message" => "No Error",
 //            "balance" => $lastBalance,
 //        ];
-        $response = $this->apiReturnText(0, "ReserveID Not Exist", $lastBalance);
-        Redis::set($commitReserveRedisKey, $response, 86400);
+        $response = $this->apiReturnText(0, "No Error", $lastBalance);
+        Redis::set($commitReserveRedisKey, $response, $this->moon);
         return $response;
 
     }
@@ -432,7 +438,7 @@ class Index extends Base
             "balance" => $result,
         ];
         $response = $this->apiReturnText(0, "No Error", $result);
-        Redis::set($debitCustomerRedisKey, $response, 86400);
+        Redis::set($debitCustomerRedisKey, $response, $this->moon);
         return $response;
     }
 
@@ -466,7 +472,7 @@ class Index extends Base
 //            "balance" => $result,
 //        ];
         $response = $this->apiReturnText(0, "No Error", $result);
-        Redis::set($creditCustomerRedisKey, $response, 86400);
+        Redis::set($creditCustomerRedisKey, $response, $this->moon);
         return $response;
     }
 
