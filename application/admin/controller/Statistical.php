@@ -1681,17 +1681,17 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                     $APIFee[9] = $APIFee[9] ?? 0; //fcgame
                     $APIFee[10] = $APIFee[10] ?? 0; //pplive
 
-                    $totalpp = bcmul($APIFee[0], $total['ppgamewin'], 4);
-                    $totalpg = bcmul($APIFee[1], $total['pggamewin'], 4);
-                    $totalevo = bcmul($APIFee[2], $total['evolivewin'], 4);
-                    $totalspribe = bcmul($APIFee[3], $total['spribewin'], 4);
-                    $habawin = bcmul($APIFee[4], $total['habawin'], 4);
-                    $hackSaw = bcmul($APIFee[5], $total['hacksaw'], 4);
-                    $jiliwin = bcmul($APIFee[6], $total['jiliwin'], 4);
-                    $yesbingo = bcmul($APIFee[7], $total['yesbingo'], 4);
-                    $tadagame = bcmul($APIFee[8], $total['tadagame'], 4);
-                    $fcgame = bcmul($APIFee[9], $total['fcgame'], 4);
-                    $pplive = bcmul($APIFee[10], $total['pplive'], 4);
+                    $totalpp = bcmul($APIFee[0], $api_data['ppgamewin'], 4);
+                    $totalpg = bcmul($APIFee[1], $api_data['pggamewin'], 4);
+                    $totalevo = bcmul($APIFee[2], $api_data['evolivewin'], 4);
+                    $spribewin = bcmul($APIFee[3], $api_data['spribewin'], 4);
+                    $habawin = bcmul($APIFee[4], $api_data['habawin'], 4);
+                    $hacksaw = bcmul($APIFee[5], $api_data['hacksaw'], 4);
+                    $totaljili = bcmul($APIFee[6], $api_data['jiliwin'], 4);
+                    $yesbingo = bcmul($APIFee[7], $api_data['yesbingo'], 4);
+                    $tadagame = bcmul($APIFee[8], $api_data['tadagame'], 4);
+                    $fcgame = bcmul($APIFee[9], $api_data['fcgame'], 4);
+                    $pplive = bcmul($APIFee[10], $api_data['pplive'], 4);
 
                     $TotalAPICost = 0;
                     if ($totalpp < 0) {//系统赢算费用
@@ -1703,19 +1703,19 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                     if ($totalevo < 0) {//系统赢算费用
                         $TotalAPICost += abs($totalevo);
                     }
-                    if ($totalspribe < 0) {//系统赢算费用
-                        $TotalAPICost += abs($totalspribe);
+                    if ($spribewin < 0) {//系统赢算费用
+                        $TotalAPICost += abs($spribewin);
                     }
 
                     if ($habawin < 0) {//系统赢算费用
                         $TotalAPICost += abs($habawin);
                     }
 
-                    if ($hackSaw < 0) {//系统赢算费用
-                        $TotalAPICost += abs($hackSaw);
+                    if ($hacksaw < 0) {//系统赢算费用
+                        $TotalAPICost += abs($hacksaw);
                     }
-                    if ($jiliwin < 0) {//系统赢算费用
-                        $TotalAPICost += abs($jiliwin);
+                    if ($totaljili < 0) {//系统赢算费用
+                        $TotalAPICost += abs($totaljili);
                     }
 
                     if ($yesbingo < 0) {//系统赢算费用
