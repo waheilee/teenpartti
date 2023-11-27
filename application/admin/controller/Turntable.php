@@ -812,7 +812,10 @@ class Turntable extends Main
                         $beginTime = strtotime($beginTime);
                         $endTime = strtotime($endTime);
                         $q->where('BeginTime', '>', $beginTime)
-                            ->whereOr('EndTime', '<', $endTime);
+                            ->where('BeginTime', '>', $endTime)
+                            ->where('EndTime', '<', $beginTime)
+                            ->where('EndTime', '<', $endTime);
+
                     }
                 })
                 ->where(function ($q) use ($takeStatus) {
