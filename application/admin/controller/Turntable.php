@@ -3,13 +3,10 @@
 namespace app\admin\controller;
 
 use app\common\GameLog;
-use app\model\AccountDB;
 use app\model\BankDB;
-use app\model\DataChangelogsDB;
 use app\model\GameOCDB;
 use app\model\MasterDB;
 use app\model\UserDB;
-use think\Db;
 
 class Turntable extends Main
 {
@@ -167,6 +164,11 @@ class Turntable extends Main
                 $checkRecordData = [];
                 if (empty($historyList)) {
                     $count = $userDB->getTableObject('T_PDDCommi')
+                        ->where(function ($q) use ($roleId) {
+                            if (!empty($roleId)) {
+                                $q->where('RoleId', $roleId);
+                            }
+                        })
                         ->where('GetType', 0)
                         ->count();
                     $checkRecord = $userDB->getTableObject('T_PDDCommi')
@@ -180,6 +182,27 @@ class Turntable extends Main
                         ->select();
                 } else {
                     $count = $userDB->getTableObject('T_PDDCommi')
+                        ->where(function ($q) use ($roleId) {
+                            if (!empty($roleId)) {
+                                $q->where('RoleId', $roleId);
+                            }
+                        })
+                        ->where(function ($q) use ($checkUser) {
+                            if (!empty($checkUser)) {
+                                $q->where('Commi', 'like', '%' . $checkUser . '%');
+                            }
+                        })
+                        ->where(function ($q) use ($commitStartTime, $commitEndTime) {
+                            if (!empty($commitStartTime)) {
+                                $q->where('CommiTime', '>', $commitStartTime);
+                            }
+                            if (!empty($commitEndTime)) {
+                                $q->where('CommiTime', '<', $commitEndTime);
+                            }
+                            if (!empty($commitStartTime) && !empty($commitEndTime)) {
+                                $q->where('CommiTime', 'between time', [$commitStartTime, $commitEndTime]);
+                            }
+                        })
                         ->whereIn('GetType', [1, 2])
                         ->count();
                     $checkRecord = $userDB->getTableObject('T_PDDCommi')
