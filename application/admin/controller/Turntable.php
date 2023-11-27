@@ -34,14 +34,19 @@ class Turntable extends Main
         $enddate = input('enddate', '');
         $page = input('page');
         $limit = input('limit');
-        $orderField = input('orderfield','DailyDeposit');
-        $orderType = input('ordertype','desc');
-        $order = "$orderField $orderType";
+        $orderField = input('orderfield', 'DailyDeposit');
+        $orderType = input('ordertype', 'desc');
+        if ($orderField == 'Lv1PersonCount') {
+            $order = "$orderField $orderType";
+        } else {
+            $order = "depo.$orderField $orderType";
+        }
+
         $where = '1=1';
-        if ($roleid){
-            $where .= ' and Parent.AccountID='.$roleid;
+        if ($roleid) {
+            $where .= ' and Parent.AccountID=' . $roleid;
             $offset = "";
-        }else {
+        } else {
             $offset = "OFFSET $page ROWS FETCH NEXT $limit ROWS ONLY";
         }
 
@@ -77,7 +82,7 @@ class Turntable extends Main
                             Parent.AccountID,
                             depo.DailyDeposit,
                             depo.Lv1FirstDepositPlayers
-                        ORDER BY depo.$order $offset ;";
+                        ORDER BY $order $offset ;";
                 $users = $userDB->getTableQuery($sql);
 //                dump($users);die();
 //
@@ -90,7 +95,7 @@ class Turntable extends Main
 //                    ->page($page,$limit)
 //                    ->select();
                 $data = [];
-                foreach($users as $user){
+                foreach ($users as $user) {
                     $item = [];
 //                    $subId = $userDB->getTableObject('View_Accountinfo')
 //
@@ -121,12 +126,12 @@ class Turntable extends Main
 //                        $item['Lv1FirstDepositPlayers'] = 0;
 //                    }
 
-                    $item['Lv1PersonCount']  = $user['Lv1PersonCount'];
+                    $item['Lv1PersonCount'] = $user['Lv1PersonCount'];
                     $item['DailyDeposit'] = $user['DailyDeposit'] ?? 0;
                     $item['Lv1FirstDepositPlayers'] = $user['Lv1FirstDepositPlayers'] ?? 0;
                     $userBankDB = new BankDB();
                     $takeMoney = $userBankDB->getTableObject('UserDrawBack')
-                        ->where('AccountID',$user['AccountID'])
+                        ->where('AccountID', $user['AccountID'])
                         ->sum('iMoney') ?? 0;
                     $item['takeMoney'] = $takeMoney / bl;
                     if ($item['DailyDeposit'] == 0 && $item['takeMoney'] > 0) {
@@ -135,7 +140,7 @@ class Turntable extends Main
                         $item['difference'] = bcsub($item['DailyDeposit'], $item['takeMoney'], 2);
                     }
                     $turntableMoney = $userDB->getTableObject('T_Job_UserInfo')
-                        ->where('RoleID',$user['AccountID'])
+                        ->where('RoleID', $user['AccountID'])
                         ->where('job_key', 10014)
                         ->sum('value') ?? 0;
                     $item['Money'] = $turntableMoney / bl;
@@ -763,9 +768,9 @@ class Turntable extends Main
 //            $where = "1=1";
             $count = $masterDB->getTableObject('T_UserCashLoseBack')
                 ->count();
-            if (empty($orderBy)){
+            if (empty($orderBy)) {
                 $orderBy = "WeekLoseMoney asc";
-            }else{
+            } else {
                 $orderBy = "$orderBy $orderType";
             }
 //
@@ -821,7 +826,6 @@ class Turntable extends Main
                     }
                 })
                 ->page($page, $limit)
-
                 ->select();
 
             $temp = [];
@@ -880,7 +884,7 @@ class Turntable extends Main
 
         $cashMoneyTotal = $this->getArraySum($resultArray, 'CashBackMoney');
 
-        return $this->apiReturn(200,[
+        return $this->apiReturn(200, [
             'cashBackMoneyTotal' => FormatMoney($cashBackMoneyTotal),
             'cashMoneyTotal' => FormatMoney($cashMoneyTotal),
         ]);
