@@ -97,34 +97,7 @@ class Turntable extends Main
                 $data = [];
                 foreach ($users as $user) {
                     $item = [];
-//                    $subId = $userDB->getTableObject('View_Accountinfo')
-//
-//                        ->where('ParentID',$user['AccountID'])
-//                        ->column('AccountID');
-//                    $flippedData = array_flip($subId);
-//                    if (!empty($flippedData)){
-//                        $item['DailyDeposit']  = (new DataChangelogsDB())
-//                            ->getTableObject('T_UserTransactionLogs')
-//                            ->where('IfFirstCharge', 1)
-//                            ->where(function ($q) use ($flippedData) {
-//                                if ($flippedData) {
-//                                    $q->whereIn('RoleID', $flippedData);
-//                                }
-//                            })
-//                            ->sum('TransMoney') ?? 0;
-//                        $item['Lv1FirstDepositPlayers']  = (new DataChangelogsDB())
-//                            ->getTableObject('T_UserTransactionLogs')
-//                            ->where('IfFirstCharge', 1)
-//                            ->where(function ($q) use ($flippedData) {
-//                                if ($flippedData) {
-//                                    $q->whereIn('RoleID', $flippedData);
-//                                }
-//                            })
-//                            ->count() ?? 0;
-//                    }else{
-//                        $item['DailyDeposit'] = 0;
-//                        $item['Lv1FirstDepositPlayers'] = 0;
-//                    }
+
 
                     $item['Lv1PersonCount'] = $user['Lv1PersonCount'];
                     $item['DailyDeposit'] = $user['DailyDeposit'] ?? 0;
@@ -154,13 +127,7 @@ class Turntable extends Main
                 }
                 $result['count'] = $count;
                 $result['list'] = $data;
-//                dump($data);die();
-//                $db = new GameOCDB();
-//                $result = $db->getSharingStatistics(true);
-//                $sumdata = $db->GetAgentRecordSum(true);
-//                $result['other'] = $sumdata;
-//                $result['other']['startdate'] = $result['startdate'];
-//                $result['other']['enddate'] = $result['enddate'];
+
                 return $this->apiJson($result);
 
         }
@@ -669,8 +636,8 @@ class Turntable extends Main
         $phone = input('phone');
         $phones = explode(',', $phone);
         $masterDB = new MasterDB();
-        $masterDB->startTrans();
         try {
+            $masterDB->startTrans();
             $data = [];
             foreach ($phones as $phone) {
                 if (empty($phone)) {
@@ -721,8 +688,8 @@ class Turntable extends Main
         } else {
             //批量删除
             $ids = explode(',', $id);
-            $masterDB->startTrans();
             try {
+                $masterDB->startTrans();
                 $del = $masterDB->getTableObject('T_PDDCode')
                     ->delete($ids);
                 // 提交事务
@@ -763,9 +730,6 @@ class Turntable extends Main
             $orderType = input('ordertype');
             $masterDB = new UserDB();
 
-//            $beginTime = strtotime($beginTime);
-//            $endTime = strtotime($endTime);
-//            $where = "1=1";
             $count = $masterDB->getTableObject('T_UserCashLoseBack')
                 ->count();
             if (empty($orderBy)) {
@@ -773,32 +737,6 @@ class Turntable extends Main
             } else {
                 $orderBy = "$orderBy $orderType";
             }
-//
-//            if (!empty($beginTime) && !empty($endTime)){
-//                $where .= "AND (
-//        (BeginTime BETWEEN $beginTime AND $endTime)
-//        OR (EndTime BETWEEN $beginTime AND $endTime)
-//        OR (BeginTime < $beginTime AND EndTime > $endTime)
-//        OR ($beginTime IS NULL AND $endTime IS NULL)
-//    ) ";
-//            }
-//            if (!empty($takeStatus)){
-//                $where .= "AND (
-//        ($takeStatus = 1 AND GetTime > 0)
-//        OR ($takeStatus = 2 AND GetTime = 0)
-//        OR ($takeStatus IS NULL)
-//    ) ";
-//            }
-//            if (!empty($roleId)){
-//                $where .= "AND (RoleId = $roleId OR $roleId IS NULL)";
-//            }
-
-////            $sqlQuery = "SELECT * FROM T_UserCashLoseBack WHERE $where order by  $orderBy  OFFSET " . ($page - 1) * $limit . " ROWS FETCH NEXT $limit ROWS ONLY ";
-//////            $sqlQuery ='SELECT * FROM T_UserCashLoseBack nolock WHERE 1=1  order by '.$orderBy.' asc   OFFSET ' . ($page - 1) * $limit . " ROWS FETCH NEXT $limit ROWS ONLY  ";
-////
-////
-////            $lists = $masterDB->getTableQuery($sqlQuery);
-
 
             $lists = $masterDB->getTableObject('T_UserCashLoseBack')
                 ->order($orderBy)
