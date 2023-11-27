@@ -811,8 +811,8 @@ class Turntable extends Main
                     if (!empty($beginTime) && !empty($endTime)) {
                         $beginTime = strtotime($beginTime);
                         $endTime = strtotime($endTime);
-                        $q->where('BeginTime', '>', $beginTime)
-                            ->where('EndTime', '<', $endTime);
+                        $q->where('BeginTime', '<=', $endTime)
+                            ->where('EndTime', '>=', $beginTime);
 
                     }
                 })
