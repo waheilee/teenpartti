@@ -528,8 +528,8 @@ class GameOCDB extends BaseModel
                     $v['RoomID'] = 45000;
                     $v['RoomName'] = 'TaDa';
                 }
-                if ($v['ServerID'] == 45000) {
-                    $v['RoomID'] = 45000;
+                if ($v['ServerID'] == 46000) {
+                    $v['RoomID'] = 46000;
                     $v['RoomName'] = 'PPLive';
                 }
                 $v['AwardMoney'] = FormatMoney($v['RoundBets'] + $v['Money']);
