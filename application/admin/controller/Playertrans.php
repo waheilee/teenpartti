@@ -599,6 +599,9 @@ class Playertrans extends Main
                 if (!$draw) {
                     return $this->apiReturn(100, '', '该提现订单不存在');
                 }
+                if (in_array($draw['status'],[100,0,1,2,3,4,5])){
+                    return $this->apiReturn(100, '', '订单状态已改变，请刷新页面');
+                }
                 $draw['checkUser'] = input('checkUser') ?: $draw['checkUser'];
                 if ($draw['checkUser'] != session('username')) {
                     return $this->apiReturn(100, '', '权限不足');
@@ -910,6 +913,15 @@ class Playertrans extends Main
                             'msg' => '该提现订单玩家id为0，无法处理'
                         ];
                         continue;
+                    }
+                    if (in_array($draw['status'],[100,0,1,2,3,4,5])){
+                        $error_num += 1;
+                        $res_data[] = [
+                            'OrderNo' => $OrderNo,
+                            'msg' => '订单状态已改变'
+                        ];
+                        continue;
+//                        return $this->apiReturn(100, '', '订单状态已改变，请刷新页面');
                     }
                     $userID = $draw['AccountID'];
                     $draw['RealMoney'] = FormatMoney($draw['iMoney'] - $draw['Tax']);
