@@ -599,7 +599,7 @@ class Playertrans extends Main
                 if (!$draw) {
                     return $this->apiReturn(100, '', '该提现订单不存在');
                 }
-                if (in_array($draw['status'],[100,0,1,2,3,4,5])){
+                if (in_array($draw['status'],[100,0,2,3,4,5,6])){
                     return $this->apiReturn(100, '', '订单状态已改变，请刷新页面');
                 }
                 $draw['checkUser'] = input('checkUser') ?: $draw['checkUser'];
@@ -914,7 +914,7 @@ class Playertrans extends Main
                         ];
                         continue;
                     }
-                    if (in_array($draw['status'],[100,0,1,2,3,4,5])){
+                    if (in_array($draw['status'],[100,0,2,3,4,5,6])){
                         $error_num += 1;
                         $res_data[] = [
                             'OrderNo' => $OrderNo,
