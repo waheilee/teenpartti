@@ -50,7 +50,9 @@
         <!--        <button class="layui-btn layui-btn-sm layui-bg-green" lay-event="multiCheck">{:lang('批量审核')}</button>-->
         <button class="layui-btn layui-btn-sm layui-bg-green" lay-event="turntableSwitch">{:lang('新增手机号码')}</button>
         <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="oneKeyDelete">{:lang('批量删除')}</button>
-
+        {if(config('phoneOneKeyTruncate')==1)}
+        <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="oneKeyTruncate">{:lang('一键清除')}</button>
+        {/if}
     </div>
 </script>
 {/block}
@@ -244,6 +246,32 @@
                                     url:"{:url('turntable/phoneListDelete')}",
                                     type:"POST",
                                     data:{'id': id+'','type':2},
+                                    dataType:'json',
+                                    success:function(ret){
+                                        if (ret.code == 0) {
+                                            layer.msg(ret.msg);
+                                            $(".layui-laypage-btn")[0].click();
+                                            setTimeout(function(){layer.closeAll()},1500);
+                                        } else {
+                                            layer.msg(ret.msg);
+                                        }
+                                    }
+                                });
+                            });
+                            break;
+                        case 'oneKeyTruncate':
+                            layer.confirm('{:lang("是否确认清除所有手机号码,清理后将无法恢复")}？', {
+                                btn: ['{:lang("确定")}','{:lang("取消")}']
+                            }, function(){
+                                var index = layer.msg("{:lang('正在处理...')}" , {
+                                    icon: 16 ,
+                                    shade: 0.6 ,
+                                    time: 1 ,
+                                });
+                                $.ajax({
+                                    url:"{:url('turntable/phoneListDelete')}",
+                                    type:"POST",
+                                    data:{'type':3},
                                     dataType:'json',
                                     success:function(ret){
                                         if (ret.code == 0) {

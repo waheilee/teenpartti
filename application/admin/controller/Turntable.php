@@ -7,6 +7,7 @@ use app\model\BankDB;
 use app\model\GameOCDB;
 use app\model\MasterDB;
 use app\model\UserDB;
+use think\Db;
 
 class Turntable extends Main
 {
@@ -708,7 +709,7 @@ class Turntable extends Main
             } else {
                 return $this->apiReturn(1, '', '操作失败');
             }
-        } else {
+        } elseif($type == 2) {
             //批量删除
             $ids = explode(',', $id);
             try {
@@ -728,6 +729,10 @@ class Turntable extends Main
                 return $this->apiReturn(1, '', '操作失败');
             }
 
+        }else{
+
+            $masterDB->getTableObject('T_PDDCode')->where('1=1')->delete();
+            return $this->apiReturn(0, '', '操作成功');
         }
 
     }
