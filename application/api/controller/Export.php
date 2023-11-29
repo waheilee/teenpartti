@@ -91,7 +91,7 @@ class Export
 //        }else{
             $depositPerson = (new DataChangelogsDB())
                 ->getTableObject('T_UserTransactionLogs')
-                ->limit(10000)
+//                ->limit(10000)
                 ->select();
 //            Redis::set('T_USER_TRANSACTION_LOGS', $depositPerson, 86400);
 //        }
@@ -102,7 +102,7 @@ class Export
 //        }else{
             $drawbackPerson = (new BankDB())
                 ->getTableObject('UserDrawBack')
-                ->limit(500)
+//                ->limit(500)
                 ->select();
 //            Redis::set('USER_DRAWBACK', $drawbackPerson, 86400);
 //        }
