@@ -1094,7 +1094,10 @@ class Player extends Main
                     }
                     $item['AccountName'] = substr_replace($item['AccountName'], '**', -4);
                     if (!empty($item['Mobile'])) {
-                        $item['Mobile'] = substr_replace($item['Mobile'], '**', -2);
+                        if (!in_array($this->getGroupId(session('userid')),[1,2,3])){
+                            $item['Mobile'] = substr_replace($item['Mobile'], '**', -2);
+                        }
+
                         if (substr($item['Mobile'], 0, 2) == '91') {
                             $item['quhao'] = '91';
                             $item['phone'] = substr($item['Mobile'], 2);
@@ -5096,5 +5099,9 @@ class Player extends Main
         $row = $db->TGMSendMoney()->UPData(["status" => 2, "UpdateTime" => date('Y-m-d H:i:s')], "ID='$id'");
         if ($row > 0) return $this->success("成功");
         return $this->error('失败');
+    }
+
+    public function getGroupId($adminId){
+        return Db::table('game_auth_group_access')->where('uid',$adminId)->value('group_id');
     }
 }
