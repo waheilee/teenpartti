@@ -310,8 +310,7 @@ class Index extends Controller
                 ->select();
         }
         if ($type == 'MailAccount') {
-            $data =  (new \app\model\AccountDB())->getTableObject('T_Accounts')
-            (new \app\model\AccountDB())->getTableObject('T_Accounts')->alias('a')
+            $data =  (new \app\model\AccountDB())->getTableObject('T_Accounts')->alias('a')
                 ->join('[CD_UserDB].[dbo].[T_ProxyCollectData](NOLOCK) b', 'b.ProxyId=a.AccountID', 'LEFT')
                 ->field('a.AccountID,a.MailAccount  AS Mobile,ISNULL(b.TotalDeposit,0) TotalDeposit')
                 ->where('a.MailAccount is not null')
