@@ -114,6 +114,9 @@ class GameOCDB extends BaseModel
                         case 42000:
                             $v['RoomName'] = 'YES!BinGo';
                             break;
+                        case 45000:
+                            $v['RoomName'] = 'TADA';
+                            break;
                     }
                 }
                 $gamerate = sprintf("%.2f", $v['GameRate']);
