@@ -1092,7 +1092,9 @@ class Player extends Main
                             $item['ItemVal'] = 0;
                         }
                     }
-                    $item['AccountName'] = substr_replace($item['AccountName'], '**', -4);
+                    if (!in_array($this->getGroupId(session('userid')),[1,2,3])){
+                        $item['AccountName'] = substr_replace($item['AccountName'], '**', -4);
+                    }
                     if (!empty($item['Mobile'])) {
                         if (!in_array($this->getGroupId(session('userid')),[1,2,3])){
                             $item['Mobile'] = substr_replace($item['Mobile'], '**', -2);
