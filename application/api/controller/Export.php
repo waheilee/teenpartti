@@ -106,7 +106,11 @@ class Export
                 ->select();
 //            Redis::set('USER_DRAWBACK', $drawbackPerson, 86400);
 //        }
-
+        $msgs = (new DataChangelogsDB())
+            ->getTableObject('T_ProxyMsgLog')
+            ->field('RoleID,addtime')
+            ->order('addtime desc')
+            ->select();
         $data = [];
         foreach ($allUserList as $user) {
             $item = [];
@@ -149,16 +153,16 @@ class Export
                 }
                 return $carry;
             }, 0);
-            $msg = (new DataChangelogsDB())
-                ->getTableObject('T_ProxyMsgLog')
-                ->field('RoleID,addtime')
-                ->where('RoleID',$user['AccountID'])
-                ->order('addtime desc')
-                ->find();
             $addTime = '';
-            if ($msg){
-                $addTime = $msg['addtime'];
+            foreach ($msgs as $msg){
+                if ($msg['RoleID'] == $user['AccountID']){
+                    $addTime = $msg['addtime'];
+                }
             }
+
+//            if ($msg){
+//                $addTime = $msg['addtime'];
+//            }
             $item['msgTime'] = $addTime;
             $item['firstPlayerCount'] = count($subUser);
             $item['firstPlayerDepositCount'] = count($firstPlayerDepositCount);
