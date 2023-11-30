@@ -1092,13 +1092,23 @@ class Player extends Main
                             $item['ItemVal'] = 0;
                         }
                     }
-                    if (!in_array($this->getGroupId(session('userid')),[1,2,3])){
+                    if (config('lookPhone') == 1){
+                        if (!in_array($this->getGroupId(session('userid')),[1,2,3])){
+                            $item['AccountName'] = substr_replace($item['AccountName'], '**', -4);
+                        }
+                    }else{
                         $item['AccountName'] = substr_replace($item['AccountName'], '**', -4);
                     }
+
                     if (!empty($item['Mobile'])) {
-                        if (!in_array($this->getGroupId(session('userid')),[1,2,3])){
+                        if(config('lookPhone') == 1){
+                            if (!in_array($this->getGroupId(session('userid')),[1,2,3])){
+                                $item['Mobile'] = substr_replace($item['Mobile'], '**', -2);
+                            }
+                        }else{
                             $item['Mobile'] = substr_replace($item['Mobile'], '**', -2);
                         }
+
 
                         if (substr($item['Mobile'], 0, 2) == '91') {
                             $item['quhao'] = '91';
