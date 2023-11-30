@@ -311,7 +311,31 @@ class Turntable extends Main
                 $end = strtotime($endTime) ?? '';
 
                 $userDB = new UserDB();
-                $count = $userDB->getTableObject('T_PDDDrawHistory')->count();
+                $count = $userDB->getTableObject('T_PDDDrawHistory')
+                    ->where(function ($q) use ($roleId) {
+                        if (!empty($roleId)) {
+                            $q->where('RoleId', $roleId);
+                        }
+                    })
+                    ->where(function ($q) use ($tranType) {
+                        if (!empty($tranType)) {
+                            $q->where('Item', $tranType);
+                        }
+                    })
+                    ->where(function ($q) use ($startTime, $endTime) {
+                        if (!empty($startTime)) {
+                            $q->where('ChangeTime', '>', strtotime($startTime));
+                        }
+                        if (!empty($endTime)) {
+                            $q->where('ChangeTime', '<', strtotime($endTime));
+                        }
+                        if (!empty($startTime) && !empty($endTime)) {
+                            $q->where('ChangeTime', 'between time', [strtotime($startTime), strtotime($endTime)]);
+                        }
+                    })
+                    ->where('ChangeType', 1)
+                    ->whereIn('Item', [1, 2, 6])
+                    ->count();
                 $checkRecord = $userDB->getTableObject('T_PDDDrawHistory')
                     ->where(function ($q) use ($roleId) {
                         if (!empty($roleId)) {
