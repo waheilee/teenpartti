@@ -53,33 +53,41 @@ class PaySdk
         if (!isset($config['notify_url']) || empty($config['notify_url'])) {
             return array('status'=>FALSE, 'message' => 'Missing notify_url');
         }
-    
+
 
         $merchant    = $this->merchant;
         $appid       = $this->appid;
         $orderId      = trim($OrderNo);
         $amount       = sprintf('%.2f',$order['RealMoney']);
         $notify_url   = trim($config['notify_url']);
-        $mobile      = rand(6,9).rand(100000000,999999999);
         $username    = chr(rand(65,90)).chr(rand(97,122)).chr(rand(97,122)).chr(rand(97,122)).chr(rand(97,122)).chr(rand(97,122));
-        $email       = $mobile.'@gmail.com';
-        $RealName    = trim($order['RealName']);
-        $timestamp   = time();
 
+        $pixtype = $order['BankName'];
+        if(empty($pixtype)){
+            $pixtype ='CPF';
+        }
+
+        $cpf =str_replace('.','',$order['CardNo']);
+        $cpf =str_replace('-','',$cpf);
+
+        $email =$order['City'];
+        if(empty($email)){
+            $email='test@qq.com';
+        }
 
         $postdata = [
             'amount'          =>(int)$amount*100,
             'appId'           =>$appid,
             'backUrl'         =>$notify_url,
-            'cardType'        =>'CPF',
+            'cardType'        =>$pixtype,
             'notifyurl'       =>$notify_url,
             'countryCode'     =>'BR',
             'currencyCode'    =>'BRL',
             'custId'          =>$merchant,
             'email'           =>$email,
             'merchantOrderId' =>$orderId,
-            'cpf'             =>trim($order['BankName']),
-            'phone'           =>$mobile,
+            'cpf'             =>$cpf,
+            'phone'           =>'+55' . $order['Province'],
             'remark'          =>$username,
             'type'            =>'PIX',
             'userName'        =>trim($order['RealName']),
@@ -87,7 +95,7 @@ class PaySdk
             // 'payeeBankCode'   =>trim($order['Province']),
             // 'cnapsCode'       =>trim($order['BankName'])
         ];
-        
+
         $postdata['sign'] = $this->createSign($postdata,$this->secret);
 
         $header = [
@@ -95,7 +103,7 @@ class PaySdk
         ];
 
         $result =$this->curl_post_content($this->api_url,json_encode($postdata), $header);
- 
+
         save_log('peakpay','post:'.json_encode($postdata).',output:'.$result);
         $res = json_decode($result, true);
         $result =['system_ref'=>'','message'=>''];
@@ -107,7 +115,7 @@ class PaySdk
             }
             else
             {
-                $result['message'] ='fail';
+                $result['message'] =$res['msg'];
                 $result['status'] = false;
             }
         } else {
@@ -159,7 +167,7 @@ class PaySdk
     }
 
     //http请求函数
-   private function curl_post_content($url, $data = null, $header = [])
+    private function curl_post_content($url, $data = null, $header = [])
     {
         $ch = curl_init();
         if (substr_count($url, 'https://') > 0) {
