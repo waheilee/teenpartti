@@ -149,7 +149,7 @@ class UserDB extends BaseModel
             . "SUM(cast(ISNULL(GameUser,0) as bigint)) TotalGameUser,"
             . "SUM(TotalBet) TotalBet";
 
-        $other['Profit'] = bcsub($newOther['TotalRecharge'], $newOther['TotalDrawMoney'], 2);
+//        $other['Profit'] = bcsub($newOther['TotalRecharge'], $newOther['TotalDrawMoney'], 2);
         $other = $this->GetRow(' OperatorId=' . $operatorid, $Filed);
         ConVerMoney($other['TotalWater']);
         ConVerMoney($other['Totalyk']);
