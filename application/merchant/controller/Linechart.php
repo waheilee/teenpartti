@@ -26,7 +26,8 @@ class Linechart extends Main
             ->field($field)
             ->find();
         $result=$db->GetOperatorIndexData();
-        $result['other']['Profit'] = bcsub($newOther['TotalRecharge'], $newOther['TotalDrawMoney'], 2);
+        $profit = bcsub($newOther['TotalRecharge'], $newOther['TotalDrawMoney'], 2);
+        $result['other']['Profit'] = FormatMoney($profit) ;
 
         //找下数据源
         if ($this->request->isAjax()) {
