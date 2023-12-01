@@ -26,7 +26,14 @@ class Linechart extends Main
         //  顶部数据  第0行
 //        $result['list'][0]["online"] = count($this->GetOnlineUserlist());
 //
-        
+        $field = "ISNULL(sum(PersonCount),0) as PersonCount,ISNULL(sum(ActiveUserCount),0) as ActiveUserCount,ISNULL(sum(RechargeActiveCount),0) as RechargeActiveCount,ISNULL(sum(FirstRechargeCount),0) as FirstRechargeCount,ISNULL(sum(TotalRecharge),0) as TotalRecharge,ISNULL(sum(RechargeCount),0) as RechargeCount,ISNULL(sum(TotalDrawMoney),0) as TotalDrawMoney,ISNULL(sum(TotalDrawCount),0) as TotalDrawCount,ISNULL(sum(RoundBets),0) as RoundBets,ISNULL(sum(RoundBetsCount),0) as RoundBetsCount,ISNULL(sum(RoundBetTimes),0) as RoundBetTimes,ISNULL(sum(PrizeBonus),0) as PrizeBonus,ISNULL(sum(TotalYk),0) as TotalYk,ISNULL(sum(ProxyTotal),0) as ProxyTotal,ISNULL(sum(ProxyChildBonus),0) as ProxyChildBonus,ISNULL(sum(SendCoin),0) as SendCoin,ISNULL(sum(HistoryCoin),0) as HistoryCoin";
+        $newOther = (new \app\model\GameOCDB())->getTableObject('T_ChannelDailyCollect')->alias('a')
+            ->join('T_ProxyChannelConfig b', 'b.ProxyChannelId=a.ChannelId')
+            ->where('b.OperatorId', session('merchant_OperatorId'))
+//            ->where($where)
+            ->field($field)
+            ->find();
+        $result['other']['Profit'] = bcsub($newOther['TotalRecharge'], $newOther['TotalDrawMoney'], 2);
         $where = '  OperatorId='.$operatorid;
 
         // $GameOCDB = new \app\model\GameOCDB();
