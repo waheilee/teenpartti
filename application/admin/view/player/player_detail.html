@@ -42,6 +42,7 @@
                 <li class="" lay-id="12" id="c12">{:lang('代理佣金')}</li>
                 <li class="" lay-id="13" id="c13">{:lang('游戏日报')}</li>
                 <li class="" lay-id="14" id="c14">{:lang('金币日志 ')}</li>
+                <li class="" lay-id="15" id="c15">{:lang('推广记录 ')}</li>
             </ul>
             <div class="layui-tab-content " >
                 {if(!empty($user))}
@@ -76,7 +77,12 @@
                             <td>{:lang('VIP等级')}:</td>
                             <td>VIP{$user.VipLv}&nbsp;&nbsp;&nbsp;[<a href="#" id="editlevel" >{:lang('修改')}</a>]</td>
                             <td>{:lang('上级ID')}:</td>
-                            <td><a class="layui-bg-green" id="parentIdDetail" lay-event="detail">{$user.parentId}</a></td>
+
+                            {if condition="(($user.parentId)>0)"}
+                            <td><a href="#" style="color: blue" onclick="todetail({$user.parentId})">{$user.parentId}</a></td>
+                            {else /}
+                            <td>{$user.parentId}</td>
+                            {/if}
                         </tr>
                         <tr>
                             <td>{:lang('所属推广')}:</td>
@@ -105,11 +111,11 @@
                         <tr>
                             <td>{:lang('玩家盈亏')}:</td>
                             {if condition="(($user.TotalRollOut-$user.TotalDeposit)>0)"}
-                                <td style="color: red">{$user.TotalRollOut-$user.TotalDeposit}</td>
+                            <td style="color: red">{$user.TotalRollOut-$user.TotalDeposit}</td>
                             {elseif condition="(($user.TotalRollOut-$user.TotalDeposit)==0)"/}
-                                <td>{$user.TotalRollOut-$user.TotalDeposit}</td>
-                            {else /} 
-                                <td style="color: green">{$user.TotalRollOut-$user.TotalDeposit}</td>
+                            <td>{$user.TotalRollOut-$user.TotalDeposit}</td>
+                            {else /}
+                            <td style="color: green">{$user.TotalRollOut-$user.TotalDeposit}</td>
                             {/if}
                             <td>{:lang('总充值金额')}:</td>
                             <td>{$user.TotalDeposit}</td>
@@ -137,32 +143,31 @@
                             <td>{:lang('可领佣金')}:</td>
                             <td>{$proxyinfo.AbleProfit}
                                 <div class="layui-inline layui-form">
-                                    <!--{if($proxyinfo.ProxySwitch == 1)}-->
-                                    <!--<input type="checkbox" RoleID="{$proxyinfo.RoleID}" name="switch" lay-skin="switch" lay-text="{:lang('开')}|{:lang('关')}" lay-filter='Disable' checked>-->
-                                    <!--{else/}-->
-                                    <!--<input type="checkbox" RoleID="{$proxyinfo.RoleID}" name="switch" lay-skin="switch" lay-text="{:lang('开')}|{:lang('关')}" lay-filter='Disable'>-->
-                                    <!--{/if}-->
+                                    {if($proxyinfo.ProxySwitch == 1)}
+                                    <input type="checkbox" RoleID="{$proxyinfo.RoleID}" name="switch" lay-skin="switch" lay-text="{:lang('开')}|{:lang('关')}" lay-filter='Disable' checked>
+                                    {else/}
+                                    <input type="checkbox" RoleID="{$proxyinfo.RoleID}" name="switch" lay-skin="switch" lay-text="{:lang('开')}|{:lang('关')}" lay-filter='Disable'>
+                                    {/if}
                                 </div>
                             </td>
                             <td>{:lang('赠送金币金额')}:</td>
                             <td>{$user.zscoin}</td>
-
                             {if(config('app_type')==3)}
                             <td><span style="color:red">VIP提现限制开关</span></td>
                             <td>
                                 <div class="layui-inline layui-form">
                                     {if($ingames == 1)}
-                                        <input type="checkbox" RoleID="{$proxyinfo.RoleID}" name="switch" lay-skin="switch" lay-text="{:lang('开')}|{:lang('关')}" lay-filter='VipSwitch' checked>
+                                    <input type="checkbox" RoleID="{$proxyinfo.RoleID}" name="switch" lay-skin="switch" lay-text="{:lang('开')}|{:lang('关')}" lay-filter='VipSwitch' checked>
                                     {else/}
-                                        <input type="checkbox" RoleID="{$proxyinfo.RoleID}" name="switch" lay-skin="switch" lay-text="{:lang('开')}|{:lang('关')}" lay-filter='VipSwitch'>
+                                    <input type="checkbox" RoleID="{$proxyinfo.RoleID}" name="switch" lay-skin="switch" lay-text="{:lang('开')}|{:lang('关')}" lay-filter='VipSwitch'>
                                     {/if}
                                 </div>
                             </td>
                             {else/}
-                            <td>{:lang('总打码量')}:</td>
-                            <td>{$user.wageRequire}</td>
+                            <td></td>
+                            <td></td>
                             {/if}
-                            
+
                         </tr>
                         </tbody>
                     </table>
@@ -284,7 +289,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 {else}
                     <div class="layui-tab-item ">
                     <div class="layui-row">
@@ -443,7 +448,7 @@
 
                 <!--   充值记录    -->
                 <div class="layui-tab-item">
-                   <table id="Table1" lay-filter="Table1"></table>
+                    <table id="Table1" lay-filter="Table1"></table>
                 </div>
 
                 <!--   提现记录    -->
@@ -538,6 +543,9 @@
                     <table id="Table11" lay-filter="Table11" style="margin-top: 10px;"></table>
                 </div>
 
+                <div class="layui-tab-item">
+                    <table id="Table12" lay-filter="Table12" style="margin-top: 10px;"></table>
+                </div>
 
             </div>
         </div>
@@ -548,14 +556,14 @@
 {/block}
 {block name="script"}
 <script>
-	layui.config({
-		base: '__layui__/' //静态资源所在路径
-	}).extend({
-		index: 'lib/index' //主入口模块
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
 
-	}).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
-		var tb0 = 'Table0', tb1 = 'Table1', tb2 = 'Table2', tb3 = 'Table3', tb4 = 'Table4', tb5 = 'Table5', tb6 = 'Table6',tb7 = 'Table7'
-            ,tb8 = 'Table8',tb9 = 'Table9',tb10 = 'Table10',tb11 = 'Table11';
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var tb0 = 'Table0', tb1 = 'Table1', tb2 = 'Table2', tb3 = 'Table3', tb4 = 'Table4', tb5 = 'Table5', tb6 = 'Table6',tb7 = 'Table7'
+            ,tb8 = 'Table8',tb9 = 'Table9',tb10 = 'Table10',tb11 = 'Table11',tb12 = 'Table12';
         var element = layui.element, layer = layui.layer, laydate = layui.laydate, util = layui.util,
             table = layui.table, $ = layui.$, form = layui.form;
         //增加页签  闭包增加 TabxxxxEvn
@@ -572,31 +580,31 @@
             {action: 'list', type: 9}
         ]
         var cols0 = [ //表头
-                      {field: 'WageFinishWay', title: "{:lang('打码完成方式')}", align: 'center',minWidth: 100, templet: function (d) {
-                              if(d.WageFinishWay==1){
-                                  return '正常打码完成';
-                              }else if(d.WageFinishWay==2){
-                                  return '系统自动打码清零';
-                              }
-                              else{
-                                  return '未知';
-                              }
-                          }
-                      }
-                    , {field: 'ChangeMoney', title: "{:lang('需打码的金币')}", align: 'center', minWidth: 120}
-                    , {field: 'NeedWageRequire', title: "{:lang('需要的打码量')}", align: 'center', minWidth: 120}
-                    , {field: 'CurWageRequire', title: "{:lang('当前达到的量')}", align: 'center', minWidth: 120}
-                    , {field: 'difference', title: "{:lang('差额')}", minWidth: 120}
-                    , {field: 'FreezonMoney', title: "{:lang('冻结金额')}", minWidth: 120}
-                    , {field: 'EnableWithdrawMoney', title: "{:lang('可提金额')}", minWidth: 120}
-                    , {field: 'AddTime', title: "{:lang('添加时间')}", minWidth: 160}
-                    , {
-                        field: 'Status', title: "{:lang('状态')}", minWidth: 120, templet: function (d) {
-                            var myid = d.Id;
-                            if (d.Status == 0) {
-                                return "{:lang('未达到')}";
-                            } else {
-                                return "{:lang('已达成')}";
+            {field: 'WageFinishWay', title: "{:lang('打码完成方式')}", align: 'center',minWidth: 100, templet: function (d) {
+                    if(d.WageFinishWay==1){
+                        return '正常打码完成';
+                    }else if(d.WageFinishWay==2){
+                        return '系统自动打码清零';
+                    }
+                    else{
+                        return '未知';
+                    }
+                }
+            }
+            , {field: 'ChangeMoney', title: "{:lang('需打码的金币')}", align: 'center', minWidth: 120}
+            , {field: 'NeedWageRequire', title: "{:lang('需要的打码量')}", align: 'center', minWidth: 120}
+            , {field: 'CurWageRequire', title: "{:lang('当前达到的量')}", align: 'center', minWidth: 120}
+            , {field: 'difference', title: "{:lang('差额')}", minWidth: 120}
+            , {field: 'FreezonMoney', title: "{:lang('冻结金额')}", minWidth: 120}
+            , {field: 'EnableWithdrawMoney', title: "{:lang('可提金额')}", minWidth: 120}
+            , {field: 'AddTime', title: "{:lang('添加时间')}", minWidth: 160}
+            , {
+                field: 'Status', title: "{:lang('状态')}", minWidth: 120, templet: function (d) {
+                    var myid = d.Id;
+                    if (d.Status == 0) {
+                        return "{:lang('未达到')}";
+                    } else {
+                        return "{:lang('已达成')}";
                     }
                 }
             }
@@ -642,35 +650,35 @@
 
         ];
         var cols2 = [ //表头
-                    
-                    {field: 'iMoney', align: 'center', title: "{:lang('总提现')}", minWidth: 150},
-                    {field: 'Tax', align: 'center', title: "{:lang('税收')}", minWidth: 150, templet: function (d) { return Math.floor(d.Tax * 100) / 100; }},
-                    {field: 'RealPay', align: 'center', title: "{:lang('打款金额')}", minWidth: 120},
-                    {field: 'EamilMoney', align: 'center', title: "{:lang('邮件补偿')}", minWidth: 200},
-                    {
-                        field: 'status', align: 'center', title: "{:lang('订单状态')}", minWidth: 200, templet: function (d) {
-                            switch (Number(d.status)) {
-                                case 0:
-                                    return '<span style="color: blue">'+d.orderType+'</span>';
-                                case 1:
-                                    return '<span style="color:darkviolet">'+d.orderType+'</span>';
-                                case 100:
-                                    return '<span style="color: green">'+d.orderType+'</span>';
-                                default:
-                                    return '<span style="color: red">'+d.orderType+'</span>';
-                            }
-                        }
-                    },
-                    {field: 'OrderNo', align: 'center', title: "{:lang('订单号')}", minWidth: 200},
-                    {field: 'ChannelName', align: 'center', title: "{:lang('支出通道')}", minWidth: 150},
-                    {field: 'checkUser', align: 'center', title: "{:lang('操作人员')}", minWidth: 200},
-                    {field: 'AddTime', align: 'center', title: "{:lang('申请时间')}", minWidth: 200},
-                    {field: 'checkTime', align: 'center', title: "{:lang('审核时间')}", minWidth: 200},
-                    {field: 'BankName', align: 'center', title: "{:lang('银行名称')}", minWidth: 150},
-                    {field: 'CardNo', align: 'center', title: "{:lang('银行卡号')}", minWidth: 200}
-                ];
+
+            {field: 'iMoney', align: 'center', title: "{:lang('总提现')}", minWidth: 150},
+            {field: 'Tax', align: 'center', title: "{:lang('税收')}", minWidth: 150, templet: function (d) { return Math.floor(d.Tax * 100) / 100; }},
+            {field: 'RealPay', align: 'center', title: "{:lang('打款金额')}", minWidth: 120},
+            {field: 'EamilMoney', align: 'center', title: "{:lang('邮件补偿')}", minWidth: 200},
+            {
+                field: 'status', align: 'center', title: "{:lang('订单状态')}", minWidth: 200, templet: function (d) {
+                    switch (Number(d.status)) {
+                        case 0:
+                            return '<span style="color: blue">'+d.orderType+'</span>';
+                        case 1:
+                            return '<span style="color:darkviolet">'+d.orderType+'</span>';
+                        case 100:
+                            return '<span style="color: green">'+d.orderType+'</span>';
+                        default:
+                            return '<span style="color: red">'+d.orderType+'</span>';
+                    }
+                }
+            },
+            {field: 'OrderNo', align: 'center', title: "{:lang('订单号')}", minWidth: 200},
+            {field: 'ChannelName', align: 'center', title: "{:lang('支出通道')}", minWidth: 150},
+            {field: 'checkUser', align: 'center', title: "{:lang('操作人员')}", minWidth: 200},
+            {field: 'AddTime', align: 'center', title: "{:lang('申请时间')}", minWidth: 200},
+            {field: 'checkTime', align: 'center', title: "{:lang('审核时间')}", minWidth: 200},
+            {field: 'BankName', align: 'center', title: "{:lang('银行名称')}", minWidth: 150},
+            {field: 'CardNo', align: 'center', title: "{:lang('银行卡号')}", minWidth: 200}
+        ];
         var cols3 = [
-             {field: 'ClientIP', title: "{:lang('登陆IP')}", minWidth: 200,align: 'center'}
+            {field: 'ClientIP', title: "{:lang('登陆IP')}", minWidth: 200,align: 'center'}
             , {field: 'AddTime', title: "{:lang('登陆时间')}", minWidth: 200,align: 'center'}
         ];
         var cols4 = [
@@ -686,18 +694,19 @@
             , {field: 'LastLoginTime', title: "{:lang('登陆时间')}", minWidth: 200,align: 'center'}
         ];
         var cols5 = [
-             {field: 'admin_name', title: "{:lang('操作人员')}", minWidth: 200,align: 'center'}
+            {field: 'admin_name', title: "{:lang('操作人员')}", minWidth: 200,align: 'center'}
             , {field: 'opt_time', title: "{:lang('操作时间')}", minWidth: 200,align: 'center'}
             , {field: 'comment', title: "{:lang('备注')}", minWidth: 300,align: 'center'}
         ];
         var cols6 = [
-              {field: 'admin_name', title: "{:lang('操作人员')}", minWidth: 200,align: 'center'}
+            {field: 'admin_name', title: "{:lang('操作人员')}", minWidth: 200,align: 'center'}
             , {field: 'opt_time', title: "{:lang('操作时间')}", minWidth: 200,align: 'center'}
             , {field: 'comment', title: "{:lang('备注')}", minWidth: 300,align: 'center'}
         ];
         var cols7 = [
             {field: 'level', title: "{:lang('等级')}", minWidth: 200,align: 'center'}
             , {field: 'person', title: "{:lang('人数')}", minWidth: 200,align: 'center'}
+            , {field: 'ValidInviteCount', title: "{:lang('有效邀请人数')}", minWidth: 200,align: 'center'}
             , {field: 'chargenum', title: "{:lang('充值人数')}", minWidth: 300,align: 'center'}
             , {field: 'amount', title: "{:lang('充值金额')}", minWidth: 300,align: 'center'}
             , {field: 'avarage', title: "{:lang('平均充值')}", minWidth: 300,align: 'center'}
@@ -706,9 +715,9 @@
         ];
         var cols8 = [
             {field: 'AddTime', align: 'center', title: "{:lang('领取日期')}", width: 180},
-            {field: 'RunningBonus', align: 'center', title: "{:lang('代理流水返利')}", width: 180},
-            {field: 'InviteBonus', align: 'center', title: "{:lang('代理邀请奖励')}",width: 180,},
-            {field: 'FirstChargeBonus', align: 'center', title: "{:lang('代理首充奖励')}", width: 180},
+            {field: 'RunningBonus', align: 'center', title: "{:lang('代理投注返佣')}", width: 180},
+            {field: 'InviteBonus', align: 'center', title: "{:lang('梯度邀请奖励')}",width: 180,},
+            {field: 'FirstChargeBonus', align: 'center', title: "{:lang('代理邀请奖励')}", width: 180},
             {field: 'TotalProfit', align: 'center', title: "{:lang('总收益')}", width: 180},
         ];
         var cols9 = [
@@ -753,7 +762,7 @@
                     return d.iNeedWaged != 0 ? d.iNeedWaged : '0.00';
                 }
             },
-            {field: 'WagedFinishTime', align: 'center', title: "{:lang('完成时间')}", width: 180},
+            {field: 'WagedFinishTime', align: 'center', title: "{:lang('完成时间')}", width: 180}
         ];
         var cols11 = [
             {field: 'ChangeName', align: 'center', title: "{:lang('类型')}", minWidth: 180,},
@@ -762,7 +771,24 @@
             {field: 'LastMoney', align: 'center', title: "{:lang('操作后金币数')}", minWidth: 150},
             {field: 'AddTime', align: 'center', title: "{:lang('时间')}", minWidth: 180},
             {field: 'RoomName', align: 'center', title: "{:lang('房间名')}", minWidth: 250},
-            {field: 'MachineCode', align: 'center', title: "{:lang('机器码')}", minWidth: 170},
+            {field: 'MachineCode', align: 'center', title: "{:lang('机器码')}", minWidth: 170}
+        ];
+        var cols12 = [ //表头
+            {field:'ParentID', title: "{:lang('邀请人ID')}",align:'center', minWidth: 100},
+            // {field:'ParentName', title: "{:lang('邀请人昵称')}",align:'center', minWidth: 300},
+            {field:'RoleID', title: "{:lang('受邀人ID')}",align:'center', minWidth: 100},
+            // {field:'RoleName', title: "{:lang('受邀人昵称')}",align:'center', minWidth: 300},
+            {field:'TotalDeposit', title: "{:lang('总充值')}",align:'center', minWidth: 100, sort: true},
+
+            {field:'TransMoney', title: "{:lang('首充金额')}",align:'center', minWidth: 100, sort: true},
+            {field:'firtczTime', title: "{:lang('首充时间')}",align:'center', minWidth: 200, sort: true},
+            {field:'TotalRollOut', title: "{:lang('总提现')}",align:'center', minWidth: 100, sort: true},
+            {field:'Totalyk', title: "{:lang('总盈亏')}",align:'center', minWidth: 100, sort: true},
+            // {field:'TotalTax', title: "{:lang('总税收')}",align:'center', minWidth: 100, sort: true},
+            {field:'RegIP', title: "{:lang('注册ip')}",align:'center', minWidth: 100},
+            {field:'RegisterTime', title: "{:lang('注册时间')}",align:'center', minWidth: 100, sort: true},
+            {field:'LastLoginTime', title: "{:lang('最后登陆时间')}",align:'center', minWidth: 100, sort: true}
+            // {title:'操作', toolbar: '#toolbar'}
         ];
         laydate.render({elem: '#startdate', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
         laydate.render({elem: '#enddate', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
@@ -773,6 +799,10 @@
         laydate.render({elem: '#startdate2', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
         laydate.render({elem: '#enddate2', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
 
+        laydate.render({elem: '#register_date3', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+        laydate.render({elem: '#register_date4', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+        laydate.render({elem: '#login_date1', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+        laydate.render({elem: '#login_date2', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
         Tabs = {
             tab0Evn: function () { table.render({elem: '#' + tb0, where: Wheres[0], url: "{:url('player/getRoleWage',['roleid'=>$user.AccountID])}", page: true, cols: [cols0], autoSort: false,});},
             tab1Evn: function () { table.render({elem: '#' + tb1, where: Wheres[1], url: "{:url('charge/channelpayorder',['roleid'=>$user.AccountID,'Action'=>'list'])}?strartdate=&enddate=&tranNO=&payChannel=-1&payType=-1&amount=&Status=1&isReturn=-1", page: true, cols: [cols1], autoSort: false,});},
@@ -793,6 +823,8 @@
 
             tab11Evn: function () { table.render({elem: '#' + tb11, where: {strartdate:$('#startdate2').val(),enddate:$('#enddate2').val(),changetype:$('#changetype').val()}, url: "{:url('player/coinlog2',['roleid'=>$user.AccountID,'Action'=>'list'])}", page: true, cols: [cols11], autoSort: false,});},
 
+            tab12Evn: function () { table.render({elem: '#' + tb12, where: {}, url: "{:url('agent/relation',['parentid'=>$user.AccountID,'action'=>'list'])}", page: true, cols: [cols12], autoSort: false,});}
+
         };
         TabReload = {
             tab0: function () {table.reload(tb0, {page: {curr: 1}});},
@@ -806,14 +838,15 @@
             tab8: function () {table.reload(tb8, {page: {curr: 1}});},
             tab9: function () {table.reload(tb9, {page: {curr: 1}});},
             tab10: function () {table.reload(tb10, {page: {curr: 1}});},
-            tab11: function () {table.reload(tb11, {page: {curr: 1}});}
+            tab11: function () {table.reload(tb11, {page: {curr: 1}});},
+            tab12: function () {table.reload(tb12, {page: {curr: 1}});}
         }
         TBinit = {
             searchEvn: function () {
-                
+
                 var where = {
-                            
-                        }
+
+                }
                 //执行重载
                 table.reload(tb0, {page: {curr: 1},where: where});
                 table.reload(tb1, {page: {curr: 1},where: where});
@@ -827,15 +860,36 @@
                 table.reload(tb9, {page: {curr: 1},where: where});
                 table.reload(tb10, {page: {curr: 1},where: where});
                 table.reload(tb11, {page: {curr: 1},where: where});
+                table.reload(tb12, {page: {curr: 1},where: where});
             },
             sortEvn: function () {
+                table.on('sort(Table12)', function (obj) {
+                    //执行重载
+                    table.reload('Table12', {
+                        initSort: obj,
+                        page: {curr: 1},
+                        where: {
+                            orderytpe: obj.type,
+                            orderby: obj.field,
+                        },
+                        parseData:function(res){
+                            if(res.data.length==0){
+                                return{
+                                    'code':'201',
+                                    'msg':"{:lang('无数据')}"
+                                };
+                            };
+                        }
+                    });
+
+                });
             },
             editEvn: function () {
                 console.log(1)
                 table.on('tool(Table4)', function (obj) {
                     console.log(2)
                     var data = obj.data //获得当前行数据
-                    , layEvent = obj.event; //获得 lay-event 对应的值
+                        , layEvent = obj.event; //获得 lay-event 对应的值
                     tr = obj.tr; //获得当前行 tr 的DOM对象
                     if (layEvent === 'detail') {
                         console.log(3)
@@ -870,6 +924,8 @@
                             return Tabs.tab9Evn();
                         case 10:
                             return Tabs.tab10Evn();
+                        case 11:
+                            return Tabs.tab11Evn();
 
                     }
                 });
@@ -878,7 +934,7 @@
 
             },
             bindEvent: function () {
-                
+
                 //客服
                 $('#SaveInfo').on('click', function (e) {
                     var Account = $('#txtAccount').val();
@@ -966,10 +1022,10 @@
                         success: function (res) {
                             if (res.code === 0) {
 //                                layer.msg(res.msg, {icon: 6});
-								layer.msg("{:lang('修改成功')}", {icon: 6});
+                                layer.msg("{:lang('修改成功')}", {icon: 6});
                             } else {
 //                                layer.msg(res.msg, {icon: 5});
-								layer.msg("{:lang('修改失败')}", {icon: 5});
+                                layer.msg("{:lang('修改失败')}", {icon: 5});
 //
                             }
                             form.render();
@@ -990,6 +1046,10 @@
                     Tabs.tab11Evn();
 
                 });
+                $('#search4').on('click', function (e) {
+                    Tabs.tab12Evn();
+
+                });
             },
             init: function () {
                 Tabs.tab0Evn();
@@ -1004,6 +1064,7 @@
                 Tabs.tab9Evn();
                 Tabs.tab10Evn();
                 Tabs.tab11Evn();
+                Tabs.tab12Evn();
                 this.sortEvn();
                 this.editEvn();
                 this.TabEvn();
@@ -1016,7 +1077,7 @@
             }
         }
         //监听单元格switch
-          form.on('switch(VipSwitch)', function (data) {
+        form.on('switch(VipSwitch)', function (data) {
             // alert(2);
             var RoleID = data.elem.attributes['RoleID'].nodeValue;
             var swtype = data.elem.checked;
@@ -1045,69 +1106,99 @@
             })
 
         });
-        TBinit.init();
-     });  
-    
-	$('#SaveUserBank').click(function(){
-         var BankCardNo = $.trim($("#BankCardNo").val()),
-             UserName = $.trim($("#UserName").val()),
-             BankName = $.trim($("#BankName").val()),
-             Mail = $.trim($("#Mail").val()),
-             IFSCCode = $.trim($("#IFSCCode").val());
+        //监听单元格switch
+        form.on('switch(Disable)', function (data) {
+            // alert(2);
+            var RoleID = data.elem.attributes['RoleID'].nodeValue;
+            var swtype = data.elem.checked;
+            var type = 0;
+            if (swtype) type = 1;
+            else type = 0;
+            // layer.msg(data);
+            //设置开关
+            $.ajax({
+                url: "{:url('setProxySwitch')}",
+                type: 'post',
+                data: {'RoleID': RoleID, type: type},
+                success: function (res) {
+                    if (res.code === 0) {
+                        // $(".layui-laypage-btn")[0].click();
+                        layer.msg("{:lang('修改成功')}", {icon: 6});
+                        //window.location.reload();
 
-             $.ajax({
-                 type: 'post',
-                 url: '{:url("player/updateSocketBank",["RoleID"=>$user.AccountID])}',
-                 data: {
-                     'BankCardNo': BankCardNo,
-                     'PayWayType':2,
-                     'UserName': UserName,
-                     'BankName': BankName,
-                     'Mail': Mail,
-                     'IFSCCode': IFSCCode,
-                 },
-                 dataType: 'json',
-                 success: function (res) {
-                     if (res.code == 0) {
-                         layer.msg(res.msg, {icon: 6}, function () {
-                             //x_admin_close();
-                         });
-                     } else {
-                         layer.msg(res.msg, {icon: 5});
-                     }
-                 }
-             });
+                    } else {
+                        // $(".layui-laypage-btn")[0].click();
+                        layer.msg("{:lang('修改失败')}", {icon: 5});
+                        //window.location.reload();
+                    }
+                    form.render();
+                }
+            })
+
+        });
+        TBinit.init();
+    });
+
+    $('#SaveUserBank').click(function(){
+        var BankCardNo = $.trim($("#BankCardNo").val()),
+            UserName = $.trim($("#UserName").val()),
+            BankName = $.trim($("#BankName").val()),
+            Mail = $.trim($("#Mail").val()),
+            IFSCCode = $.trim($("#IFSCCode").val());
+
+        $.ajax({
+            type: 'post',
+            url: '{:url("player/updateSocketBank",["RoleID"=>$user.AccountID])}',
+            data: {
+                'BankCardNo': BankCardNo,
+                'PayWayType':2,
+                'UserName': UserName,
+                'BankName': BankName,
+                'Mail': Mail,
+                'IFSCCode': IFSCCode,
+            },
+            dataType: 'json',
+            success: function (res) {
+                if (res.code == 0) {
+                    layer.msg(res.msg, {icon: 6}, function () {
+                        //x_admin_close();
+                    });
+                } else {
+                    layer.msg(res.msg, {icon: 5});
+                }
+            }
+        });
     });
 
     $('#SaveUserPix').click(function(){
-         var BankCardNo = $.trim($("#BankCardNo").val()),
-             UserName = $.trim($("#UserName").val()),
-             BankName = $.trim($("#BankName").val()),
-             Mail = $.trim($("#Mail").val()),
-             IFSCCode = $.trim($("#IFSCCode").val());
+        var BankCardNo = $.trim($("#BankCardNo").val()),
+            UserName = $.trim($("#UserName").val()),
+            BankName = $.trim($("#BankName").val()),
+            Mail = $.trim($("#Mail").val()),
+            IFSCCode = $.trim($("#IFSCCode").val());
 
-             $.ajax({
-                 type: 'post',
-                 url: '{:url("player/updateSocketBank",["RoleID"=>$user.AccountID])}',
-                 data: {
-                     'BankCardNo': BankCardNo,
-                     'PayWayType':3,
-                     'UserName': UserName,
-                     'BankName': BankName,
-                     'Mail': Mail,
-                     'IFSCCode': IFSCCode,
-                 },
-                 dataType: 'json',
-                 success: function (res) {
-                     if (res.code == 0) {
-                         layer.msg(res.msg, {icon: 6}, function () {
-                             //x_admin_close();
-                         });
-                     } else {
-                         layer.msg(res.msg, {icon: 5});
-                     }
-                 }
-             });
+        $.ajax({
+            type: 'post',
+            url: '{:url("player/updateSocketBank",["RoleID"=>$user.AccountID])}',
+            data: {
+                'BankCardNo': BankCardNo,
+                'PayWayType':3,
+                'UserName': UserName,
+                'BankName': BankName,
+                'Mail': Mail,
+                'IFSCCode': IFSCCode,
+            },
+            dataType: 'json',
+            success: function (res) {
+                if (res.code == 0) {
+                    layer.msg(res.msg, {icon: 6}, function () {
+                        //x_admin_close();
+                    });
+                } else {
+                    layer.msg(res.msg, {icon: 5});
+                }
+            }
+        });
     });
 
     $('#SaveUserUPI').click(function(){
@@ -1141,36 +1232,33 @@
 
     function unbincUserBank(el){
         $.ajax({
-                 type: 'post',
-                 url: '{:url("player/unbindSocketBank",["RoleID"=>$user.AccountID])}',
-                 data: {
-                    PayWayType:el
-                 },
-                 dataType: 'json',
-                 success: function (res) {
-                     if (res.code == 0) {
-                         layer.msg(res.msg, {icon: 6}, function () {
-                             window.location.reload();
-                         });
-                     } else {
-                         layer.msg(res.msg, {icon: 5});
-                     }
-                 }
-             });
+            type: 'post',
+            url: '{:url("player/unbindSocketBank",["RoleID"=>$user.AccountID])}',
+            data: {
+                PayWayType:el
+            },
+            dataType: 'json',
+            success: function (res) {
+                if (res.code == 0) {
+                    layer.msg(res.msg, {icon: 6}, function () {
+                        window.location.reload();
+                    });
+                } else {
+                    layer.msg(res.msg, {icon: 5});
+                }
+            }
+        });
     }
-
+    function todetail(e){
+        var url = 'playerDetail?roleid=' + e;
+        x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.8);
+    }
     $('#editlevel').click(function(){
 
         var url ='{:url("player/setVipRate",["RoleID"=>$user.AccountID])}?rate={$user.VipLv}';
         x_admin_show("{:lang('修改vip等级')}", url, 500,450);
     });
 
-    $('#parentIdDetail').click(function(){
-        console.log('{$user.parentId}')
-        if ('{$user.parentId}' != 0){
-            var url ='{:url("playerDetail")}?roleid={$user.parentId}';
-            x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.7);
-        }
-    });
+
 </script>
 {/block}

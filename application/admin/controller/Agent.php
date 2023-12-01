@@ -1184,19 +1184,19 @@ class Agent extends Main
                 $where .= ' and d.TotalDeposit=0';
             }
             if ($reg_date1 != '') {
-                $where .= ' and c.RegisterTime>=\'' . $reg_date1 . '\'';
+                $where .= ' and c.RegisterTime>=\'' .$reg_date1.'\'';
             }
             if ($reg_date2 != '') {
-                $where .= ' and c.RegisterTime<=\'' . $reg_date2 . '\'';
+                $where .= ' and c.RegisterTime<=\'' .$reg_date2.'\'';
             }
             if ($login_date1 != '') {
-                $where .= ' and c.LastLoginTime<=\'' . $login_date1 . '\'';
+                $where .= ' and c.LastLoginTime>=\'' .$login_date1.'\'';
             }
             if ($login_date2 != '') {
-                $where .= ' and c.LastLoginTime<=\'' . $login_date2 . '\'';
+                $where .= ' and c.LastLoginTime<=\'' .$login_date2.'\'';
             }
             if ($register_ip != '') {
-                $where .= ' and c.RegIP=\'' . $register_ip . '\'';
+                $where .= ' and c.RegIP=\'' .$register_ip.'\'';
             }
             $where .= ' and c.GmType<>0';
             $data = $m->getTableObject('T_UserProxyInfo')->alias('a')
@@ -1205,7 +1205,7 @@ class Agent extends Main
                 ->join('[CD_UserDB].[dbo].[T_UserCollectData](NOLOCK) d', 'd.RoleID=a.RoleID', 'left')
                 ->join('[CD_DataChangelogsDB].[dbo].[T_UserTransactionLogs](NOLOCK) e', 'e.RoleID=a.RoleID and ChangeType=5 and IfFirstCharge=1', 'left')
                 ->where($where)
-                ->field('a.RoleID,a.ParentID,c.RegisterTime,c.RegIP,c.LastLoginTime,d.TotalDeposit,d.TotalRollOut,(b.Lv1Tax + b.Lv2Tax + b.Lv3Tax) TotalTax,(b.Lv1Running*' . config('agent_running_parent_rate')[1] . '+b.Lv2Running*' . config('agent_running_parent_rate')[2] . '+b.Lv3Running*' . config('agent_running_parent_rate')[3] . ') as runningProfit,(b.Lv1Tax*0.3+b.Lv2Tax*0.09+b.Lv3Tax*0.027) as taxProfit,e.AddTime as firtczTime,ISNULL(e.TransMoney,0) AS TransMoney')
+                ->field('a.RoleID,a.ParentID,c.RegisterTime,c.RegIP,c.LastLoginTime,d.TotalDeposit,d.TotalRollOut,(b.Lv1Tax + b.Lv2Tax + b.Lv3Tax) TotalTax,(b.Lv1Running*'.config('agent_running_parent_rate')[1].'+b.Lv2Running*'.config('agent_running_parent_rate')[2].'+b.Lv3Running*'.config('agent_running_parent_rate')[3].') as runningProfit,(b.Lv1Tax*0.3+b.Lv2Tax*0.09+b.Lv3Tax*0.027) as taxProfit,e.AddTime as firtczTime,ISNULL(e.TransMoney,0) AS TransMoney')
                 ->order($order)
                 ->paginate($limit)
                 ->toArray();
@@ -1240,7 +1240,7 @@ class Agent extends Main
             $other['TotalRollOut'] = bcdiv($other['TotalRollOut'] ?: 0, 1, 3) / 1;
             $other['Totalyk'] = bcsub($other['TotalDeposit'], $other['TotalRollOut'], 3) / 1;
             $other['TotalTax'] = bcdiv($other['TotalTax'] ?: 0, bl, 3) / 1;
-            return $this->apiReturn(0, $data['data'], 'success', $data['total'], $other);
+            return $this->apiReturn(0, $data['data'], 'success', $data['total'],$other);
         }
         if ($action == 'bind') {
             $auth_ids = $this->getAuthIds();
@@ -1280,9 +1280,9 @@ class Agent extends Main
                 return $this->apiReturn(1, '', '已经有上级代理');
                 // $data = $this->sendGameMessage('CMD_MD_CHANGE_PROXY', [$roleid,$parentid], "DC", 'returnComm');
             }
-            GameLog::logData(__METHOD__, [$roleid, $parentid, $data['iResult']], 1, '修改上级id');
+            GameLog::logData(__METHOD__, [$roleid, $parentid,$data['iResult']], 1, '修改上级id');
             // $data = $this->sendGameMessage('CMD_MD_CHANGE_PROXY', [$roleid,$parentid], "DC", 'returnComm');
-            if ($data['iResult'] > 10000000) {
+            if ($data['iResult']>10000000 ) {
                 $comment = '设置上级ID：' . $parentid;
                 $db = new GameOCDB();
                 $db->setTable('T_PlayerComment')->Insert([
@@ -1292,7 +1292,7 @@ class Agent extends Main
                     'opt_time' => date('Y-m-d H:i:s'),
                     'comment' => $comment
                 ]);
-                $db->updateProxyOldData($roleid, $parentid);
+                $db->updateProxyOldData($roleid,$parentid);
                 return $this->apiReturn(0, '', '操作成功');
             } else {
                 $remark = '操作失败';
@@ -1362,12 +1362,9 @@ class Agent extends Main
             $parentid = $this->request->param('parentid');
             $ispay = $this->request->param('ispay');
             $reg_date1 = $this->request->param('register_date1');
-            $register_ip = $this->request->param('register_ip');
             $reg_date2 = $this->request->param('register_date2');
             $login_date1 = $this->request->param('login_date1');
             $login_date2 = $this->request->param('login_date2');
-            $register_ip = $this->request->param('register_ip');
-            $limit = $this->request->param('limit') ?: 15;
 
             $orderby = input('orderby');
             $orderytpe = input('orderytpe');
@@ -1394,28 +1391,24 @@ class Agent extends Main
                 $where .= ' and d.TotalDeposit=0';
             }
             if ($reg_date1 != '') {
-                $where .= ' and c.RegisterTime>=\'' . $reg_date1 . '\'';
+                $where .= ' and c.RegisterTime>=\'' .$reg_date1.'\'';
             }
             if ($reg_date2 != '') {
-                $where .= ' and c.RegisterTime<=\'' . $reg_date2 . '\'';
+                $where .= ' and c.RegisterTime<=\'' .$reg_date1.'\'';
             }
             if ($login_date1 != '') {
-                $where .= ' and c.LastLoginTime<=\'' . $login_date1 . '\'';
+                $where .= ' and c.LastLoginTime<=\'' .$login_date1.'\'';
             }
             if ($login_date2 != '') {
-                $where .= ' and c.LastLoginTime<=\'' . $login_date2 . '\'';
+                $where .= ' and c.LastLoginTime<=\'' .$login_date2.'\'';
             }
-            if ($register_ip != '') {
-                $where .= ' and c.RegIP=\'' . $register_ip . '\'';
-            }
-            $where .= ' and c.GmType<>0';
             $field = "a.RoleID,a.ParentID,a.TotalWater TotalTax,a.TotalProfit,d.TotalDeposit,d.TotalRollOut";
             $data = $m->getTableObject('T_UserProxyInfo')->alias('a')
                 ->join('[CD_UserDB].[dbo].[T_ProxyCollectData](NOLOCK) b', 'b.ProxyId=a.RoleID', 'left')
                 ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) c', 'c.AccountID=a.RoleID', 'left')
                 ->join('[CD_UserDB].[dbo].[T_UserCollectData](NOLOCK) d', 'd.RoleID=a.RoleID', 'left')
                 ->where($where)
-                ->field('a.RoleID,a.ParentID,c.RegisterTime,c.LastLoginTime,d.TotalDeposit,d.TotalRollOut,(b.Lv1Tax + b.Lv2Tax + b.Lv3Tax) TotalTax,(b.Lv1Running*' . config('agent_running_parent_rate')[1] . '+b.Lv2Running*' . config('agent_running_parent_rate')[2] . '+b.Lv3Running*' . config('agent_running_parent_rate')[3] . ') as runningProfit,(b.Lv1Tax*0.3+b.Lv2Tax*0.09+b.Lv3Tax*0.027) as taxProfit')
+                ->field('a.RoleID,a.ParentID,c.RegisterTime,c.LastLoginTime,d.TotalDeposit,d.TotalRollOut,(b.Lv1Tax + b.Lv2Tax + b.Lv3Tax) TotalTax,(b.Lv1Running*'.config('agent_running_parent_rate')[1].'+b.Lv2Running*'.config('agent_running_parent_rate')[2].'+b.Lv3Running*'.config('agent_running_parent_rate')[3].') as runningProfit,(b.Lv1Tax*0.3+b.Lv2Tax*0.09+b.Lv3Tax*0.027) as taxProfit')
                 ->order($order)
                 ->select();
             $result = [];
@@ -1423,10 +1416,10 @@ class Agent extends Main
             $result['count'] = count($data);
             $outAll = input('outall', false);
             if ((int)input('exec', 0) == 0) {
-                //权限验证 
+                //权限验证
                 $auth_ids = $this->getAuthIds();
                 if (!in_array(10008, $auth_ids)) {
-                    return $this->apiJson(["code" => 1, "msg" => "没有权限"]);
+                    return $this->apiJson(["code"=>1,"msg"=>"没有权限"]);
                 }
                 if ($result['count'] == 0) {
                     $result = ["count" => 0, "code" => 1, 'msg' => lang("没有找到任何数据,换个姿势再试试?")];
@@ -1444,7 +1437,7 @@ class Agent extends Main
                     lang('邀请人ID') => 'string',
                     // lang('邀请人昵称') => 'string',
                     lang('受邀人ID') => "string",
-                    // lang('受邀人昵称') => 'string', 
+                    // lang('受邀人昵称') => 'string',
                     lang('总充值') => "string",
                     lang('总提现') => "string",
                     lang('总盈亏') => "string",
@@ -1469,7 +1462,7 @@ class Agent extends Main
 
                     $item = [
                         // $row['ParentID'],$row['ParentName'],$row['ParentID'],$row['RoleID'],$row['RoleName'],$row['TotalDeposit'],$row['TotalRollOut'],$row['TotalProfit'],$row['TotalTax'],$row['TotalProfit']
-                        $val['ParentID'], $val['RoleID'], $val['TotalDeposit'], $val['TotalRollOut'], $val['Totalyk'], $val['TotalTax'], $val['RegisterTime'], $val['LastLoginTime']
+                        $val['ParentID'], $val['RoleID'], $val['TotalDeposit'], $val['TotalRollOut'], $val['Totalyk'],$val['TotalTax'], $val['RegisterTime'], $val['LastLoginTime']
                     ];
                     $writer->writeSheetRow('sheet1', $item, ['height' => 16, 'halign' => 'center',]);
                     unset($val[$index]);

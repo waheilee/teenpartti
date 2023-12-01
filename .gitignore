@@ -23,6 +23,7 @@ bin-release/
 /application/product.php
 /application/dev.php
 /application/database.php
+/application/api/controller/Index.php
 .htaccess
 nginx.htaccess
 /runtime

@@ -646,8 +646,7 @@ class Player extends Main
             if ($user['VipLv'] == null || $user['VipLv'] == '') {
                 $user['VipLv'] = 0;
             }
-            $wageRequire = (new UserDB())->getTableObject('T_UserWage')->where('RoleID', $roleId)->value('CurWageRequire');
-            $user['wageRequire'] = FormatMoneyint($wageRequire);
+
             if (!empty($user)) {
                 $this->assign('usreid', $roleId);
                 $this->assign("user", $user);
