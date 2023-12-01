@@ -135,7 +135,6 @@ class UserDB extends BaseModel
         unset($v);
         //合计数据 TotalReg注册,TotalWater流水,TotalActive活跃,ToalPU充值营收,TotalPay总充值,TotolPayNumber充值人数,TotalOut总提现,TotalOutNum提现人数
         //Totalyk 流水盈亏(金币盈亏-赠送金币)
-
         $Filed = "SUM(cast(regnew as bigint))TotalReg,sum(cast(DailyRunning as bigint))TotalWater,"
             . "SUM(cast(activenum as bigint))TotalActive,sum(cast(totalpayuser-totalpayout as bigint))ToalPU,"
             . "SUM(cast(totalpayuser as bigint))TotalPay,"
@@ -149,7 +148,7 @@ class UserDB extends BaseModel
             . "SUM(cast(ISNULL(GameUser,0) as bigint)) TotalGameUser,"
             . "SUM(TotalBet) TotalBet";
 
-//        $other['Profit'] = bcsub($newOther['TotalRecharge'], $newOther['TotalDrawMoney'], 2);
+
         $other = $this->GetRow(' OperatorId=' . $operatorid, $Filed);
         ConVerMoney($other['TotalWater']);
         ConVerMoney($other['Totalyk']);
