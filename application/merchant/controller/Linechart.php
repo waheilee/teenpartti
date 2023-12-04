@@ -26,7 +26,7 @@ class Linechart extends Main
         //  顶部数据  第0行
 //        $result['list'][0]["online"] = count($this->GetOnlineUserlist());
 //
-        
+
         $where = '  OperatorId='.$operatorid;
 
         // $GameOCDB = new \app\model\GameOCDB();
