@@ -1292,7 +1292,7 @@ class Agent extends Main
                     'opt_time' => date('Y-m-d H:i:s'),
                     'comment' => $comment
                 ]);
-                $db->updateProxyOldData($roleid,$parentid);
+//                $db->updateProxyOldData($roleid,$parentid);
                 return $this->apiReturn(0, '', '操作成功');
             } else {
                 $remark = '操作失败';

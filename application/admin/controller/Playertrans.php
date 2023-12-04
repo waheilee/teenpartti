@@ -578,18 +578,10 @@ class Playertrans extends Main
     {
         $userID = intval(input('UserID')) ? intval(input('UserID')) : 0;
         $OrderNo = input('OrderNo') ? input('OrderNo') : '';
-        save_log('playertrans', '提交三方参数' . '---用户ID:' . $userID . '---订单号:' . $OrderNo . '---通道id' . input('channelid') . '---审核人员' . input('checkUser'));
+
         if ($this->request->isAjax()) {
             try {
-                $cacheOrderNo = Redis::get('PAYOUT_ORDER_NUMBER_'.$OrderNo);
-                if($cacheOrderNo){
-                    $res_data[] = [
-                        'OrderNo' => $OrderNo,
-                        'msg' => '订单重复操作过于频繁！'
-                    ];
-                    save_log('mkcpay', 'function thirdPay----操作过于频繁:' . $OrderNo);
-                    return $this->apiReturn(0, $res_data, '操作失败！');
-                }
+
                 $channelid = intval(input('channelid')) ? intval(input('channelid')) : 0;
                 if (!$channelid || $channelid <= 0) {
                     return $this->apiReturn(100, '', '提现通道未选择');
@@ -599,9 +591,6 @@ class Playertrans extends Main
                 if (!$draw) {
                     return $this->apiReturn(100, '', '该提现订单不存在');
                 }
-                if (in_array($draw['status'],[100,0,2,3,4,5,6])){
-                    return $this->apiReturn(100, '', '订单状态已改变，请刷新页面');
-                }
                 $draw['checkUser'] = input('checkUser') ?: $draw['checkUser'];
                 if ($draw['checkUser'] != session('username')) {
                     return $this->apiReturn(100, '', '权限不足');
@@ -609,9 +598,9 @@ class Playertrans extends Main
                 if (intval($draw['AccountID']) === 0) {
                     return $this->apiReturn(100, '', '该提现订单玩家id为0，无法处理');
                 }
-                $OperatorId = (new AccountDB())->getTableObject('T_Accounts')->where('AccountID', $draw['AccountID'])->value('OperatorId');
+                $OperatorId = (new AccountDB())->getTableObject('T_Accounts')->where('AccountID',$draw['AccountID'])->value('OperatorId');
                 if ($OperatorId > 0) {
-                    $WithdrawRemain = (new MasterDB())->getTableObject('T_OperatorLink')->where('OperatorId', $OperatorId)->value('WithdrawRemain') ?: 0;
+                    $WithdrawRemain = (new MasterDB())->getTableObject('T_OperatorLink')->where('OperatorId',$OperatorId)->value('WithdrawRemain')?:0;
                     if ($WithdrawRemain <= 0) {
                         return $this->apiReturn(100, '', '玩家所属运营商额度不足，无法出款');
                     }
@@ -621,213 +610,43 @@ class Playertrans extends Main
                 $channel = $db->getTableRow('T_GamePayChannel', ['ChannelId' => $channelid], '*');
                 $config = json_decode($channel['MerchantDetail'], true);
                 $extra = json_encode(['channelid' => $channelid]);
-                $channelcode = strtolower(trim($channel['ChannelCode']));
+                $channelcode =strtolower(trim($channel['ChannelCode']));
                 $result = [];
+
+                $bankM = new BankDB();
+                $post_data = [
+                    'ChannelId' => $channelid,
+                    'status' => $bankM::DRAWBACK_STATUS_THIRD_PARTY_HANDLING,
+                    'IsDrawback' => $bankM::DRAWBACK_STATUS_THIRD_PARTY_HANDLING,
+                    'UpdateTime' => date('Y-m-d H:i:s', time())
+                ];
+                $ret = $bankM->updateTable('userdrawback', $post_data, ['OrderNo' => $OrderNo, 'status' => $bankM::DRAWBACK_STATUS_AUDIT_PASS]);
+
                 switch ($channelcode) {
-                    case 'tpay9':
-                        $tpay9 = new PaySdk();
-                        $result = $tpay9->payout($OrderNo, $draw, $config);
-                        break;
-
-                    case 'fmpay':
-                        $fmpay = new FmPaySdk();
-                        $result = $fmpay->payout($OrderNo, $draw, $config);
-                        break;
-
-                    case 'easypay':
-                        $easypay = new EasyPay();
-                        $result = $easypay->payout($OrderNo, $draw, $config);
-                        break;
-
-                    case 'goldpays':
-                        $goldpay = new GoldPay();
-                        $result = $goldpay->payout($OrderNo, $draw, $config);
-                        break;
-                    case 'sepro':
-                        $sepropay = new SeproPay();
-                        $bankcode_model = new BankCode();
-                        $bccode = $bankcode_model->getValue(['BankName' => $draw['BankName']], 'BankCode');
-                        if (empty($bccode)) {
-                            return $this->apiReturn(100, '', '银行没有对应编码');
-                        }
-                        $result = $sepropay->payout($OrderNo, $draw, $config, $bccode);
-                        break;
-                    case 'gdpaid':
-                        $gdpay = new GDSdk();
-                        $bankcode_model = new BankCode();
-                        $bccode = $bankcode_model->getValue(['BankName' => $draw['BankName']], 'BankNo');
-                        $result = $gdpay->payout($OrderNo, $draw, $config, $bccode);
-                        break;
-                    case 'aupay':
-                        $aupay = new AuPay();
-                        $result = $aupay->payout($OrderNo, $draw, $config);
-                        break;
-                    case 'doipay':
-                        $doipay = new DoiPay();
-                        $result = $doipay->payout($OrderNo, $draw, $config);
-                        break;
-
-                    case 'beepay':
-                        $beepay = new BeePay();
-                        $result = $beepay->payout($OrderNo, $draw, $config);
-                        break;
-                    case 'payplus':
-                        $payplus = new PayPlus();
-                        $result = $payplus->payout($OrderNo, $draw, $config);
-                        break;
-
-                    case 'inpay':
-                        $inpay = new InPay();
-                        $result = $inpay->payout($OrderNo, $draw, $config);
-                        break;
-
-                    case 'serpay':
-                        $serpay = new SerPay();
-                        $bankcode_model = new BankCode();
-                        $bccode = $bankcode_model->getValue(['BankName' => $draw['BankName']], 'BankCode2');
-                        if (empty($bccode)) {
-                            return $this->apiReturn(100, '', '银行没有对应编码');
-                        }
-                        $result = $serpay->payout($OrderNo, $draw, $config, $bccode);
-                        break;
-
-                    case 'wepay':
-                        $wepay = new WePay();
-//                        $bankcode_model = new BankCode();
-                        $bccode = '';//$bankcode_model->getValue(['BankName'=>$draw['BankName']],'BankCode');
-//                        if(empty($bccode)){
-//                            return $this->apiReturn(100, '', '银行没有对应编码');
-//                        }
-                        $result = $wepay->payout($OrderNo, $draw, $config, $bccode);
-                        break;
-
                     case 'tgpay':
                         $tgpay = new TgPay();
                         // $result = $tgpay->payoutBrazil($OrderNo, $draw, $config);
                         if (config('app_type') == 2) {
                             $result = $tgpay->payoutBrazil($OrderNo, $draw, $config);
-                        } elseif (config('app_type') == 3) {
+                        } elseif(config('app_type') == 3) {
                             $result = $tgpay->payoutPhp($OrderNo, $draw, $config);
                         } else {
                             $result = $tgpay->payout($OrderNo, $draw, $config);
                         }
                         break;
-                    case 'dypay':
-                        $dypay = new DyPay();
-                        $result = $dypay->payout($OrderNo, $draw, $config);
-                        break;
 
-                    case 'ssspay':
-                        $ssspay = new SssPay();
-                        $result = $ssspay->payout($OrderNo, $draw, $config);
-                        break;
-                    case 'swiftpay':
-                        $swiftpay = new SwiftPay();
-                        if (config('app_type') == 2) {
-                            $result = $swiftpay->payoutBrazil($OrderNo, $draw, $config);
-                        } else {
-                            $result = $swiftpay->payout($OrderNo, $draw, $config);
-                        }
-                        break;
-                    case 'epay':
-                        $epay = new EPay();
-                        $result = $epay->payout($OrderNo, $draw, $config);
-                        break;
-                    case 'fastpay':
-                        $fastpay = new FastPay();
-                        $result = $fastpay->payout($OrderNo, $draw, $config);
-                        break;
-                    case 'xpay':
-                        $xpay = new XPay();
-                        $result = $xpay->payout($OrderNo, $draw, $config);
-                        break;
-                    case 'wodeasy':
-                        $wodeasy = new WodEasy();
-//                        $bccode='';
-//                        if($draw['PayWay']==2){
-//                            $bankcode_model = new BankCode();
-//                            $bccode = $bankcode_model->getValue(['BankName'=>$draw['BankName']],'BankCode3');
-//                            if(empty($bccode)){
-//                                return $this->apiReturn(100, '', '银行没有对应编码');
-//                            }
-//                        }
-                        $result = $wodeasy->payout($OrderNo, $draw, $config);
-                        break;
-                    case 'hwepay':
-                        $hwepay = new Hwepay();
-                        $result = $hwepay->payout($OrderNo, $draw, $config);
-                        break;
-                    case 'hwpay':
-                        $hwpay = new Hwpay();
-                        $result = $hwpay->payout($OrderNo, $draw, $config);
-                        break;
-                    case 'joypay':
-                        $joypay = new Joypay();
-                        $result = $joypay->payout($OrderNo, $draw, $config);
-                        break;
-                    case 'tpays':
-
-                        $tpays = new Tpays();
-                        $result = $tpays->payout($OrderNo, $draw, $config);
-                        break;
-                    case 'indipay':
-                        $indipay = new IndiPay();
-                        $bccode = '';
-                        if ($draw['PayWay'] == 2) {
-                            $bankcode_model = new BankCode();
-                            $bccode = $bankcode_model->getValue(['BankName' => $draw['BankName']], 'BankCode3');
-                            if (empty($bccode)) {
-                                return $this->apiReturn(100, '', '银行没有对应编码');
-                            }
-                        }
-                        $result = $indipay->payout($OrderNo, $draw, $config, $bccode);
-                        break;
-                    case 'winpay':
-
-                        $winpay = new Winpay();
-                        $result = $winpay->payout($OrderNo, $draw, $config);
-                        break;
-                    case 'ydpay':
-
-                        $ydpay = new Ydpay();
-                        $result = $ydpay->payout($OrderNo, $draw, $config);
-                        break;
-                    case 'xjpay':
-
-                        $xjpay = new Xjpay();
-                        $result = $xjpay->payout($OrderNo, $draw, $config);
-                        break;
-                    case 'roeasypay':
-
-                        $roeasypay = new Roeasypay();
-                        $result = $roeasypay->payout($OrderNo, $draw, $config);
-                        break;
-                    case 'holidiapay':
-
-                        $holidiapay = new Holidiapay();
-                        $result = $holidiapay->payout($OrderNo, $draw, $config);
-                        break;
                     default:
-                        $class = '\\' . strtolower($channelcode) . '\PaySdk';
+                        $class = '\\'.strtolower($channelcode).'\PaySdk';
                         $pay = new $class();
-                        Redis::set('PAYOUT_ORDER_NUMBER_'.$OrderNo,$OrderNo,30);
-                        $result = $pay->payout($OrderNo, $draw, $config);
+                        $result =$pay->payout($OrderNo, $draw, $config);
                         break;
                 }
 
                 if ($result['status']) {
-                    $bankM = new BankDB();
-                    $post_data = [
-                        'ChannelId' => $channelid,
-                        'TransactionNo' => $result['system_ref'],
-                        'status' => $bankM::DRAWBACK_STATUS_THIRD_PARTY_HANDLING,
-                        'IsDrawback' => $bankM::DRAWBACK_STATUS_THIRD_PARTY_HANDLING,
-                        'UpdateTime' => date('Y-m-d H:i:s', time())
-                    ];
-                    $ret = $bankM->updateTable('userdrawback', $post_data, ['OrderNo' => $OrderNo, 'status' => $bankM::DRAWBACK_STATUS_AUDIT_PASS]);
                     if (!$ret) {
                         return $this->apiReturn(100, '', '更新订单出错');
                     }
+                    (new BankDB())->updateTable('userdrawback', ['TransactionNo' => $result['system_ref']], ['OrderNo' => $OrderNo]);
                     GameLog::logData(__METHOD__, [$userID, $OrderNo, $channelcode, lang('提交第三方成功')], 1, lang('提交第三方成功'));
                     return $this->apiReturn(0, '', 'success');
                 } else {
@@ -835,7 +654,7 @@ class Playertrans extends Main
                     return $this->apiReturn(100, '', $result['message']);
                 }
             } catch (\Exception $ex) {
-                save_log('playertrans', $ex->getMessage() . $ex->getTraceAsString());
+                save_log('playertrans',$ex->getMessage().$ex->getTraceAsString());
                 return $this->apiReturn(100, '', $ex->getMessage());
             }
         }
@@ -855,9 +674,7 @@ class Playertrans extends Main
         $OrderNo = input('OrderNo') ? input('OrderNo') : '';
 
         if ($this->request->isAjax()) {
-
             try {
-
                 $channelid = intval(input('channelid')) ? intval(input('channelid')) : 0;
                 if (!$channelid) {
                     return $this->apiReturn(100, '', '提现通道未选择');
@@ -868,27 +685,6 @@ class Playertrans extends Main
                 $error_num = 0;
                 $res_data = [];
                 foreach ($OrderNos as $key => &$OrderNo) {
-                    $payOutOrderSuccess =  Redis::get('PAYOUT_ORDER_SUCCESS_'.$OrderNo);
-                    if ($payOutOrderSuccess){
-                        $error_num += 1;
-                        $res_data[] = [
-                            'OrderNo' => $OrderNo,
-                            'msg' => '该订单已处理成功！'
-                        ];
-                        save_log('mkcpay', '已请求成功订单:' . $OrderNo);
-                        continue;
-                    }
-                    $cacheOrderNo = Redis::get('PAYOUT_ORDER_NUMBER_SUBMIT'.$OrderNo);
-                    if($cacheOrderNo){
-                        $error_num += 1;
-                        $res_data[] = [
-                            'OrderNo' => $OrderNo,
-                            'msg' => '订单重复操作过于频繁！'
-                        ];
-                        save_log('mkcpay', 'function onekeyThirdPay操作过于频繁:' . $OrderNo);
-                        continue;
-//                        return $this->apiReturn(0, $res_data, '操作失败！');
-                    }
                     $draw = $UserDrawBack->GetRow(['OrderNo' => $OrderNo], '*');
                     if (!$draw) {
                         $error_num += 1;
@@ -914,15 +710,6 @@ class Playertrans extends Main
                         ];
                         continue;
                     }
-                    if (in_array($draw['status'],[100,0,2,3,4,5,6])){
-                        $error_num += 1;
-                        $res_data[] = [
-                            'OrderNo' => $OrderNo,
-                            'msg' => '订单状态已改变'
-                        ];
-                        continue;
-//                        return $this->apiReturn(100, '', '订单状态已改变，请刷新页面');
-                    }
                     $userID = $draw['AccountID'];
                     $draw['RealMoney'] = FormatMoney($draw['iMoney'] - $draw['Tax']);
                     $db = new MasterDB();
@@ -931,217 +718,35 @@ class Playertrans extends Main
                     $extra = json_encode(['channelid' => $channelid]);
                     $channelcode = $channel['ChannelCode'];
                     $result = [];
+
+                    $bankM = new BankDB();
+                    $post_data = [
+                        'ChannelId' => $channelid,
+                        'status' => $bankM::DRAWBACK_STATUS_THIRD_PARTY_HANDLING,
+                        'IsDrawback' => $bankM::DRAWBACK_STATUS_THIRD_PARTY_HANDLING,
+                        'UpdateTime' => date('Y-m-d H:i:s', time())
+                    ];
+                    $ret = $bankM->updateTable('userdrawback', $post_data, ['OrderNo' => $OrderNo, 'status' => $bankM::DRAWBACK_STATUS_AUDIT_PASS]);
+
                     switch ($channelcode) {
-                        case 'tpay9':
-                            $tpay9 = new PaySdk();
-                            $result = $tpay9->payout($OrderNo, $draw, $config);
-                            break;
-
-                        case 'fmpay':
-                            $fmpay = new FmPaySdk();
-                            $result = $fmpay->payout($OrderNo, $draw, $config);
-                            break;
-
-                        case 'easypay':
-                            $easypay = new EasyPay();
-                            $result = $easypay->payout($OrderNo, $draw, $config);
-                            break;
-
-                        case 'goldpays':
-                            $goldpay = new GoldPay();
-                            $result = $goldpay->payout($OrderNo, $draw, $config);
-                            break;
-                        case 'sepro':
-                            $sepropay = new SeproPay();
-                            $bankcode_model = new BankCode();
-                            $bccode = $bankcode_model->getValue(['BankName' => $draw['BankName']], 'BankCode');
-                            if (empty($bccode)) {
-                                $error_num += 1;
-                                $res_data[] = [
-                                    'OrderNo' => $OrderNo,
-                                    'msg' => '银行没有对应编码'
-                                ];
-                            }
-                            $result = $sepropay->payout($OrderNo, $draw, $config, $bccode);
-                            break;
-                        case 'gdpaid':
-                            $gdpay = new GDSdk();
-                            $bankcode_model = new BankCode();
-                            $bccode = $bankcode_model->getValue(['BankName' => $draw['BankName']], 'BankNo');
-                            $result = $gdpay->payout($OrderNo, $draw, $config, $bccode);
-                            break;
-                        case 'aupay':
-                            $aupay = new AuPay();
-                            $result = $aupay->payout($OrderNo, $draw, $config);
-                            break;
-                        case 'doipay':
-                            $doipay = new DoiPay();
-                            $result = $doipay->payout($OrderNo, $draw, $config);
-                            break;
-
-                        case 'beepay':
-                            $beepay = new BeePay();
-                            $result = $beepay->payout($OrderNo, $draw, $config);
-                            break;
-                        case 'payplus':
-                            $payplus = new PayPlus();
-                            $result = $payplus->payout($OrderNo, $draw, $config);
-                            break;
-
-                        case 'inpay':
-                            $inpay = new InPay();
-                            $result = $inpay->payout($OrderNo, $draw, $config);
-                            break;
-
-                        case 'serpay':
-                            $serpay = new SerPay();
-                            $bankcode_model = new BankCode();
-                            $bccode = $bankcode_model->getValue(['BankName' => $draw['BankName']], 'BankCode2');
-                            if (empty($bccode)) {
-                                $error_num += 1;
-                                $res_data[] = [
-                                    'OrderNo' => $OrderNo,
-                                    'msg' => '银行没有对应编码'
-                                ];
-                            }
-                            $result = $serpay->payout($OrderNo, $draw, $config, $bccode);
-                            break;
-
-                        case 'wepay':
-                            $wepay = new WePay();
-                            $bankcode_model = new BankCode();
-                            $bccode = $bankcode_model->getValue(['BankName' => $draw['BankName']], 'BankCode');
-                            if (empty($bccode)) {
-                                $error_num += 1;
-                                $res_data[] = [
-                                    'OrderNo' => $OrderNo,
-                                    'msg' => '银行没有对应编码'
-                                ];
-                            }
-                            $result = $wepay->payout($OrderNo, $draw, $config, $bccode);
-                            break;
-
                         case 'tgpay':
                             $tgpay = new TgPay();
                             // $result = $tgpay->payoutBrazil($OrderNo, $draw, $config);
                             if (config('app_type') == 2) {
                                 $result = $tgpay->payoutBrazil($OrderNo, $draw, $config);
-                            } elseif (config('app_type') == 3) {
+                            } elseif(config('app_type') == 3) {
                                 $result = $tgpay->payoutPhp($OrderNo, $draw, $config);
                             } else {
                                 $result = $tgpay->payout($OrderNo, $draw, $config);
                             }
-                            break;
-                        case 'dypay':
-                            $dypay = new DyPay();
-                            $result = $dypay->payout($OrderNo, $draw, $config);
-                            break;
-
-                        case 'ssspay':
-                            $ssspay = new SssPay();
-                            $result = $ssspay->payout($OrderNo, $draw, $config);
-                            break;
-                        case 'swiftpay':
-                            $swiftpay = new SwiftPay();
-                            if (config('app_type') == 2) {
-                                $result = $swiftpay->payoutBrazil($OrderNo, $draw, $config);
-                            } else {
-                                $result = $swiftpay->payout($OrderNo, $draw, $config);
-                            }
-                            break;
-                        case 'epay':
-                            $epay = new EPay();
-                            $result = $epay->payout($OrderNo, $draw, $config);
-                            break;
-                        case 'fastpay':
-                            $fastpay = new FastPay();
-                            $result = $fastpay->payout($OrderNo, $draw, $config);
-                            break;
-                        case 'xpay':
-                            $xpay = new XPay();
-                            $result = $xpay->payout($OrderNo, $draw, $config);
-                            break;
-                        case 'wodeasy':
-                            $wodeasy = new WodEasy();
-                            $result = $wodeasy->payout($OrderNo, $draw, $config);
-                            break;
-                        case 'hwepay':
-                            $hwepay = new Hwepay();
-                            $result = $hwepay->payout($OrderNo, $draw, $config);
-                            break;
-                        case 'hwpay':
-                            $hwpay = new Hwpay();
-                            $result = $hwpay->payout($OrderNo, $draw, $config);
-                            break;
-                        case 'joypay':
-                            $joypay = new Joypay();
-                            $result = $joypay->payout($OrderNo, $draw, $config);
-                            break;
-                        case 'tpays':
-                            $tgpay = new TgPay();
-                            // $result = $tgpay->payoutBrazil($OrderNo, $draw, $config);
-                            if (config('app_type') == 2) {
-                                $result = $tgpay->payoutBrazil($OrderNo, $draw, $config);
-                            } elseif (config('app_type') == 3) {
-                                $result = $tgpay->payoutPhp($OrderNo, $draw, $config);
-                            } else {
-                                $result = $tgpay->payout($OrderNo, $draw, $config);
-                            }
-                            break;
-                        case 'indipay':
-                            $indipay = new IndiPay();
-                            $bankcode_model = new BankCode();
-                            $bccode = $bankcode_model->getValue(['BankName' => $draw['BankName']], 'BankCode2');
-                            if (empty($bccode)) {
-                                $error_num += 1;
-                                $res_data[] = [
-                                    'OrderNo' => $OrderNo,
-                                    'msg' => '银行没有对应编码'
-                                ];
-                            }
-                            $result = $indipay->payout($OrderNo, $draw, $config, $bccode);
-                            break;
-                        case 'Winpay':
-                            $Winpay = new Winpay();
-                            $result = $Winpay->payout($OrderNo, $draw, $config);
-                            break;
-                        case 'ydpay':
-
-                            $ydpay = new Ydpay();
-                            $result = $ydpay->payout($OrderNo, $draw, $config);
-                            break;
-                        case 'xjpay':
-
-                            $xjpay = new Xjpay();
-                            $result = $xjpay->payout($OrderNo, $draw, $config);
-                            break;
-                        case 'roeasypay':
-
-                            $roeasypay = new Roeasypay();
-                            $result = $roeasypay->payout($OrderNo, $draw, $config);
-                            break;
-                        case 'holidiapay':
-
-                            $holidiapay = new Holidiapay();
-                            $result = $holidiapay->payout($OrderNo, $draw, $config);
                             break;
                         default:
-                            $class = '\\' . strtolower($channelcode) . '\PaySdk';
+                            $class = '\\'.strtolower($channelcode).'\PaySdk';
                             $pay = new $class();
-                            Redis::set('PAYOUT_ORDER_NUMBER_SUBMIT'.$OrderNo,$OrderNo,30);
-                            $result = $pay->payout($OrderNo, $draw, $config);
+                            $result =$pay->payout($OrderNo, $draw, $config);
                             break;
                     }
                     if ($result['status']) {
-                        $bankM = new BankDB();
-                        $post_data = [
-                            'ChannelId' => $channelid,
-                            'TransactionNo' => $result['system_ref'],
-                            'status' => $bankM::DRAWBACK_STATUS_THIRD_PARTY_HANDLING,
-                            'IsDrawback' => $bankM::DRAWBACK_STATUS_THIRD_PARTY_HANDLING,
-                            'UpdateTime' => date('Y-m-d H:i:s', time())
-                        ];
-                        $ret = $bankM->updateTable('userdrawback', $post_data, ['OrderNo' => $OrderNo, 'status' => $bankM::DRAWBACK_STATUS_AUDIT_PASS]);
                         if (!$ret) {
                             $error_num += 1;
                             $res_data[] = [
@@ -1150,6 +755,7 @@ class Playertrans extends Main
                             ];
                             continue;
                         }
+                        (new BankDB())->updateTable('userdrawback', [ 'TransactionNo' => $result['system_ref']], ['OrderNo' => $OrderNo]);
                         $success_num += 1;
                         GameLog::logData(__METHOD__, [$userID, $OrderNo, $channelcode, lang('提交第三方成功')], 1, lang('提交第三方成功'));
 
@@ -1165,7 +771,7 @@ class Playertrans extends Main
                 }
                 return $this->apiReturn(0, $res_data, '操作成功。成功：' . $success_num . ',失败：' . $error_num);
             } catch (\Exception $ex) {
-                save_log('playertrans', $ex->getMessage() . $ex->getTraceAsString());
+                save_log('playertrans',$ex->getMessage().$ex->getTraceAsString());
                 return $this->apiReturn(100, '', $ex->getMessage());
             }
         }
