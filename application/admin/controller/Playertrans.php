@@ -650,6 +650,7 @@ class Playertrans extends Main
                     GameLog::logData(__METHOD__, [$userID, $OrderNo, $channelcode, lang('提交第三方成功')], 1, lang('提交第三方成功'));
                     return $this->apiReturn(0, '', 'success');
                 } else {
+                    (new BankDB())->updateTable('userdrawback', [ 'status' => $bankM::DRAWBACK_STATUS_AUDIT_PASS,], ['OrderNo' => $OrderNo]);
                     GameLog::logData(__METHOD__, [$userID, $OrderNo, $channelcode, $result['message']], 1, $result['message']);
                     return $this->apiReturn(100, '', $result['message']);
                 }
@@ -760,6 +761,7 @@ class Playertrans extends Main
                         GameLog::logData(__METHOD__, [$userID, $OrderNo, $channelcode, lang('提交第三方成功')], 1, lang('提交第三方成功'));
 
                     } else {
+                        (new BankDB())->updateTable('userdrawback', [ 'status' => $bankM::DRAWBACK_STATUS_AUDIT_PASS,], ['OrderNo' => $OrderNo]);
                         GameLog::logData(__METHOD__, [$userID, $OrderNo, $channelcode, $result['message']], 1, $result['message']);
                         $error_num += 1;
                         $res_data[] = [
