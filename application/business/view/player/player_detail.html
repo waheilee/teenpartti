@@ -39,6 +39,7 @@
                 <li class="" lay-id="8" id="c8">{:lang('同ip查询')}</li>
                 <li class="" lay-id="8" id="c10">{:lang('玩家备注')}</li>
                 <li class="" lay-id="9" id="c11">{:lang('下级数据')}</li>
+                <li class="" lay-id="15" id="c15">{:lang('推广记录 ')}</li>
             </ul>
             <div class="layui-tab-content " >
                 {if(!empty($user))}
@@ -445,7 +446,10 @@
                     <table id="Table7" lay-filter="Table7"></table>
                 </div>
 
-
+                <!--                推广记录-->
+                <div class="layui-tab-item">
+                    <table id="Table8" lay-filter="Table8"></table>
+                </div>
                 <!--<div class="layui-tab-item">-->
                 <!--<table id="Table7" lay-filter="Table4">-->
                 <!--<div class="layui-fluid">-->
@@ -483,7 +487,7 @@
         index: 'lib/index' //主入口模块
 
     }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
-        var tb0 = 'Table0', tb1 = 'Table1', tb2 = 'Table2', tb3 = 'Table3', tb4 = 'Table4', tb5 = 'Table5', tb6 = 'Table6',tb7 = 'Table7';
+        var tb0 = 'Table0', tb1 = 'Table1', tb2 = 'Table2', tb3 = 'Table3', tb4 = 'Table4', tb5 = 'Table5', tb6 = 'Table6',tb7 = 'Table7',tb8 = 'tb8';
         var element = layui.element, layer = layui.layer, laydate = layui.laydate, util = layui.util,
             table = layui.table, $ = layui.$, form = layui.form;
         //增加页签  闭包增加 TabxxxxEvn
@@ -620,7 +624,23 @@
             , {field: 'amount', title: "{:lang('充值金额')}", minWidth: 300,align: 'center'}
             , {field: 'avarage', title: "{:lang('平均充值')}", minWidth: 300,align: 'center'}
         ];
+        var cols8 = [ //表头
+            {field:'ParentID', title: "{:lang('邀请人ID')}",align:'center', minWidth: 100},
+            // {field:'ParentName', title: "{:lang('邀请人昵称')}",align:'center', minWidth: 300},
+            {field:'RoleID', title: "{:lang('受邀人ID')}",align:'center', minWidth: 100},
+            // {field:'RoleName', title: "{:lang('受邀人昵称')}",align:'center', minWidth: 300},
+            {field:'TotalDeposit', title: "{:lang('总充值')}",align:'center', minWidth: 100, sort: true},
 
+            {field:'TransMoney', title: "{:lang('首充金额')}",align:'center', minWidth: 100, sort: true},
+            {field:'firtczTime', title: "{:lang('首充时间')}",align:'center', minWidth: 200, sort: true},
+            {field:'TotalRollOut', title: "{:lang('总提现')}",align:'center', minWidth: 100, sort: true},
+            {field:'Totalyk', title: "{:lang('总盈亏')}",align:'center', minWidth: 100, sort: true},
+            // {field:'TotalTax', title: "{:lang('总税收')}",align:'center', minWidth: 100, sort: true},
+            {field:'RegIP', title: "{:lang('注册ip')}",align:'center', minWidth: 100},
+            {field:'RegisterTime', title: "{:lang('注册时间')}",align:'center', minWidth: 100, sort: true},
+            {field:'LastLoginTime', title: "{:lang('最后登陆时间')}",align:'center', minWidth: 100, sort: true}
+            // {title:'操作', toolbar: '#toolbar'}
+        ];
         Tabs = {
             tab0Evn: function () { table.render({elem: '#' + tb0, where: Wheres[0], url: "{:url('player/getRoleWage',['roleid'=>$user.AccountID])}", page: true, cols: [cols0], autoSort: false,});},
             tab1Evn: function () { table.render({elem: '#' + tb1, where: Wheres[1], url: "{:url('charge/channelpayorder',['roleid'=>$user.AccountID,'Action'=>'list'])}?strartdate=&enddate=&tranNO=&payChannel=-1&payType=-1&amount=&Status=1&isReturn=-1", page: true, cols: [cols1], autoSort: false,});},
@@ -632,6 +652,7 @@
             tab6Evn: function () { table.render({elem: '#' + tb6, where: Wheres[6], url: "{:url('player/getCommentList',['roleid'=>$user.AccountID,'type'=>1])}", page: true, cols: [cols6], autoSort: false,});},
 
             tab7Evn: function () { table.render({elem: '#' + tb7, where: Wheres[7], url: "{:url('player/getProxyLvData',['roleid'=>$user.AccountID,'type'=>1])}", page: true, cols: [cols7], autoSort: false,});},
+            tab8Evn: function () { table.render({elem: '#' + tb8, where: {}, url: "{:url('agent/relation',['parentid'=>$user.AccountID,'action'=>'list'])}", page: true, cols: [cols8], autoSort: false,});}
 
         };
         TabReload = {
@@ -642,7 +663,8 @@
             tab4: function () {table.reload(tb4, {page: {curr: 1}});},
             tab5: function () {table.reload(tb5, {page: {curr: 1}});},
             tab6: function () {table.reload(tb6, {page: {curr: 1}});},
-            tab7: function () {table.reload(tb7, {page: {curr: 1}});}
+            tab7: function () {table.reload(tb7, {page: {curr: 1}});},
+            tab8: function () {table.reload(tb8, {page: {curr: 1}});}
         }
         TBinit = {
             searchEvn: function () {
@@ -659,6 +681,7 @@
                 table.reload(tb5, {page: {curr: 1},where: where});
                 table.reload(tb6, {page: {curr: 1},where: where});
                 table.reload(tb7, {page: {curr: 1},where: where});
+                table.reload(tb8, {page: {curr: 1},where: where});
             },
             sortEvn: function () {
             },
@@ -695,6 +718,8 @@
                         case 6:
                             return Tabs.tab6Evn();
                         case 7:
+                            return Tabs.tab7Evn();
+                        case 8:
                             return Tabs.tab7Evn();
                     }
                 });
@@ -812,6 +837,7 @@
                 Tabs.tab5Evn();
                 Tabs.tab6Evn();
                 Tabs.tab7Evn();
+                Tabs.tab8Evn();
                 this.sortEvn();
                 this.editEvn();
                 this.TabEvn();
