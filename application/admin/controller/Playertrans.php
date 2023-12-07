@@ -581,7 +581,7 @@ class Playertrans extends Main
 
         if ($this->request->isAjax()) {
             try {
-
+                $bankM = new BankDB();
                 $channelid = intval(input('channelid')) ? intval(input('channelid')) : 0;
                 if (!$channelid || $channelid <= 0) {
                     return $this->apiReturn(100, '', '提现通道未选择');
@@ -598,6 +598,9 @@ class Playertrans extends Main
                 if (intval($draw['AccountID']) === 0) {
                     return $this->apiReturn(100, '', '该提现订单玩家id为0，无法处理');
                 }
+                if($draw['status'] != $bankM::DRAWBACK_STATUS_AUDIT_PASS){
+                    return $this->apiReturn(100, '', '订单状态不正确');
+                }
                 $OperatorId = (new AccountDB())->getTableObject('T_Accounts')->where('AccountID',$draw['AccountID'])->value('OperatorId');
                 if ($OperatorId > 0) {
                     $WithdrawRemain = (new MasterDB())->getTableObject('T_OperatorLink')->where('OperatorId',$OperatorId)->value('WithdrawRemain')?:0;
@@ -612,8 +615,12 @@ class Playertrans extends Main
                 $extra = json_encode(['channelid' => $channelid]);
                 $channelcode =strtolower(trim($channel['ChannelCode']));
                 $result = [];
+                //加锁
+                $key = 'lock_thirdPay_' . $OrderNo;
+                if (!Redis::lock($key)) {
+                    return $this->apiReturn(100, '', '重复操作');
+                }
 
-                $bankM = new BankDB();
                 $post_data = [
                     'ChannelId' => $channelid,
                     'status' => $bankM::DRAWBACK_STATUS_THIRD_PARTY_HANDLING,
@@ -647,10 +654,12 @@ class Playertrans extends Main
                         return $this->apiReturn(100, '', '更新订单出错');
                     }
                     (new BankDB())->updateTable('userdrawback', ['TransactionNo' => $result['system_ref']], ['OrderNo' => $OrderNo]);
+                    Redis::rm($key);
                     GameLog::logData(__METHOD__, [$userID, $OrderNo, $channelcode, lang('提交第三方成功')], 1, lang('提交第三方成功'));
                     return $this->apiReturn(0, '', 'success');
                 } else {
                     (new BankDB())->updateTable('userdrawback', [ 'status' => $bankM::DRAWBACK_STATUS_AUDIT_PASS,], ['OrderNo' => $OrderNo]);
+                    Redis::rm($key);
                     GameLog::logData(__METHOD__, [$userID, $OrderNo, $channelcode, $result['message']], 1, $result['message']);
                     return $this->apiReturn(100, '', $result['message']);
                 }
@@ -687,6 +696,23 @@ class Playertrans extends Main
                 $res_data = [];
                 foreach ($OrderNos as $key => &$OrderNo) {
                     $draw = $UserDrawBack->GetRow(['OrderNo' => $OrderNo], '*');
+                    if ($draw['status'] != 1) {
+                        $error_num += 1;
+                        $res_data[] = [
+                            'OrderNo' => $OrderNo,
+                            'msg' => '订单状态不正确'
+                        ];
+                        continue;
+                    }
+                    $key = 'lock_onekeyThirdPay_' . $OrderNo;
+                    if (!Redis::lock($key)) {
+                        $error_num += 1;
+                        $res_data[] = [
+                            'OrderNo' => $OrderNo,
+                            'msg' => lang('重复操作')
+                        ];
+                        continue;
+                    }
                     if (!$draw) {
                         $error_num += 1;
                         $res_data[] = [
@@ -759,7 +785,7 @@ class Playertrans extends Main
                         (new BankDB())->updateTable('userdrawback', [ 'TransactionNo' => $result['system_ref']], ['OrderNo' => $OrderNo]);
                         $success_num += 1;
                         GameLog::logData(__METHOD__, [$userID, $OrderNo, $channelcode, lang('提交第三方成功')], 1, lang('提交第三方成功'));
-
+                        Redis::rm($key);
                     } else {
                         (new BankDB())->updateTable('userdrawback', [ 'status' => $bankM::DRAWBACK_STATUS_AUDIT_PASS,], ['OrderNo' => $OrderNo]);
                         GameLog::logData(__METHOD__, [$userID, $OrderNo, $channelcode, $result['message']], 1, $result['message']);
@@ -768,6 +794,7 @@ class Playertrans extends Main
                             'OrderNo' => $OrderNo,
                             'msg' => $result['message']
                         ];
+                        Redis::rm($key);
                         continue;
                     }
                 }
