@@ -196,22 +196,22 @@ class GameOCDB extends BaseModel
 
         if (session('merchant_OperatorId') && request()->module() == 'merchant') {
             $where = " AND OperatorId=" . session('merchant_OperatorId');
-            $room_data = (new \app\model\MasterDB())->getTableObject('T_OperatorGameType')->where('OperatorId', session('merchant_OperatorId'))->field('RedirectTypeId')->select() ?: [];
+            // $room_data = (new \app\model\MasterDB())->getTableObject('T_OperatorGameType')->where('OperatorId', session('merchant_OperatorId'))->field('RedirectTypeId')->select() ?: [];
 
-            $roomid = [];
-            if (!empty($room_data)) {
-                foreach ($room_data as $k => $v) {
-                    $roomid[] = $v['RedirectTypeId'];
-                }
-                $str_roomid = implode(',', $roomid);
-                $where .= ' and RoomId in(' . $str_roomid . ')';
-            } else {
-                $where .= ' and RoomId in(-1)';
-            }
+            // $roomid = [];
+            // if (!empty($room_data)) {
+            //     foreach ($room_data as $k => $v) {
+            //         $roomid[] = $v['RedirectTypeId'];
+            //     }
+            //     $str_roomid = implode(',', $roomid);
+            //     $where .= ' and RoomId in(' . $str_roomid . ')';
+            // } else {
+            //     $where .= ' and RoomId in(-1)';
+            // }
         } else {
             $where = " ";
-            if ($roomid > 0) $where .= " and RoomId=" . $roomid;
         }
+        if ($roomid > 0) $where .= " and RoomId=" . $roomid;
         // var_dump($where);die();
         if ($start != null) $where .= " AND AddTime >= '" . $start . "'";
         if ($end != null) $where .= " AND AddTime <= '" . $end . "'";
@@ -239,6 +239,50 @@ class GameOCDB extends BaseModel
         $total_Win = 0;
         if (isset($result['list']) && $result['list']) {
             foreach ($result['list'] as &$v) {
+                if (empty($v['RoomName'])) {
+                    switch ($v['RoomID']) {
+                        case 37000:
+                            $v['RoomName'] = 'Evo';
+                            break;
+                        case 38000:
+                            $v['RoomName'] = 'PP';
+                            break;
+                        case 36000:
+                            $v['RoomName'] = 'PG';
+                            break;
+                        case 39000:
+                            $v['RoomName'] = 'JILI';
+                            break;
+                        case 39100:
+                            $v['RoomName'] = 'kingmaker';
+                            break;
+                        case 39200:
+                            $v['RoomName'] = 'CQ9';
+                            break;
+//                        case 39300:
+//                            $v['RoomName'] = 'Haba';
+//                            break;
+                        case 39400:
+                            $v['RoomName'] = 'JDB';
+                            break;
+                        case 40000:
+                            $v['RoomName'] = 'Haba';
+                            break;
+                        case 41000:
+                            $v['RoomName'] = 'HackSaw';
+                            break;
+                        case 42000:
+                            $v['RoomName'] = 'YES!BinGo';
+                            break;
+                        case 44000:
+                            $v['RoomName'] = 'FCGame';
+                            break;
+
+                        case 45000:
+                            $v['RoomName'] = 'TadaGame';
+                            break;
+                    }
+                }
                 $gamerate = sprintf("%.2f", $v['GameRate']);
                 $v['GameRate'] = sprintf("%.2f", $v['GameRate']) . "%";
                 if ($v['Water'] != 0) {
