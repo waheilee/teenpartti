@@ -224,7 +224,7 @@ class GameOCDB extends BaseModel
         if ($orderby == 'WinRate') {
             $orderby = 'WinNum';
         }
-        $result = $this->GetPage($where, "$orderby $orderType", '*,(CASE WHEN Water=0 THEN 0 ELSE (WinScore*1.00/Water) END) as KillRate', true);
+        $result = $this->GetPage($where, "$orderby $orderType", '*,(CASE WHEN Water=0 THEN 0 ELSE ((WinScore-Tax)*1.00/Water) END) as KillRate', true);
         $totol = $this->GetRow('1=1 ' . $where,
             " ISNULL(SUM(GCount),0) GCount,ISNULL(SUM(TotalNum),0) GNum,ISNULL(SUM(Water),0) GameWater,"
             . " ISNULL(SUM(WinScore),0)Score,ISNULL(SUM(Tax),0)Tax");
@@ -283,6 +283,7 @@ class GameOCDB extends BaseModel
                             break;
                     }
                 }
+                $v['GameRate'] = ($v['Water']-$v['WinScore'] + $v['Tax'])/$v['Water'] * 100;
                 $gamerate = sprintf("%.2f", $v['GameRate']);
                 $v['GameRate'] = sprintf("%.2f", $v['GameRate']) . "%";
                 if ($v['Water'] != 0) {
@@ -290,8 +291,7 @@ class GameOCDB extends BaseModel
                 } else {
                     $v['KillRate'] = '0%';
                 }
-
-
+                $v['WinScore'] = $v['WinScore'] - $v['Tax'];
                 if ($v['TotalNum'] == null) $v['TotalNum'] = 1;
                 ConVerMoney($v['Water']);
                 ConVerMoney($v['WinScore']);
