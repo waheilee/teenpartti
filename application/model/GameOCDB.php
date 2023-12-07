@@ -283,7 +283,13 @@ class GameOCDB extends BaseModel
                             break;
                     }
                 }
-                $v['GameRate'] = ($v['Water']-$v['WinScore'] + $v['Tax'])/$v['Water'] * 100;
+
+
+                if(($v['Water']-$v['WinScore'] + $v['Tax']) < 0 || $v['Water'] < 0){
+                    $v['GameRate'] = 0;
+                }else{
+                    $v['GameRate'] = ($v['Water']-$v['WinScore'] + $v['Tax'])/$v['Water'] * 100;
+                }
                 $gamerate = sprintf("%.2f", $v['GameRate']);
                 $v['GameRate'] = sprintf("%.2f", $v['GameRate']) . "%";
                 if ($v['Water'] != 0) {
