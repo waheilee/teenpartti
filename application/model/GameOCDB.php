@@ -447,6 +447,8 @@ class GameOCDB extends BaseModel
             if ($OperatorId !== '') {
                 $join .= " WHERE A.OperatorId=" . $OperatorId;
             }
+        }elseif (!empty($OperatorId)){
+            $join .= " WHERE A.OperatorId=" . $OperatorId;
         }
         $business_id = '';
         if (session('business_ProxyChannelId') && request()->module() == 'business') {
