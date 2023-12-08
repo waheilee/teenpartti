@@ -1017,8 +1017,7 @@ class GameOCDB extends BaseModel
         }
 
 
-        $join = "LEFT JOIN CD_UserDB.dbo.T_UserProxyInfo B WITH (NOLOCK) ON A.ProxyId=B.RoleID ";
-        $join .= " LEFT JOIN (SELECT RoleID,SUM(CASE WHEN job_key = 10012 THEN value ELSE 0 END) AS needTakePrice,SUM(CASE WHEN job_key = 10009 THEN value ELSE 0 END) AS oneTakeRunningPrice,SUM(CASE WHEN job_key = 10010 THEN value ELSE 0 END) AS twoTakeRunningPrice FROM CD_UserDB.dbo.T_Job_UserInfo GROUP BY RoleID) AS C  ON A.ProxyId = C.RoleID WHERE 1=1";
+        $join = "LEFT JOIN CD_UserDB.dbo.T_UserProxyInfo B WITH (NOLOCK) ON A.ProxyId=B.RoleID WHERE 1=1";
 //        //外联 条件
         if ($parentid > 0) {
             $join .= ' and ParentID=' . $parentid;
@@ -1036,20 +1035,20 @@ class GameOCDB extends BaseModel
         switch ($tab) {
             case 'today':
                 $startdate = date('Y-m-d');
-                $enddate = $startdate;
+                $enddate   = $startdate;
                 break;
             case 'yestoday':
-                $startdate = date('Y-m-d', strtotime('-1 days'));
-                $enddate = $startdate;
+                $startdate = date('Y-m-d',strtotime('-1 days'));
+                $enddate   = $startdate;
                 break;
             case 'month':
-                $startdate = date('Y-m') . '-01';
-                $enddate = date('Y-m-d');
+                $startdate = date('Y-m').'-01';
+                $enddate   = date('Y-m-d');
 
                 break;
             case 'lastmonth':
-                $startdate = date('Y-m-01', strtotime('-1 month'));
-                $enddate = date('Y-m-d', strtotime(date('Y-m') . '-01') - 1);
+                $startdate = date('Y-m-01',strtotime('-1 month'));
+                $enddate   = date('Y-m-d',strtotime(date('Y-m').'-01')-1);
 
                 break;
             case 'week':
@@ -1057,9 +1056,9 @@ class GameOCDB extends BaseModel
                 if ($w == 0) {
                     $w = 7;
                 }
-                $w = mktime(0, 0, 0, date('m'), date('d') - $w + 1, date('y'));
-                $startdate = date('Y-m-d', $w);
-                $enddate = date('Y-m-d');
+                $w = mktime(0,0,0,date('m'),date('d')-$w+1,date('y'));
+                $startdate = date('Y-m-d',$w);
+                $enddate   = date('Y-m-d');
 
                 break;
             case 'lastweek':
@@ -1067,17 +1066,17 @@ class GameOCDB extends BaseModel
                 if ($w == 0) {
                     $w = 7;
                 }
-                $w = mktime(0, 0, 0, date('m'), date('d') - $w + 1, date('y'));
-                $startdate = date('Y-m-d', $w - 7 * 86400);
-                $enddate = date('Y-m-d', strtotime(date('Y-m-d', $w)) - 1);
+                $w = mktime(0,0,0,date('m'),date('d')-$w+1,date('y'));
+                $startdate = date('Y-m-d',$w-7*86400);
+                $enddate   = date('Y-m-d',strtotime(date('Y-m-d',$w))-1);
                 break;
             case 'q_day':
-                $startdate = date('Y-m-d', strtotime($startdate) - 86400);
-                $enddate = $startdate;
+                $startdate = date('Y-m-d',strtotime($startdate)-86400);
+                $enddate   = $startdate;
                 break;
             case 'h_day':
-                $enddate = date('Y-m-d', strtotime($enddate) + 86400);
-                $startdate = $enddate;
+                $enddate = date('Y-m-d',strtotime($enddate)+86400);
+                $startdate   = $enddate;
                 break;
             default:
 
@@ -1091,7 +1090,7 @@ class GameOCDB extends BaseModel
         $order = "$orderfield $ordertype,proxyid asc ";
 
         $table = 'dbo.T_ProxyDailyCollectData';
-        $field = ' AddTime,ProxyId,DailyDeposit,DailyTax,DailyRunning,Lv1PersonCount,Lv1Deposit,Lv1Tax,Lv1Running,Lv2PersonCount,Lv2Deposit,Lv2Tax,Lv2Running,Lv3PersonCount,Lv3Deposit,Lv3Tax,Lv3Running,Lv1FirstDepositPlayers,Lv2FirstDepositPlayers,Lv3FirstDepositPlayers,A.ValidInviteCount,Lv2ValidInviteCount,Lv3ValidInviteCount,needTakePrice,oneTakeRunningPrice,twoTakeRunningPrice';
+        $field = ' AddTime,ProxyId,DailyDeposit,DailyTax,DailyRunning,Lv1PersonCount,Lv1Deposit,Lv1Tax,Lv1Running,Lv2PersonCount,Lv2Deposit,Lv2Tax,Lv2Running,Lv3PersonCount,Lv3Deposit,Lv3Tax,Lv3Running,Lv1FirstDepositPlayers,Lv2FirstDepositPlayers,Lv3FirstDepositPlayers,A.ValidInviteCount,Lv2ValidInviteCount,Lv3ValidInviteCount';
         $sqlExec = "exec Proc_GetPageData '$table','$field','$where','$order','$join','$begin','$end', $this->page , $this->pageSize";
         try {
             $result = $this->getTableQuery($sqlExec);
@@ -1108,7 +1107,6 @@ class GameOCDB extends BaseModel
         if (isset($result[1]) && $result[0][0]['count'] > 0) {
             $res['count'] = $result[0][0]['count'];
             $res['list'] = $result[1];
-            $userBD = new UserDB();
             foreach ($res['list'] as &$v) {
                 if ($iswater) {
                     $lv1rate = config('agent_running_parent_rate')[1];
@@ -1117,13 +1115,13 @@ class GameOCDB extends BaseModel
                     $Lv1Reward = bcmul($v['Lv1Running'], $lv1rate, 4);
                     $Lv2Reward = bcmul($v['Lv2Running'], $lv2rate, 4);
                     $Lv3Reward = bcmul($v['Lv3Running'], $lv3rate, 4);
-                    $rewar_amount = bcadd($Lv1Reward, $Lv2Reward, 3);
+                    $rewar_amount = bcadd($Lv1Reward, $Lv2Reward, 4);
                     $rewar_amount = bcadd($rewar_amount, $Lv3Reward, 2);
-                    $v['RewardAmount'] = $rewar_amount / 10;
+                    $v['RewardAmount'] = $rewar_amount;
                 } else {
-                    $level1profit = bcmul($v['Lv1Tax'], 0.3, 2);
-                    $level2profit = bcmul($v['Lv2Tax'], 0.09, 2);
-                    $level3profit = bcmul($v['Lv3Tax'], 0.027, 2);
+                    $level1profit = bcmul($v['Lv1Tax'], 0.3, 3);
+                    $level2profit = bcmul($v['Lv2Tax'], 0.09, 3);
+                    $level3profit = bcmul($v['Lv3Tax'], 0.027, 3);
                     $v['RewardAmount'] = $level1profit + $level2profit + $level3profit;
                 }
                 ConVerMoney($v['RewardAmount']);
@@ -1136,32 +1134,8 @@ class GameOCDB extends BaseModel
                 ConVerMoney($v['Lv2Running']);
                 ConVerMoney($v['Lv1Running']);
 
-                ConVerMoney($v['needTakePrice']);
-                ConVerMoney($v['oneTakeRunningPrice']);
-                ConVerMoney($v['twoTakeRunningPrice']);
-                if ($v['needTakePrice'] > 5000) {
-                    //这三个字段都放 T_Job_UserInfo 表，打码量：10012， 1级流水，10009，2级流水，10010
-                    $bel = $this->getBrl($v['needTakePrice']);
-                    $oneRunning = $userBD->getTableObject('T_Job_UserInfo')
-                            ->where('RoleID', $v['ProxyId'])
-                            ->where('job_key', 10009)
-                            ->value('value') / bl;
-
-                    $rewardValueOne = bcmul($oneRunning, 0.002, 4);
-                    $twoRunning = $userBD->getTableObject('T_Job_UserInfo')
-                            ->where('RoleID', $v['ProxyId'])
-                            ->where('job_key', 10010)
-                            ->value('value') / bl;
-                    $rewardValueTwo = bcmul($twoRunning, 0.001, 4);
-                    $reward = bcadd(bcadd($rewardValueOne, $rewardValueTwo, 2), $bel);
-                    $v['reward'] = $reward;
-                } else {
-//                    $v['needTakePrice'] = 0;
-                    $v['reward'] = 0;
-                }
-
                 //团队打码
-                $v['dm'] = bcadd($v['Lv1Running'], $v['Lv2Running'], 3);
+                $v['dm'] = bcadd($v['Lv1Running'], $v['Lv2Running'],3);
             }
             unset($v);
         }
