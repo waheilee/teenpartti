@@ -1397,55 +1397,54 @@ class GameOCDB extends BaseModel
         if (!empty($AccountName)) $join .= " AND AccountName=''$AccountName''";
 //        if (!empty($NickName)) $join .= " AND LoginName=''$NickName''";
 
-        if ($roleid > 0) {
+        if ($roleid > 0){
             $where .= ' and proxyid=' . $roleid;
             $where2 .= ' and a.RoleID=' . $roleid;
         }
-        $operatorId = '';
+
         if (session('merchant_OperatorId') && request()->module() == 'merchant') {
             $where .= ' and OperatorId=' . session('merchant_OperatorId');
             $where2 .= ' and c.OperatorId=' . session('merchant_OperatorId');
-            $operatorId = session('merchant_OperatorId');
         }
         $tab = input('tab') ?: '';
         switch ($tab) {
             case 'today':
                 $startdate = date('Y-m-d');
-                $enddate = $startdate;
+                $enddate   = $startdate;
                 break;
             case 'yestoday':
-                $startdate = date('Y-m-d', strtotime('-1 days'));
-                $enddate = $startdate;
+                $startdate = date('Y-m-d',strtotime('-1 days'));
+                $enddate   = $startdate;
                 break;
             case 'month':
-                $startdate = date('Y-m') . '-01';
-                $enddate = date('Y-m-d');
+                $startdate = date('Y-m').'-01';
+                $enddate   = date('Y-m-d');
 
                 break;
             case 'lastmonth':
-                $startdate = date('Y-m-01', strtotime('-1 month'));
-                $enddate = date('Y-m-d', strtotime(date('Y-m') . '-01') - 1);
+                $startdate = date('Y-m-01',strtotime('-1 month'));
+                $enddate   = date('Y-m-d',strtotime(date('Y-m').'-01')-1);
 
                 break;
             case 'week':
 
-                $w = mktime(0, 0, 0, date('m'), date('d') - date('w') + 1, date('y'));
-                $startdate = date('Y-m-d', $w);
-                $enddate = date('Y-m-d');
+                $w = mktime(0,0,0,date('m'),date('d')-date('w')+1,date('y'));
+                $startdate = date('Y-m-d',$w);
+                $enddate   = date('Y-m-d');
 
                 break;
             case 'lastweek':
-                $w = mktime(0, 0, 0, date('m'), date('d') - date('w') + 1, date('y'));
-                $startdate = date('Y-m-d', $w - 7 * 86400);
-                $enddate = date('Y-m-d', strtotime(date('Y-m-d', $w)) - 1);
+                $w = mktime(0,0,0,date('m'),date('d')-date('w')+1,date('y'));
+                $startdate = date('Y-m-d',$w-7*86400);
+                $enddate   = date('Y-m-d',strtotime(date('Y-m-d',$w))-1);
                 break;
             case 'q_day':
-                $startdate = date('Y-m-d', strtotime($startdate) - 86400);
-                $enddate = $startdate;
+                $startdate = date('Y-m-d',strtotime($startdate)-86400);
+                $enddate   = $startdate;
                 break;
             case 'h_day':
-                $enddate = date('Y-m-d', strtotime($enddate) + 86400);
-                $startdate = $enddate;
+                $enddate = date('Y-m-d',strtotime($enddate)+86400);
+                $startdate   = $enddate;
                 break;
             default:
 
@@ -1455,82 +1454,32 @@ class GameOCDB extends BaseModel
         $end = date('Y-m-d', strtotime($enddate));
 
         $table = 'dbo.T_ProxyDailyCollectData';
-        $field = 'ISNULL(Sum(FirstDepositPerson),0) as FirstDepositPerson,ISNULL(Sum(FirstDepositMoney),0) as FirstDepositMoney,ISNULL(Sum(Lv1PersonCount),0) as Lv1PersonCount,ISNULL(Sum(Lv1Running),0) as Lv1Running,ISNULL(Sum(Lv2Running),0) as Lv2Running,ISNULL(Sum(Lv3Running),0) as Lv3Running,ISNULL(Sum(Lv1Running+Lv2Running+Lv3Running),0) dm,ISNULL(Sum(ValidInviteCount),0) as ValidInviteCount,ISNULL(Sum(Lv2ValidInviteCount),0) as Lv2ValidInviteCount,ISNULL(Sum(Lv3ValidInviteCount),0) as Lv3ValidInviteCount';
+        $field = '  ISNULL(Sum(FirstDepositPerson),0) as FirstDepositPerson,ISNULL(Sum(FirstDepositMoney),0) as FirstDepositMoney,ISNULL(Sum(Lv1PersonCount),0) as Lv1PersonCount,ISNULL(Sum(Lv1Running),0) as Lv1Running,ISNULL(Sum(Lv2Running),0) as Lv2Running,ISNULL(Sum(Lv3Running),0) as Lv3Running,ISNULL(Sum(Lv1Running+Lv2Running+Lv3Running),0) dm,ISNULL(Sum(ValidInviteCount),0) as ValidInviteCount,ISNULL(Sum(Lv2ValidInviteCount),0) as Lv2ValidInviteCount,ISNULL(Sum(Lv3ValidInviteCount),0) as Lv3ValidInviteCount';
         $sqlExec = "exec Proc_GetPageGROUP '$table','$field','$where','$begin','$end'";
         $list = [];
         try {
-//ISNULL(Sum(FirstDepositPerson),0) as FirstDepositPerson,
             $result = $this->getTableQuery($sqlExec);
-            $temp = [];
             if (isset($result[0])) {
                 $list = $result[0];
-                $userDB = new UserDB();
-                $redisKey = 'GET_USER_ALL_LIST';
-                $userList = Redis::get($redisKey);
-                if (!$userList) {
-                    $data = $userDB->getTableObject('T_UserProxyInfo')
-                        ->field('RoleID,ParentID')
-                        ->select();
-                    $userList = Redis::set($redisKey, $data, 3600);
-                }
-                $userSubsetList = '';
-                if (!empty($roleid)) {
-                    $userSubsetList = Redis::get('USER_SUBSET_LIST_' . $roleid);
-                    if (!$userSubsetList) {
-                        $userSubsetList = sortList($userList, $roleid);
-                        Redis::set('USER_SUBSET_LIST_' . $roleid, $userSubsetList, 3600);
-                    }
-                }
-                $flippedData = '';
-                if (!empty($operatorId)) {
-//                    $flippedData = Redis::get('USER_OPERATOR_SUBSET_LIST_' . $operatorId);
-//                    if (!$flippedData) {
-                    $operatorIdUserList = $userDB->getTableObject('View_Accountinfo')
-                        ->where('OperatorId', '=', $operatorId)
-                        ->column('AccountID');
-                    $flippedData = array_flip($operatorIdUserList);
-//                        Redis::set('USER_OPERATOR_SUBSET_LIST_' . $operatorId, $flippedData, 3600);
-//                    }
-                }
-
-//                $list[0]['FirstDepositMoney'] = (new \app\model\DataChangelogsDB())
-//                    ->getTableObject('T_UserTransactionLogs')->alias('a')
-//                    ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) c', 'c.AccountID=a.RoleID', 'left')
-//                    ->where($where2)
-//                    ->whereTime('a.AddTime', '>=', $begin . ' 00:00:00')
-//                    ->whereTime('a.AddTime', '<=', $end . ' 23:59:59')
-//                    ->where('a.ChangeType', 5)
-//                    ->where('a.IfFirstCharge', 1)
-//                    ->sum('TransMoney') ?: 0;
-//
+                $list[0]['FirstDepositMoney'] = (new \app\model\DataChangelogsDB())
+                    ->getTableObject('T_UserTransactionLogs')->alias('a')
+                    ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) c', 'c.AccountID=a.RoleID', 'left')
+                    ->where($where2)
+                    ->whereTime('a.AddTime','>=',$begin.' 00:00:00')
+                    ->whereTime('a.AddTime','<=',$end.' 23:59:59')
+                    ->where('a.ChangeType',5)
+                    ->where('a.IfFirstCharge',1)
+                    ->sum('TransMoney')?:0;
                 foreach ($list as &$v) {
-                    $item = [];
-                    $item['Lv1Running'] = FormatMoney($v['Lv1Running']);
-                    $item['Lv2Running'] = FormatMoney($v['Lv2Running']);
-                    $item['Lv3Running'] = FormatMoney($v['Lv3Running']);
-                    $item['dm'] = FormatMoney($v['dm']);
-                    $item['FirstDepositPersons'] = $this->getFirstDeposit('', '', [], $begin, $end, 1);
-                    $item['FirstDepositMoneys'] = $this->getFirstDeposit('', '', [], $begin, $end, 2);
-                    if ($roleid) {
-                        //首充人数
-                        $item['FirstDepositPersons'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 1);
-                        //首充金额
-                        $item['FirstDepositMoneys'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 2);
-                    } elseif ($operatorId) {
-                        $item['FirstDepositPersons'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 1);
-                        $item['FirstDepositMoneys'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 2);
-                    }
-                    $item['Lv1PersonCount'] = $v['Lv1PersonCount'];
-                    $item['Lv2ValidInviteCount'] = $v['Lv2ValidInviteCount'];
-                    $item['Lv3ValidInviteCount'] = $v['Lv3ValidInviteCount'];
-                    $item['ValidInviteCount'] = $v['ValidInviteCount'];
-                    $temp[] = $item;
+
+                    ConVerMoney($v['Lv1Running']);
+                    ConVerMoney($v['Lv2Running']);
+                    ConVerMoney($v['Lv3Running']);
+                    ConVerMoney($v['dm']);
                 }
-
-
                 unset($v);
             }
-            return $temp;
+            return $list;
         } catch (Exception $exception) {
             //var_dump($exception->getMessage());
             return $list;
