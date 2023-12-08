@@ -11,7 +11,7 @@
         <label class="layui-form-label">{:lang('提现通道')}</label>
         <div class="layui-input-block">
             <select name="channelid" id="channelid" lay-filter="activityfilter">
-                <option value="-1">{:lang('请选择')}</option>
+                <option value="">{:lang('请选择')}</option>
                 {foreach $list as $k => $v}
                     <option value="{$v.ChannelId}" >{$v.ChannelName}[{$v.ChannelId}]</option>
                 {/foreach}

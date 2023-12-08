@@ -686,7 +686,7 @@ class Playertrans extends Main
         if ($this->request->isAjax()) {
             try {
                 $channelid = intval(input('channelid')) ? intval(input('channelid')) : 0;
-                if (!$channelid) {
+                if (empty($channelid)) {
                     return $this->apiReturn(100, '', '提现通道未选择');
                 }
                 $OrderNos = explode(',', input('OrderNo'));
@@ -741,6 +741,9 @@ class Playertrans extends Main
                     $draw['RealMoney'] = FormatMoney($draw['iMoney'] - $draw['Tax']);
                     $db = new MasterDB();
                     $channel = $db->getTableRow('T_GamePayChannel', ['ChannelId' => $channelid], '*');
+                    if(empty($channel)){
+                        return $this->apiReturn(100, '', '无此提现通道');
+                    }
                     $config = json_decode($channel['MerchantDetail'], true);
                     $extra = json_encode(['channelid' => $channelid]);
                     $channelcode = $channel['ChannelCode'];
