@@ -1982,6 +1982,7 @@ class Channel extends Main
                 sum(convert(bigint,EvoLiveBet)) as evolivewin,
                 sum(convert(bigint,Spribe)) as spribegamewin,
                 sum(convert(bigint,habawin)) as habawin,
+                sum(convert(bigint,hacksaw)) as hacksaw,
                 sum(convert(bigint,yesbingo)) as yesbingo,
                 sum(convert(bigint,Spribe)) as Spribe,
                 sum(convert(bigint,tadagame)) as tadagame,
