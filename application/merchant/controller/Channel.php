@@ -2094,8 +2094,8 @@ class Channel extends Main
             $TotalAPICost += abs($pplive);
         }
 
-        $data['TotalAPICost'] = round($TotalAPICost, 3);
-        $data['totalprofit'] = round(($data['total_recharge']) - ($data['totalpayout'] + $data['recharge_fee'] + $data['payout_fee'] + $data['TotalAPICost']), 3);
-        return FormatMoney($TotalAPICost);
+
+
+        return round($TotalAPICost, 3);
     }
 }
