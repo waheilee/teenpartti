@@ -2094,8 +2094,6 @@ class Channel extends Main
             $TotalAPICost += abs($pplive);
         }
 
-
-
-        return round($TotalAPICost, 3);
+        return FormatMoney(round($TotalAPICost, 3));
     }
 }
