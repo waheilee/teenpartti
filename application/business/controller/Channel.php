@@ -410,6 +410,8 @@ class Channel extends Main
         $fcgame = bcmul($APIFee[9], $total['fcgame'], 4);
         $pplive = bcmul($APIFee[10], $total['pplive'], 4);
 
+
+
         if ($totalpp < 0) {//系统赢算费用
             $TotalAPICost += abs($totalpp);
         }
@@ -451,6 +453,8 @@ class Channel extends Main
         if ($pplive < 0) {//系统赢算费用
             $TotalAPICost += abs($pplive);
         }
+
+
         $data['TotalAPICost'] = FormatMoney($TotalAPICost);
         $data['totalprofit'] = round(($data['total_recharge']) - ($data['totalpayout'] + $data['recharge_fee'] + $data['payout_fee'] + $data['TotalAPICost']), 3);
 

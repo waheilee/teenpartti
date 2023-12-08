@@ -38,15 +38,15 @@ class My extends Main
     public function monthReport()
     {
         $date = $this->request->param('date');
-        if(empty($date)){
+        if (empty($date)) {
             $date = date('Y-m');
         }
         $db = new GameOCDB();
-        $where = ' OperatorId='.session('merchant_OperatorId');
+        $where = ' OperatorId=' . session('merchant_OperatorId');
         $firstdate = $date . '-01';
         $where .= " and mydate>='$firstdate' ";
         $lasttime = strtotime("$firstdate +1 month -1 day");
-        $lastdate = date('Y-m-d',$lasttime);
+        $lastdate = date('Y-m-d', $lasttime);
         $where .= " and mydate<='$lastdate'";
         $field = 'sum(convert(bigint,TotalBatchMail)) TotalBatchMail,
         sum(convert(bigint,TotalGMPoint)) TotalGMPoint,
@@ -67,7 +67,7 @@ class My extends Main
         $pay = $db->getTableObject('T_Operator_GameStatisticPay')->where($where)->field('sum(convert(bigint,totalpay)) totalpay')->find();
         $out = $db->getTableObject('T_Operator_GameStatisticPayOut')->where($where)->field('sum(convert(bigint,totalpayout)) totalpayout')->find();
         // $user = $db->getTableObject('T_Operator_GameStatisticTotal')->where($where)->find();
-        $config = (new MasterDB)->getTableObject('T_OperatorLink')->where('OperatorId',session('merchant_OperatorId'))->find();
+        $config = (new MasterDB)->getTableObject('T_OperatorLink')->where('OperatorId', session('merchant_OperatorId'))->find();
         $data = [];
 
         $data['total_recharge'] = FormatMoney($pay['totalpay'] ?? 0);
@@ -80,16 +80,17 @@ class My extends Main
         $total['pggamewin'] = FormatMoney($total['pggamewin'] ?? 0);
         $total['evolivewin'] = FormatMoney($total['evolivewin'] ?? 0);
         $total['spribewin'] = FormatMoney($total['spribewin'] ?? 0);
-        $total['habawin'] = FormatMoney($total['habawin'] ?? 0);
         $total['jiliwin'] = FormatMoney($total['jiliwin'] ?? 0);
         $total['hacksaw'] = FormatMoney($total['hacksaw'] ?? 0);
+        $total['habawin'] = FormatMoney($total['habawin'] ?? 0);
+        $total['jiliwin'] = FormatMoney($total['jiliwin'] ?? 0);
         $total['yesbingo'] = FormatMoney($total['yesbingo'] ?? 0);
         $total['fcgame'] = FormatMoney($total['fcgame'] ?? 0);
         $total['tadagame'] = FormatMoney($total['tadagame'] ?? 0);
         $total['pplive'] = FormatMoney($total['pplive'] ?? 0);
 
-        $data['recharge_fee'] =bcmul($data['total_recharge'] , $config['RechargeFee'],3);
-        $data['payout_fee'] = bcmul($data['totalpayout'] ,$config['WithdrawalFee'],3);
+        $data['recharge_fee'] = bcmul($data['total_recharge'], $config['RechargeFee'], 3);
+        $data['payout_fee'] = bcmul($data['totalpayout'], $config['WithdrawalFee'], 3);
         $APIFee = explode(',', $config['APIFee']);
         $APIFee[0] = $APIFee[0] ?? 0; //pp
         $APIFee[1] = $APIFee[1] ?? 0; //pg
@@ -156,9 +157,8 @@ class My extends Main
             $TotalAPICost += abs($pplive);
         }
 
-
-        $data['TotalAPICost'] = round($TotalAPICost,3);
-        $data['totalprofit'] = round(($data['total_recharge'])-($data['totalpayout']+$data['recharge_fee']+$data['payout_fee']+$data['TotalAPICost']),3);
+        $data['TotalAPICost'] = round($TotalAPICost, 3);
+        $data['totalprofit'] = round(($data['total_recharge']) - ($data['totalpayout'] + $data['recharge_fee'] + $data['payout_fee'] + $data['TotalAPICost']), 3);
 
         if ($this->request->isAjax()) {
             if (empty($total)) {
