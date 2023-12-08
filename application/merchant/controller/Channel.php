@@ -1977,14 +1977,14 @@ class Channel extends Main
                 $channelDaliyCollect = $GameOCDB->getTableObject('T_ChannelDailyCollect')
                     ->field('ChannelId,sum(convert(bigint,TotalRecharge)) totalrecharge,
                 sum(convert(bigint,TotalDrawMoney)) totalpayout,
-                sum(convert(bigint,PPBet)) as ppgamewin,
                 sum(convert(bigint,PGBet)) as pggamewin,
+                sum(convert(bigint,PPBet)) as ppgamewin,
                 sum(convert(bigint,EvoLiveBet)) as evolivewin,
+                sum(convert(bigint,JiLiBet)) as jiliwin,
                 sum(convert(bigint,Spribe)) as spribegamewin,
                 sum(convert(bigint,habawin)) as habawin,
                 sum(convert(bigint,hacksaw)) as hacksaw,
                 sum(convert(bigint,yesbingo)) as yesbingo,
-                sum(convert(bigint,Spribe)) as Spribe,
                 sum(convert(bigint,tadagame)) as tadagame,
                 sum(convert(bigint,fcgame)) as fcgame,
                 sum(convert(bigint,pplive)) as pplive')
