@@ -1981,7 +1981,12 @@ class Channel extends Main
                 sum(convert(bigint,PGBet)) as pggamewin,
                 sum(convert(bigint,EvoLiveBet)) as evolivewin,
                 sum(convert(bigint,Spribe)) as spribegamewin,
-                sum(convert(bigint,habawin)) as habawin')
+                sum(convert(bigint,habawin)) as habawin,
+                sum(convert(bigint,yesbingo)) as yesbingo,
+                sum(convert(bigint,Spribe)) as Spribe,
+                sum(convert(bigint,tadagame)) as tadagame,
+                sum(convert(bigint,fcgame)) as fcgame,
+                sum(convert(bigint,pplive)) as pplive')
                     ->where(function ($q) use ($time){
                         if ($time){
                             $beginTime = date('Y-m-01 00:00:00',strtotime($time));
@@ -2026,18 +2031,28 @@ class Channel extends Main
         $APIFee[0] = $APIFee[0] ?? 0; //pp
         $APIFee[1] = $APIFee[1] ?? 0; //pg
         $APIFee[2] = $APIFee[2] ?? 0; //evo
-        $APIFee[3] = $APIFee[3] ?? 0; //spribe游戏
-        $APIFee[4] = $APIFee[4] ?? 0; //haba
-//            $APIFee[5] = $APIFee[5] ?? 0; //hacksaw
+        $APIFee[3] = $APIFee[3] ?? 0; //JDB
+        $APIFee[4] = $APIFee[4] ?? 0; //habawin
+        $APIFee[5] = $APIFee[5] ?? 0; //hacksaw
+        $APIFee[6] = $APIFee[6] ?? 0; //JILI
+        $APIFee[7] = $APIFee[7] ?? 0; //YES!BINGO
+        $APIFee[8] = $APIFee[8] ?? 0; //tadagame
+        $APIFee[9] = $APIFee[9] ?? 0; //fcgame
+        $APIFee[10] = $APIFee[10] ?? 0; //pplive
 
-        $TotalAPICost = 0;
         $totalpp = bcmul($APIFee[0], $data['ppgamewin'], 4);
         $totalpg = bcmul($APIFee[1], $data['pggamewin'], 4);
         $totalevo = bcmul($APIFee[2], $data['evolivewin'], 4);
-        $totalspribe = bcmul($APIFee[3], $data['spribegamewin'], 4);
-        $totalhaba = bcmul($APIFee[4], $data['habawin'], 4);
-//            $totalhacksaw = bcmul($APIFee[5], $data['hacksaw'], 4);
+        $totalspribe = bcmul($APIFee[3], $data['spribewin'], 4);
+        $habawin = bcmul($APIFee[4], $data['habawin'], 4);
+        $hackSaw = bcmul($APIFee[5], $data['hacksaw'], 4);
+        $jiliwin = bcmul($APIFee[6], $data['jiliwin'], 4);
+        $yesbingo = bcmul($APIFee[7], $data['yesbingo'], 4);
+        $tadagame = bcmul($APIFee[8], $data['tadagame'], 4);
+        $fcgame = bcmul($APIFee[9], $data['fcgame'], 4);
+        $pplive = bcmul($APIFee[10], $data['pplive'], 4);
 
+        $TotalAPICost = 0;
         if ($totalpp < 0) {//系统赢算费用
             $TotalAPICost += abs($totalpp);
         }
@@ -2047,18 +2062,39 @@ class Channel extends Main
         if ($totalevo < 0) {//系统赢算费用
             $TotalAPICost += abs($totalevo);
         }
-
-        if ($totalhaba < 0) {//系统赢算费用
-            $TotalAPICost += abs($totalhaba);
-        }
-
-//            if ($totalhacksaw < 0) {//系统赢算费用
-//                $TotalAPICost += abs($totalhacksaw);
-//            }
-
         if ($totalspribe < 0) {//系统赢算费用
             $TotalAPICost += abs($totalspribe);
         }
+
+        if ($habawin < 0) {//系统赢算费用
+            $TotalAPICost += abs($habawin);
+        }
+
+        if ($hackSaw < 0) {//系统赢算费用
+            $TotalAPICost += abs($hackSaw);
+        }
+        if ($jiliwin < 0) {//系统赢算费用
+            $TotalAPICost += abs($jiliwin);
+        }
+
+        if ($yesbingo < 0) {//系统赢算费用
+            $TotalAPICost += abs($yesbingo);
+        }
+
+        if ($tadagame < 0) {//系统赢算费用
+            $TotalAPICost += abs($tadagame);
+        }
+
+        if ($fcgame < 0) {//系统赢算费用
+            $TotalAPICost += abs($fcgame);
+        }
+
+        if ($pplive < 0) {//系统赢算费用
+            $TotalAPICost += abs($pplive);
+        }
+
+        $data['TotalAPICost'] = round($TotalAPICost, 3);
+        $data['totalprofit'] = round(($data['total_recharge']) - ($data['totalpayout'] + $data['recharge_fee'] + $data['payout_fee'] + $data['TotalAPICost']), 3);
         return FormatMoney($TotalAPICost);
     }
 }
