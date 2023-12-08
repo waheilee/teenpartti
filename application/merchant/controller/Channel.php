@@ -2043,7 +2043,7 @@ class Channel extends Main
         $totalpp = bcmul($APIFee[0], $data['ppgamewin'], 4);
         $totalpg = bcmul($APIFee[1], $data['pggamewin'], 4);
         $totalevo = bcmul($APIFee[2], $data['evolivewin'], 4);
-        $totalspribe = bcmul($APIFee[3], $data['spribewin'], 4);
+        $totalspribe = bcmul($APIFee[3], $data['spribegamewin'], 4);
         $habawin = bcmul($APIFee[4], $data['habawin'], 4);
         $hackSaw = bcmul($APIFee[5], $data['hacksaw'], 4);
         $jiliwin = bcmul($APIFee[6], $data['jiliwin'], 4);

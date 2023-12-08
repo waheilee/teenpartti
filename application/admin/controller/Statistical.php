@@ -1815,11 +1815,12 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
              ,sum(convert(bigint,pggamewin)) as pggamewin
              ,sum(convert(bigint,evolivewin)) as evolivewin
              ,sum(convert(bigint,spribe)) as spribe
-             ,sum(convert(bigint,habawin)) as habawin';
-
-        if(config('has_hacksaw')==1){
-            $field.=',sum(convert(bigint,hacksaw)) as hacksaw';
-        }
+             ,sum(convert(bigint,habawin)) as habawin
+             ,sum(convert(bigint,fcgame)) as fcgame
+             ,sum(convert(bigint,jiliwin)) as jiliwin             
+             ,sum(convert(bigint,hacksaw)) as hacksaw
+             ,sum(convert(bigint,tadagame)) as tadagame
+             ,sum(convert(bigint,yesbingo)) as yesbingo';
 
         $db = new UserDB();
         $data = $db->getTableObject('View_Operator_Index')->alias('a')
@@ -1831,7 +1832,7 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
         if (empty($data)) {
             return $this->apiReturn(0, [], 'success', 0);
         }
-        $item = [];
+
         foreach ($data as $k=>&$v)
         {
             $db=new MasterDB();
@@ -1846,6 +1847,10 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
             ConVerMoney($v['spribe']);
             ConVerMoney($v['habawin']);
             ConVerMoney($v['hacksaw']);
+            ConVerMoney($v['fcgame']);
+            ConVerMoney($v['tadagame']);
+            ConVerMoney($v['jiliwin']);
+            ConVerMoney($v['yesbingo']);
 
             $TotalAPICost =0;
             if (strpos($info['APIFee'], ',') !== false) {
@@ -1853,16 +1858,25 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                 $APIFee[0] = $APIFee[0] ?? 0; //pp
                 $APIFee[1] = $APIFee[1] ?? 0; //pg
                 $APIFee[2] = $APIFee[2] ?? 0; //evo
-                $APIFee[3] = $APIFee[3] ?? 0; //jili
+                $APIFee[3] = $APIFee[3] ?? 0; //JDB
                 $APIFee[4] = $APIFee[4] ?? 0; //habawin
-//                $APIFee[5] = $APIFee[5] ?? 0; //hacksaw
+                $APIFee[5] = $APIFee[5] ?? 0; //hacksaw
+                $APIFee[6] = $APIFee[6] ?? 0; //JILI
+                $APIFee[7] = $APIFee[7] ?? 0; //YES!BINGO
+                $APIFee[8] = $APIFee[8] ?? 0; //tadagame
+                $APIFee[9] = $APIFee[9] ?? 0; //fcgame
 
                 $totalpp = bcmul($APIFee[0], $v['ppgamewin'], 4);
                 $totalpg = bcmul($APIFee[1], $v['pggamewin'], 4);
                 $totalevo = bcmul($APIFee[2], $v['evolivewin'], 4);
                 $totalspribe = bcmul($APIFee[3], $v['spribe'], 4);
-                $totalhabawin = bcmul($APIFee[4], $v['habawin'], 4);
-//                $totalhacksaw = bcmul($APIFee[5], $v['hacksaw'], 4);
+                $habawin = bcmul($APIFee[4], $v['habawin'], 4);
+                $hackSaw = bcmul($APIFee[5], $v['hacksaw'], 4);
+                $jiliwin = bcmul($APIFee[6], $v['jiliwin'], 4);
+                $yesbingo = bcmul($APIFee[7], $v['yesbingo'], 4);
+                $tadagame = bcmul($APIFee[8], $v['tadagame'], 4);
+                $fcgame = bcmul($APIFee[9], $v['fcgame'], 4);
+
 
                 if ($totalpp < 0) {//系统赢算费用
                     $TotalAPICost += abs($totalpp);
@@ -1877,13 +1891,28 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                     $TotalAPICost += abs($totalspribe);
                 }
 
-                if ($totalhabawin < 0) {//系统赢算费用
-                    $TotalAPICost += abs($totalhabawin);
+                if ($habawin < 0) {//系统赢算费用
+                    $TotalAPICost += abs($habawin);
                 }
 
-//                if ($totalhacksaw < 0) {//系统赢算费用
-//                    $TotalAPICost += abs($totalhacksaw);
-//                }
+                if ($hackSaw < 0) {//系统赢算费用
+                    $TotalAPICost += abs($hackSaw);
+                }
+                if ($jiliwin < 0) {//系统赢算费用
+                    $TotalAPICost += abs($jiliwin);
+                }
+
+                if ($yesbingo < 0) {//系统赢算费用
+                    $TotalAPICost += abs($yesbingo);
+                }
+
+                if ($tadagame < 0) {//系统赢算费用
+                    $TotalAPICost += abs($tadagame);
+                }
+
+                if ($fcgame < 0) {//系统赢算费用
+                    $TotalAPICost += abs($fcgame);
+                }
             }
 
             $v['apicost'] = $TotalAPICost;
@@ -1901,10 +1930,10 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                 $v['versionfee'] = bcmul($v['totalprofit'],$divite_rate,2);
             }
             $v['channelshare'] = bcsub($v['totalprofit'],$v['versionfee'],2);
-            $item[]=$v;
-        }
 
-        return $this->apiReturn(0, $item, 'success');
+
+        }
+        return $this->apiReturn(0, $data, 'success');
 
     }
 
