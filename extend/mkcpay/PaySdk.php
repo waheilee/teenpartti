@@ -33,6 +33,12 @@ class PaySdk
 
     public function payout($OrderNo, $order, $config = [])
     {
+        $orderCache = Redis::get('PAYOUT_ORDER_SUCCESS_'.$OrderNo);
+        if ($orderCache){
+            $result['message'] = '规定时间内，订单重复提交,请稍后再试';
+            $result['status'] = false;
+            return $result;
+        }
         $result = ['system_ref' => '', 'message' => ''];
 
 
@@ -83,6 +89,7 @@ class PaySdk
         if(empty($resultData)){
             $result['message'] = 'error';
             $result['status'] = false;
+            Redis::set('PAYOUT_ORDER_SUCCESS_'.$OrderNo,$OrderNo,1200);
             return $result;
         }
 
@@ -113,7 +120,7 @@ class PaySdk
             $result['system_ref'] = '';
             $result['status'] = true;
             $result['message'] = 'success';
-            Redis::set('PAYOUT_ORDER_SUCCESS_'.$OrderNo,$OrderNo);
+            Redis::set('PAYOUT_ORDER_SUCCESS_'.$OrderNo,$OrderNo,1200);
         } else {
             $msg = '请求失败';
             if (isset($res['message'])){
