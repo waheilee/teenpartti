@@ -1027,9 +1027,10 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                 $data = $db->getTableObject("[OM_GameOC].[dbo].[$table](NOLOCK)")->alias("a")
                     ->join("[OM_GameOC].[dbo].[View_TotalDayScore](NOLOCK) b", "b.RoleId=a.AccountID and  a.Adddate=b.addDate", 'left')
                     ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) c', 'c.AccountID=a.AccountID')
+                    ->join('[CD_DataChangelogsDB].[dbo].[T_UserTransactionLogs](NOLOCK) d', 'd.RoleID=a.AccountID and IfFirstCharge=1')
                     ->where($where)
                     ->order($order)
-                    ->field("a.*,c.LastLoginTime,b.TotalWater TotalRunning,b.Tax TotalTax,-b.SGD TotalWin")
+                    ->field("a.*,c.LastLoginTime,b.TotalWater TotalRunning,b.Tax TotalTax,-b.SGD TotalWin,d.TransMoney as FirstMoney")
                     ->paginate($limit)
                     ->toArray();
             } else if ($type == 3) {
