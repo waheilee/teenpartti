@@ -40,6 +40,8 @@
                 <li class="" lay-id="8" id="c10">{:lang('玩家备注')}</li>
                 <li class="" lay-id="9" id="c11">{:lang('下级数据')}</li>
                 <li class="" lay-id="15" id="c15">{:lang('推广记录 ')}</li>
+                <li class="">{:lang('打码变化')}</li>
+                <li class="">{:lang('打码任务')}</li>
             </ul>
             <div class="layui-tab-content " >
                 {if(!empty($user))}
@@ -449,7 +451,18 @@
                 <div class="layui-tab-item">
                     <table id="Table8" lay-filter="Table8"></table>
                 </div>
+                <!--   打码量变化    -->
+                <div class="layui-tab-item">
+                    <table id="Table9" lay-filter="Table0"></table>
 
+                </div>
+
+
+                <!--   打码量任务    -->
+                <div class="layui-tab-item">
+                    <table id="Table10" lay-filter="Table10"></table>
+
+                </div>
                 <!--<div class="layui-tab-item">-->
                 <!--<table id="Table7" lay-filter="Table4">-->
                 <!--<div class="layui-fluid">-->
@@ -487,7 +500,7 @@
         index: 'lib/index' //主入口模块
 
     }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
-        var tb0 = 'Table0', tb1 = 'Table1', tb2 = 'Table2', tb3 = 'Table3', tb4 = 'Table4', tb5 = 'Table5', tb6 = 'Table6',tb7 = 'Table7',tb8 = 'Table8';
+        var tb0 = 'Table0', tb1 = 'Table1', tb2 = 'Table2', tb3 = 'Table3', tb4 = 'Table4', tb5 = 'Table5', tb6 = 'Table6',tb7 = 'Table7',tb8 = 'Table8',tb9='Table9',tb10='Table10';
         var element = layui.element, layer = layui.layer, laydate = layui.laydate, util = layui.util,
             table = layui.table, $ = layui.$, form = layui.form;
         //增加页签  闭包增加 TabxxxxEvn
@@ -641,6 +654,72 @@
             {field:'LastLoginTime', title: "{:lang('最后登陆时间')}",align:'center', minWidth: 100, sort: true}
             // {title:'操作', toolbar: '#toolbar'}
         ];
+        var cols9 = [ //表头
+            {field: 'WageFinishWay', title: "{:lang('打码完成方式')}", align: 'center',minWidth: 100, templet: function (d) {
+                    if(d.WageFinishWay==1){
+                        return '正常打码完成';
+                    }else if(d.WageFinishWay==2){
+                        return '系统自动打码清零';
+                    }
+                    else{
+                        return '未知';
+                    }
+                }
+            }
+            , {field: 'ChangeMoney', title: "{:lang('需打码的金币')}", align: 'center', minWidth: 120}
+            , {field: 'NeedWageRequire', title: "{:lang('需要的打码量')}", align: 'center', minWidth: 120}
+            , {field: 'CurWageRequire', title: "{:lang('当前达到的量')}", align: 'center', minWidth: 120}
+            , {field: 'difference', title: "{:lang('差额')}", minWidth: 120}
+            , {field: 'FreezonMoney', title: "{:lang('冻结金额')}", minWidth: 120}
+            , {field: 'EnableWithdrawMoney', title: "{:lang('可提金额')}", minWidth: 120}
+            , {field: 'AddTime', title: "{:lang('添加时间')}", minWidth: 160}
+            , {
+                field: 'Status', title: "{:lang('状态')}", minWidth: 120, templet: function (d) {
+                    var myid = d.Id;
+                    if (d.Status == 0) {
+                        return "{:lang('未达到')}";
+                    } else {
+                        return "{:lang('已达成')}";
+                    }
+                }
+            }
+        ];
+        var cols10 = [
+            {
+                field: 'iGameWealth', align: 'center', title: "{:lang('携带金币')}", width: 180, sort: true, templet: function (d) {
+                    return d.iGameWealth != 0 ? d.iGameWealth : '0.00';
+                }
+            },
+            {
+                field: 'iGameWealth', align: 'center', title: "{:lang('总和')}", width: 180,  templet: function (d) {
+                    return d.iGameWealth != 0 ? d.iGameWealth : '0.00';
+                }
+            },
+            {field: 'TotalDeposit', align: 'center', title: "{:lang('总充值')}", width: 150},
+            {field: 'TotalRollOut', align: 'center', title: "{:lang('总提现')}", width: 150},
+            {
+                field: 'iFreezonMoney', align: 'center', title: "{:lang('冻结金额')}", width: 180, templet: function (d) {
+                    return d.iFreezonMoney != 0 ? d.iFreezonMoney : '0.00';
+                }
+            },
+            {
+                field: 'CashAble', align: 'center', title: "{:lang('可提金额')}", width: 150,  templet: function (d) {
+                    return d.CashAble != 0 ? d.CashAble : '0.00';
+                }
+            }
+            ,
+            {
+                field: 'iCurWaged', align: 'center', title: "{:lang('当前完成打码')}", width: 150, templet: function (d) {
+                    return d.iCurWaged != 0 ? d.iCurWaged : '0.00';
+                }
+            },
+            {
+                field: 'iNeedWaged', align: 'center', title: "{:lang('打码任务')}", width: 150, templet: function (d) {
+                    return d.iNeedWaged != 0 ? d.iNeedWaged : '0.00';
+                }
+            },
+            {field: 'WagedFinishTime', align: 'center', title: "{:lang('完成时间')}", width: 180}
+        ];
         Tabs = {
             tab0Evn: function () { table.render({elem: '#' + tb0, where: Wheres[0], url: "{:url('player/getRoleWage',['roleid'=>$user.AccountID])}", page: true, cols: [cols0], autoSort: false,});},
             tab1Evn: function () { table.render({elem: '#' + tb1, where: Wheres[1], url: "{:url('charge/channelpayorder',['roleid'=>$user.AccountID,'Action'=>'list'])}?strartdate=&enddate=&tranNO=&payChannel=-1&payType=-1&amount=&Status=1&isReturn=-1", page: true, cols: [cols1], autoSort: false,});},
@@ -652,7 +731,9 @@
             tab6Evn: function () { table.render({elem: '#' + tb6, where: Wheres[6], url: "{:url('player/getCommentList',['roleid'=>$user.AccountID,'type'=>1])}", page: true, cols: [cols6], autoSort: false,});},
 
             tab7Evn: function () { table.render({elem: '#' + tb7, where: Wheres[7], url: "{:url('player/getProxyLvData',['roleid'=>$user.AccountID,'type'=>1])}", page: true, cols: [cols7], autoSort: false,});},
-            tab8Evn: function () { table.render({elem: '#' + tb8, where: {}, url: "{:url('agent/relation',['parentid'=>$user.AccountID,'action'=>'list'])}", page: true, cols: [cols8], autoSort: false,});}
+            tab8Evn: function () { table.render({elem: '#' + tb8, where: {}, url: "{:url('agent/relation',['parentid'=>$user.AccountID,'action'=>'list'])}", page: true, cols: [cols8], autoSort: false,});},
+            tab9Evn: function () { table.render({elem: '#' + tb9, where: Wheres[0], url: "{:url('player/getRoleWage',['roleid'=>$user.AccountID])}", page: true, cols: [cols9], autoSort: false,});},
+            tab10Evn: function () { table.render({elem: '#' + tb10, where: [], url: "{:url('ranke/coin',['roleid'=>$user.AccountID,'Action'=>'list','from'=>'playerdetail'])}", page: true, cols: [cols10], autoSort: false,});},
 
         };
         TabReload = {
@@ -664,7 +745,9 @@
             tab5: function () {table.reload(tb5, {page: {curr: 1}});},
             tab6: function () {table.reload(tb6, {page: {curr: 1}});},
             tab7: function () {table.reload(tb7, {page: {curr: 1}});},
-            tab8: function () {table.reload(tb8, {page: {curr: 1}});}
+            tab8: function () {table.reload(tb8, {page: {curr: 1}});},
+            tab9: function () {table.reload(tb9, {page: {curr: 1}});},
+            tab10: function () {table.reload(tb10, {page: {curr: 1}});}
         }
         TBinit = {
             searchEvn: function () {
@@ -682,6 +765,8 @@
                 table.reload(tb6, {page: {curr: 1},where: where});
                 table.reload(tb7, {page: {curr: 1},where: where});
                 table.reload(tb8, {page: {curr: 1},where: where});
+                table.reload(tb9, {page: {curr: 1},where: where});
+                table.reload(tb10, {page: {curr: 1},where: where});
             },
             sortEvn: function () {
             },
@@ -720,7 +805,11 @@
                         case 7:
                             return Tabs.tab7Evn();
                         case 8:
-                            return Tabs.tab7Evn();
+                            return Tabs.tab8Evn();
+                        case 9:
+                            return Tabs.tab9Evn();
+                        case 10:
+                            return Tabs.tab10Evn();
                     }
                 });
             },
@@ -838,6 +927,8 @@
                 Tabs.tab6Evn();
                 Tabs.tab7Evn();
                 Tabs.tab8Evn();
+                Tabs.tab9Evn();
+                Tabs.tab10Evn();
                 this.sortEvn();
                 this.editEvn();
                 this.TabEvn();
