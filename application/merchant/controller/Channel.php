@@ -914,6 +914,15 @@ class Channel extends Main
                 $other['HistoryCoin'] = FormatMoney($other['HistoryCoin']);
 
                 $other['Profit'] = bcsub($other['TotalRecharge'], $other['TotalDrawMoney'], 2);
+                $other['FirstDepositMoney'] = (new \app\model\DataChangelogsDB())
+                    ->getTableObject('T_UserTransactionLogs')->alias('a')
+                    ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) b', 'b.AccountID=a.RoleID', 'left')
+                    ->where('b.OperatorId',session('merchant_OperatorId'))
+                    ->whereTime('a.AddTime','>=',$start.' 00:00:00')
+                    ->whereTime('a.AddTime','<=',$end.' 23:59:59')
+                    ->where('a.ChangeType',5)
+                    ->where('a.IfFirstCharge',1)
+                    ->sum('TransMoney')?:0;
             }
             return $this->apiReturn(0, $data['data'], 'success', $data['total'], $other);
         }
