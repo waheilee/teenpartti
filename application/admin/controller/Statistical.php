@@ -1057,19 +1057,20 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                     $val['TotalBet'] = FormatMoney($val['TotalBet']);
                     $val['TotalWage'] = FormatMoney($val['TotalWage']);
                     $val['TodayWage'] = FormatMoney($val['TodayWage'] ?? 0);
-                    $ParentIds = array_filter(explode(',', $val['ParentIds'] ?? ''));
-                    $proxy = [];
-                    if (!empty($ParentIds)) {
-                        $proxy = $ProxyChannelConfig[$ParentIds[0]] ?? [];
-                        if ($proxy) {
-                            $val['proxyId'] = $proxy['ProxyId'];
-                        } else {
-                            $val['proxyId'] = $val['ParentID'];
-                        }
-                    } else {
-                        //默认系统代理
-                        $val['proxyId'] = $default_ProxyId;
-                    }
+                    $val['proxyId'] = $val['OperatorId'] ?? 0;
+//                    $ParentIds = array_filter(explode(',', $val['ParentIds'] ?? ''));
+//                    $proxy = [];
+//                    if (!empty($ParentIds)) {
+//                        $proxy = $ProxyChannelConfig[$ParentIds[0]] ?? [];
+//                        if ($proxy) {
+//                            $val['proxyId'] = $proxy['ProxyId'];
+//                        } else {
+//                            $val['proxyId'] = $val['ParentID'];
+//                        }
+//                    } else {
+//                        //默认系统代理
+//                        $val['proxyId'] = $default_ProxyId;
+//                    }
                 }
                 return $this->apiJson($data);
             }
