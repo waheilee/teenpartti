@@ -794,12 +794,13 @@ class Channel extends Main
         if ($action == 'list') {
             $ProxyChannelId = $this->request->param('roleid');
             $tab = $this->request->param('tab');
-            $start = $this->request->param('start');
-            $end = $this->request->param('end');
+            $start = $this->request->param('start',date('Y-m-d'));
+            $end = $this->request->param('end',date('Y-m-d'));
             $bustype = $this->request->param('bustype');
             $parentName = $this->request->param('parentName');
             $businessid = (int)$this->request->param('businessid');
             $limit = $this->request->param('limit') ?: 10;
+
             $where = '1=1';
             if ($ProxyChannelId != '') {
                 $where .= " and a.ChannelId='" . $ProxyChannelId . "'";
