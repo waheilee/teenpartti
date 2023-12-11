@@ -775,7 +775,7 @@ class Turntable extends Main
             $page = input('page');
             $limit = input('limit');
             $beginTime = input('begin_time');
-            $endTime = input('end_time');
+//            $endTime = input('end_time');
             $roleId = input('roleid');
             $takeStatus = input('take_status');
             $orderBy = input('orderby');
@@ -797,11 +797,10 @@ class Turntable extends Main
                         $q->where('RoleId', $roleId);
                     }
                 })
-                ->where(function ($q) use ($beginTime, $endTime) {
-                    if (!empty($beginTime) && !empty($endTime)) {
+                ->where(function ($q) use ($beginTime) {
+                    if (!empty($beginTime)) {
                         $beginTime = strtotime($beginTime);
-                        $endTime = strtotime($endTime);
-                        $q->where('BeginTime', '<=', $endTime)
+                        $q->where('BeginTime', '<=', $beginTime)
                             ->where('EndTime', '>=', $beginTime);
 
                     }
