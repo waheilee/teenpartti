@@ -82,7 +82,7 @@ class PromotionChannels extends Main
                 return $this->apiReturn(1, '', '操作失败');
             }
         } catch (\Exception $e) {
-            save_log('PromotionChannels', '===' . $e->getMessage() . $e->getTraceAsString() . $e->getLine());
+//            save_log('PromotionChannels', '===' . $e->getMessage() . $e->getTraceAsString() . $e->getLine());
             // 回滚事务
             $masterDB->rollback();
             return $this->apiReturn(1, '', '添加操作失败');
@@ -108,7 +108,7 @@ class PromotionChannels extends Main
                 return $this->apiReturn(1, '', '操作失败');
             }
         } catch (\Exception $e) {
-            save_log('PromotionChannels', '===' . $e->getMessage() . $e->getTraceAsString() . $e->getLine());
+//            save_log('PromotionChannels', '===' . $e->getMessage() . $e->getTraceAsString() . $e->getLine());
             // 回滚事务
             $masterDB->rollback();
             return $this->apiReturn(1, '', '添加操作失败');
