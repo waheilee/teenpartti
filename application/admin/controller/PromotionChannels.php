@@ -73,6 +73,12 @@ class PromotionChannels extends Main
                 'RoleId' => $ic,
                 'Key' => $key
             ];
+            $roleId = $masterDB->getTableObject('T_PixelID')
+                ->where('RoleId')->find();
+            if (!empty($roleId)){
+                return $this->apiReturn(1, '', $roleId['RoleId'].'已存在');
+            }
+
             $add = $masterDB->getTableObject('T_PixelID')
                 ->insert($data);
             // 提交事务
