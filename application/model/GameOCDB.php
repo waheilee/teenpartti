@@ -1090,7 +1090,12 @@ class GameOCDB extends BaseModel
         $order = "$orderfield $ordertype,proxyid asc ";
 
         $table = 'dbo.T_ProxyDailyCollectData';
-        $field = ' AddTime,ProxyId,DailyDeposit,DailyTax,DailyRunning,Lv1PersonCount,Lv1Deposit,Lv1Tax,Lv1Running,Lv2PersonCount,Lv2Deposit,Lv2Tax,Lv2Running,Lv3PersonCount,Lv3Deposit,Lv3Tax,Lv3Running,Lv1FirstDepositPlayers,Lv2FirstDepositPlayers,Lv3FirstDepositPlayers,A.ValidInviteCount,Lv2ValidInviteCount,Lv3ValidInviteCount';
+        $field = ' AddTime,ProxyId,DailyDeposit,DailyTax,
+        DailyRunning,Lv1PersonCount,Lv1Deposit,Lv1Tax,Lv1Running,
+        Lv2PersonCount,Lv2Deposit,Lv2Tax,Lv2Running,Lv3PersonCount,
+        Lv3Deposit,Lv3Tax,Lv3Running,Lv1FirstDepositPlayers,
+        Lv2FirstDepositPlayers,Lv3FirstDepositPlayers,A.ValidInviteCount,
+        Lv2ValidInviteCount,Lv3ValidInviteCount,FirstDepositMoney';
         $sqlExec = "exec Proc_GetPageData '$table','$field','$where','$order','$join','$begin','$end', $this->page , $this->pageSize";
         try {
             $result = $this->getTableQuery($sqlExec);
@@ -1182,7 +1187,12 @@ class GameOCDB extends BaseModel
         $order = "$orderfield $ordertype";
 
         $table = 'dbo.T_ProxyDailyCollectData';
-        $field = ' AddTime,ProxyId,DailyDeposit,DailyTax,DailyRunning,Lv1PersonCount,Lv1Deposit,Lv1Tax,Lv1Running,Lv2PersonCount,Lv2Deposit,Lv2Tax,Lv2Running,Lv3PersonCount,Lv3Deposit,Lv3Tax,Lv3Running,Lv1FirstDepositPlayers,Lv2FirstDepositPlayers,Lv3FirstDepositPlayers,A.ValidInviteCount,Lv2ValidInviteCount,Lv3ValidInviteCount';
+        $field = ' AddTime,ProxyId,DailyDeposit,DailyTax,
+        DailyRunning,Lv1PersonCount,Lv1Deposit,Lv1Tax,Lv1Running,
+        Lv2PersonCount,Lv2Deposit,Lv2Tax,Lv2Running,Lv3PersonCount,
+        Lv3Deposit,Lv3Tax,Lv3Running,Lv1FirstDepositPlayers,
+        Lv2FirstDepositPlayers,Lv3FirstDepositPlayers,A.ValidInviteCount,
+        Lv2ValidInviteCount,Lv3ValidInviteCount,FirstDepositMoney';
         $sqlExec = "exec Proc_GetPageData '$table','$field','$where','$order','$join','$begin','$end', $this->page , $this->pageSize";
 
         try {
