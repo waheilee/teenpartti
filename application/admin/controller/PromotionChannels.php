@@ -46,6 +46,7 @@ class PromotionChannels extends Main
             // 提交事务
             $masterDB->commit();
             if ($add) {
+                $this->synconfig();
                 return $this->apiReturn(0, '', '操作成功');
             } else {
                 return $this->apiReturn(1, '', '操作失败');
@@ -77,6 +78,7 @@ class PromotionChannels extends Main
             // 提交事务
             $masterDB->commit();
             if ($add) {
+                $this->synconfig();
                 return $this->apiReturn(0, '', '操作成功');
             } else {
                 return $this->apiReturn(1, '', '操作失败');
@@ -103,6 +105,7 @@ class PromotionChannels extends Main
             // 提交事务
             $masterDB->commit();
             if ($add) {
+                $this->synconfig();
                 return $this->apiReturn(0, '', '操作成功');
             } else {
                 return $this->apiReturn(1, '', '操作失败');
