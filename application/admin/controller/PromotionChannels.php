@@ -41,7 +41,7 @@ class PromotionChannels extends Main
                 'Key' => $key
             ];
             $add = $masterDB->getTableObject('T_PixelID')
-                ->where('RoleId',$ic)
+                ->where('id',$id)
                 ->update($data);
             // 提交事务
             $masterDB->commit();
