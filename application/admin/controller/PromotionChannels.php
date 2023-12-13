@@ -101,14 +101,14 @@ class PromotionChannels extends Main
 
     public function delete()
     {
-        $RoleId = input('RoleId','');
+        $id = input('id','');
         $masterDB = new MasterDB();
 
         try {
             $masterDB->startTrans();
 
             $add = $masterDB->getTableObject('T_PixelID')
-                ->where('RoleId',$RoleId)
+                ->where('id',$id)
                 ->delete();
             // 提交事务
             $masterDB->commit();

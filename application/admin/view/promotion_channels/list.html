@@ -161,7 +161,7 @@
               $.ajax({
                 url:"{:url('PromotionChannels/delete')}",
                 type:"POST",
-                data:{'RoleId': data.RoleId},
+                data:{'id': data.id},
                 dataType:'json',
                 success:function(ret){
                   if (ret.code == 0) {
