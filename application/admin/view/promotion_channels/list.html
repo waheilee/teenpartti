@@ -61,7 +61,37 @@
       <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">{:lang('删除')}</a>
 
 </script>
+<div id="popup" style="display: none;">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" id="form" lay-filter="form">
+            <div class="layui-form-item">
+                <label class="layui-form-label">下拉框</label>
+                <div class="layui-input-block">
+                    <select name="Platform" lay-verify="required" id="Platform" lay-filter="Platform">
+                        <option value=""></option>
+                        <option value="TikTok">TikTok</option>
+                        <option value="Kwai">Kwai</option>
+                        <option value="Facebook">Facebook</option>
+                    </select>
+                </div>
+            </div>
 
+            <div class="layui-form-item">
+                <label class="layui-form-label">IC</label>
+                <div class="layui-input-block">
+                    <label for="ic"></label><input name="title" id="ic" value="" placeholder="{:lang('请输入IC')}" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">key</label>
+                <div class="layui-input-block">
+                    <label for="key"></label><input name="title" id="key" value="" placeholder="{:lang('请输入key')}" class="layui-input">
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
 
 <script>
   url="{:url('PromotionChannels/list')}";
@@ -177,32 +207,32 @@
           }
             if(layEvent === 'edit'){
 
-                var content = '<form class="layui-form" action="">' +
-                    '<div class="layui-form-item">' +
-                    '<label class="layui-form-label" style="width:60px">{:lang("推广渠道")}</label>' +
-                    '<div class="layui-input-block">' +
-                    '<input type="text" name="title"  id="Platform" value="'+data.Platform+'" placeholder="{:lang(\'推广渠道名称：例如TiTok,Kwai,Facebook\')}" class="layui-input" >' +
-                    '</div>' +
-                    '</div>' +
-                    '<div class="layui-form-item">' +
-                    '<label class="layui-form-label" style="width:60px">{:lang("IC")}</label>' +
-                    '<div class="layui-input-block">' +
-                    '<input type="text" name="title"  id="ic" value="'+data.RoleId+'" placeholder="{:lang(\'请输入IC\')}" class="layui-input">' +
-                    '</div>' +
-                    '</div>' +
-                    '<div class="layui-form-item">' +
-                    '<label class="layui-form-label" style="width:60px">{:lang("key")}</label>' +
-                    '<div class="layui-input-block">' +
-                    '<input type="text" name="title"  id="key" value="'+data.Key+'" placeholder="{:lang(\'请输入KEY\')}" class="layui-input">' +
-                    '</div>' +
-                    '</div>' +
-                    '</form>';
+                $(document).ready(function () {
+                    // 当文档加载完成后执行以下代码
 
+                    // 设置 "Kwai" 为选中项
+
+
+                    var desiredValue = data.Platform;
+                    var str = $.trim(desiredValue)
+                    $("#Platform").val(str);
+
+                    layui.use('form', function () {
+                        var form = layui.form;
+                        form.render('select');
+                    });
+                });
+
+                $("#ic").val(data.RoleId);
+                $("#key").val(data.Key);
                 layer.open({
-                    content: content,
+
+                    // content: content,
+                    type: 1,
+                    content: $('#popup'),
                     area: ['500px', '300px'],
-                    title: '{:lang("添加手机号码")}'
-                    , btn: ['{:lang("添加")}', '{:lang("取消")}']
+                    title: '{:lang("编辑")}'
+                    , btn: ['{:lang("编辑")}', '{:lang("取消")}']
                     , yes: function (index, layero) {
                         var id = data.id;
                         var Platform = $("#Platform").val();
@@ -210,6 +240,14 @@
                         var key = $("#key").val();
 
                         editDm(id,Platform,ic,key);
+                    }
+                    , btn2: function () {
+                        $('#form')[0].reset();
+                        layui.form.render();
+                    }
+                    ,cancel:function (){
+                        $('#form')[0].reset();
+                        layui.form.render();
                     }
                 });
             }
@@ -256,35 +294,20 @@
         });
 
         table.on('toolbar(proxylist)', function(obj){
+            form.render(null);
           var checkStatus = table.checkStatus(obj.config.id);
           switch(obj.event){
             case 'create':
-              var content = '<form class="layui-form" action="">' +
-                      '<div class="layui-form-item">' +
-                      '<label class="layui-form-label" style="width:60px">{:lang("推广渠道")}</label>' +
-                      '<div class="layui-input-block">' +
-                      '<input name="title"  id="Platform" value="" placeholder="{:lang(\'推广渠道名称：例如TiTok,Kwai,FaceBook\')}" class="layui-input">' +
-                      '</div>' +
-                      '</div>' +
-                      '<div class="layui-form-item">' +
-                      '<label class="layui-form-label" style="width:60px">{:lang("IC")}</label>' +
-                      '<div class="layui-input-block">' +
-                      '<input name="title"  id="ic" value="" placeholder="{:lang(\'请输入IC\')}" class="layui-input">' +
-                      '</div>' +
-                      '</div>' +
-                      '<div class="layui-form-item">' +
-                      '<label class="layui-form-label" style="width:60px">{:lang("key")}</label>' +
-                      '<div class="layui-input-block">' +
-                      '<input name="title"  id="key" value="" placeholder="{:lang(\'请输入KEY\')}" class="layui-input">' +
-                      '</div>' +
-                      '</div>' +
-                      '</form>';
+
+
               layer.open({
-                content: content,
-                area: ['500px', '300px'],
+                // content: content,
+                  type: 1, //此处以iframe举例
+                content: $('#popup'),
+                area: ['800px', '500px'],
                 title: '{:lang("添加手机号码")}'
                 , btn: ['{:lang("添加")}', '{:lang("取消")}']
-                , yes: function (index, layero) {
+                , yes: function () {
                   var Platform = $("#Platform").val();
                   var ic = $("#ic").val();
                   var key = $("#key").val();
