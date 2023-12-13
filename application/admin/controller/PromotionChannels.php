@@ -36,9 +36,9 @@ class PromotionChannels extends Main
         try {
             $masterDB->startTrans();
             $data = [
-                'Platform' => $platform,
-                'RoleId' => $ic,
-                'Key' => $key
+                'Platform' => trim($platform),
+                'RoleId' => trim($ic),
+                'Key' => trim($key)
             ];
             $add = $masterDB->getTableObject('T_PixelID')
                 ->where('id',$id)
@@ -69,9 +69,9 @@ class PromotionChannels extends Main
         try {
             $masterDB->startTrans();
             $data = [
-                'Platform' => $platform,
-                'RoleId' => $ic,
-                'Key' => $key
+                'Platform' => trim($platform),
+                'RoleId' => trim($ic),
+                'Key' => trim($key)
             ];
             $roleId = $masterDB->getTableObject('T_PixelID')
                 ->where('RoleId',$ic)
