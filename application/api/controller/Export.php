@@ -5,8 +5,6 @@ namespace app\api\controller;
 use app\model\AccountDB;
 use app\model\BankDB;
 use app\model\DataChangelogsDB;
-use app\model\UserDB;
-use redis\Redis;
 use XLSXWriter;
 
 class Export
@@ -59,7 +57,20 @@ class Export
 
     public function userFirstInfo()
     {
-        $field = 'A.AccountID,A.AccountName,A.Mobile As Mobile,ISNULL(B.ReceivedIncome,0) As ReceivedIncome,ISNULL(B.TotalDeposit,0) AS TotalDeposit,ISNULL(B.TotalTax,0) AS TotalTax,ISNULL(B.TotalRunning,0) AS TotalRunning,ISNULL(B.Lv1PersonCount,0) AS Lv1PersonCount,ISNULL(B.Lv1Deposit,0) AS Lv1Deposit,ISNULL(B.Lv1DepositPlayers,0) AS Lv1DepositPlayers,ISNULL(B.Lv1Tax,0) AS Lv1Tax,ISNULL(B.Lv1Running,0) AS Lv1Running,ISNULL(B.Lv2PersonCount,0) AS Lv2PersonCount,ISNULL(B.Lv2Deposit,0) AS Lv2Deposit,ISNULL(B.Lv2DepositPlayers,0) AS Lv2DepositPlayers,ISNULL(B.Lv2Tax,0) AS Lv2Tax,ISNULL(B.Lv2Running,0) AS Lv2Running,ISNULL(B.Lv3PersonCount,0) AS Lv3PersonCount,ISNULL(B.Lv3Deposit,0) AS Lv3Deposit,ISNULL(B.Lv3DepositPlayers,0) AS Lv3DepositPlayers,ISNULL(B.Lv3Tax,0) AS Lv3Tax,ISNULL(B.Lv3Running,0) AS Lv3Running,ISNULL(B.Lv1WithdrawCount,0) AS Lv1WithdrawCount,ISNULL(B.Lv2WithdrawCount,0) AS Lv2WithdrawCount,ISNULL(B.Lv3WithdrawCount,0) AS Lv3WithdrawCount,ISNULL(B.Lv1WithdrawAmount,0) AS Lv1WithdrawAmount,ISNULL(B.Lv2WithdrawAmount,0) AS Lv2WithdrawAmount,ISNULL(B.Lv3WithdrawAmount,0) AS Lv3WithdrawAmount';
+        $field = 'A.AccountID,A.AccountName,A.Mobile As Mobile,
+        ISNULL(B.ReceivedIncome,0) As ReceivedIncome,ISNULL(B.TotalDeposit,0) AS TotalDeposit,
+        ISNULL(B.TotalTax,0) AS TotalTax,ISNULL(B.TotalRunning,0) AS TotalRunning,
+        ISNULL(B.Lv1PersonCount,0) AS Lv1PersonCount,ISNULL(B.Lv1Deposit,0) AS Lv1Deposit,
+        ISNULL(B.Lv1DepositPlayers,0) AS Lv1DepositPlayers,ISNULL(B.Lv1Tax,0) AS Lv1Tax,
+        ISNULL(B.Lv1Running,0) AS Lv1Running,ISNULL(B.Lv2PersonCount,0) AS Lv2PersonCount,
+        ISNULL(B.Lv2Deposit,0) AS Lv2Deposit,ISNULL(B.Lv2DepositPlayers,0) AS Lv2DepositPlayers,
+        ISNULL(B.Lv2Tax,0) AS Lv2Tax,ISNULL(B.Lv2Running,0) AS Lv2Running,
+        ISNULL(B.Lv3PersonCount,0) AS Lv3PersonCount,ISNULL(B.Lv3Deposit,0) AS Lv3Deposit,
+        ISNULL(B.Lv3DepositPlayers,0) AS Lv3DepositPlayers,ISNULL(B.Lv3Tax,0) AS Lv3Tax,
+        ISNULL(B.Lv3Running,0) AS Lv3Running,ISNULL(B.Lv1WithdrawCount,0) AS Lv1WithdrawCount,
+        ISNULL(B.Lv2WithdrawCount,0) AS Lv2WithdrawCount,ISNULL(B.Lv3WithdrawCount,0) AS Lv3WithdrawCount,
+        ISNULL(B.Lv1WithdrawAmount,0) AS Lv1WithdrawAmount,ISNULL(B.Lv2WithdrawAmount,0) AS Lv2WithdrawAmount,
+        ISNULL(B.Lv3WithdrawAmount,0) AS Lv3WithdrawAmount';
 
         $allUserList = (new \app\model\AccountDB())->getTableObject('T_Accounts')
             ->alias('A')
@@ -89,10 +100,10 @@ class Export
 //        if ($UserTransactionLogsCache){
 //            $depositPerson = $UserTransactionLogsCache;
 //        }else{
-            $depositPerson = (new DataChangelogsDB())
-                ->getTableObject('T_UserTransactionLogs')
-//                ->limit(10000)
-                ->select();
+//            $depositPerson = (new DataChangelogsDB())
+//                ->getTableObject('T_UserTransactionLogs')
+////                ->limit(10000)
+//                ->select();
 //            Redis::set('T_USER_TRANSACTION_LOGS', $depositPerson, 86400);
 //        }
 
@@ -102,20 +113,21 @@ class Export
 //        }else{
             $drawbackPerson = (new BankDB())
                 ->getTableObject('UserDrawBack')
+                ->where('IsDrawback',100)
 //                ->limit(500)
                 ->select();
 //            Redis::set('USER_DRAWBACK', $drawbackPerson, 86400);
 //        }
-        $msgs = (new DataChangelogsDB())
-            ->getTableObject('T_ProxyMsgLog')
-            ->field('RoleID,addtime')
-            ->order('addtime desc')
-            ->select();
+//        $msgs = (new DataChangelogsDB())
+//            ->getTableObject('T_ProxyMsgLog')
+//            ->field('RoleID,addtime')
+//            ->order('addtime desc')
+//            ->select();
         $data = [];
         foreach ($allUserList as $user) {
             $item = [];
             $item['mobile'] = $user['Mobile'];
-            $item['personTotalMoney'] = $this->personTotalMoney($depositPerson,$user);
+            $item['personTotalMoney'] = $user['TotalDeposit'];
             $item['personDrawbackTotalMoney'] = $this->personDrawbackTotalMoney($drawbackPerson,$user);
             $subUser = [];
             foreach ($allUser as $value) {
@@ -126,20 +138,20 @@ class Export
             if (empty($subUser)) {
                 continue;
             }
-            $firstPlayerDeposit = array_filter((array)$depositPerson, function ($item) use ($subUser) {
-                    return in_array($item['RoleID'], $subUser);
-            });
-            $firstPlayerDepositCount = array_filter($firstPlayerDeposit, function ($item)  {
-                return $item['IfFirstCharge'] == 1;
-            });
-            $totalMoney = array_reduce($firstPlayerDeposit, function ($carry, $item) {
-                // 判断money字段是否存在且为数字
-                if (isset($item['TransMoney']) && is_numeric($item['TransMoney'])) {
-                    // 将当前money值累加到$carry中
-                    $carry += $item['TransMoney'];
-                }
-                return $carry;
-            }, 0);
+//            $firstPlayerDeposit = array_filter((array)$depositPerson, function ($item) use ($subUser) {
+//                    return in_array($item['RoleID'], $subUser);
+//            });
+//            $firstPlayerDepositCount = array_filter($firstPlayerDeposit, function ($item)  {
+//                return $item['IfFirstCharge'] == 1;
+//            });
+//            $totalMoney = array_reduce($firstPlayerDeposit, function ($carry, $item) {
+//                // 判断money字段是否存在且为数字
+//                if (isset($item['TransMoney']) && is_numeric($item['TransMoney'])) {
+//                    // 将当前money值累加到$carry中
+//                    $carry += $item['TransMoney'];
+//                }
+//                return $carry;
+//            }, 0);
 
             $personDrawback = array_filter((array)$drawbackPerson, function ($item) use ($subUser) {
                 return in_array($item['AccountID'], $subUser);
@@ -153,23 +165,24 @@ class Export
                 }
                 return $carry;
             }, 0);
+            $msg = (new DataChangelogsDB())
+                ->getTableObject('T_ProxyMsgLog')
+                ->field('RoleID,addtime')
+                ->where('RoleID',$user['AccountID'])
+                ->order('addtime desc')
+                ->find();
             $addTime = '';
-            foreach ($msgs as $msg){
-                if ($msg['RoleID'] == $user['AccountID']){
-                    $addTime = $msg['addtime'];
-                }
+            if ($msg){
+                $addTime = $msg['addtime'];
             }
-
-//            if ($msg){
-//                $addTime = $msg['addtime'];
-//            }
             $item['msgTime'] = $addTime;
-            $item['firstPlayerCount'] = count($subUser);
-            $item['firstPlayerDepositCount'] = count($firstPlayerDepositCount);
-            $item['firstPlayerDepositSum'] = $totalMoney;
+            $item['firstPlayerCount'] = $user['Lv1PersonCount'];// count($subUser);
+            $item['firstPlayerDepositCount'] = $user['Lv1DepositPlayers'];// count($firstPlayerDepositCount);
+            $item['firstPlayerDepositSum'] = $user['Lv1Deposit'];// $totalMoney;
             $item['firstPlayerDrawbackSum'] = FormatMoney($firstPlayerDrawbackTotalMoney);
             $data[] = $item;
         }
+        dump($data);die();
         $header_types = [
             lang('手机号码') => 'string',
             lang('个人充值') => 'string',
