@@ -1208,7 +1208,7 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                                 break;
                             case '2':
                                 $item = [
-                                    $row['AccountID'], $row['ParentID'], $row['proxyId'], $row['adddate'], $row['PayMoney'], $row['PayTimes'], $row['PayOut'], $row['PayOutTimes'], $row['TotalRunning'], $row['TotalBet'], $row['TotalWage'], $row['TotalTax'], $row['PlatformProfit'], $row['LastLoginTime'], $row['RegisterTime'],$rwo['FirstMoney']
+                                    $row['AccountID'], $row['ParentID'], $row['proxyId'], $row['adddate'], $row['PayMoney'], $row['PayTimes'], $row['PayOut'], $row['PayOutTimes'], $row['TotalRunning'], $row['TotalBet'], $row['TotalWage'], $row['TotalTax'], $row['PlatformProfit'], $row['LastLoginTime'], $row['RegisterTime'],$row['FirstMoney']
                                 ];
                                 break;
                             case '3':
