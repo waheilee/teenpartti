@@ -1138,12 +1138,41 @@ class GameOCDB extends BaseModel
                 ConVerMoney($v['Lv3Running']);
                 ConVerMoney($v['Lv2Running']);
                 ConVerMoney($v['Lv1Running']);
+                if(config('AgentWaterDaily') == 1){
+                    $v['Lv1FirstDepositMoney'] = 0;
+                    $v['Lv2FirstDepositMoney'] = 0;
+                    $v['Lv3FirstDepositMoney'] = 0;
+                    $v['Lv1WithdrawalMoney'] = 0;
+                    $v['Lv2WithdrawalMoney'] = 0;
+                    $v['Lv3WithdrawalMoney'] = 0;
+                    $time = date('Ymd',strtotime($v['AddTime']));
+                    //Lv1FirstDepositMoney(一级首充金额)
+                    //Lv2FirstDepositMoney(二级首充金额)
+                    //Lv3FirstDepositMoney(三级首充金额)
+                    //Lv1WithdrawalMoney(一级提现金额)
+                    //Lv2WithdrawalMoney(二级提现金额)
+                    //Lv3WithdrawalMoney(三级提现金额)
+                    $agentTemDeposit = (new GameOCDB())->getTableObject('T_UserDailyDeposit')
+                        ->where('DayTime',$time)
+                        ->where('RoleId',$v['ProxyId'])
+                        ->find();
+                    if (!empty($agentTemDeposit)){
+                        $v['Lv1FirstDepositMoney'] = $agentTemDeposit['Lv1FirstDepositMoney'];
+                        $v['Lv2FirstDepositMoney'] = $agentTemDeposit['Lv2FirstDepositMoney'];
+                        $v['Lv3FirstDepositMoney'] = $agentTemDeposit['Lv3FirstDepositMoney'];
+                        $v['Lv1WithdrawalMoney'] = $agentTemDeposit['Lv1WithdrawalMoney'];
+                        $v['Lv2WithdrawalMoney'] = $agentTemDeposit['Lv2WithdrawalMoney'];
+                        $v['Lv3WithdrawalMoney'] = $agentTemDeposit['Lv3WithdrawalMoney'];
+
+                    }
+                }
 
                 //团队打码
                 $v['dm'] = bcadd($v['Lv1Running'], $v['Lv2Running'],3);
             }
             unset($v);
         }
+
         $res['startdate'] = $startdate;
         $res['enddate'] = $enddate;
         return $res;

@@ -159,7 +159,7 @@
                                 return '<span style="color: #0000FF;font-weight: bold">' + data.ValidInviteCount + '</span>';
                             }},
                         {field: 'Lv1FirstDepositPlayers', title: "{:lang('一级首充人数')}", width: 150, align: 'center', sort: true},
-                        {field: 'FirstDepositMoney', title: "{:lang('一级首充金额')}", width: 150, align: 'center', sort: true},
+                        // {field: 'FirstDepositMoney', title: "{:lang('一级首充金额')}", width: 150, align: 'center', sort: true},
                         {field: 'Lv1Deposit', title: "{:lang('一级充值')}", width: 120, align: 'center', sort: true},
                         {field: 'Lv1Running', title: "{:lang('一级流水')}", width: 120, align: 'center', sort: true},
                         {field: 'Lv2PersonCount', title: "{:lang('二级人数')}", width: 120, align: 'center', sort: true},
@@ -174,7 +174,14 @@
                         {field: 'Lv3FirstDepositPlayers', title: "{:lang('三级首充人数')}", width: 150, align: 'center', sort: true},
                         {field: 'Lv3Deposit', title: "{:lang('三级充值')}", width: 120, align: 'center', sort: true},
                         {field: 'Lv3Running', title:"{:lang('三级流水')}", width: 120, align: 'center'},
-                        {fixed: 'right', title: "{:lang('操作')}", align: 'center', width: 150, toolbar: '#msg-bar'}
+                        {if(config('AgentWaterDaily') == 1)}
+                         {field: 'Lv1FirstDepositMoney', title: "{:lang('一级首充金额')}", width: 150, align: 'center'},
+                         {field: 'Lv2FirstDepositMoney', title: "{:lang('二级首充金额')}", width: 150, align: 'center'},
+                         {field: 'Lv3FirstDepositMoney', title: "{:lang('三级首充金额')}", width: 150, align: 'center'},
+                         {field: 'Lv1WithdrawalMoney', title: "{:lang('一级提现金额')}", width: 150, align: 'center'},
+                        {/if}
+                        {fixed: 'right', title: "{:lang('操作')}", align: 'center', width: 150, toolbar: '#msg-bar'},
+
                     ];
                     table.render({
                         elem: '#proxylist', url: url, where: {
