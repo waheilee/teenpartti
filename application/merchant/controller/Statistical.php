@@ -1122,6 +1122,7 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                                 lang('玩家盈亏') => "string",
                                 lang('最后登陆时间') => "string",
                                 lang('注册时间') => "string",
+                                lang('首充金额') => "string",
                             ];
                             break;
                         case '3':
@@ -1194,7 +1195,7 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                                 break;
                             case '2':
                                 $item = [
-                                    $row['AccountID'],$row['ParentID'],$row['proxyId'],$row['adddate'], $row['PayMoney'], $row['PayTimes'], $row['Mobile'], $row['PayOut'], $row['PayOutTimes'], $row['TotalRunning'],$row['TotalTax'],$row['PlatformProfit'],$row['LastLoginTime'],$row['RegisterTime']
+                                    $row['AccountID'],$row['ParentID'],$row['proxyId'],$row['adddate'], $row['PayMoney'], $row['PayTimes'], $row['Mobile'], $row['PayOut'], $row['PayOutTimes'], $row['TotalRunning'],$row['TotalTax'],$row['PlatformProfit'],$row['LastLoginTime'],$row['RegisterTime'],$row['FirstMoney']
                                 ];
                                 break;
                             case '3':
