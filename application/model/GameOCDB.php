@@ -1157,12 +1157,12 @@ class GameOCDB extends BaseModel
                         ->where('RoleId',$v['ProxyId'])
                         ->find();
                     if (!empty($agentTemDeposit)){
-                        $v['Lv1FirstDepositMoney'] = $agentTemDeposit['Lv1FirstDepositMoney'];
-                        $v['Lv2FirstDepositMoney'] = $agentTemDeposit['Lv2FirstDepositMoney'];
-                        $v['Lv3FirstDepositMoney'] = $agentTemDeposit['Lv3FirstDepositMoney'];
-                        $v['Lv1WithdrawalMoney'] = $agentTemDeposit['Lv1WithdrawalMoney'];
-                        $v['Lv2WithdrawalMoney'] = $agentTemDeposit['Lv2WithdrawalMoney'];
-                        $v['Lv3WithdrawalMoney'] = $agentTemDeposit['Lv3WithdrawalMoney'];
+                        $v['Lv1FirstDepositMoney'] = FormatMoney($agentTemDeposit['Lv1FirstDepositMoney']);
+                        $v['Lv2FirstDepositMoney'] = FormatMoney($agentTemDeposit['Lv2FirstDepositMoney']);
+                        $v['Lv3FirstDepositMoney'] = FormatMoney($agentTemDeposit['Lv3FirstDepositMoney']);
+                        $v['Lv1WithdrawalMoney'] = FormatMoney($agentTemDeposit['Lv1WithdrawalMoney']);
+                        $v['Lv2WithdrawalMoney'] = FormatMoney($agentTemDeposit['Lv2WithdrawalMoney']);
+                        $v['Lv3WithdrawalMoney'] = FormatMoney($agentTemDeposit['Lv3WithdrawalMoney']);
 
                     }
                 }
