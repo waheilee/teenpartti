@@ -28,11 +28,25 @@ class ServiceRechargeRewad extends Controller
 
     public function runJob()
     {
+        $day = input('day',1);
+        if ($day > 1){
+            for ($i=1 ;$i<=$day;$i++) {
+                $this->RechargeDayJob($i);
+            }
+        }else{
+            $this->RechargeDayJob(1);
+        }
 
+    }
+
+
+    public function RechargeDayJob($day)
+    {
         $activetitle = 'Rewards for recharging and returning activities';
         $descript = 'Dear player. You have obtained a recharge reward, please get it';
         $db = new UserDB();
-        $yestoday = date('Y-m-d', strtotime('-1 day'));
+        $dayTime = '-'.$day.' day';
+        $yestoday = date('Y-m-d', strtotime($dayTime));
         $where = " datediff(d,addtime,'$yestoday')=0 ";
 
 
