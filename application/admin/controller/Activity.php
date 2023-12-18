@@ -1598,10 +1598,13 @@ class Activity extends Main
             $info['StartTime'] = $info['StartTime'] ? date('Y-m-d H:i:s', strtotime($info['StartTime'])) : '';
             $info['EndTime'] = $info['EndTime'] ? date('Y-m-d H:i:s', strtotime($info['EndTime'])) : '';
             $NeedCharge = $info['NeedCharge'];
+            $todayNeedCharge = $info['TodayNeedCharge'] ?? 0;
             $this->assign('info', $info);
             $this->assign('NeedCharge', $NeedCharge);
+            $this->assign('TodayNeedCharge', $todayNeedCharge);
         } else {
             $this->assign('NeedCharge', 0);
+            $this->assign('TodayNeedCharge', 0);
         }
         return $this->fetch();
     }
