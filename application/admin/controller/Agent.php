@@ -567,6 +567,10 @@ class Agent extends Main
                         lang('三级人数') => 'string',
                         lang('三级充值') => 'string',
                         lang('三级流水') => 'string',
+                        lang('一级首充金额') => 'string',
+                        lang('二级首充金额') => 'string',
+                        lang('三级首充金额') => 'string',
+                        lang('一级提现金额') => 'string',
                     ];
                     $filename = lang('代理明细') . '-' . date('YmdHis');
                     $rows =& $result['list'];
@@ -602,6 +606,10 @@ class Agent extends Main
                             $row['Lv3Deposit'],
                             $row['Lv3Running'],
 
+                            $row['Lv1FirstDepositMoney'],
+                            $row['Lv2FirstDepositMoney'],
+                            $row['Lv3FirstDepositMoney'],
+                            $row['Lv1WithdrawalMoney'],
 
                         ];
                         $writer->writeSheetRow('sheet1', $item, ['height' => 16, 'halign' => 'center',]);
