@@ -6,7 +6,7 @@
  * Time: 22:12
  */
 
-namespace vcpay;
+namespace uwinpay;
 
 class PaySdk
 {
