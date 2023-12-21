@@ -62,13 +62,30 @@ class PaySdk
         $notify_url   = trim($config['notify_url']);
         $username    = chr(rand(65,90)).chr(rand(97,122)).chr(rand(97,122)).chr(rand(97,122)).chr(rand(97,122)).chr(rand(97,122));
 
-        $pixtype = $order['BankName'];
-        if(empty($pixtype)){
-            $pixtype ='CPF';
+        if (isset($order['PayWayType'])){
+            if ($order['PayWayType'] == 6) {
+                //PHONE
+                $pixType = 'PHONE';
+            } elseif ($order['PayWayType'] == 7) {
+                //EMAIL
+                $pixType = 'EMAIL';
+            } else {
+                //CPF
+                $pixType = 'CPF';//收款账户类型
+            }
+            $pixKey = $order['CardNo'];
+            $purpose = $order['Province'];
+            $cpf =str_replace('.','',$purpose);
+        }else{
+            $pixType = $order['BankName'];
+            $pixKey = $order['CardNo'];
+            if(empty($pixType)){
+                $pixType ='CPF';
+            }
+            $cpf =str_replace('.','',$order['CardNo']);
         }
-
-        $cpf =str_replace('.','',$order['CardNo']);
         $cpf =str_replace('-','',$cpf);
+
 
         $email =$order['City'];
         if(empty($email)){
@@ -79,7 +96,7 @@ class PaySdk
             'amount'          =>(int)$amount*100,
             'appId'           =>$appid,
             'backUrl'         =>$notify_url,
-            'cardType'        =>$pixtype,
+            'cardType'        =>$pixType,
             'notifyurl'       =>$notify_url,
             'countryCode'     =>'BR',
             'currencyCode'    =>'BRL',
@@ -91,7 +108,7 @@ class PaySdk
             'remark'          =>$username,
             'type'            =>'PIX',
             'userName'        =>trim($order['RealName']),
-            'walletId'          =>trim($order['CardNo']),
+            'walletId'          =>trim($pixKey),
             // 'payeeBankCode'   =>trim($order['Province']),
             // 'cnapsCode'       =>trim($order['BankName'])
         ];

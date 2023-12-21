@@ -53,18 +53,33 @@ class PaySdk
             $this->api_url = $config['apiurl'];
         }
         save_log('mkcpay','提交三方订单号:'.$OrderNo);
-        $pixType = 'CPF';
-        $pixKey = $order['CardNo'];
-        $purpose = $order['CardNo'];
-        $isEmail = $this->isValidEmail($order['CardNo']);
-        if ($isEmail){
-            $pixType = 'EMAIL';
-            $pixKey = $order['City'];
-        }
+        if (isset($order['PayWayType'])){
+            if ($order['PayWayType'] == 6) {
+                //PHONE
+                $pixType = 'PHONE';
+            } elseif ($order['PayWayType'] == 7) {
+                //EMAIL
+                $pixType = 'EMAIL';
+            } else {
+                //CPF
+                $pixType = 'CPF';//收款账户类型
+            }
+            $pixKey = $order['CardNo'];
+            $purpose = $order['Province'];
+        }else{
+            $pixType = 'CPF';
+            $pixKey = $order['CardNo'];
+            $purpose = $order['Province'];
+            $isEmail = $this->isValidEmail($order['CardNo']);
+            if ($isEmail){
+                $pixType = 'EMAIL';
+                $pixKey = $order['City'];
+            }
 //        $isPhoneNumber = $this->isBrazilianMobileNumber($order['CardNo']);
-        if ($order['CardNo'] == $order['RealName']){
-            $pixType = 'PHONE';
-            $pixKey = '+55' . $order['RealName'];
+            if ($order['CardNo'] == $order['RealName']){
+                $pixType = 'PHONE';
+                $pixKey = '+55' . $order['RealName'];
+            }
         }
 
 
