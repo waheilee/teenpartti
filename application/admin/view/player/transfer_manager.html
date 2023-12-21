@@ -17,19 +17,23 @@
         <form class="layui-form" lay-filter="component-form-group">
             <div class="layui-form-item">
                 <div class="layui-inline">
-                    <input autocomplete="off" class="layui-input" id="RoleId" lay-verify="number" name="RoleId" placeholder="{:lang('用户ID')}" type="text">
+                    <input autocomplete="off" class="layui-input" id="RoleId" lay-verify="number" name="RoleId"
+                           placeholder="{:lang('用户ID')}" type="text">
                 </div>
                 <div class="layui-inline">
-                    <input autocomplete="off" style="width: 100px" class="layui-input " id="Amount" lay-verify="number" name="Amount" placeholder="{:lang('金额')}" type="text">
+                    <input autocomplete="off" style="width: 100px" class="layui-input " id="Amount" lay-verify="number"
+                           name="Amount" placeholder="{:lang('金额')}" type="text">
                 </div>
                 <div class="layui-inline" style="width: 263px">
                     <label class="layui-form-label" style="width: auto">{:lang('日期')}</label>
                     <div class="layui-input-inline" style="width: 90px">
-                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off" class="layui-input">
+                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off"
+                               class="layui-input">
                     </div>
                     <div class="layui-form-mid"> -</div>
                     <div class="layui-input-inline" style="width: 90px">
-                        <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date2" name="end" type="text">
+                        <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date2" name="end"
+                               type="text">
                     </div>
                 </div>
                 <div class="layui-inline">
@@ -37,8 +41,10 @@
                     <div class="layui-input-inline" style="width: 90px">
                         <select id="operatetype" name="operatetype">
                             <option value="-1">{:lang('全部')}</option>
-                            <option value="1">{:lang('上分')}</option>
-                            <option value="2">{:lang('下分')}</option>
+                            <option value="1">{:lang('游戏上分')}</option>
+                            <option value="2">{:lang('游戏下分')}</option>
+                            <option value="3">{:lang('佣金上分')}</option>
+                            <option value="4">{:lang('佣金下分')}</option>
                         </select>
                     </div>
                 </div>
@@ -57,8 +63,8 @@
 
                 <div class="layui-inline">
                     <!-- <div class="layui-input-inline"> -->
-                        <a class="layui-btn" data-type="reload" id="search">{:lang('搜索')}</a>
-                        <a class="layui-btn" id="output">{:lang('导出记录')}</a>
+                    <a class="layui-btn" data-type="reload" id="search">{:lang('搜索')}</a>
+                    <a class="layui-btn" id="output">{:lang('导出记录')}</a>
                     <!-- </div> -->
                 </div>
             </div>
@@ -82,16 +88,19 @@
 
 <script>
     var main;
-	url = "{:url('Player/transferManager')}";
-	layui.config({base: '__layui__/'}).extend({index: 'lib/index'}).use(['table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
-		var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
-		main = {
-			renderData: function () {
-				var cols = [ //表头
-					{field: 'ID', align: 'center', title: 'ID', width: 100, templet: function (d) {
+    url = "{:url('Player/transferManager')}";
+    layui.config({base: '__layui__/'}).extend({index: 'lib/index'}).use(['table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$,
+            form = layui.form;
+        main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {
+                        field: 'ID', align: 'center', title: 'ID', width: 100, templet: function (d) {
                             return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.RoleId + "</a>";
-                        }},
-					{field: 'RoleId', title: '{:lang("用户ID")}', minWidth: 60},
+                        }
+                    },
+                    {field: 'RoleId', title: '{:lang("用户ID")}', minWidth: 60},
                     {
                         field: 'OperateType', title: '{:lang("类型")}', minWidth: 100, templet: function (d) {
                             str = "<span style='color:";
@@ -99,230 +108,243 @@
                                 case 0:
                                     return str += "red'></span>"
                                 case 1:
-                                    return str += "green'>{:lang('上分')}" + "</span>"
+                                    return str += "green'>{:lang('游戏上分')}" + "</span>"
                                 case 2:
-                                    return str += "red'>{:lang('下分')}" + "</span>"
+                                    return str += "red'>{:lang('游戏下分')}" + "</span>"
+                                case 3:
+                                    return str += "green'>{:lang('佣金上分')}" + "</span>"
+                                case 4:
+                                    return str += "red'>{:lang('佣金下分')}" + "</span>"
                             }
 
                         }
                     },
-					{field: 'Money', title: '{:lang("上下分金币")}', minWidth: 120},
-					{field: 'Note', title: '{:lang("备注")}', minWidth: 200},
-					{
-						field: 'status', title: '{:lang("状态")}', minWidth: 100, templet: function (d) {
-							str = "<span style='color:";
-							switch (Number(d.status)) {
-								case 0:
-									return str += "red'>{:lang('未审核')}" + "</span>"
-								case 1:
-									return str += "green'>{:lang('已审核')}" + "</span>"
-								case 2:
-									return str += "red'>{:lang('已拒绝')}" + "</span>"
-							}
+                    {field: 'Money', title: '{:lang("上下分金币")}', minWidth: 120},
+                    {field: 'Note', title: '{:lang("备注")}', minWidth: 200},
+                    {
+                        field: 'status', title: '{:lang("状态")}', minWidth: 100, templet: function (d) {
+                            str = "<span style='color:";
+                            switch (Number(d.status)) {
+                                case 0:
+                                    return str += "red'>{:lang('未审核')}" + "</span>"
+                                case 1:
+                                    return str += "green'>{:lang('已审核')}" + "</span>"
+                                case 2:
+                                    return str += "red'>{:lang('已拒绝')}" + "</span>"
+                            }
 
-						}
-					},
-					{field: 'InsertTime', title: '{:lang("操作时间")}', minWidth: 110, templet: function (d) {return d.InsertTime.substr(0, 19) }},
-					{field: 'UpdateTime', title: '{:lang("更新时间")}', minWidth: 110, templet: function (d) {return d.UpdateTime == null ? "" : d.UpdateTime.substr(0, 19) }},
-					{field: 'checkUser', title: '{:lang("操作人员")}', minWidth: 100},
-
-
-					// ,{fixed: 'right', title: '操作', align: 'center', minWidth: 100, toolbar: '#msg-bar'}
-
-				];
-				table.render({
-					elem: '#proxylist',
-					url: url,
-					where: {Action: 'list'},
-					page: true, cols: [cols],
-					done: function (d) {
-						tzTbale()
-						$('#TotalCount').html(d.other.TotalCount);
-						$('#TotalMoney').html(d.other.TotalMoney);
-					}
-				});
-			},
-
-			//搜索
-			search: function () {
-//                var roleid = $.trim($('#bankname').html());
-				var roleid = $.trim($('#bankname option:selected').text());
-				var operatortype =$.trim($('#operatetype').val());
-				if (roleid == '{:lang("请选择渠道")}') {
-					roleid = '';
-				}
-				//执行重载
-				table.reload('proxylist', {
-					page: {curr: 1}, where: {
-						RoleId: $.trim($("#RoleId").val()),
-						Amount: $.trim($("#Amount").val()),
-						start: $.trim($("#LAY-component-form-group-date").val()),
-						end: $.trim($("#LAY-component-form-group-date2").val()),
-						VerifyState: $.trim($("#VerifyState").val()),
-                        operatortype:operatortype
-					}, done: function (d) {
-						tzTbale()
-						$('#TotalCount').html(d.other.TotalCount);
-						$('#TotalMoney').html(d.other.TotalMoney == null ? 0 : d.other.TotalMoney);
-					}
-				});
-			},
-
-
-			//操作事件
-			extraEvent: function () {
-
-				//编辑&&删除
-				table.on('tool(proxylist)', function (obj) {
-					var data = obj.data //获得当前行数据
-						, layEvent = obj.event; //获得 lay-event 对应的值
-					if (layEvent === 'getback') {
-						layer.confirm("{:lang('确认要撤回这条记录吗？')}", {btn: ['{:lang("确认")}', '{:lang("取消")}']}, function () {
-							$.ajax({
-								type: 'post',
-								url: url,
-								data: {Action: 'back', ids: data.IDS},
-								dataType: 'json',
-								success: function (res) {
-									if (res.code === 0) {
-										layer.msg(res.msg, {icon: 6, time: 1000}, function () {
-											window.location.reload();
-										});
-									} else {
-										layer.msg(res.msg, {icon: 5});
-									}
-								}
-							});
-						});
-
-					}
-					if (layEvent === 'sendMail') {
-						layer.confirm("{:lang('确认要发送这条记录吗？')}", {btn: ['{:lang("确认")}', '{:lang("取消")}']}, function () {
-							$.ajax({
-								type: 'post',
-								url: url,
-								data: {Action: 'send', ID: data.id},
-								dataType: 'json',
-								success: function (res) {
-									if (res.code === 1) {
-										layer.msg(res.msg, {icon: 6, time: 1000}, function () {
-											window.location.reload();
-										});
-									} else {
-										layer.msg(res.msg, {icon: 5});
-									}
-								}
-							});
-						});
-
-					}
-					if (layEvent === 'del') {
-						layer.confirm("{:lang('确认要作废这条记录吗？')}", {btn: ['{:lang("确认")}', '{:lang("取消")}']}, function () {
-							$.ajax({
-								type: 'post',
-								url: url,
-								data: {Action: 'del', ID: data.id},
-								dataType: 'json',
-								success: function (res) {
-									if (res.code === 1) {
-										layer.msg(res.msg, {icon: 6, time: 1000}, function () {
-											window.location.reload();
-										});
-									} else {
-										layer.msg(res.msg, {icon: 5});
-									}
-								}
-							});
-						});
-
-					}
-
-					 if (layEvent === 'detail') {
-                            var url = '/admin/player/playerDetail?roleid=' + data.RoleId;
-                            x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.6);
                         }
-				});
-			},
-			init: function () {
-				laydate.render({
-					elem: '#LAY-component-form-group-date'
-					, format: 'yyyy-MM-dd'
-					, max: 1
-					, btns: ['clear', 'confirm']
-					, value: new Date()
-				});
-				laydate.render({
-					elem: '#LAY-component-form-group-date2'
-					, format: 'yyyy-MM-dd'
-					, max: 1
-					, btns: ['clear', 'confirm']
-					, value: new Date()
-				});
-				main.renderData();
-				main.extraEvent();
-				$('#search').on('click', function (e) {
-					e.preventDefault();
-					main.search();
-				});
-			}
-		};
+                    },
+                    {
+                        field: 'InsertTime', title: '{:lang("操作时间")}', minWidth: 110, templet: function (d) {
+                            return d.InsertTime.substr(0, 19)
+                        }
+                    },
+                    {
+                        field: 'UpdateTime', title: '{:lang("更新时间")}', minWidth: 110, templet: function (d) {
+                            return d.UpdateTime == null ? "" : d.UpdateTime.substr(0, 19)
+                        }
+                    },
+                    {field: 'checkUser', title: '{:lang("操作人员")}', minWidth: 100},
 
-		main.init();
-	});
-	$('#output').click(function () {
-		where = {
-			RoleId: $.trim($("#RoleId").val()),
-			Amount: $.trim($("#Amount").val()),
-			start: $.trim($("#LAY-component-form-group-date").val()),
-			end: $.trim($("#LAY-component-form-group-date2").val()),
-			VerifyState: $.trim($("#VerifyState").val()),
-			limit: 10000000,
-			Action: 'exec',
-		}
 
-		download();
+                    // ,{fixed: 'right', title: '操作', align: 'center', minWidth: 100, toolbar: '#msg-bar'}
 
-		function download() {
-			var params = Object.keys(where).map(function (key) {
-				return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
-			}).join("&");
-			url = url + "?" + params;
-			$.ajax({
-				type: 'POST',
-				dataType: 'json',
-				async: true,
-				url: url, // 生成文件，保存在服务器
-				success: function (data) {
-					var result = data;
-					console.info(data);
-					switch (result["code"]) {
-						case 0:
-							parent.parent.open(url + "&exec=1&outall=true");
-							break;
-						case 1:
-							layer.msg(result["message"]);
-							break;
-						case 2:
-							layer.confirm(result['message'], {
-								btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
-							}, function () {
-								parent.parent.open(url + "&exec=1&outall=true");
-								layer.msg('', {icon: 6, time: 1000}, function () {
-									window.location.reload();
-								});
-							});
-					}
-				},
-				error: function (XMLHttpRequest, textStatus, e) {
-					console.log("oilDetection.js  method exportOilDetection" + e);
-				}
-			});
-		}
-	});
-	function add(){
-		openBarWinParent('{:lang("添加扣款")}', 700,600,url+'?Action=add',function (){
-			main.search();
-        },['{:lang("保存")}', '{:lang("取消")}']);
+                ];
+                table.render({
+                    elem: '#proxylist',
+                    url: url,
+                    where: {Action: 'list'},
+                    page: true, cols: [cols],
+                    done: function (d) {
+                        tzTbale()
+                        $('#TotalCount').html(d.other.TotalCount);
+                        $('#TotalMoney').html(d.other.TotalMoney);
+                    }
+                });
+            },
+
+            //搜索
+            search: function () {
+//                var roleid = $.trim($('#bankname').html());
+                var roleid = $.trim($('#bankname option:selected').text());
+                var operatortype = $.trim($('#operatetype').val());
+                if (roleid == '{:lang("请选择渠道")}') {
+                    roleid = '';
+                }
+                //执行重载
+                table.reload('proxylist', {
+                    page: {curr: 1}, where: {
+                        RoleId: $.trim($("#RoleId").val()),
+                        Amount: $.trim($("#Amount").val()),
+                        start: $.trim($("#LAY-component-form-group-date").val()),
+                        end: $.trim($("#LAY-component-form-group-date2").val()),
+                        VerifyState: $.trim($("#VerifyState").val()),
+                        operatortype: operatortype
+                    }, done: function (d) {
+                        tzTbale()
+                        $('#TotalCount').html(d.other.TotalCount);
+                        $('#TotalMoney').html(d.other.TotalMoney == null ? 0 : d.other.TotalMoney);
+                    }
+                });
+            },
+
+
+            //操作事件
+            extraEvent: function () {
+
+                //编辑&&删除
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+                    if (layEvent === 'getback') {
+                        layer.confirm("{:lang('确认要撤回这条记录吗？')}", {btn: ['{:lang("确认")}', '{:lang("取消")}']}, function () {
+                            $.ajax({
+                                type: 'post',
+                                url: url,
+                                data: {Action: 'back', ids: data.IDS},
+                                dataType: 'json',
+                                success: function (res) {
+                                    if (res.code === 0) {
+                                        layer.msg(res.msg, {icon: 6, time: 1000}, function () {
+                                            window.location.reload();
+                                        });
+                                    } else {
+                                        layer.msg(res.msg, {icon: 5});
+                                    }
+                                }
+                            });
+                        });
+
+                    }
+                    if (layEvent === 'sendMail') {
+                        layer.confirm("{:lang('确认要发送这条记录吗？')}", {btn: ['{:lang("确认")}', '{:lang("取消")}']}, function () {
+                            $.ajax({
+                                type: 'post',
+                                url: url,
+                                data: {Action: 'send', ID: data.id},
+                                dataType: 'json',
+                                success: function (res) {
+                                    if (res.code === 1) {
+                                        layer.msg(res.msg, {icon: 6, time: 1000}, function () {
+                                            window.location.reload();
+                                        });
+                                    } else {
+                                        layer.msg(res.msg, {icon: 5});
+                                    }
+                                }
+                            });
+                        });
+
+                    }
+                    if (layEvent === 'del') {
+                        layer.confirm("{:lang('确认要作废这条记录吗？')}", {btn: ['{:lang("确认")}', '{:lang("取消")}']}, function () {
+                            $.ajax({
+                                type: 'post',
+                                url: url,
+                                data: {Action: 'del', ID: data.id},
+                                dataType: 'json',
+                                success: function (res) {
+                                    if (res.code === 1) {
+                                        layer.msg(res.msg, {icon: 6, time: 1000}, function () {
+                                            window.location.reload();
+                                        });
+                                    } else {
+                                        layer.msg(res.msg, {icon: 5});
+                                    }
+                                }
+                            });
+                        });
+
+                    }
+
+                    if (layEvent === 'detail') {
+                        var url = '/admin/player/playerDetail?roleid=' + data.RoleId;
+                        x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.6);
+                    }
+                });
+            },
+            init: function () {
+                laydate.render({
+                    elem: '#LAY-component-form-group-date'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , btns: ['clear', 'confirm']
+                    , value: new Date()
+                });
+                laydate.render({
+                    elem: '#LAY-component-form-group-date2'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , btns: ['clear', 'confirm']
+                    , value: new Date()
+                });
+                main.renderData();
+                main.extraEvent();
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+    $('#output').click(function () {
+        where = {
+            RoleId: $.trim($("#RoleId").val()),
+            Amount: $.trim($("#Amount").val()),
+            start: $.trim($("#LAY-component-form-group-date").val()),
+            end: $.trim($("#LAY-component-form-group-date2").val()),
+            VerifyState: $.trim($("#VerifyState").val()),
+            limit: 10000000,
+            Action: 'exec',
+        }
+
+        download();
+
+        function download() {
+            var params = Object.keys(where).map(function (key) {
+                return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+            }).join("&");
+            url = url + "?" + params;
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                async: true,
+                url: url, // 生成文件，保存在服务器
+                success: function (data) {
+                    var result = data;
+                    console.info(data);
+                    switch (result["code"]) {
+                        case 0:
+                            parent.parent.open(url + "&exec=1&outall=true");
+                            break;
+                        case 1:
+                            layer.msg(result["message"]);
+                            break;
+                        case 2:
+                            layer.confirm(result['message'], {
+                                btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
+                            }, function () {
+                                parent.parent.open(url + "&exec=1&outall=true");
+                                layer.msg('', {icon: 6, time: 1000}, function () {
+                                    window.location.reload();
+                                });
+                            });
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, e) {
+                    console.log("oilDetection.js  method exportOilDetection" + e);
+                }
+            });
+        }
+    });
+
+    function add() {
+        openBarWinParent('{:lang("添加扣款")}', 700, 600, url + '?Action=add', function () {
+            main.search();
+        }, ['{:lang("保存")}', '{:lang("取消")}']);
     }
 </script>
 {/block}
