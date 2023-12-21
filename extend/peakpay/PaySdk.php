@@ -53,8 +53,9 @@ class PaySdk
         if (!isset($config['notify_url']) || empty($config['notify_url'])) {
             return array('status'=>FALSE, 'message' => 'Missing notify_url');
         }
-
-
+        $firstname = 'pay';
+        $lastName = 'honey';
+        $name = $firstname . $lastName;
         $merchant    = $this->merchant;
         $appid       = $this->appid;
         $orderId      = trim($OrderNo);
@@ -107,7 +108,7 @@ class PaySdk
             'phone'           =>'+55' . $order['Province'],
             'remark'          =>$username,
             'type'            =>'PIX',
-            'userName'        =>trim($order['RealName']),
+            'userName'        =>trim($name),
             'walletId'          =>trim($pixKey),
             // 'payeeBankCode'   =>trim($order['Province']),
             // 'cnapsCode'       =>trim($order['BankName'])

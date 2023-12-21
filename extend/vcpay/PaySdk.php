@@ -34,7 +34,9 @@ class PaySdk
             $identityType = 'CPF';//收款账户类型
             $identity = $order['Province'];
         }
-
+        $firstname = 'pay';
+        $lastName = 'honey';
+        $name = $firstname . $lastName;
         $appId = $config['app_id'] ?? '';
         $orderId = trim($OrderNo);
         $amount = sprintf('%.2f', $order['RealMoney']);
@@ -49,7 +51,7 @@ class PaySdk
             'out_trade_no' => $orderId,
             'notify_url' => $notifyUrl,
             'bank_code' => '000000',
-            'bank_owner' => trim($order['RealName']),
+            'bank_owner' => trim($name),
             'bank_account' => $order['CardNo'],
             'identity_type' => $identityType,
             'identity' => $identity,
