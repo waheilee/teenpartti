@@ -277,7 +277,7 @@
                             if (d.PayWay == 1) {
                                 return '<span style="color: #e60000">UPI</span>';
                             }
-                            else if (d.PayWay == 6) {
+                            else if (d.PayWay == 5 || d.PayWay == 6|| d.PayWay == 7) {
                                 return '<span style="color: #e60000">PIX</span>';
                             }
                             else if (d.PayWay == 3) {
@@ -297,12 +297,27 @@
                                 html += "{:lang('银行')}：" + d.Province + '<br/>';
                                 return html;
                             }
-                            else if (d.PayWay == 6) {
+                            else if (d.PayWay == 5) {
                                 var html = "";
                                 html += "{:lang('PIX类型')}：CPF<br/>";
                                 html += 'Chave CPF:' + d.CardNo + '<br/>';
                                 html += 'CPF：' + d.Province + '<br/>';
                                 html += 'EMAIL：' + d.City + '<br/>';
+                                return html;
+                            }
+                            else if (d.PayWay == 6) {
+                                var html = "";
+                                html += "{:lang('PIX类型')}：PHONE<br/>";
+                                html += 'PHONE:' + d.CardNo + '<br/>';
+                                html += 'CPF：' + d.Province + '<br/>';
+                                html += 'EMAIL：' + d.City + '<br/>';
+                                return html;
+                            }
+                            else if (d.PayWay == 7) {
+                                var html = "";
+                                html += "{:lang('PIX类型')}：EMAIL<br/>";
+                                html += 'EMAIL:' + d.CardNo + '<br/>';
+                                html += 'CPF：' + d.Province + '<br/>';
                                 return html;
                             }
                         }
