@@ -277,7 +277,7 @@
                             if (d.PayWay == 1) {
                                 return '<span style="color: #e60000">UPI</span>';
                             }
-                            else if (d.PayWay == 2) {
+                            else if (d.PayWay == 6) {
                                 return '<span style="color: #e60000">PIX</span>';
                             }
                             else if (d.PayWay == 3) {
@@ -297,7 +297,7 @@
                                 html += "{:lang('银行')}：" + d.Province + '<br/>';
                                 return html;
                             }
-                            else if (d.PayWay == 2) {
+                            else if (d.PayWay == 6) {
                                 var html = "";
                                 html += "{:lang('PIX类型')}：CPF<br/>";
                                 html += 'Chave CPF:' + d.CardNo + '<br/>';
