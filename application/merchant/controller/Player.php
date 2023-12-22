@@ -682,7 +682,7 @@ class Player extends Main
         $data =[];
         if($roleId>0){
             $db =new UserDB();
-            $field ='ProxyId,Lv1PersonCount,Lv1Deposit,Lv1DepositPlayers,Lv2PersonCount,Lv2Deposit,Lv2DepositPlayers,Lv3PersonCount,Lv3Deposit,Lv3DepositPlayers';
+            $field = 'ProxyId,Lv1PersonCount,Lv1Deposit,Lv1DepositPlayers,Lv2PersonCount,Lv2Deposit,Lv2DepositPlayers,Lv3PersonCount,Lv3Deposit,Lv3DepositPlayers,Lv1WithdrawAmount,Lv2WithdrawAmount,Lv3WithdrawAmount,Lv1WithdrawCount,Lv2WithdrawCount,Lv3WithdrawCount,ValidInviteCount,Lv2ValidInviteCount,Lv3ValidInviteCount';
             $row =$db->getTableRow('T_ProxyCollectData','ProxyId='.$roleId,$field);
 
             $avarage1= 0;
@@ -697,7 +697,8 @@ class Player extends Main
                 'person'=>$row['Lv1PersonCount'],
                 'chargenum'=>$row['Lv1DepositPlayers'],
                 'amount'=>$row['Lv1Deposit'],
-                'avarage'=>$avarage1
+                'avarage'=>$avarage1,
+                'ValidInviteCount' => $row['ValidInviteCount'],
             ];
             if($row['Lv2DepositPlayers']>0){
                 $avarage2 = bcdiv($row['Lv2Deposit'],$row['Lv2DepositPlayers'],2);
@@ -707,7 +708,8 @@ class Player extends Main
                 'person'=>$row['Lv2PersonCount'],
                 'chargenum'=>$row['Lv2DepositPlayers'],
                 'amount'=>$row['Lv2Deposit'],
-                'avarage'=>$avarage2
+                'avarage'=>$avarage2,
+                'ValidInviteCount' => $row['Lv2ValidInviteCount'],
             ];
             if($row['Lv3DepositPlayers']>0){
                 $avarage3 =bcdiv($row['Lv3Deposit'],$row['Lv3DepositPlayers'],2);
@@ -717,7 +719,8 @@ class Player extends Main
                 'person'=>$row['Lv3PersonCount'],
                 'chargenum'=>$row['Lv3DepositPlayers'],
                 'amount'=>$row['Lv3Deposit'],
-                'avarage'=>$avarage3
+                'avarage'=>$avarage3,
+                'ValidInviteCount' => $row['Lv3ValidInviteCount'],
             ];
             array_push($data,$levle1);
             array_push($data,$levle2);
