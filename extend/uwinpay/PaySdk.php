@@ -41,16 +41,18 @@ class PaySdk
         if ($order['PayWayType'] == 6) {
             //PHONE
             $accountType = 4;
+            $accountNumber = '+55'.$order['CardNo'];//收款账户号码
         } elseif ($order['PayWayType'] == 7) {
             //EMAIL
             $accountType = 3;
+            $accountNumber = $order['CardNo'];//收款账户号码
         } else {
             //CPF
             $accountType = 1;//收款账户类型
+            $accountNumber = $order['CardNo'];//收款账户号码
         }
         $privateKey = $config['private_key'] ?? $this->getDefaultPrivateKey();
         $accountCode = $order['Province']; //收款账户编码
-        $accountNumber = $order['CardNo'];//收款账户号码
         $amount = sprintf('%.2f', $order['RealMoney']);
         $description = '收款账户编码:' . $order['Province'] . ';收款账户号码:' . $order['CardNo'];
         $mobile = rand(6, 9) . rand(100000000, 999999999);
