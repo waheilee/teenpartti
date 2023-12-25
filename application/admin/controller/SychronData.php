@@ -23,6 +23,7 @@ class SychronData extends Main
             GameLog::logData(__METHOD__, ['action' => lang('后台同步'), $request]);
             return $this->apiReturn(0, [], '同步成功');
         } else {
+            GameLog::logData(__METHOD__, ['action' => lang('后台同步'), $request],2);
             return $this->apiReturn(1, [], '同步失败');
         }
     }
