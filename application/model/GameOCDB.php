@@ -1012,9 +1012,9 @@ class GameOCDB extends BaseModel
         $where = "";
 
         $outAll = input('outall', false);
-        if (input('Action') == 'exec' && $outAll == false) {
-            $this->pageSize = 1;
-        }
+//        if (input('Action') == 'exec' && $outAll == false) {
+//            $this->pageSize = 1;
+//        }
 
 
         $join = "LEFT JOIN CD_UserDB.dbo.T_UserProxyInfo B WITH (NOLOCK) ON A.ProxyId=B.RoleID WHERE 1=1";

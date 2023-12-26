@@ -2,6 +2,7 @@
 
 namespace app\admin\controller;
 
+use app\admin\controller\Export\AgentWaterDailyExport;
 use app\model\AccountDB;
 use app\model\BankDB;
 use app\model\DataChangelogsDB;
@@ -531,96 +532,99 @@ class Agent extends Main
                 $result['other']['enddate'] = $result['enddate'];
                 return $this->apiJson($result);
             case 'exec':
-                $db = new  GameOCDB();
-                $result = $db->GetAgentRecord(true);
-                $outAll = input('outall', false);
-                if ((int)input('exec', 0) == 0) {
-                    if ($result['count'] == 0) {
-                        $result = ["count" => 0, "code" => 1, 'msg' => lang("没有找到任何数据,换个姿势再试试?")];
-                    }
-                    if ($result['count'] >= 5000 && $outAll == false) {
-                        $result = ["code" => 2, 'msg' => lang("数据超过5000行是否全部导出?<br>只能导出一部分数据.</br>请选择筛选条件,让数据少于5000行<br>当前数据一共有") . $result['count'] . lang("行")];
-                    }
-                    unset($result['list']);
-                    return $this->apiJson($result);
-                }
-                //导出表格
-                if ((int)input('exec') == 1 && $outAll = true) {
-                    //权限验证 
-                    $auth_ids = $this->getAuthIds();
-                    if (!in_array(10008, $auth_ids)) {
-                        return $this->apiReturn(1, '', '没有权限');
-                    }
-                    $header_types = [
-                        lang('日期') => 'string',
-                        lang('代理ID') => 'string',
-                        lang('1+2级打码') => 'string',
-                        lang('个人总收益') => 'string',
-                        lang('个人充值') => "string",
-                        lang('个人流水') => 'string',
-                        lang('一级人数') => 'string',
-                        lang('一级充值') => 'string',
-                        lang('一级流水') => 'string',
-                        lang('二级人数') => 'string',
-                        lang('二级充值') => 'string',
-                        lang('二级流水') => 'string',
-                        lang('三级人数') => 'string',
-                        lang('三级充值') => 'string',
-                        lang('三级流水') => 'string',
-                        lang('一级首充金额') => 'string',
-                        lang('二级首充金额') => 'string',
-                        lang('三级首充金额') => 'string',
-                        lang('一级提现金额') => 'string',
-                    ];
-                    $filename = lang('代理明细') . '-' . date('YmdHis');
-                    $rows =& $result['list'];
-//                    halt($rows[0]);
-                    $writer = $this->GetExcel($filename, $header_types, $rows, true);
-                    foreach ($rows as $index => &$row) {
-                        $lv1rate = bcdiv(10, 1000, 4);
-                        $lv2rate = bcdiv(5, 1000, 4);
-                        $lv3rate = bcdiv(2.5, 1000, 4);
-                        $Lv1Reward = bcmul($row['Lv1Running'], $lv1rate, 4);
-                        $Lv2Reward = bcmul($row['Lv2Running'], $lv2rate, 4);
-                        $Lv3Reward = bcmul($row['Lv3Running'], $lv3rate, 4);
-                        $rewar_amount = bcadd($Lv1Reward, $Lv2Reward, 4);
-                        $rewar_amount = bcadd($rewar_amount, $Lv3Reward, 2);
-                        $row['ReceivedIncome'] = $rewar_amount;
 
-                        $item = [
-                            $row['AddTime'],
-                            $row['ProxyId'],
-                            $row['dm'],
-                            $row['ReceivedIncome'],
-                            $row['DailyDeposit'],
-                            $row['DailyRunning'],
-                            $row['Lv1PersonCount'],
-                            $row['Lv1Deposit'],
-                            $row['Lv1Running'],
-
-                            $row['Lv2PersonCount'],
-                            $row['Lv2Deposit'],
-                            $row['Lv2Running'],
-
-                            $row['Lv3PersonCount'],
-                            $row['Lv3Deposit'],
-                            $row['Lv3Running'],
-
-                            $row['Lv1FirstDepositMoney'],
-                            $row['Lv2FirstDepositMoney'],
-                            $row['Lv3FirstDepositMoney'],
-                            $row['Lv1WithdrawalMoney'],
-
-                        ];
-                        $writer->writeSheetRow('sheet1', $item, ['height' => 16, 'halign' => 'center',]);
-                        unset($rows[$index]);
-                    }
-                    unset($row, $item);
-                    $writer->writeToStdOut();
-                    exit();
-                }
-
-                break;
+                $AgentWaterDailyExport = new AgentWaterDailyExport();
+                $AgentWaterDailyExport->export();
+//                $db = new  GameOCDB();
+//                $result = $db->GetAgentRecord(true);
+//                $outAll = input('outall', false);
+//                if ((int)input('exec', 0) == 0) {
+//                    if ($result['count'] == 0) {
+//                        $result = ["count" => 0, "code" => 1, 'msg' => lang("没有找到任何数据,换个姿势再试试?")];
+//                    }
+//                    if ($result['count'] >= 5000 && $outAll == false) {
+//                        $result = ["code" => 2, 'msg' => lang("数据超过5000行是否全部导出?<br>只能导出一部分数据.</br>请选择筛选条件,让数据少于5000行<br>当前数据一共有") . $result['count'] . lang("行")];
+//                    }
+//                    unset($result['list']);
+//                    return $this->apiJson($result);
+//                }
+//                //导出表格
+//                if ((int)input('exec') == 1 && $outAll = true) {
+//                    //权限验证
+//                    $auth_ids = $this->getAuthIds();
+//                    if (!in_array(10008, $auth_ids)) {
+//                        return $this->apiReturn(1, '', '没有权限');
+//                    }
+//                    $header_types = [
+//                        lang('日期') => 'string',
+//                        lang('代理ID') => 'string',
+//                        lang('1+2级打码') => 'string',
+//                        lang('个人总收益') => 'string',
+//                        lang('个人充值') => "string",
+//                        lang('个人流水') => 'string',
+//                        lang('一级人数') => 'string',
+//                        lang('一级充值') => 'string',
+//                        lang('一级流水') => 'string',
+//                        lang('二级人数') => 'string',
+//                        lang('二级充值') => 'string',
+//                        lang('二级流水') => 'string',
+//                        lang('三级人数') => 'string',
+//                        lang('三级充值') => 'string',
+//                        lang('三级流水') => 'string',
+//                        lang('一级首充金额') => 'string',
+//                        lang('二级首充金额') => 'string',
+//                        lang('三级首充金额') => 'string',
+//                        lang('一级提现金额') => 'string',
+//                    ];
+//                    $filename = lang('代理明细') . '-' . date('YmdHis');
+//                    $rows =& $result['list'];
+////                    halt($rows[0]);
+//                    $writer = $this->GetExcel($filename, $header_types, $rows, true);
+//                    foreach ($rows as $index => &$row) {
+//                        $lv1rate = bcdiv(10, 1000, 4);
+//                        $lv2rate = bcdiv(5, 1000, 4);
+//                        $lv3rate = bcdiv(2.5, 1000, 4);
+//                        $Lv1Reward = bcmul($row['Lv1Running'], $lv1rate, 4);
+//                        $Lv2Reward = bcmul($row['Lv2Running'], $lv2rate, 4);
+//                        $Lv3Reward = bcmul($row['Lv3Running'], $lv3rate, 4);
+//                        $rewar_amount = bcadd($Lv1Reward, $Lv2Reward, 4);
+//                        $rewar_amount = bcadd($rewar_amount, $Lv3Reward, 2);
+//                        $row['ReceivedIncome'] = $rewar_amount;
+//
+//                        $item = [
+//                            $row['AddTime'],
+//                            $row['ProxyId'],
+//                            $row['dm'],
+//                            $row['ReceivedIncome'],
+//                            $row['DailyDeposit'],
+//                            $row['DailyRunning'],
+//                            $row['Lv1PersonCount'],
+//                            $row['Lv1Deposit'],
+//                            $row['Lv1Running'],
+//
+//                            $row['Lv2PersonCount'],
+//                            $row['Lv2Deposit'],
+//                            $row['Lv2Running'],
+//
+//                            $row['Lv3PersonCount'],
+//                            $row['Lv3Deposit'],
+//                            $row['Lv3Running'],
+//
+//                            $row['Lv1FirstDepositMoney'],
+//                            $row['Lv2FirstDepositMoney'],
+//                            $row['Lv3FirstDepositMoney'],
+//                            $row['Lv1WithdrawalMoney'],
+//
+//                        ];
+//                        $writer->writeSheetRow('sheet1', $item, ['height' => 16, 'halign' => 'center',]);
+//                        unset($rows[$index]);
+//                    }
+//                    unset($row, $item);
+//                    $writer->writeToStdOut();
+//                    exit();
+//                }
+//
+//                break;
         }
 
         $this->assign('parentid', $parentid);
