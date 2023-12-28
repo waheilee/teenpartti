@@ -1,0 +1,201 @@
+index.html{extend name="common/base" /}
+{block name="title"}注册留存{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-card" style="margin-top: 0px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('玩家ID')}</label>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="role_id" id="role_id" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('日期')}</label>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="end" id="LAY-component-form-group-date2" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <!-- <div class="layui-input-inline"> -->
+                        <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+<!--                        <a class="layui-btn" id="output">{:lang('导出记录')}</a>-->
+                    <!-- </div> -->
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <div class="layui-row layui-col-space30">
+
+            <div id="alllist" class="layui-col-md12">
+                <table id="proxylist" lay-filter="proxylist"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+
+<script>
+	layui.config({base: '__layui__/'}).extend({index: 'lib/index'}).use(['table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+		var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
+
+		var cols = [ //表头
+			{field: 'mydate', align: 'center', title: "{:lang('日期')}", minWidth: 120},
+			{field: 'TotalReg', align: 'center', title: "{:lang('新增人数')}", minWidth: 180},
+			{field: 'day1', align: 'center', title: "{:lang('次日留存')}", minWidth: 150},
+			{field: 'day2', align: 'center', title: "{:lang('2日留存')}", minWidth: 130},
+			{field: 'day3', align: 'center', title: "{:lang('3日留存')}", minWidth: 130},
+			{field: 'day4', align: 'center', title: "{:lang('4日留存')}", minWidth: 130},
+			{field: 'day5', align: 'center', title: "{:lang('5日留存')}", minWidth: 130},
+			{field: 'day6', align: 'center', title: "{:lang('6日留存')}", minWidth: 130},
+			{field: 'day7', align: 'center', title: "{:lang('7日留存')}", minWidth: 130},
+			{field: 'day8', align: 'center', title: "{:lang('15日留存')}", minWidth: 140},
+			{field: 'day9', align: 'center', title: "{:lang('30日留存')}", minWidth: 140},
+		];
+		var main = {
+			renderData: function () {
+				table.render({
+					elem: '#proxylist',
+                    url: "{:url('Agent/userRegRate')}",
+					where: {Action: "list",},
+					page: true,
+                    cols: [cols],
+                    limit: 15,
+                    done: function (res) {$(".layui-table-main tr").each(function (index, val) {
+                            $($(".layui-table-fixed-l .layui-table-body tbody tr")[index]).height($(val).height());
+                            $($(".layui-table-fixed-r .layui-table-body tbody tr")[index]).height($(val).height());
+                        });
+						// $('#totalsum').html(res.other.totalsum);
+					}
+				});
+			},
+			//搜索
+			search: function () {
+				var devicetype = $.trim($('#devicetype').val());
+				var countrycode = $.trim($('#countrycode').val());
+				//执行重载
+				table.reload('proxylist', {
+					page: {
+						curr: 1 //重新从第 1 页开始
+					},
+					where: {
+						// 'countrycode': countrycode,
+						// 'devicetype': devicetype,
+						Action: "list",
+                        start_time: $.trim($('#LAY-component-form-group-date').val()),
+                        ent_time: $.trim($('#LAY-component-form-group-date2').val()),
+                        role_id: $.trim($('#role_id').val())
+					},
+                    done:function (res){
+                        console.log(res)
+                        if (res.code === 0){
+                            layer.msg(res.message, {icon: 2, time: 2000}, function () {
+                                layer.closeAll();
+                            });
+                        }
+                    }
+				});
+			},
+
+			//操作事件
+			extraEvent: function () {
+				//编辑
+				// table.on('tool(proxylist)', function (obj) {
+				// });
+			},
+
+			init: function () {
+				main.renderData();
+				main.extraEvent();
+				laydate.render({
+					elem: '#LAY-component-form-group-date'
+					, format: 'yyyy-MM-dd'
+					, max: 1
+					, lang:'{$datelang ?: "cn"}'
+					, btns: ['clear', 'confirm']
+					// , value: new Date()
+				});
+				laydate.render({
+					elem: '#LAY-component-form-group-date2'
+					, format: 'yyyy-MM-dd'
+					, max: 1
+					, lang:'{$datelang ?: "cn"}'
+					, btns: ['clear', 'confirm']
+					// , value: new Date()
+				});
+				$('#search').on('click', function (e) {
+					e.preventDefault();
+					main.search();
+				});
+			}
+		};
+
+		main.init();
+	});
+	$('#output').click(function () {
+		where = {
+			strartdate: $.trim($('#LAY-component-form-group-date').val()),
+			enddate: $.trim($('#LAY-component-form-group-date2').val()),
+			limit: 100000,
+			usertype: $.trim($('#usertype').val()),
+			Action: 'exec',
+		}
+
+		download();
+
+		function download() {
+			var params = Object.keys(where).map(function (key) {
+				return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+			}).join("&");
+			url = "{:url('Monitor/userRegRate')}?" + params;
+			$.ajax({
+				type: 'POST',
+				dataType: 'json',
+				async: true,
+				url: url, // 生成文件，保存在服务器
+				success: function (data) {
+					var result = data;
+					console.info(data);
+					switch (result["code"]) {
+						case 0:
+							parent.parent.open(url + "&exec=1&outall=true");
+							break;
+						case 1:
+							layer.msg(result["message"]);
+							break;
+						case 2:
+							layer.confirm(result['message'], {
+								btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
+							}, function () {
+								parent.parent.open(url + "&exec=1&outall=true");
+								layer.msg('', {icon: 6, time: 1000}, function () {
+									window.location.reload();
+								});
+							});
+					}
+
+				},
+				error: function (XMLHttpRequest, textStatus, e) {
+					console.log("oilDetection.js  method exportOilDetection" + e);
+				}
+			});
+		}
+	});
+</script>
+{/block}

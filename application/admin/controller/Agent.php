@@ -2424,12 +2424,74 @@ class Agent extends Main
         } else {
             return $this->apiReturn(1, '', '操作失败');
         }
+    }
+
+    /**
+     * 代理复充留存
+     * @return mixed|Json
+     * @throws PDOException
+     */
+    public function userRegRate()
+    {
+        $roleId = input('role_id');
+        $startTime = input('start_time');
+        $endTime = input('ent_time');
+        if($this->request->isajax()){
+
+            if(strtotime($startTime) > strtotime($endTime)){
+                $data['msg'] = '开始时间不能大于结束时间';
+                $data['code'] = 0;
+                $data['list'] = [];
+                return $this->apiJson($data);
+            }
+            if (empty($roleId)){
+                $data['msg'] = '玩家ID不能为空';
+                $data['code'] = 0;
+                $data['list'] = [];
+                return $this->apiJson($data);
+            }
+            if (empty($startTime)){
+                $data['msg'] = '搜索开始时间不能为空';
+                $data['code'] = 0;
+                $data['list'] = [];
+                return $this->apiJson($data);
+            }
+            if (empty($endTime)){
+                $data['msg'] = '搜索结束时间不能为空';
+                $data['code'] = 0;
+                $data['list'] = [];
+                return $this->apiJson($data);
+            }
+
+            $gameOC = new GameOCDB();
+            $sqlExec = "exec P_Proc_PayFee '$roleId','$startTime','$endTime'";
+
+                $result = $gameOC->getTableQuery($sqlExec);
+
+                $data = [];
+                foreach($result[0] as $k => $value){
+                    $item = [];
+                    $item['mydate'] = $value['StatDay'];
+                    $item['TotalReg'] = $value['RegisterPay'];
+                    $item['day1'] = $value['day1'];
+                    $item['day2'] = $value['day2'];
+                    $item['day3'] = $value['day3'];
+                    $item['day4'] = $value['day4'];
+                    $item['day5'] = $value['day5'];
+                    $item['day6'] = $value['day6'];
+                    $item['day7'] = $value['day7'];
+                    $item['day15'] = $value['day15'];
+                    $item['day30'] = $value['day30'];
+                    $data[] = $item;
+                }
+
+                $temp['list'] = $data;
+                return $this->apiJson($temp);
 
 
+        }
 
-
-
-
+        return $this->fetch();
     }
 
 
