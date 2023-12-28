@@ -5118,4 +5118,42 @@ class Player extends Main
     public function getGroupId($adminId){
         return Db::table('game_auth_group_access')->where('uid',$adminId)->value('group_id');
     }
+
+    public function prohibitWithdrawals()
+    {
+        $roleId = input('role_id');
+        $status = input('status');
+        $userDB = new UserDB();
+        $jobInfo = $userDB->getTableObject('T_Job_UserInfo')
+             ->where('RoleID',$roleId)
+             ->where('job_key',10100)
+             ->find();
+        if($status == 1){
+            if(!empty($jobInfo)){
+               $userDB->getTableObject('T_Job_UserInfo')
+                   ->where('RoleID',$roleId)
+                   ->where('job_key',10100)
+                   ->update(['value' => 1]);
+               return $this->apiReturn(0,[],'玩家提现状态更新为禁用');
+           }else{
+               $data = ['RoleID' => $roleId, 'job_key' => 10100,'value'=>1];
+               $userDB->getTableObject('T_Job_UserInfo')
+                   ->insert($data);
+                return $this->apiReturn(0,[],'玩家提现状态新增禁用');
+           }
+        }else{
+            if(!empty($jobInfo)){
+                $userDB->getTableObject('T_Job_UserInfo')
+                    ->where('RoleID',$roleId)
+                    ->where('job_key',10100)
+                    ->update(['value' => 0]);
+                return $this->apiReturn(0,[],'玩家提现状态更新为启用');
+            }else{
+                $data = ['RoleID' => $roleId, 'job_key' => 10100,'value'=>0];
+                $userDB->getTableObject('T_Job_UserInfo')
+                    ->insert($data);
+                return $this->apiReturn(0,[],'玩家提现状态新增启用');
+            }
+        }
+    }
 }

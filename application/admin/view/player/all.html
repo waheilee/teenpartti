@@ -166,6 +166,7 @@
     {if(config('turntable')==1)}
     <a class="layui-btn layui-btn-xs" lay-event="pddReward">{:lang('转盘奖励金')}</a>
     {/if}
+    <a class="layui-btn layui-btn-xs" lay-event="prohibitWithdrawals">{:lang('禁止提现')}</a>
 </script>
 <script src="__js__/cache.js"></script>
 <script src="__js__/Barrett.js"></script>
@@ -1009,8 +1010,58 @@
                                     //     editPddReward(data.ID, lCurWaged, 2);
                                     // }
                                 });
+                            }else if (layEvent === 'prohibitWithdrawals') {
+                                layer.confirm( '禁止玩家：'+data.ID +'进行提现', {
+                                    btn: ["{:lang('禁止提现')}", "{:lang('开启提现')}"], //按钮,
+                                     btn1: function (index, layero) {
+                                        $.ajax({
+                                            type: 'post',
+                                            url: "{:url('player/prohibitWithdrawals')}",
+                                            data: {
+                                                'role_id': data.ID,
+                                                'status':1,
+                                            },
+                                            dataType: 'json',
+                                            success: function (res) {
+                                                if (res.code == 0) {
+                                                    layer.msg(res.msg, {icon: 1, time: 1000}, function () {
+                                                        //window.location.reload();
+                                                        table.reload("proxylist", {page: {curr: $(".layui-laypage-em").next().html()}});
+                                                        layer.closeAll();
+                                                    });
+                                                } else {
+                                                    layer.msg(res['msg'], {icon: 5});
+                                                }
+                                            }
+                                        });
+
+                                    },
+                                    btn2:function () {
+
+                                        $.ajax({
+                                            type: 'post',
+                                            url: "{:url('player/prohibitWithdrawals')}",
+                                            data: {
+                                                'role_id': data.ID,
+                                                'status':2,
+                                            },
+                                            dataType: 'json',
+                                            success: function (res) {
+                                                if (res.code == 0) {
+                                                    layer.msg(res.msg, {icon: 1, time: 1000}, function () {
+                                                        //window.location.reload();
+                                                        table.reload("proxylist", {page: {curr: $(".layui-laypage-em").next().html()}});
+                                                        layer.closeAll();
+                                                    });
+                                                } else {
+                                                    layer.msg(res['msg'], {icon: 5});
+                                                }
+                                            }
+                                        });
+                                    }
+                                })
                             }
-                        });
+                        })
 
                         form.on('submit(Retreat)', function (data) {
                             var ID = data.elem.attributes['ctrlID'].nodeValue;
