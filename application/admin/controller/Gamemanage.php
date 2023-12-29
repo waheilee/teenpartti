@@ -1521,5 +1521,26 @@ class Gamemanage extends Main
         return $this->fetch();
     }
 
+    public function thirdGameTax(){
+        if (input('action') == 'list') {
+            $limit = input('limit')?:20;
+            $data = (new \app\model\MasterDB())->getTableObject('T_ThirdGameCfg')->paginate($limit)
+                ->toArray();
+            return $this->apiReturn(0, $data['data'], 'success', $data['total'],[]);
+        } else {
+            return $this->fetch();
+        }
+    }
 
+    public function editThirdGameTax(){
+        $id = input('id');
+        $OpenTax = input('OpenTax');
+
+        $res = (new \app\model\MasterDB())->getTableObject('T_ThirdGameCfg')->where('KindId',$id)->data(['OpenTax'=>$OpenTax])->update();
+        if ($res) {
+            return json(['code'=>0,'msg'=>'操作成功']);
+        } else {
+            return json(['code'=>1,'msg'=>'操作失败']);
+        }
+    }
 }
