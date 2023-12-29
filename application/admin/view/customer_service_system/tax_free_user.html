@@ -1,0 +1,247 @@
+{extend name="common/base" /}
+{block name="title"}关系列表{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('玩家ID')}</label>
+                    <div class="layui-input-inline"><input autocomplete="off" class="layui-input" id="RoleId" lay-verify="number" name="RoleId" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">是否包含下级</label>
+                    <div class="layui-input-inline">
+                      <select class="layui-input" name='OpenChildTaxFree' id="OpenChildTaxFree">
+                        <option value="">全部</option>
+                        <option value="0">否</option>
+                        <option value="1">是</option>
+                      </select>
+                    </div>
+                 </div>
+                <div class="layui-inline">
+                    <a class="layui-btn" data-type="reload" id="search">{:lang('搜索')}</a>
+                    <a class="layui-btn layui-btn-normal" onclick="add()">{:lang('添加')}</a>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+    
+</div>
+<script type="text/html" id="toolbarDemo">
+    <div class="layui-btn-container">
+
+    </div>
+</script>
+{/block}
+{block name="script"}
+<script src="__js__/cache.js"></script>
+<script src="__js__/Barrett.js"></script>
+<script src="__js__/BigInt.js"></script>
+<script src="__js__/RSA.js"></script>
+<script>
+    url = "{:url('CustomerServiceSystem/taxFreeUser')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var table = layui.table;
+        var form  = layui.form;
+        var laydate  = layui.laydate;
+        var $ = layui.$;
+        var element  = layui.element;
+          table.render({
+            elem: '#proxylist'
+            // ,height: 'full-280'
+            ,url: url+'?action=list'//数据接口
+            ,limit:20
+            ,page: true //开启分页
+            ,id:'proxylist'
+            ,autoSort:false
+            ,sort: true
+            // ,toolbar: '#toolbarDemo'
+            // ,defaultToolbar:[]
+            ,cols: [[ //表头
+                {field:'RoleId', title: "{:lang('玩家ID')}",align:'center', minWidth: 100},
+                {field:'OpenChildTaxFree', title: "{:lang('包含下级')}",align:'center', minWidth: 100, templet: function(d){
+                    if (d.OpenChildTaxFree == 0) {
+                      return "<span style='color:blue'>否</span>";
+                    }
+                    if (d.OpenChildTaxFree == 1) {
+                      return "<span style='color:red'>是</span>";
+                    }
+                }},
+                {field:'AddTime', title: "{:lang('添加时间')}",align:'center', minWidth: 200},
+                {title:'操作',align:'center', minWidth: 120, templet: function(d){
+                    var html1 = '<a class="layui-btn layui-btn-sm" lay-event="edit">移除</a>';
+                    var html2 = '';
+                    if (d.OpenChildTaxFree == 0) {
+                      html2 += '<a class="layui-btn layui-btn-sm" lay-event="opt">开启下级免税</a>'
+                    }
+                    if (d.OpenChildTaxFree == 1) {
+                      html2 += '<a class="layui-btn layui-btn-sm" lay-event="opt">取消下级免税</a>'
+                    }
+                    return html1 + html2;
+              }}
+            ]]
+            , done: function (res) {
+
+            }
+          });
+          laydate.render({elem: '#start_date', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+          laydate.render({elem: '#end_date', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+          // 搜索 
+          $("#search").on('click', function(){
+             table.reload('proxylist', {
+              page:{
+                  curr:1 
+              },
+              where: {
+                  RoleId: $('#RoleId').val(),
+                  OpenChildTaxFree: $('#OpenChildTaxFree').val(),
+                  
+              }
+            })
+          });
+        table.on('tool(proxylist)', function (obj) {
+            var data = obj.data //获得当前行数据
+                , layEvent = obj.event; //获得 lay-event 对应的值
+            tr = obj.tr; //获得当前行 tr 的DOM对象
+            if (obj.event === 'edit') {
+                layer.confirm("{:lang('移除玩家？')}", {btn: ['{:lang("确认")}', '{:lang("取消")}']}, function () {
+                    $.ajax({
+                        type: 'post',
+                        url: '{:url("CustomerServiceSystem/editTaxFreeUser")}',
+                        data: {RoleID:data.RoleId,type:1,opentype:0},
+                        dataType: 'json',
+                        success:function(ret){
+                            if (ret.code == 0) {
+                              layer.msg(ret.msg);
+                              $(".layui-laypage-btn")[0].click();
+                              setTimeout(function(){layer.closeAll()},1500);
+                            } else {
+                              layer.msg(ret.msg);
+                            }
+                          }
+                    });
+                });
+            }
+            if (obj.event === 'opt') {
+                if (data.OpenChildTaxFree == 0) {
+                  var lay_msg = '确定开启下级免税？';
+                  var opentype = 1;
+                }
+                if (data.OpenChildTaxFree == 1) {
+                  var lay_msg = '确定取消下级免税？';
+                  var opentype = 0;
+                }
+                layer.confirm(lay_msg, {btn: ['{:lang("确认")}', '{:lang("取消")}']}, function () {
+                    $.ajax({
+                        type: 'post',
+                        url: '{:url("CustomerServiceSystem/editTaxFreeUser")}',
+                        data: {RoleID:data.RoleId,type:0,opentype:opentype},
+                        dataType: 'json',
+                        success:function(ret){
+                            if (ret.code == 0) {
+                              layer.msg(ret.msg);
+                              $(".layui-laypage-btn")[0].click();
+                              setTimeout(function(){layer.closeAll()},1500);
+                            } else {
+                              layer.msg(ret.msg);
+                            }
+                          }
+                    });
+                });
+            }
+        });
+        table.on('toolbar(proxylist)', function (obj) {
+
+        });
+        //排序
+        table.on('sort(proxylist)', function (obj) {
+            //执行重载
+            table.reload('proxylist', {
+                initSort: obj,
+                page: {curr: 1},
+                where: {
+                    RoleId: $('#RoleId').val(),
+                    OpenChildTaxFree: $('#OpenChildTaxFree').val(),
+                    ordertype: obj.type,
+                    orderby: obj.field,
+                },
+                parseData:function(res){
+                  if(res.data.length==0){
+                    return{
+                      'code':'201',
+                      'msg':"{:lang('无数据')}"
+                    };
+                  };
+                }
+            });
+
+        });
+    });
+    function add(){
+            layer.open({
+              title: '添加玩家'
+              , btn: ['确定']
+              , area: ['600px', '250px']
+              , content:
+                '<form class="layui-form"><div class="layui-form-item layui-form-pane">'+
+                  '<div class="layui-form-item">'+
+                    '<label class="layui-form-label">玩家ID：</label>'+
+                    '<div class="layui-input-block">'+
+                      '<input type="text" id="RoleIdadd" autocomplete="off" class="layui-input"  value="">'+
+                    '</div>'+
+                  '</div>'+
+                  '<div class="layui-form-item">'+
+                    '<label class="layui-form-label">包含下级：</label>'+
+                    '<div class="layui-input-block">'+
+                      '<input type="radio"  id="OpenChildTaxFreeadd" name="OpenChildTaxFreeadd" value="0" title="否" checked>'+
+                      '<input type="radio"  id="OpenChildTaxFreeadd" name="OpenChildTaxFreeadd" value="1" title="是">'+
+                    '</div>'+
+                  '</div>'+
+                '</div></form>',
+                success:function(index){
+                    layui.use(['element','form'], function(){
+                      var element = layui.element;
+                      var form = layui.form;
+                      form.render();
+                      var $ = layui.$;
+                    });
+                },
+              yes: function (index, layero) {
+                var post_data = {
+                  RoleID:$('#RoleIdadd').val(),
+                  type:0,
+                  opentype:$('input[name="OpenChildTaxFreeadd"]:checked').val()
+                };
+                $.ajax({
+                  url:"{:url('CustomerServiceSystem/editTaxFreeUser')}",
+                  type:'POST',
+                  data:post_data,
+                  dataType:'json',
+                  success:function(ret){
+                    if (ret.code == 0) {
+                      layer.msg(ret.msg);
+                      $(".layui-laypage-btn")[0].click();
+                      setTimeout(function(){layer.closeAll()},1500);
+                    } else {
+                      layer.msg(ret.msg);
+                    }
+                  }
+                }); 
+              }
+            });
+        }
+</script>
+{/block}

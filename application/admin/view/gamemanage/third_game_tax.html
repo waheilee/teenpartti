@@ -1,0 +1,102 @@
+{extend name="common/base" /}
+{block name="title"}关系列表{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+    
+</div>
+<script type="text/html" id="toolbarDemo">
+    <div class="layui-btn-container">
+
+    </div>
+</script>
+{/block}
+{block name="script"}
+<script src="__js__/cache.js"></script>
+<script src="__js__/Barrett.js"></script>
+<script src="__js__/BigInt.js"></script>
+<script src="__js__/RSA.js"></script>
+<script>
+    url = "{:url('gamemanage/thirdGameTax')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var table = layui.table;
+        var form  = layui.form;
+        var laydate  = layui.laydate;
+        var $ = layui.$;
+        var element  = layui.element;
+          table.render({
+            elem: '#proxylist'
+            // ,height: 'full-280'
+            ,url: url+'?action=list'//数据接口
+            ,limit:20
+            ,page: true //开启分页
+            ,id:'proxylist'
+            ,autoSort:false
+            ,sort: true
+            // ,toolbar: '#toolbarDemo'
+            // ,defaultToolbar:[]
+            ,cols: [[ //表头
+                {field:'GameName', title: "{:lang('三方游戏')}",align:'center', minWidth: 200},
+                {field:'OpenTax', title: "{:lang('是否开启税收')}",align:'center', minWidth: 300, templet: function(d){
+                  if(d.OpenTax == 0){
+                    return '<input type="checkbox" value="'+d.KindId+'" lay-skin="switch" lay-filter="changeStatus" lay-text="开启|关闭">';
+                  } else{
+                    return '<input type="checkbox" value="'+d.KindId+'" lay-skin="switch" lay-filter="changeStatus" lay-text="开启|关闭" checked="" >';
+                  }
+                }}
+            ]]
+            , done: function (res) {
+
+            }
+          });
+          laydate.render({elem: '#start_date', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+          laydate.render({elem: '#end_date', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+          // 搜索 
+          $("#search").on('click', function(){
+             table.reload('proxylist', {
+              page:{
+                  curr:1 
+              },
+              where: {
+                  RoleId: $('#RoleId').val(),
+                  OpenChildTaxFree: $('#OpenChildTaxFree').val(),
+                  
+              }
+            })
+          });
+        //监听单元格switch
+        form.on('switch(changeStatus)', function(obj){
+          if (obj.elem.checked) {
+            var status = 1;
+          } else {
+            var status = 0;
+          }
+          $.ajax({
+            url:"{:url('gamemanage/editThirdGameTax')}?id="+this.value+"&OpenTax="+status,
+            type:'GET',
+            dataType:'json',
+            success:function(ret){
+              if(ret.code == 0) {
+                layer.msg('修改成功');
+                setTimeout(function(){layer.closeAll()},1500);
+                // parent.$(".layui-laypage-btn")[0].click();
+                // obj.del();
+              } else {
+                $(".layui-laypage-btn")[0].click();
+                layer.msg('修改失败');
+              }
+            }
+          });
+        });
+    });
+</script>
+{/block}

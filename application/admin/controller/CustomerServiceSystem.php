@@ -1000,4 +1000,46 @@ class CustomerServiceSystem extends Main
         }
         return $this->apiReturn(0, '', 'success');
     }
+
+
+    //抽税白名单
+    public function taxFreeUser(){
+        if (input('action') == 'list') {
+            $data = (new \app\model\MasterDB())->taxFreeUser();
+            return $this->apiReturn(0, $data['data'], 'success', $data['total']);
+        } else {
+            return $this->fetch();
+        }
+    }
+
+    //增删抽税白名单
+    public function editTaxFreeUser()
+    {
+        $RoleID      = input('RoleID', 0);
+        $ProxySwitch = input('type', 0);
+        $opentype = input('opentype', 0);
+        //服务端
+        $data = $this->sendGameMessage('CND_MD_TAX_FREE_USER', [$ProxySwitch,$RoleID,$opentype], "DC", 'returnComm');
+        if ($data['iResult'] == 1) {
+            return ['code' => 0,'msg'=>'操作成功'];
+        } else {
+            return ['code' => 1,'msg'=>'操作失败'];
+        }
+    }
+
+    //掉绑白名单
+    public function disableBindWhiteList(){
+        if (input('action') == 'list') {
+            $data = (new \app\model\MasterDB())->disableBindWhiteList();
+            return $this->apiReturn(0, $data['data'], 'success', $data['total']);
+        } else {
+            return $this->fetch();
+        }
+    }
+
+    //增删抽税白名单
+    public function editDisableBindWhiteList()
+    {
+        return (new \app\model\MasterDB())->editDisableBindWhiteList();
+    }
 }
