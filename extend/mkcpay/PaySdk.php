@@ -58,16 +58,19 @@ class PaySdk
                 //PHONE
                 $pixType = 'PHONE';
                 $pixKey = '+55' . $order['CardNo'];
+                $purpose = '+55' . $order['CardNo'];
             } elseif ($order['PayWayType'] == 7) {
                 //EMAIL
                 $pixType = 'EMAIL';
                 $pixKey = $order['CardNo'];
+                $purpose = $order['CardNo'];
             } else {
                 //CPF
                 $pixType = 'CPF';//收款账户类型
                 $pixKey = $order['CardNo'];
+                $purpose = $order['Province'];
             }
-            $purpose = $order['Province'];
+
 
         }else{
             $pixType = 'CPF';
