@@ -1095,18 +1095,18 @@ class Player extends Main
                         }
                     }
                     if (config('lookPhone') == 1){
-                        if (!in_array($this->getGroupId(session('userid')),[1,2,3])){
+//                        if (!in_array($this->getGroupId(session('userid')),[1,2,3])){
                             $item['AccountName'] = substr_replace($item['AccountName'], '**', -4);
-                        }
+//                        }
                     }else{
                         $item['AccountName'] = substr_replace($item['AccountName'], '**', -4);
                     }
 
                     if (!empty($item['Mobile'])) {
                         if(config('lookPhone') == 1){
-                            if (!in_array($this->getGroupId(session('userid')),[1,2,3])){
+//                            if (!in_array($this->getGroupId(session('userid')),[1,2,3])){
                                 $item['Mobile'] = substr_replace($item['Mobile'], '**', -2);
-                            }
+//                            }
                         }else{
                             $item['Mobile'] = substr_replace($item['Mobile'], '**', -2);
                         }
@@ -1168,7 +1168,7 @@ class Player extends Main
                     if (!empty($item['Mobile'])) {
                         $item['Mobile'] = substr_replace($item['Mobile'], '**', -2);
                     }
-                    if (config('accountName') == 1){
+                    if (config('lookPhone') == 1){
                         $item['AccountName'] = substr_replace($item['AccountName'], '**', -4);
                     }
 //                    ConVerMoney($item['TotalRollOut']);
