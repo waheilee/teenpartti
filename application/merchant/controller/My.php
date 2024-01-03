@@ -80,7 +80,6 @@ class My extends Main
         $total['pggamewin'] = FormatMoney($total['pggamewin'] ?? 0);
         $total['evolivewin'] = FormatMoney($total['evolivewin'] ?? 0);
         $total['spribewin'] = FormatMoney($total['spribewin'] ?? 0);
-        $total['jiliwin'] = FormatMoney($total['jiliwin'] ?? 0);
         $total['hacksaw'] = FormatMoney($total['hacksaw'] ?? 0);
         $total['habawin'] = FormatMoney($total['habawin'] ?? 0);
         $total['jiliwin'] = FormatMoney($total['jiliwin'] ?? 0);
