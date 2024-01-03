@@ -24,7 +24,7 @@ class Index extends Base
         header('Access-Control-Allow-Methods: GET, POST, PUT,DELETE,OPTIONS,PATCH');
 //允许携带证书式访问（携带cookie）
         header('Access-Control-Allow-Credentials:true');
-
+        header('Cache-Control: no-cache, no-store, must-revalidate');
     }
 
     public function create_guid(){
@@ -64,16 +64,36 @@ class Index extends Base
             $test_uidarr = config('test_uidarr') ?: [];
             if (strlen($roleid)==7 || in_array($roleid, $test_uidarr)) {
                 $this->GAME_URL = config('pggame_test.GAME_URL');
+                $this->API_Host = config('pggame_test.API_Host');
                 $this->Operator_Token = config('pggame_test.Operator_Token');
+                config('trans_url',config('test_trans_url'));
             }
             //中转站获取链接
+
             if(config('is_pgame_trans') == 2){
                 $gameURL = $this->GAME_URL.'/'.$gameid.'/index.html?btt=1&ot='.$this->Operator_Token.'&l='.$language.'&ops='.$this->encry($roleid);
             } else {
-                $gameURL = $this->GAME_URL.'/'.$gameid.'/index.html?btt=1&ot='.$this->Operator_Token.'&l='.$language.'&ops='.$this->encry(config('platform_name').'_'.$roleid);
+                // $gameURL = $this->GAME_URL.'/'.$gameid.'/index.html?btt=1&ot='.$this->Operator_Token.'&l='.$language.'&ops='.$this->encry(config('platform_name').'_'.$roleid);
+                $header = ['Content-Type: application/x-www-form-urlencoded'];
+                $post_param = [
+                    'operator_token'=>$this->Operator_Token,
+                    'path'=>'/'.$gameid.'/index.html',
+                    'url_type'=>'game-entry',
+                    'client_ip'=>getClientIP(),
+                    'ops'=>$this->encry(config('platform_name').'_'.$roleid),
+                    'l'=>$language,
+                    'url'=> $this->API_Host
+                ];
+                $gameURL = $this->curl(config('trans_url').'/pggame/index/index',$post_param);
+                if(file_put_contents('./pggame/'.$this->encry($roleid).'_pg.html',$gameURL) != false){
+                    $gameURL = config('pg_api_url').'/pggame/'.$this->encry($roleid).'_pg.html?pggame=true';
+                    return  $this->succjson($gameURL);
+                } else {
+                    return  $this->succjson('');
+                }
             }
+            return  $this->succjson($gameURL);
 
-            return $this->succjson($gameURL);
         } catch (Exception $ex) {
             save_log('pggame_error', '==='.$ex->getMessage() . $ex->getTraceAsString() . $ex->getLine());
             return $this->failjson('api error');
