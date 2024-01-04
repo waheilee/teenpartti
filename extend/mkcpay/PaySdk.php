@@ -8,12 +8,15 @@
 
 namespace mkcpay;
 
+use app\model\BankDB;
+use app\model\GameOCDB;
 use EllipticCurve\Ecdsa;
 use EllipticCurve\PrivateKey;
 use EllipticCurve\PublicKey;
 use EllipticCurve\Signature;
 use libphonenumber\PhoneNumberUtil;
 use redis\Redis;
+use socket\sendQuery;
 
 class PaySdk
 {
@@ -149,6 +152,35 @@ class PaySdk
             }
             $result['message'] = $msg;
             $result['status'] = false;
+
+            $save_data = [
+                'status' => 5,
+                'IsDrawback'=>5,
+                'TransactionNo' => '',
+                'UpdateTime' => date('Y-m-d H:i:s',time())
+            ];
+            $db = new BankDB('userdrawback');
+            $db->updateByWhere(['OrderNo' => $OrderNo],$save_data);
+
+
+            $sendQuery=new  sendQuery();
+            $realMoney = intval($order['iMoney']/1000);
+            $res = $sendQuery->callback("CMD_MD_USER_DRAWBACK_MONEY_NEW", [$order['AccountID'], 2, $OrderNo, $realMoney, $order['iMoney'],$order['DrawBackWay'],$order['FreezonMoney'],$order['CurWaged'],$order['NeedWaged']]);
+            $res = unpack("Cint", $res)['int'];
+            $log_txt='第三方处理失败并返还金币';
+            if ($res != 0){
+                $log_txt='第三方处理失败金币未返还';
+            }
+            $gameoc = new GameOCDB();
+            $data =[
+                'OrderId'=>$OrderNo,
+                'Controller'=>'Notify',
+                'Method' => __METHOD__,
+                'Parameter'=>$resultData,
+                'Error'=>$log_txt,
+                'AddTime' => date('Y-m-d H:i:s',time())
+            ];
+            $gameoc->PaynotifyLog()->Insert($data);
         }
 
         return $result;
