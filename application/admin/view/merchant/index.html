@@ -38,6 +38,9 @@
         <a class="layui-btn layui-btn-xs" lay-event="edit">{:lang('编辑')}</a>
         <a class="layui-btn layui-btn-xs" lay-event="ed">{:lang('额度修改')}</a>
         <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="unbind">{:lang('解绑谷歌')}</a>
+        {if(config('pgtax')=='1')}
+        <a class="layui-btn layui-btn-xs " lay-event="apiCostSwitch">{:lang('api费用开关')}</a>
+        {/if}
     </script>
 </div>
 <script type="text/html" id="is_default">
@@ -214,6 +217,57 @@
                         }
                     });
                 });
+            }
+            if (obj.event === 'apiCostSwitch') {
+                layer.open({
+                    area: ['50px', '150px'],
+                    title:'{:lang("APIf费用开关")}'
+                    ,btn: ['{:lang("开启")}', '{:lang("关闭")}']
+                    ,yes: function(index, layero){
+                        //按钮【按钮一】的回调
+                        $.ajax({
+                            type: 'post',
+                            url: "{:url('merchant/apiCostSwitch')}",
+                            data: {
+                                'id':data.OperatorId,
+                                'status':1,
+                            },
+                            dataType: 'json',
+                            success: function (res) {
+                                if (res.code == 0) {
+                                    layer.msg("{:lang('设置成功')}", {icon: 1, time: 1000}, function () {
+                                        $(".layui-laypage-btn")[0].click();
+                                        layer.closeAll();
+                                    });
+                                } else {
+                                    layer.msg(res['msg'], {icon: 5});
+                                }
+                            }
+                        });
+                    }
+                    ,btn2: function(index, layero){
+                        $.ajax({
+                            type: 'post',
+                            url: "{:url('merchant/apiCostSwitch')}",
+                            data: {
+                                'id':data.OperatorId,
+                                'status':2,
+                            },
+                            dataType: 'json',
+                            success: function (res) {
+                                if (res.code == 0) {
+                                    layer.msg("{:lang('设置成功')}", {icon: 1, time: 1000}, function () {
+                                        $(".layui-laypage-btn")[0].click();
+                                        layer.closeAll();
+                                    });
+                                } else {
+                                    layer.msg(res['msg'], {icon: 5});
+                                }
+                            }
+                        });
+                    }
+                });
+
             }
         });
     });

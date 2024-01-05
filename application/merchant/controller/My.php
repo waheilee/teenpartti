@@ -62,12 +62,17 @@ class My extends Main
         sum(convert(bigint,fcgame)) as fcgame,
         sum(convert(bigint,tadagame)) as tadagame,
         sum(convert(bigint,pplive)) as pplive';
-
+        if (config('pgtax') == 1){
+            $field.=',sum(convert(bigint,pgtax)) as pgtax';
+        }
         $total = $db->getTableObject('T_Operator_GameStatisticTotal')->where($where)->field($field)->find();
         $pay = $db->getTableObject('T_Operator_GameStatisticPay')->where($where)->field('sum(convert(bigint,totalpay)) totalpay')->find();
         $out = $db->getTableObject('T_Operator_GameStatisticPayOut')->where($where)->field('sum(convert(bigint,totalpayout)) totalpayout')->find();
         // $user = $db->getTableObject('T_Operator_GameStatisticTotal')->where($where)->find();
         $config = (new MasterDB)->getTableObject('T_OperatorLink')->where('OperatorId', session('merchant_OperatorId'))->find();
+        if (isset($info['CountApiStatus']) && $info['CountApiStatus'] == 1){
+            $total['pggamewin'] = bcadd($total['pggamewin'],$total['pgtax']);
+        }
         $data = [];
 
         $data['total_recharge'] = FormatMoney($pay['totalpay'] ?? 0);

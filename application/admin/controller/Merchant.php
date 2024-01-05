@@ -441,4 +441,35 @@ class Merchant extends Main
     }
 
 
+    public function apiCostSwitch()
+    {
+        $operatorId = input('id');
+        $status = input('status');
+        $db=new MasterDB();
+        $info = $db->getTableObject('T_OperatorLink(nolock)')
+            ->field('*')
+            ->where('OperatorId',$operatorId)
+            ->find();
+        if ($status == 1){
+            if ($info['CountApiStatus'] == 1){
+
+                return $this->apiReturn(1, '', 'api费用计算已开启');
+            }
+            $db->getTableObject('T_OperatorLink')
+                ->where('OperatorId',$operatorId)
+                ->update(['CountApiStatus' =>1 ]);
+
+        }else{
+            if ($info['CountApiStatus'] == 2){
+                return $this->apiReturn(1, '', 'api费用计算已关闭');
+            }
+            $db->getTableObject('T_OperatorLink')
+                ->where('OperatorId',$operatorId)
+                ->update(['CountApiStatus' => 0 ]);
+        }
+        return $this->apiReturn(0, '', '操作成功');
+
+    }
+
+
 }
