@@ -180,7 +180,7 @@ class PaySdk
                 'Error'=>$log_txt,
                 'AddTime' => date('Y-m-d H:i:s',time())
             ];
-            $gameoc->PaynotifyLog()->Insert($data);
+            $gameoc->GetPayNotifyLogTable()->Insert($data);
         }
 
         return $result;
