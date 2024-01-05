@@ -152,6 +152,7 @@ class PaySdk
             }
             $result['message'] = $msg;
             $result['status'] = false;
+            $result['pay_type'] = 'mkcpay';
 
             $save_data = [
                 'status' => 5,
