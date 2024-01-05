@@ -140,7 +140,7 @@ class PaySdk
         //}
         save_log('mkcpay', 'post:' . json_encode($postData) . ',output:' . $resultData);
         $res = json_decode($resultData, true);
-        if (isset($res) && $res['success']) {
+        if (isset($res) && $res['code'] == 200) {
             $result['system_ref'] = '';
             $result['status'] = true;
             $result['message'] = 'success';
