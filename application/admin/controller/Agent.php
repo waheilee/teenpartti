@@ -2494,5 +2494,33 @@ class Agent extends Main
         return $this->fetch();
     }
 
+    //周薪
+    public function weekBonusLog(){
+        if (input('action') == 'list') {
+            $data = (new \app\model\DataChangelogsDB())->weekBonusLog();
+            return $this->apiReturn(0, $data['data'], 'success', $data['total'],$data['other']);
+        } else {
+            return $this->fetch();
+        }
+    }
+
+    //发送周薪
+    public function sendWeekBonus()
+    {
+        $RoleID  = input('RoleID', 0);
+        $ID = input('ID', 0);
+
+        $record = (new \app\model\DataChangelogsDB())->getTableObject('[T_WeekBonusLog](NOLOCK)')->where('ID',$ID)->find();
+        if ($record['Status'] != 0) {
+            return ['code' => 1,'msg'=>'状态有误，已发送'];
+        }
+        //服务端
+        $data = $this->sendGameMessage('CMD_MD_WEEK_BONUS_GET', [$ID,$RoleID], "DC", 'returnComm');
+        if ($data['iResult'] == 0) {
+            return ['code' => 0,'msg'=>'操作成功'];
+        } else {
+            return ['code' => 1,'msg'=>'操作失败'];
+        }
+    }
 
 }

@@ -43,8 +43,7 @@ class Gamectrl extends Main
 
             $res = $this->socket->getProfitPercent($roomId);
             $db = new MasterDB();
-            $sql ='SELECT RoomID,LuckyEggTaxRate/10 as mingtax,SysMaxLoseMoneyPerRound/'.bl.' as goldmoney  FROM 
-  T_GameRoomInfo  where Nullity=0 order by SortID';
+            $sql ='SELECT RoomID,LuckyEggTaxRate/10 as mingtax,SysMaxLoseMoneyPerRound/'.bl.' as goldmoney  FROM   T_GameRoomInfo  where Nullity=0 order by SortID';
             $his = $db->getTableQuery($sql);
 //
             $pankong = $db->getTableQuery('select RoomId,ISNULL(CurRoomWaterIn,0) As CurRoomWaterIn,ISNULL(CurRoomWaterOut,0) As CurRoomWaterOut from T_RoomRunningCtrlData');
@@ -880,7 +879,7 @@ class Gamectrl extends Main
                             unset($res[$k]);
                         }
                     }
-
+                    $res = array_merge($res);
                 }
             }
 
