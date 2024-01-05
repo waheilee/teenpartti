@@ -161,7 +161,7 @@ class PaySdk
                 'TransactionNo' => '',
                 'UpdateTime' => date('Y-m-d H:i:s',time())
             ], ['OrderNo' => $OrderNo]);
-
+            save_log('mkcpay','失败订单---'.$OrderNo);
             $sendQuery=new  sendQuery();
             $realMoney = intval($order['iMoney']/1000);
             $res = $sendQuery->callback("CMD_MD_USER_DRAWBACK_MONEY_NEW", [$order['AccountID'], 2, $OrderNo, $realMoney, $order['iMoney'],$order['DrawBackWay'],$order['FreezonMoney'],$order['CurWaged'],$order['NeedWaged']]);
