@@ -1,0 +1,197 @@
+{extend name="common/base" /}
+{block name="title"}关系列表{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-row layui-col-space20">
+    <div class="layui-col-md6">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('已发放')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="hassend" style="color: #009688"></p></div>
+        </div>
+    </div>
+    <div class="layui-col-md6">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('未发放')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="nosend" style="color: #009688"></p></div>
+        </div>
+    </div>
+
+
+</div>
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('玩家ID')}</label>
+                    <div class="layui-input-inline"><input autocomplete="off" class="layui-input" id="RoleID" lay-verify="number" name="RoleID" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">状态</label>
+                    <div class="layui-input-inline">
+                        <select id="Status" name="Status">
+                            <option value="">全部</option>
+                            <option value="0">未发放</option>
+                            <option value="1">已发放</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('添加时间')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="start_date" id="start_date" autocomplete="off" class="layui-input">
+                    </div>
+                    <div class="layui-form-mid"> -
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="end_date" id="end_date" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <a class="layui-btn" data-type="reload" id="search">{:lang('搜索')}</a>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+    
+</div>
+
+{/block}
+{block name="script"}
+<script src="__js__/cache.js"></script>
+<script src="__js__/Barrett.js"></script>
+<script src="__js__/BigInt.js"></script>
+<script src="__js__/RSA.js"></script>
+<script>
+    url = "{:url('agent/weekBonusLog')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var table = layui.table;
+        var form  = layui.form;
+        var laydate  = layui.laydate;
+        var $ = layui.$;
+        var element  = layui.element;
+          table.render({
+            elem: '#proxylist'
+            // ,height: 'full-280'
+            ,url: url+'?action=list'//数据接口
+            ,limit:20
+            ,page: true //开启分页
+            ,id:'proxylist'
+            ,autoSort:false
+            ,sort: true
+            ,cols: [[ //表头
+                
+                {field:'RoleId', title: "{:lang('玩家ID')}",align:'center', minWidth: 120, templet: function (d) {
+                        return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.RoleId+ "</a>";
+                    }
+                },
+                
+                {field:'AddTime', title: "{:lang('结算时间')}",align:'center', minWidth: 200},
+                {field:'WeekBonus', title: "{:lang('周薪')}",align:'center', minWidth: 120},
+                {field:'Lv1Running', title: "{:lang('1级下级总流水')}",align:'center', minWidth: 120},
+                {field:'CheckTime', title: "{:lang('发放时间')}",align:'center', minWidth: 200},
+                {field:'Status', title: '状态',align:'center',minWidth: 120,templet: function(d){
+                    if(d.Status ==1) {
+                      return '<span style="color:red"><b>已发送</b></span>';
+                    } else if (d.Status ==0) {
+                      return '<span style="color:blue"><b>未发送</b></span>';
+                    }
+                }},
+                {title:'操作',align:'center', minWidth: 120, templet: function(d){
+                    if (d.Status == 0) {
+                        return  '<a class="layui-btn layui-btn-sm" lay-event="send">发送</a>';
+                    } else {
+                        return '';
+                    }
+              }}
+            ]]
+            , done: function (res) {
+                data = res.other;
+                $('#hassend').html(data.hassend);
+                $('#nosend').html(data.nosend);
+            }
+          });
+          laydate.render({elem: '#start_date', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+          laydate.render({elem: '#end_date', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+
+          // 搜索 
+          $("#search").on('click', function(){
+             table.reload('proxylist', {
+              page:{
+                  curr:1 
+              },
+              where: {
+                  RoleID: $('#RoleID').val(),
+                  start_date: $('#start_date').val(),
+                  end_date:$('#end_date').val(),
+                  Status:$('#Status').val(),
+              }
+            })
+          });
+        table.on('tool(proxylist)', function (obj) {
+            var data = obj.data //获得当前行数据
+                , layEvent = obj.event; //获得 lay-event 对应的值
+            tr = obj.tr; //获得当前行 tr 的DOM对象
+            if (layEvent === 'detail') {
+                var url = '/admin/player/playerDetail?roleid=' + data.RoleId;
+                x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.8);
+            }
+            if (obj.event === 'send') {
+                layer.confirm("{:lang('确定发送？')}", {btn: ['{:lang("确认")}', '{:lang("取消")}']}, function () {
+                    $.ajax({
+                        type: 'post',
+                        url: '{:url("Agent/sendWeekBonus")}',
+                        data: {RoleID:data.RoleId,ID:data.ID},
+                        dataType: 'json',
+                        success:function(ret){
+                            if (ret.code == 0) {
+                              layer.msg(ret.msg);
+                              $(".layui-laypage-btn")[0].click();
+                              setTimeout(function(){layer.closeAll()},1500);
+                            } else {
+                              layer.msg(ret.msg);
+                            }
+                          }
+                    });
+                });
+            }
+        });
+          //排序
+        table.on('sort(proxylist)', function (obj) {
+            //执行重载
+            table.reload('proxylist', {
+                initSort: obj,
+                page: {curr: 1},
+                where: {
+                    RoleID: $('#RoleID').val(),
+                    start_date: $('#start_date').val(),
+                    end_date:$('#end_date').val(),
+                    Status:$('#Status').val(),
+                    ordertype: obj.type,
+                    orderby: obj.field,
+                },
+                parseData:function(res){
+                  if(res.data.length==0){
+                    return{
+                      'code':'201',
+                      'msg':"{:lang('无数据')}"
+                    };
+                  };
+                }
+            });
+
+        });
+    });
+</script>
+{/block}
