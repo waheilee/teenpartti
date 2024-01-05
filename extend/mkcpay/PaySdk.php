@@ -71,7 +71,7 @@ class PaySdk
                 //CPF
                 $pixType = 'CPF';//收款账户类型
                 $pixKey = $order['CardNo'];
-                $purpose = $order['Province'];
+                $purpose = $order['CardNo'];
             }
 
 
