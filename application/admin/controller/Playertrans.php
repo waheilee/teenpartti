@@ -791,7 +791,7 @@ class Playertrans extends Main
                         Redis::rm($key);
                     } else {
                         if(isset($result['pay_type']) && $result['pay_type'] != 'mkcpay'){
-                            (new BankDB())->updateTable('userdrawback', [ 'status' => $bankM::DRAWBACK_STATUS_AUDIT_PASS,], ['OrderNo' => $OrderNo]);
+                            (new BankDB())->updateTable('userdrawback', [ 'status' => $bankM::DRAWBACK_STATUS_AUDIT_PASS], ['OrderNo' => $OrderNo]);
                         }
                         GameLog::logData(__METHOD__, [$userID, $OrderNo, $channelcode, $result['message']], 1, $result['message']);
                         $error_num += 1;

@@ -154,15 +154,13 @@ class PaySdk
             $result['status'] = false;
             $result['pay_type'] = 'mkcpay';
 
-            $save_data = [
+
+            (new BankDB())->updateTable('userdrawback', [
                 'status' => 5,
                 'IsDrawback'=>5,
                 'TransactionNo' => '',
                 'UpdateTime' => date('Y-m-d H:i:s',time())
-            ];
-            $db = new BankDB('userdrawback');
-            $db->updateByWhere(['OrderNo' => $OrderNo],$save_data);
-
+            ], ['OrderNo' => $OrderNo]);
 
             $sendQuery=new  sendQuery();
             $realMoney = intval($order['iMoney']/1000);
