@@ -70,7 +70,7 @@ class My extends Main
         $out = $db->getTableObject('T_Operator_GameStatisticPayOut')->where($where)->field('sum(convert(bigint,totalpayout)) totalpayout')->find();
         // $user = $db->getTableObject('T_Operator_GameStatisticTotal')->where($where)->find();
         $config = (new MasterDB)->getTableObject('T_OperatorLink')->where('OperatorId', session('merchant_OperatorId'))->find();
-        if (isset($info['CountApiStatus']) && $info['CountApiStatus'] == 1){
+        if (isset($config['CountApiStatus']) && $config['CountApiStatus'] == 1){
             $total['pggamewin'] = bcadd($total['pggamewin'],$total['pgtax']);
         }
         $data = [];
