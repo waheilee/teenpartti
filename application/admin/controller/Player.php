@@ -2,6 +2,7 @@
 
 namespace app\admin\controller;
 
+use app\admin\controller\Export\AllUserInfoExport;
 use app\admin\controller\traits\getSocketRoom;
 use app\admin\controller\traits\search;
 use app\common\Api;
@@ -1163,48 +1164,51 @@ class Player extends Main
             case 'exec':
                 $field = "AccountID ID,AccountName,LoginName,RegisterTime,LastLoginIP,TotalDeposit,TotalRollOut,Money,ProxyBonus";
                 $result = $db->TViewAccount()->GetPage($where, "$orderby $ordertype", $field);
-                foreach ($result['list'] as &$item) {
-                    ConVerMoney($item['Money']);
-                    if (!empty($item['Mobile'])) {
-                        $item['Mobile'] = substr_replace($item['Mobile'], '**', -2);
-                    }
-                    if (config('accountName') == 1){
-                        $item['AccountName'] = substr_replace($item['AccountName'], '**', -4);
-                    }
-//                    ConVerMoney($item['TotalRollOut']);
-//                    ConVerMoney($item['TotalDeposit']);
-                }
-                $outAll = input('outall', false);
-                if ((int)input('exec', 0) == 0) {
-                    if ($result['count'] == 0) {
-                        $result = ["count" => 0, "code" => 1, 'msg' => lang("没有找到任何数据,换个姿势再试试?")];
-                    }
-                    if ($result['count'] >= 5000 && $outAll == false) {
-                        $result = ["code" => 2, 'msg' => lang("数据超过5000行是否全部导出?<br>数据越多速度越慢<br>当前数据一共有") . $result['count'] . lang("行")];
-                    }
-                    unset($result['list']);
-                    return $this->apiJson($result);
-                }
-                //导出表格
-                if ((int)input('exec', 0) == 1 && $outAll = true) {
-                    $header_types = [
-                        lang('ID') => 'integer',//ID
-                        //lang('机器码') => 'string',//MachineCode
-                        // lang('手机号') => 'string',//AccountName
-                        lang('账号') => 'string',//AccountName
-//                        '是否禁用' => "string",//Locked
-                        lang('昵称') => 'string',//LoginName
-//                        '登陆类型' => "string",//GmType
-                        lang('注册时间') => "datetime",//RegisterTime
-                        lang('最后登录IP') => "string",//LastLoginIP
-                        lang('总充值') => "0.00",//TotalDeposit
-                        lang('总转出') => '0.00',//TotalRollOut
-                        lang('剩余金币') => '0.00',//Money
-                        lang('代理账户') => '0.00'//Money
-                    ];
-                    $filename = lang('用户记录') . '-' . date('YmdHis');
-                    $this->GetExcel($filename, $header_types, $result['list']);
-                }
+                $AgentWaterDailyExport = new AllUserInfoExport();
+                $AgentWaterDailyExport->export($result['list']);
+//                foreach ($result['list'] as &$item) {
+//                    ConVerMoney($item['Money']);
+//                    if (!empty($item['Mobile'])) {
+//                        $item['Mobile'] = substr_replace($item['Mobile'], '**', -2);
+//                    }
+//                    if (config('accountName') == 1){
+//                        $item['AccountName'] = substr_replace($item['AccountName'], '**', -4);
+//                    }
+////                    ConVerMoney($item['TotalRollOut']);
+////                    ConVerMoney($item['TotalDeposit']);
+//                }
+//
+//                $outAll = input('outall', false);
+//                if ((int)input('exec', 0) == 0) {
+//                    if ($result['count'] == 0) {
+//                        $result = ["count" => 0, "code" => 1, 'msg' => lang("没有找到任何数据,换个姿势再试试?")];
+//                    }
+//                    if ($result['count'] >= 5000 && $outAll == false) {
+//                        $result = ["code" => 2, 'msg' => lang("数据超过5000行是否全部导出?<br>数据越多速度越慢<br>当前数据一共有") . $result['count'] . lang("行")];
+//                    }
+//                    unset($result['list']);
+//                    return $this->apiJson($result);
+//                }
+//                //导出表格
+//                if ((int)input('exec', 0) == 1 && $outAll = true) {
+//                    $header_types = [
+//                        lang('ID') => 'integer',//ID
+//                        //lang('机器码') => 'string',//MachineCode
+//                        // lang('手机号') => 'string',//AccountName
+//                        lang('账号') => 'string',//AccountName
+////                        '是否禁用' => "string",//Locked
+//                        lang('昵称') => 'string',//LoginName
+////                        '登陆类型' => "string",//GmType
+//                        lang('注册时间') => "datetime",//RegisterTime
+//                        lang('最后登录IP') => "string",//LastLoginIP
+//                        lang('总充值') => "0.00",//TotalDeposit
+//                        lang('总转出') => '0.00',//TotalRollOut
+//                        lang('剩余金币') => '0.00',//Money
+//                        lang('代理账户') => '0.00'//Money
+//                    ];
+//                    $filename = lang('用户记录') . '-' . date('YmdHis');
+//                    $this->GetExcel($filename, $header_types, $result['list']);
+//                }
                 break;
         }
 
