@@ -1164,8 +1164,7 @@ class Player extends Main
             case 'exec':
                 $field = "AccountID ID,AccountName,LoginName,RegisterTime,LastLoginIP,TotalDeposit,TotalRollOut,Money,ProxyBonus";
                 $result = $db->TViewAccount()->GetPage($where, "$orderby $ordertype", $field);
-                $AgentWaterDailyExport = new AllUserInfoExport();
-                $AgentWaterDailyExport->export($result['list']);
+                (new AllUserInfoExport())->export($result['list']);
 //                foreach ($result['list'] as &$item) {
 //                    ConVerMoney($item['Money']);
 //                    if (!empty($item['Mobile'])) {

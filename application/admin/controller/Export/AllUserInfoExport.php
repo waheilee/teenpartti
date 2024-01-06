@@ -3,8 +3,7 @@
 namespace app\admin\controller\Export;
 
 use app\admin\controller\Main;
-use app\model\GameOCDB;
-use think\Exception;
+
 use XLSXWriter;
 class AllUserInfoExport extends Main
 {
@@ -34,19 +33,19 @@ class AllUserInfoExport extends Main
     {
 //        $data = [];
         $data[] = [
-            lang('ID') => 'integer',//ID
+            lang('ID'),//ID
             //lang('机器码') => 'string',//MachineCode
             // lang('手机号') => 'string',//AccountName
-            lang('账号') => 'string',//AccountName
+            lang('账号'),//AccountName
 //                        '是否禁用' => "string",//Locked
-            lang('昵称') => 'string',//LoginName
+            lang('昵称'),//LoginName
 //                        '登陆类型' => "string",//GmType
-            lang('注册时间') => "datetime",//RegisterTime
-            lang('最后登录IP') => "string",//LastLoginIP
-            lang('总充值') => "0.00",//TotalDeposit
-            lang('总转出') => '0.00',//TotalRollOut
-            lang('剩余金币') => '0.00',//Money
-            lang('代理账户') => '0.00'//Money
+            lang('注册时间'),//RegisterTime
+            lang('最后登录IP'),//LastLoginIP
+            lang('总充值'),//TotalDeposit
+            lang('总转出'),//TotalRollOut
+            lang('剩余金币'),//Money
+            lang('代理账户')//Money
         ];
 
             foreach ($sourceData as $k){
