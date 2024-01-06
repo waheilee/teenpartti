@@ -51,7 +51,7 @@ class AllUserInfoExport extends Main
             foreach ($sourceData as $k){
                 $item = [];
                 $item['ID'] = $k['AccountID'] ?? "";
-                $item['AccountName'] = substr_replace($k['AccountName'], '**', -4);
+                $item['AccountName'] = $k['AccountName'];
                 $item['LoginName'] = $k['LoginName'] ?? "";
                 $item['RegisterTime'] = $k['RegisterTime'] ?? "";
                 $item['LastLoginIP'] = $k['LastLoginIP'] ?? "";
