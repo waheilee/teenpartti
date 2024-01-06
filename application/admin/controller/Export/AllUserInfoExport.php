@@ -51,15 +51,15 @@ class AllUserInfoExport extends Main
 
             foreach ($sourceData as $k){
                 $item = [];
-                $item['ID'] = $k['AccountID'];
+                $item['ID'] = $k['AccountID'] ?? "";
                 $item['AccountName'] = substr_replace($k['AccountName'], '**', -4);
-                $item['LoginName'] = $k['LoginName'];
-                $item['RegisterTime'] = $k['RegisterTime'];
-                $item['LastLoginIP'] = $k['LastLoginIP'];
-                $item['TotalDeposit'] = $k['TotalDeposit'];
-                $item['TotalRollOut'] = $k['TotalRollOut'];
+                $item['LoginName'] = $k['LoginName'] ?? "";
+                $item['RegisterTime'] = $k['RegisterTime'] ?? "";
+                $item['LastLoginIP'] = $k['LastLoginIP'] ?? "";
+                $item['TotalDeposit'] = $k['TotalDeposit'] ?? "";
+                $item['TotalRollOut'] = $k['TotalRollOut'] ?? "";
                 $item['Money'] = FormatMoney($k['Money']);
-                $item['ProxyBonus'] = $k['ProxyBonus'];
+                $item['ProxyBonus'] = $k['ProxyBonus'] ?? "";
 
                 //团队打码
                 $data[] = $item;
