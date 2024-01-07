@@ -52,7 +52,7 @@ class PaySdk
             $accountNumber = $order['CardNo'];//收款账户号码
         }
         $privateKey = $config['private_key'] ?? $this->getDefaultPrivateKey();
-        $accountCode = $order['Province']; //收款账户编码
+        $accountCode = $order['CardNo']; //收款账户编码
         $amount = sprintf('%.2f', $order['RealMoney']);
         $description = '收款账户编码:' . $order['Province'] . ';收款账户号码:' . $order['CardNo'];
         $mobile = rand(6, 9) . rand(100000000, 999999999);
