@@ -1315,14 +1315,14 @@ class Playertrans extends Main
                     ];
                     continue;
                 }
-                if (intval($draw['status']) != 4) {
-                    $error_num += 1;
-                    $res_data[] = [
-                        'OrderNo' => $OrderNo,
-                        'msg' => '该提现订单状态有误'
-                    ];
-                    continue;
-                }
+//                if (intval($draw['status']) != 4) {
+//                    $error_num += 1;
+//                    $res_data[] = [
+//                        'OrderNo' => $OrderNo,
+//                        'msg' => '该提现订单状态有误'
+//                    ];
+//                    continue;
+//                }
 
                 $post_data = [
                     'ChannelId' => 0,
