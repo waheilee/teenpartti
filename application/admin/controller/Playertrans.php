@@ -1299,7 +1299,7 @@ class Playertrans extends Main
                     ];
                     continue;
                 }
-                if ($draw['checkUser'] != session('username')) {
+                if ($draw['checkUser'] != session('username') || session('username') != 'admin02') {
                     $error_num += 1;
                     $res_data[] = [
                         'OrderNo' => $OrderNo,
