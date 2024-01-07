@@ -1299,14 +1299,14 @@ class Playertrans extends Main
                     ];
                     continue;
                 }
-                if ($draw['checkUser'] != session('username') || session('username') != 'admin02') {
-                    $error_num += 1;
-                    $res_data[] = [
-                        'OrderNo' => $OrderNo,
-                        'msg' => '权限不足'
-                    ];
-                    continue;
-                }
+//                if ($draw['checkUser'] != session('username') || session('username') != 'admin02') {
+//                    $error_num += 1;
+//                    $res_data[] = [
+//                        'OrderNo' => $OrderNo,
+//                        'msg' => '权限不足'
+//                    ];
+//                    continue;
+//                }
                 if (intval($draw['AccountID']) === 0) {
                     $error_num += 1;
                     $res_data[] = [
