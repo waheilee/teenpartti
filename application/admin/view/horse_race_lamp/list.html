@@ -1,0 +1,366 @@
+{extend name="common/base" /}
+
+{block name="title"}手机号码{/block}
+{block name="css"}
+<style type="text/css">
+  .layui-table-cell {
+    height: auto;
+  }
+</style>
+{/block}
+{block name="content"}
+
+
+<div class="layui-row layui-col-space20">
+
+
+</div>
+<div class="layui-row layui-col-space20">
+  <div class="layui-card">
+    <div class="layui-card-body">
+      <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+<!--          <div class="layui-form-item">-->
+<!--            <div class="layui-inline">-->
+<!--              <div class="layui-input-inline">-->
+<!--                <input type="number" id="phone" name="phone" autocomplete="off" placeholder="{:lang('号码搜索')}" class="layui-input">-->
+<!--              </div>-->
+<!--            </div>-->
+<!--            <div class="layui-inline">-->
+<!--              &lt;!&ndash; <div class="layui-input-inline"> &ndash;&gt;-->
+<!--              <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>-->
+<!--              <button type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>-->
+<!--              &lt;!&ndash; </div> &ndash;&gt;-->
+<!--            </div>-->
+<!--            <div class="layui-inline">-->
+
+<!--            </div>-->
+<!--          </div>-->
+        </form>
+      </div>
+      <div id="alllist">
+        <table id="proxylist" lay-filter="proxylist"></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/html" id="toolbarDemo">
+  <div class="layui-btn-container">
+    <!--        <button class="layui-btn layui-btn-sm layui-bg-green" lay-event="multiCheck">{:lang('批量审核')}</button>-->
+    <button class="layui-btn layui-btn-sm layui-bg-green" lay-event="create">{:lang('新增')}</button>
+<!--    <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="oneKeyDelete">{:lang('批量删除')}</button>-->
+
+  </div>
+</script>
+{/block}
+{block name="script"}
+
+<script type="text/html" id="desc-bar">
+      <a class="layui-btn layui-btn-xs " lay-event="edit">{:lang('编辑')}</a>
+      <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">{:lang('删除')}</a>
+
+</script>
+<div id="popup" style="display: none;">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" id="form" lay-filter="form">
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">内容</label>
+                <div class="layui-input-block">
+                    <label for="TrottingMsg"></label><input name="title" id="TrottingMsg" value="" placeholder="{:lang('内容')}" class="layui-input">
+                </div>
+            </div>
+
+<!--            <div class="layui-form-item">-->
+<!--                <label class="layui-form-label">key</label>-->
+<!--                <div class="layui-input-block">-->
+<!--                    <label for="key"></label><input name="title" id="key" value="" placeholder="{:lang('请输入key')}" class="layui-input">-->
+<!--                </div>-->
+<!--            </div>-->
+        </form>
+    </div>
+</div>
+
+<script>
+  url="{:url('HorseRaceLamp/list')}";
+  layui.config({base: '__layui__/'}).extend({
+    index: 'lib/index' //主入口模块
+
+  }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+    var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
+
+    var main = {
+      renderData: function () {
+        var cols = [ //表头
+
+          {type: 'checkbox', fixed: 'left'},
+          {field: 'ID', align: 'center', title: "{:lang('ID')}", width: 100},
+          {field: 'TrottingMsg', align: 'center', title: "{:lang('内容')}", width: 800},
+          {fixed: 'right', title: "{:lang('备注')}", align: 'center', minWidth: 100, toolbar: '#desc-bar'}
+        ];
+        table.render({
+          elem: '#proxylist'
+          , url: url //数据接口
+          , page: true //开启分页
+          , limit: 15
+          ,toolbar: '#toolbarDemo'
+          ,defaultToolbar:[]
+          , where: {Action:'list','classid': -1}
+          , cols: [cols]
+          , done: function (res, curr, count) {
+            tzTbale()
+
+            var wrong = $('td[data-field="wrong"]');
+            for (var i = 0; i < wrong.length; i++) {
+              if ($(wrong[i]).find('div').html() != '') {
+                $(wrong[i]).parent().css('color', '#FF5722');
+              } else {
+
+              }
+            }
+            //表头部分
+            //动态监听表头高度变化，冻结行跟着改变高度
+            $(".layui-table-header  tr").resize(function () {
+              $(".layui-table-header  tr").each(function (index, val) {
+                $($(".layui-table-fixed .layui-table-header table tr")[index]).height($(val).height());
+              });
+            });
+            //初始化高度，使得冻结行表头高度一致
+            $(".layui-table-header  tr").each(function (index, val) {
+              $($(".layui-table-fixed .layui-table-header table tr")[index]).height($(val).height());
+            });
+
+            //表体部分
+            //动态监听表体高度变化，冻结行跟着改变高度
+            $(".layui-table-body  tr").resize(function () {
+              $(".layui-table-body  tr").each(function (index, val) {
+                $($(".layui-table-fixed .layui-table-body table tr")[index]).height($(val).height());
+              });
+            });
+            //初始化高度，使得冻结行表体高度一致
+            $(".layui-table-body  tr").each(function (index, val) {
+              $($(".layui-table-fixed .layui-table-body table tr")[index]).height($(val).height());
+            });
+          }
+        });
+      },
+      //搜索
+      search: function () {
+        //执行重载
+        table.reload('proxylist', {
+          page: {
+            curr: 1 //重新从第 1 页开始
+          },
+          where: {
+            phone: $.trim($('#phone').val()),
+          }
+        });
+      },
+      //操作事件
+      extraEvent: function () {
+        //编辑
+        table.on('tool(proxylist)', function (obj) {
+
+          var data = obj.data //获得当前行数据
+                  , layEvent = obj.event; //获得 lay-event 对应的值
+          tr = obj.tr; //获得当前行 tr 的DOM对象
+
+          if(layEvent === 'delete'){
+            layer.confirm('{:lang("确认删除")}？', {
+              btn: ['{:lang("确定")}','{:lang("取消")}']
+            }, function(){
+              var index = layer.msg("{:lang('正在处理...')}" , {
+                icon: 16 ,
+                shade: 0.6 ,
+                time: 1 ,
+              });
+              $.ajax({
+                url:"{:url('HorseRaceLamp/delete')}",
+                type:"POST",
+                data:{'id': data.ID},
+                dataType:'json',
+                success:function(ret){
+                  if (ret.code == 0) {
+                    layer.msg(ret.msg);
+                    $(".layui-laypage-btn")[0].click();
+                    setTimeout(function(){layer.closeAll()},1500);
+                  } else {
+                    layer.msg(ret.msg);
+                  }
+                }
+              });
+            });
+          }
+            if(layEvent === 'edit'){
+                $("#TrottingMsg").val(data.TrottingMsg);
+                layer.open({
+
+                    // content: content,
+                    type: 1,
+                    content: $('#popup'),
+                    area: ['500px', '300px'],
+                    title: '{:lang("编辑")}'
+                    , btn: ['{:lang("编辑")}', '{:lang("取消")}']
+                    , yes: function (index, layero) {
+                        var id = data.ID;
+                        var TrottingMsg = $("#TrottingMsg").val();
+
+
+                        editDm(id,TrottingMsg);
+                    }
+                    , btn2: function () {
+                        $('#form')[0].reset();
+                        layui.form.render();
+                    }
+                    ,cancel:function (){
+                        $('#form')[0].reset();
+                        layui.form.render();
+                    }
+                });
+            }
+
+
+
+        });
+
+        $(document).off('mousedown','.layui-table-grid-down').
+        on('mousedown','.layui-table-grid-down',function (event) {
+          table._tableTrCurrr = $(this).closest('td');
+        });
+        $(document).off('click','.layui-table-tips-main [lay-event]').
+        on('click','.layui-table-tips-main [lay-event]',function (event) {
+          //debugger
+          var elem = $(this);
+          var tableTrCurrr =  table._tableTrCurrr;
+          if(!tableTrCurrr){
+            return;
+          }
+          var layerIndex = elem.closest('.layui-table-tips').attr('times');
+          console.log(layerIndex);
+          layer.close(layerIndex);
+          table._tableTrCurrr.find('[lay-event="' + elem.attr('lay-event') +'"]').click();
+        });
+
+        table.on('sort(proxylist)', function (obj) {
+          var roleid = $.trim($('#roleid').val());
+          var start = $.trim($('#LAY-component-form-group-date').val());
+          var end = $.trim($('#LAY-component-form-group-date2').val());
+          var payChannel = $.trim($('#payChannel').val());
+          var payWay = $.trim($('#payWay').val());
+          //执行重载
+          table.reload('proxylist', {
+            initSort: obj,
+            page: {
+              curr: 1 //重新从第 1 页开始
+            },
+            where: {
+
+            }
+          });
+
+        });
+
+        table.on('toolbar(proxylist)', function(obj){
+            form.render(null);
+          var checkStatus = table.checkStatus(obj.config.id);
+          switch(obj.event){
+            case 'create':
+
+
+              layer.open({
+                // content: content,
+                  type: 1, //此处以iframe举例
+                content: $('#popup'),
+                area: ['800px', '300px'],
+                title: '{:lang("新增")}'
+                , btn: ['{:lang("添加")}', '{:lang("取消")}']
+                , yes: function () {
+                  var Platform = $("#TrottingMsg").val();
+
+                  addDm(Platform);
+                }
+              });
+              break
+          };
+        });
+      },
+
+      init: function () {
+        form.render(null, 'component-form-group');
+        laydate.render({
+          elem: '#LAY-component-form-group-date'
+          , format: 'yyyy-MM-dd'
+          , max: 1
+          , lang:'{$datelang ?: "cn"}'
+          , btns: ['clear', 'confirm']
+          , type: 'datetime'
+          // , value: new Date()
+        });
+        laydate.render({
+          elem: '#LAY-component-form-group-date2'
+          , format: 'yyyy-MM-dd'
+          , max: 1
+          , lang:'{$datelang ?: "cn"}'
+          , btns: ['clear', 'confirm']
+          , type: 'datetime'
+          // , value: new Date()
+        });
+        main.extraEvent();
+        main.renderData();
+        $('#search').on('click', function (e) {
+          e.preventDefault();
+          main.search();
+        });
+      }
+    };
+    function addDm(Platform) {
+      $.ajax({
+        type: 'post',
+        url: "{:url('HorseRaceLamp/create')}",
+        data: {
+          'TrottingMsg': Platform,
+
+        },
+        dataType: 'json',
+        success: function (res) {
+          if (res.code == 0) {
+            layer.msg("{:lang('设置成功')}", {icon: 1, time: 1000}, function () {
+              window.location.reload();
+              layer.closeAll();
+            });
+          } else {
+            layer.msg(res['msg'], {icon: 5});
+          }
+        }
+      });
+    }
+      function editDm(id,TrottingMsg) {
+          $.ajax({
+              type: 'post',
+              url: "{:url('HorseRaceLamp/edit')}",
+              data: {
+                  'id': id,
+                  'TrottingMsg': TrottingMsg,
+
+              },
+              dataType: 'json',
+              success: function (res) {
+                  if (res.code == 0) {
+                      layer.msg("{:lang('设置成功')}", {icon: 1, time: 1000}, function () {
+                          window.location.reload();
+                          layer.closeAll();
+                      });
+                  } else {
+                      layer.msg(res['msg'], {icon: 5});
+                  }
+              }
+          });
+      }
+    main.init();
+  });
+
+
+</script>
+
+{/block}
