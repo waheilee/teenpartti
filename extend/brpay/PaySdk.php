@@ -6,7 +6,7 @@
  * Time: 22:12
  */
 
-namespace ycfpay;
+namespace brpay;
 
 class PaySdk
 {
@@ -52,7 +52,7 @@ class PaySdk
         ];
         $result = $this->curl_post_content($apiUrl . '/api/pay/transactions/give', http_build_query($postData), $header);
 
-        save_log('ycfpay', 'post:' . json_encode($postData) . ',output:' . $result);
+        save_log('brpay', 'post:' . json_encode($postData) . ',output:' . $result);
 
         $res = json_decode($result, true);
         if (isset($res) && $res['code'] == 1){
@@ -60,7 +60,7 @@ class PaySdk
             $result['status'] = true;
             $result['message'] = 'success';
         }else{
-            save_log('ycfpay', '代付同步回调失败订单:' . $orderTradeNo . '状态:' . $res['code']);
+            save_log('brpay', '代付同步回调失败订单:' . $orderTradeNo . '状态:' . $res['code']);
             $result['message'] = $res['msg'];
             $result['status'] = false;
         }
