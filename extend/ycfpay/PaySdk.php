@@ -13,6 +13,7 @@ class PaySdk
 
     public function payout($OrderNo, $order, $config = [])
     {
+
         $merchantId = $config['merchant'] ?? '';
         $secretKey = $config['secret'] ?? '';
         $apiUrl = $config['api_url'] ?? '';
@@ -47,11 +48,12 @@ class PaySdk
 
         $postData['pay_md5sign'] = $this->createSign($postData, $secretKey);
         $header = [
-            // 'Content-Type: application/x-www-form-urlencoded;charset=utf-8',
+             'Content-Type: application/x-www-form-urlencoded;charset=utf-8',
         ];
-
         $result = $this->curl_post_content($apiUrl . '/api/pay/transactions/give', http_build_query($postData), $header);
+
         save_log('ycfpay', 'post:' . json_encode($postData) . ',output:' . $result);
+
         $res = json_decode($result, true);
         if (isset($res) && $res['code'] == 1){
             $result['system_ref'] = '';
