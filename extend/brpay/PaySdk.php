@@ -47,9 +47,9 @@ class PaySdk
         ];
 
         $postData['pay_md5sign'] = $this->createSign($postData, $secretKey);
-        $header = [
-             'Content-Type: application/x-www-form-urlencoded;charset=utf-8',
-        ];
+//        $header = [
+//             'Content-Type: application/x-www-form-urlencoded;charset=utf-8',
+//        ];
         $result = $this->curl_post_content($apiUrl . '/api/pay/transactions/give', http_build_query($postData), $header);
 
         save_log('brpay', 'post:' . json_encode($postData) . ',output:' . $result);
