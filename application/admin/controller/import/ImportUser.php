@@ -4,8 +4,6 @@ namespace app\admin\controller\import;
 
 use app\admin\controller\Main;
 use app\model\AccountDB;
-use think\Env;
-use think\Loader;
 use PHPExcel;
 
 
@@ -20,9 +18,7 @@ class ImportUser extends Main
     function inserExcel()
     {
 
-//        Loader::import('PHPExcel.PHPExcel');
-//        Loader::import('PHPExcel.Classes.PHPExcel.IOFactory.PHPExcel_IOFactory');
-//        Loader::import('PHPExcel.Classes.PHPExcel.Reader.Excel5');
+
         //获取表单上传文件
         $file = request()->file('excel');
 
@@ -42,7 +38,7 @@ class ImportUser extends Main
 
             $errorInfo = [];
             $success_num = 0;
-            $error_num=0;
+            $error_num = 0;
             foreach ($excel_array as $k => $v) {
 
                 $regIpIn = (string)$v[0];
@@ -51,44 +47,36 @@ class ImportUser extends Main
                 $inviteCode = (string)$v[3];
 
                 $userAccountDB = new AccountDB();
-                $sqlExec = "exec P_Test_Accounts_Bind_Insert '$regIpIn','$regPhone','$password', '$inviteCode'";
-//                $sql = "{CALL [dbo].[P_Test_Accounts_Bind_Insert] (?, ?, ?, ?)}";
-//                $data = [
-//                    $regIpIn,
-//                    $regPhone,
-//                    $password,
-//                    $inviteCode
-//                ];
-//                $res = $userAccountDB->getTableEXEC($sql,$data);
-                $res = $userAccountDB->getTableQuery($sqlExec);
-                $flattenedArray = call_user_func_array('array_merge', $res);
-
-                if ($flattenedArray[0]['info'] == 1){
-                    $errorInfo[] = [
-                        '电话号码' => $regPhone,
-                        '消息' => 'ip重复',
-                    ];
-                    $error_num +=1;
-                }elseif($flattenedArray[0]['info'] == 2){
-                    $errorInfo[] = [
-                        '电话号码' => $regPhone,
-                        '消息' => '电话号码重复',
-                    ];
-                    $error_num +=1;
-                }elseif($flattenedArray[0]['info'] == 3){
+                $accountName = $userAccountDB->getTableObject('T_Accounts')
+                    ->where('AccountName','55'.$regPhone)
+                    ->find();
+                if (!empty($accountName)){
                     $errorInfo[] = [
                         '电话号码' => $regPhone,
                         '消息' => '用户名重复',
                     ];
                     $error_num +=1;
-                }else{
-                    $success_num+= 1;
+                    continue;
                 }
+                $phone = $userAccountDB->getTableObject('T_Accounts')
+                    ->where('Mobile','55'.$regPhone)
+                    ->find();
+                if (!empty($phone)){
+                    $errorInfo[] = [
+                        '电话号码' => $regPhone,
+                        '消息' => '电话号码重复',
+                    ];
+                    $error_num +=1;
+                    continue;
+                }
+                $sqlExec = "exec P_Test_Accounts_Bind_Insert '$regIpIn','$regPhone','$password', '$inviteCode'";
+
+                $userAccountDB->getTableQuery($sqlExec);
+                $success_num +=1;
             }
 dump('成功'.$success_num);
 dump('失败'.$error_num);
 print_r($errorInfo);
-//            $this->apiReturn(0, $errorInfo, '操作成功。成功：' . $success_num . ',失败：' . $error_num);
 
         } else {
             echo $file->getError();
