@@ -14,12 +14,30 @@ class PaySdk
     public function payout($OrderNo, $order, $config = [])
     {
 
+
+
         $merchantId = $config['merchant'] ?? '';
         $secretKey = $config['secret'] ?? '';
         $apiUrl = $config['apiurl'] ?? '';
         $orderTradeNo = trim($OrderNo);
         $amount = sprintf('%.2f', $order['RealMoney']);
         $notifyUrl = $config['notify_url'] ?? '';
+        $checkBalanceData = [
+            'memberid' => $merchantId,
+            'time' => date('Y-m-d H:i:s')
+        ];
+
+        $checkBalance = $this->curl_post_content($apiUrl . '/api/pay/transactions/give', http_build_query($checkBalanceData), []);
+        $balance = json_decode($checkBalance, true);
+        if (!empty($balance) && $balance['code'] == 1){
+            if ($balance['data']['amount'] < $amount){
+                save_log('brpay', '商户余额不足');
+                $result['message'] = '商户余额不足';
+                $result['status'] = false;
+                $result['balance'] = true;
+                return $result;
+            }
+        }
         if ($order['PayWayType'] == 6) {
             //PHONE
             $pixType = 'PHONE';

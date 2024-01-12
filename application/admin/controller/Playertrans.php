@@ -598,12 +598,12 @@ class Playertrans extends Main
                 if (intval($draw['AccountID']) === 0) {
                     return $this->apiReturn(100, '', '该提现订单玩家id为0，无法处理');
                 }
-                if($draw['status'] != $bankM::DRAWBACK_STATUS_AUDIT_PASS){
+                if ($draw['status'] != $bankM::DRAWBACK_STATUS_AUDIT_PASS) {
                     return $this->apiReturn(100, '', '订单状态不正确');
                 }
-                $OperatorId = (new AccountDB())->getTableObject('T_Accounts')->where('AccountID',$draw['AccountID'])->value('OperatorId');
+                $OperatorId = (new AccountDB())->getTableObject('T_Accounts')->where('AccountID', $draw['AccountID'])->value('OperatorId');
                 if ($OperatorId > 0) {
-                    $WithdrawRemain = (new MasterDB())->getTableObject('T_OperatorLink')->where('OperatorId',$OperatorId)->value('WithdrawRemain')?:0;
+                    $WithdrawRemain = (new MasterDB())->getTableObject('T_OperatorLink')->where('OperatorId', $OperatorId)->value('WithdrawRemain') ?: 0;
                     if ($WithdrawRemain <= 0) {
                         return $this->apiReturn(100, '', '玩家所属运营商额度不足，无法出款');
                     }
@@ -613,7 +613,7 @@ class Playertrans extends Main
                 $channel = $db->getTableRow('T_GamePayChannel', ['ChannelId' => $channelid], '*');
                 $config = json_decode($channel['MerchantDetail'], true);
                 $extra = json_encode(['channelid' => $channelid]);
-                $channelcode =strtolower(trim($channel['ChannelCode']));
+                $channelcode = strtolower(trim($channel['ChannelCode']));
                 $result = [];
                 //加锁
                 $key = 'lock_thirdPay_' . $OrderNo;
@@ -635,7 +635,7 @@ class Playertrans extends Main
                         // $result = $tgpay->payoutBrazil($OrderNo, $draw, $config);
                         if (config('app_type') == 2) {
                             $result = $tgpay->payoutBrazil($OrderNo, $draw, $config);
-                        } elseif(config('app_type') == 3) {
+                        } elseif (config('app_type') == 3) {
                             $result = $tgpay->payoutPhp($OrderNo, $draw, $config);
                         } else {
                             $result = $tgpay->payout($OrderNo, $draw, $config);
@@ -643,9 +643,9 @@ class Playertrans extends Main
                         break;
 
                     default:
-                        $class = '\\'.strtolower($channelcode).'\PaySdk';
+                        $class = '\\' . strtolower($channelcode) . '\PaySdk';
                         $pay = new $class();
-                        $result =$pay->payout($OrderNo, $draw, $config);
+                        $result = $pay->payout($OrderNo, $draw, $config);
                         break;
                 }
 
@@ -658,13 +658,13 @@ class Playertrans extends Main
                     GameLog::logData(__METHOD__, [$userID, $OrderNo, $channelcode, lang('提交第三方成功')], 1, lang('提交第三方成功'));
                     return $this->apiReturn(0, '', 'success');
                 } else {
-                    (new BankDB())->updateTable('userdrawback', [ 'status' => $bankM::DRAWBACK_STATUS_AUDIT_PASS,], ['OrderNo' => $OrderNo]);
+                    (new BankDB())->updateTable('userdrawback', ['status' => $bankM::DRAWBACK_STATUS_AUDIT_PASS,], ['OrderNo' => $OrderNo]);
                     Redis::rm($key);
                     GameLog::logData(__METHOD__, [$userID, $OrderNo, $channelcode, $result['message']], 1, $result['message']);
                     return $this->apiReturn(100, '', $result['message']);
                 }
             } catch (\Exception $ex) {
-                save_log('playertrans',$ex->getMessage().$ex->getTraceAsString());
+                save_log('playertrans', $ex->getMessage() . $ex->getTraceAsString());
                 return $this->apiReturn(100, '', $ex->getMessage());
             }
         }
@@ -694,6 +694,7 @@ class Playertrans extends Main
                 $success_num = 0;
                 $error_num = 0;
                 $res_data = [];
+                $balance = '';
                 foreach ($OrderNos as $key => &$OrderNo) {
                     $draw = $UserDrawBack->GetRow(['OrderNo' => $OrderNo], '*');
                     if ($draw['status'] != 1) {
@@ -741,7 +742,7 @@ class Playertrans extends Main
                     $draw['RealMoney'] = FormatMoney($draw['iMoney'] - $draw['Tax']);
                     $db = new MasterDB();
                     $channel = $db->getTableRow('T_GamePayChannel', ['ChannelId' => $channelid], '*');
-                    if(empty($channel)){
+                    if (empty($channel)) {
                         return $this->apiReturn(100, '', '无此提现通道');
                     }
                     $config = json_decode($channel['MerchantDetail'], true);
@@ -764,18 +765,19 @@ class Playertrans extends Main
                             // $result = $tgpay->payoutBrazil($OrderNo, $draw, $config);
                             if (config('app_type') == 2) {
                                 $result = $tgpay->payoutBrazil($OrderNo, $draw, $config);
-                            } elseif(config('app_type') == 3) {
+                            } elseif (config('app_type') == 3) {
                                 $result = $tgpay->payoutPhp($OrderNo, $draw, $config);
                             } else {
                                 $result = $tgpay->payout($OrderNo, $draw, $config);
                             }
                             break;
                         default:
-                            $class = '\\'.strtolower($channelcode).'\PaySdk';
+                            $class = '\\' . strtolower($channelcode) . '\PaySdk';
                             $pay = new $class();
-                            $result =$pay->payout($OrderNo, $draw, $config);
+                            $result = $pay->payout($OrderNo, $draw, $config);
                             break;
                     }
+
                     if ($result['status']) {
                         if (!$ret) {
                             $error_num += 1;
@@ -785,13 +787,16 @@ class Playertrans extends Main
                             ];
                             continue;
                         }
-                        (new BankDB())->updateTable('userdrawback', [ 'TransactionNo' => $result['system_ref']], ['OrderNo' => $OrderNo]);
+                        (new BankDB())->updateTable('userdrawback', ['TransactionNo' => $result['system_ref']], ['OrderNo' => $OrderNo]);
                         $success_num += 1;
                         GameLog::logData(__METHOD__, [$userID, $OrderNo, $channelcode, lang('提交第三方成功')], 1, lang('提交第三方成功'));
                         Redis::rm($key);
                     } else {
-                        if(isset($result['pay_type']) && $result['pay_type'] != 'mkcpay'){
-                            (new BankDB())->updateTable('userdrawback', [ 'status' => $bankM::DRAWBACK_STATUS_AUDIT_PASS,'Descript'=>$result['message']], ['OrderNo' => $OrderNo]);
+                        if (isset($result['balance']) && $result['balance']) {
+                            $balance = '---商户余额不足---';
+                        }
+                        if (isset($result['pay_type']) && $result['pay_type'] != 'mkcpay') {
+                            (new BankDB())->updateTable('userdrawback', ['status' => $bankM::DRAWBACK_STATUS_AUDIT_PASS, 'Descript' => $result['message']], ['OrderNo' => $OrderNo]);
                         }
                         GameLog::logData(__METHOD__, [$userID, $OrderNo, $channelcode, $result['message']], 1, $result['message']);
                         $error_num += 1;
@@ -803,9 +808,9 @@ class Playertrans extends Main
                         continue;
                     }
                 }
-                return $this->apiReturn(0, $res_data, '操作成功。成功：' . $success_num . ',失败：' . $error_num);
+                return $this->apiReturn(0, $res_data, '操作成功。成功：' . $success_num . ',失败：' . $error_num . $balance);
             } catch (\Exception $ex) {
-                save_log('playertrans',$ex->getMessage().$ex->getTraceAsString());
+                save_log('playertrans', $ex->getMessage() . $ex->getTraceAsString());
                 return $this->apiReturn(100, '', $ex->getMessage());
             }
         }
@@ -1992,7 +1997,7 @@ class Playertrans extends Main
                         $item['Lv1Running'] = $liushui['Lv1Running'];//一级流水
                         $item['FirstDepositMoney'] = $liushui['FirstDepositMoney'];//一级流水
                         if ($item['FirstDepositMoney'] > 0 && $item['Lv1PersonCount'] > 0) {
-                            $item['firstLevelAverageRecharge'] = bcdiv($item['FirstDepositMoney'], $item['Lv1PersonCount'],2);
+                            $item['firstLevelAverageRecharge'] = bcdiv($item['FirstDepositMoney'], $item['Lv1PersonCount'], 2);
                         }
                         if ($item['Lv1FirstDepositPlayers'] > 0 && $item['Lv1PersonCount'] > 0) {
                             $item['firstLevelRechargeRate'] = bcmul(bcdiv($item['Lv1FirstDepositPlayers'], $item['Lv1PersonCount'], 4), 100, 2) . '%';
