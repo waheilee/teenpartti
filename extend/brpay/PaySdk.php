@@ -26,7 +26,7 @@ class PaySdk
             'memberid' => $merchantId,
             'time' => date('Y-m-d H:i:s')
         ];
-
+        $checkBalanceData['pay_md5sign'] = $this->createSign($checkBalanceData, $secretKey);
         $checkBalance = $this->curl_post_content($apiUrl . '/api/pay/transactions/balance', http_build_query($checkBalanceData), []);
         $balance = json_decode($checkBalance, true);
         if (!empty($balance) && $balance['code'] == 1){
