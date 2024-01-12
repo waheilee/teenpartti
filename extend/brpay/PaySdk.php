@@ -16,7 +16,7 @@ class PaySdk
 
         $merchantId = $config['merchant'] ?? '';
         $secretKey = $config['secret'] ?? '';
-        $apiUrl = $config['api_url'] ?? '';
+        $apiUrl = $config['apiurl'] ?? '';
         $orderTradeNo = trim($OrderNo);
         $amount = sprintf('%.2f', $order['RealMoney']);
         $notifyUrl = $config['notify_url'] ?? '';
