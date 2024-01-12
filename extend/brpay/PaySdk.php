@@ -64,6 +64,7 @@ class PaySdk
             save_log('brpay', '代付同步回调失败订单:' . $orderTradeNo . '状态:' . $res['code']);
             $result['message'] = $res['msg'];
             $result['status'] = false;
+            $result['pay_type'] = 'brpay';
         }
 
         return $result;
