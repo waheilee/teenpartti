@@ -61,7 +61,7 @@
                         if (res['code']===0) {
                             layer.close(index);
                             layer.msg(res['msg'],{icon:1},5000, function () {
-
+                                parent.location.reload();
                                 x_admin_close();
                             });
                         } else {
@@ -71,7 +71,7 @@
                             });
 //                            x_admin_close();
                         }
-                        parent.location.reload();
+
                     }
                 });
             },
