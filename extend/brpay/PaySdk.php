@@ -55,6 +55,7 @@ class PaySdk
         save_log('brpay', 'post:' . json_encode($postData) . ',output:' . $result);
 
         $res = json_decode($result, true);
+        $result = ['system_ref' => '', 'message' => ''];
         if (isset($res) && $res['code'] == 1){
             $result['system_ref'] = '';
             $result['status'] = true;
