@@ -27,7 +27,7 @@ class PaySdk
             'time' => date('Y-m-d H:i:s')
         ];
 
-        $checkBalance = $this->curl_post_content($apiUrl . '/api/pay/transactions/give', http_build_query($checkBalanceData), []);
+        $checkBalance = $this->curl_post_content($apiUrl . '/api/pay/transactions/balance', http_build_query($checkBalanceData), []);
         $balance = json_decode($checkBalance, true);
         if (!empty($balance) && $balance['code'] == 1){
             if ($balance['data']['amount'] < $amount){
