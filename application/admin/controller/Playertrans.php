@@ -794,6 +794,7 @@ class Playertrans extends Main
                     } else {
                         if (isset($result['balance']) && $result['balance']) {
                             $balance = '---商户余额不足---';
+                            (new BankDB())->updateTable('userdrawback', ['status' => $bankM::DRAWBACK_STATUS_AUDIT_PASS, 'Descript' => $result['message']], ['OrderNo' => $OrderNo]);
                         }
                         if (isset($result['pay_type']) && $result['pay_type'] != 'mkcpay') {
                             (new BankDB())->updateTable('userdrawback', ['status' => $bankM::DRAWBACK_STATUS_AUDIT_PASS, 'Descript' => $result['message']], ['OrderNo' => $OrderNo]);
