@@ -31,7 +31,7 @@ class PaySdk
         $balance = json_decode($checkBalance, true);
         if (!empty($balance) && $balance['code'] == 1){
             if ($balance['data']['amount'] < $amount){
-                save_log('brpay', '商户余额不足');
+                save_log('brpay', '商户余额不足-------output:' . $checkBalance);
                 $result['message'] = '商户余额不足';
                 $result['status'] = false;
                 $result['balance'] = true;
