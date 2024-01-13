@@ -5,9 +5,10 @@ namespace app\admin\controller\import;
 use app\admin\controller\Main;
 use app\model\AccountDB;
 use PHPExcel;
+use think\Controller;
 
 
-class ImportUser extends Main
+class ImportUser extends Controller
 {
 
     public function importUser()
