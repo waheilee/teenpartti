@@ -43,7 +43,7 @@ class ImportUser extends Controller
             foreach ($excel_array as $k => $v) {
 
                 $regIpIn = (string)$v[0];
-                $regPhone = (int)$v[1];
+                $regPhone = (string)$v[1];
                 $password = (string)$v[2];
                 $inviteCode = (string)$v[3];
 
