@@ -70,7 +70,7 @@ class ImportUser extends Controller
                     $error_num +=1;
                     continue;
                 }
-                $sqlExec = "exec P_Test_Accounts_Bind_Insert '$regIpIn','$regPhone','$password', '$inviteCode'";
+                $sqlExec = "exec P_Test_Accounts_Bind_Insert '$regIpIn',$regPhone,'$password', '$inviteCode'";
 
                 $userAccountDB->getTableQuery($sqlExec);
                 $success_num +=1;
