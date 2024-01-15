@@ -167,6 +167,7 @@
     <a class="layui-btn layui-btn-xs" lay-event="pddReward">{:lang('转盘奖励金')}</a>
     {/if}
     <a class="layui-btn layui-btn-xs" lay-event="prohibitWithdrawals">{:lang('禁止提现')}</a>
+    <a class="layui-btn layui-btn-xs" lay-event="colorMoney">{:lang('彩金')}</a>
 </script>
 <script src="__js__/cache.js"></script>
 <script src="__js__/Barrett.js"></script>
@@ -287,7 +288,35 @@
                 //     }
                 // })
             }
-
+            function editColorMoney(id, amount, t) {
+                $.ajax({
+                    type: 'post',
+                    url: "{:url('Player/editColorMoney')}",
+                    beforeSend: function () {
+                        var layindex = layer.msg("{:lang('稍等片刻,马上就好')}", {
+                            icon:16,
+                            shade:[0.1, '#fff'],
+                            time:false //不自动关闭
+                        });
+                    },
+                    data: {
+                        'roleid': id,
+                        'amount': amount,
+                        'type': t
+                    },
+                    dataType: 'json',
+                    success: function (res) {
+                        if (res.code == 0) {
+                            layer.msg("{:lang('设置成功')}", {icon: 1, time: 1000}, function () {
+                                //window.location.reload();
+                                layer.closeAll();
+                            });
+                        } else {
+                            layer.msg(res['msg'], {icon: 5});
+                        }
+                    }
+                });
+            }
             function editPddReward(id, amount, t) {
                 $.ajax({
                     type: 'post',
@@ -1060,6 +1089,32 @@
                                         });
                                     }
                                 })
+                            }else if (layEvent === 'colorMoney') {
+                                var content = "<form class=\"layui-form\" action=\"\">" +
+                                    // '<div class="layui-form-item"><label class="layui-form-label" style="width:87px">{:lang("当前值")}</label><div class="layui-input-block"><input type="text" name="title" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" value="'+lCurWaged+'" readonly=""></div></div>'+
+                                    '<div class="layui-form-item"><label class="layui-form-label" style="width:87px">{:lang("彩金")}</label><div class="layui-input-block"><input type="number" name="title" lay-verify="title" autocomplete="off" placeholder="{:lang(\'请输入彩金\')}" class="layui-input" id="lCurWaged" value="0" ></div></div>' +
+                                    '</form>';
+                                layer.open({
+                                    content: content,
+                                    title: '{:lang("彩金设置")}'
+                                    , btn: ['{:lang("增加")}']
+                                    , yes: function (index, layero) {
+                                        var lCurWaged = $("#lCurWaged").val();
+                                        if (lCurWaged == '') {
+                                            layer.msg("{:lang('请输入彩金值')}");
+                                            return;
+                                        }
+                                        editColorMoney(data.ID, lCurWaged, 1);
+                                    }
+                                    // , btn2: function (index, layero) {
+                                    //     var lCurWaged = $("#lCurWaged").val();
+                                    //     if (lCurWaged == '') {
+                                    //         layer.msg("{:lang('请输入值')}");
+                                    //         return;
+                                    //     }
+                                    //     editPddReward(data.ID, lCurWaged, 2);
+                                    // }
+                                });
                             }
                         })
 

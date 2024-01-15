@@ -5159,4 +5159,35 @@ class Player extends Main
             }
         }
     }
+
+    public function setColorMoney()
+    {
+        $roleId = $this->request->param('roleid');
+        $amount = $this->request->param('amount');
+        $type = $this->request->param('type');
+
+        $sendDm = $amount * bl;
+        $data = $this->sendGameMessage('CMD_MD_GM_SET_JOB', [$roleId, 10019, $sendDm], "DC", 'returnComm');
+        if ($data['iResult'] == 1) {
+            if ($type == 1) {
+                $comment = '增加玩家彩金：' . $amount;
+            } else {
+                $comment = '扣减玩家彩金:' . $amount;
+            }
+            $db = new GameOCDB();
+            $db->setTable('T_PlayerComment')->Insert([
+                'roleid' => $roleId,
+                'adminid' => session('userid'),
+                'type' => 2,
+                'opt_time' => date('Y-m-d H:i:s'),
+                'comment' => $comment
+            ]);
+
+            GameLog::logData(__METHOD__, [$roleId, $amount, $type], 1, $comment);
+            return $this->apiReturn(0, '', '操作成功');
+        } else {
+            GameLog::logData(__METHOD__, [$roleId, $amount, $type], 0, '操作失败');
+            return $this->apiReturn(1, '', '操作失败');
+        }
+    }
 }

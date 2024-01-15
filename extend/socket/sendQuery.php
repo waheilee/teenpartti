@@ -88,6 +88,7 @@ define('CMD_MD_GM_UPDATE_USER_TYPE', 10001);//玩家身上的各种开关  (为�
 define('CMD_MD_GM_PDD_ADD_MONEY', 10003);// 转盘加减奖励金
 define('CMD_MD_GM_PDD_COMMI_SUC', 10004);// 审核通过
 define('CMD_MD_GM_ADD_JOB', 10005);// 审核通过
+define('CMD_MD_GM_SET_JOB', 10005);// 彩金增加
 define('CMD_MD_GM_PDD_REFUND', 10002);//pdd gm  操作 退款
 
 

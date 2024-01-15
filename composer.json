@@ -29,7 +29,8 @@
     "starkbank/ecdsa": "^2.1",
     "giggsey/libphonenumber-for-php": "^8.13",
     "ext-openssl": "*",
-    "phpoffice/phpexcel": "^1.8"
+    "phpoffice/phpexcel": "^1.8",
+    "topthink/think-queue": "1.1.6"
   },
   "extra": {
     "think-path": "thinkphp"
