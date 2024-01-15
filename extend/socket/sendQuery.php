@@ -1381,6 +1381,16 @@ class sendQuery
         $in = $this->in_stream->data;
         $res = $socket->request($in_head, $in);
     }
+
+    public function CMD_MD_GM_SET_JOB($socket, $roleid, $nKey, $nAddVal)
+    {
+        $this->in_stream->WriteULong($roleid);
+        $this->in_stream->WriteULong($nKey);
+        $this->in_stream->WriteINT64($nAddVal);
+        $in_head = $this->comm->MakeSendHead(CMD_MD_GM_SET_JOB, $this->in_stream->len, 0, REQ_OM, REQ_DC);
+        $in = $this->in_stream->data;
+        $res = $socket->request($in_head, $in);
+    }
 }
 
 

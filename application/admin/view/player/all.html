@@ -291,7 +291,7 @@
             function editColorMoney(id, amount, t) {
                 $.ajax({
                     type: 'post',
-                    url: "{:url('Player/editColorMoney')}",
+                    url: "{:url('Player/setColorMoney')}",
                     beforeSend: function () {
                         var layindex = layer.msg("{:lang('稍等片刻,马上就好')}", {
                             icon:16,

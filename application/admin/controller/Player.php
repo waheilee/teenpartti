@@ -5167,7 +5167,7 @@ class Player extends Main
         $type = $this->request->param('type');
 
         $sendDm = $amount * bl;
-        $data = $this->sendGameMessage('CMD_MD_GM_SET_JOB', [$roleId, 10019, $sendDm], "DC", 'returnComm');
+        $data = $this->sendGameMessage('CMD_MD_GM_SET_JOB', [$roleId, 10213, $sendDm], "DC", 'returnComm');
         if ($data['iResult'] == 1) {
             if ($type == 1) {
                 $comment = '增加玩家彩金：' . $amount;
