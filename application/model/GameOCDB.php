@@ -1861,7 +1861,7 @@ class GameOCDB extends BaseModel
 
         } else if (session('business_ProxyChannelId') && request()->module() == 'business') {
             $where .= " AND checkUser LIKE '%-".session('business_ProxyChannelId')."'";
-            $where .= " AND ProxyChannelId= ".session('business_ProxyChannelId');
+            $where .= " AND b.ProxyChannelId= ".session('business_ProxyChannelId');
         }
         if ($RoleId >= 0 && !empty($RoleId)) $where .= " AND RoleId=$RoleId";
         if ($Amount >= 0 && !empty($Amount)) $where .= " AND Money=" . (0 - $Amount);
