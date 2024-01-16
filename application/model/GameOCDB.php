@@ -1939,7 +1939,7 @@ class GameOCDB extends BaseModel
         // $result = $this->GetPage($where, 'ID DESC');
         $result = $this->getTableObject('T_GMSendMoney')->alias('a')
             ->join('[CD_Account].[dbo].[T_Accounts] b','b.AccountID=a.RoleId','left')
-            ->where('checkUser','like','%'.session('merchant_OperatorName').'%')
+//            ->where('checkUser','like','%'.session('merchant_OperatorName').'%')
             ->where('OperatorId',session('merchant_OperatorId'))
             ->field('a.*,b.ProxyChannelId,b.OperatorId')
             ->order('ID DESC')
