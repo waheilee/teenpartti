@@ -5051,59 +5051,64 @@ class Player extends Main
         }
         $db = new  GameOCDB('',true);
         $data = $db->TGMSendMoney()->GetRow("ID=" . $id);
-        if ($data['OperateType'] == 1) {
-            try {
-                $res = $this->sendGameMessage('CMD_WD_BUY_HAPPYBEAN', [$data['RoleId'], $data['Money']]);
-                $res = unpack('Lcode/', $res);
-            } catch (Exception $exception) {
-                return $this->error('连接服务器失败,请稍后重试!');
-            }
-            if ($res['code'] == 0) {
-                $row = $db->TGMSendMoney()->UPData(["status" => 1, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . $data['ID']);
-                if ($row > 0) return $this->success("审核成功");
-            }
-            return $this->error('审核失败');
-        } else if ($data['OperateType'] == 2) {
-            try {
-                $res = $this->sendGameMessage('CMD_MD_ADD_ROLE_MONERY', [$data['RoleId'], $data['Money'] * bl, 1, 0, getClientIP()]);
-                $res = unpack('Lcode/', $res);
-            } catch (Exception $exception) {
-                return $this->error('连接服务器失败,请稍后重试!');
-            }
-            if ($res['code'] == 0) {
-                $row = $db->TGMSendMoney()->UPData(["status" => 1, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . $data['ID']);
-                if ($row > 0) return $this->success("审核成功");
-            }
-            return $this->error('审核失败');
-        } else if ($data['OperateType'] == 3) {
-            try {
+        if($data['status'] != 0){
+            return $this->error('非待审核转态!');
+        }else{
+            if ($data['OperateType'] == 1) {
+                try {
+                    $res = $this->sendGameMessage('CMD_WD_BUY_HAPPYBEAN', [$data['RoleId'], $data['Money']]);
+                    $res = unpack('Lcode/', $res);
+                } catch (Exception $exception) {
+                    return $this->error('连接服务器失败,请稍后重试!');
+                }
+                if ($res['code'] == 0) {
+                    $row = $db->TGMSendMoney()->UPData(["status" => 1, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . $data['ID']);
+                    if ($row > 0) return $this->success("审核成功");
+                }
+                return $this->error('审核失败');
+            } else if ($data['OperateType'] == 2) {
+                try {
+                    $res = $this->sendGameMessage('CMD_MD_ADD_ROLE_MONERY', [$data['RoleId'], $data['Money'] * bl, 1, 0, getClientIP()]);
+                    $res = unpack('Lcode/', $res);
+                } catch (Exception $exception) {
+                    return $this->error('连接服务器失败,请稍后重试!');
+                }
+                if ($res['code'] == 0) {
+                    $row = $db->TGMSendMoney()->UPData(["status" => 1, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . $data['ID']);
+                    if ($row > 0) return $this->success("审核成功");
+                }
+                return $this->error('审核失败');
+            } else if ($data['OperateType'] == 3) {
+                try {
 
-                $res = $this->sendGameMessage('CMD_MD_GM_ADD_PROXY_COMMISSION', [$data['RoleId'], $data['Money'] * bl, 0]);
-                $res = unpack('LiResult/', $res);
-            } catch (Exception $exception) {
-                return $this->error('连接服务器失败,请稍后重试!');
-            }
-            if ($res['iResult'] == 0) {
-                $row = $db->TGMSendMoney()->UPData(["status" => 1, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . $data['ID']);
-                if ($row > 0) return $this->success("审核成功");
-            }
+                    $res = $this->sendGameMessage('CMD_MD_GM_ADD_PROXY_COMMISSION', [$data['RoleId'], $data['Money'] * bl, 0]);
+                    $res = unpack('LiResult/', $res);
+                } catch (Exception $exception) {
+                    return $this->error('连接服务器失败,请稍后重试!');
+                }
+                if ($res['iResult'] == 0) {
+                    $row = $db->TGMSendMoney()->UPData(["status" => 1, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . $data['ID']);
+                    if ($row > 0) return $this->success("审核成功");
+                }
 
-            return $this->error('审核失败');
-        } else if ($data['OperateType'] == 4) {
-            try {
-                $res = $this->sendGameMessage('CMD_MD_GM_ADD_PROXY_COMMISSION', [$data['RoleId'], $data['Money'] * bl, 1]);
-                $res = unpack('LiResult/', $res);
-            } catch (Exception $exception) {
-                return $this->error('连接服务器失败,请稍后重试!');
+                return $this->error('审核失败');
+            } else if ($data['OperateType'] == 4) {
+                try {
+                    $res = $this->sendGameMessage('CMD_MD_GM_ADD_PROXY_COMMISSION', [$data['RoleId'], $data['Money'] * bl, 1]);
+                    $res = unpack('LiResult/', $res);
+                } catch (Exception $exception) {
+                    return $this->error('连接服务器失败,请稍后重试!');
+                }
+                if ($res['iResult'] == 0) {
+                    $row = $db->TGMSendMoney()->UPData(["status" => 1, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . $data['ID']);
+                    if ($row > 0) return $this->success("审核成功");
+                }
+                return $this->error('审核失败');
+            } else {
+                return $this->error('不存在的上下分类型');
             }
-            if ($res['iResult'] == 0) {
-                $row = $db->TGMSendMoney()->UPData(["status" => 1, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . $data['ID']);
-                if ($row > 0) return $this->success("审核成功");
-            }
-            return $this->error('审核失败');
-        } else {
-            return $this->error('不存在的上下分类型');
         }
+
     }
 
 
