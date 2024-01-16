@@ -1878,7 +1878,7 @@ class GameOCDB extends BaseModel
         // $result = $this->GetPage($where, 'ID DESC');
         $result = $this->getTableObject('T_GMSendMoney')->alias('a')
             ->join('[CD_Account].[dbo].[T_Accounts] b','b.AccountID=a.RoleId','left')
-            ->where('b.ProxyChannelId',session('business_ProxyChannelId'))
+            ->where('checkUser','like','%'.session('business_LoginAccount').'%')
             ->field('a.*,b.ProxyChannelId,b.OperatorId')
             ->order('ID DESC')
             ->paginate($limit)
