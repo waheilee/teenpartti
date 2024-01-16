@@ -1001,7 +1001,7 @@ class Player extends Main
 //                        return $this->apiReturn(2, [], '没有权限');
 //                    }
                     $username = session('business_LoginAccount');
-                    $password = input('password');
+//                    $password = input('password');
 //                    $userInfo = (new \app\model\GameOCDB)
 //                        ->getTableObject('T_ProxyChannelConfig')
 //                        ->where('LoginAccount',$username)
