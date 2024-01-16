@@ -85,10 +85,10 @@
             layer.msg('{:lang("扣款金额必须为正数")}', {icon: 2});
             return false;
         }
-        if (password == '') {
-            layer.msg('{:lang("请输入确认密码")}', {icon: 2});
-            return false;
-        }
+        // if (password == '') {
+        //     layer.msg('{:lang("请输入确认密码")}', {icon: 2});
+        //     return false;
+        // }
         if (roleid.length == 7 && operatetype==3) {
             layer.msg('{:lang("测试号禁止佣金上分")}', {icon: 2});
             return false;
