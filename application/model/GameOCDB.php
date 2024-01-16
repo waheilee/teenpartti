@@ -1787,10 +1787,11 @@ class GameOCDB extends BaseModel
 
         $where = "1=1";
         if (session('merchant_OperatorId') && request()->module() == 'merchant') {
-            $where .= " AND checkUser LIKE 'operator:".session('merchant_OperatorId')."%'";
+            $where .= " AND checkUser LIKE 'operator:".session('merchant_OperatorName')."%'";
 
         } else if (session('business_ProxyChannelId') && request()->module() == 'business') {
-            $where .= " AND checkUser LIKE '%-".session('business_ProxyChannelId')."'";
+//            $where .= " AND checkUser LIKE '%-".session('business_ProxyChannelId')."'";
+            $where .= " AND checkUser LIKE '%-".session('business_LoginAccount')."'";
         } else {
             if ($is_merchant == 1) {
                 $where .= " AND checkUser LIKE 'operator:%'";
