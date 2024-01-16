@@ -238,7 +238,7 @@ class UserDB extends BaseModel
             }
         }
         if (strtolower(request()->action())  == 'wagetasklist') {
-            $where .=' and b.NeedWageRequire<>b.CurWageRequire';
+//            $where .=' and b.NeedWageRequire<>b.CurWageRequire';
             if(trim($wage_min)!=''){
                 if(is_numeric($wage_min)){
                     $where .=' and b.NeedWageRequire>='.$wage_min*bl;
