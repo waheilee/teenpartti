@@ -1899,7 +1899,7 @@ class GameOCDB extends BaseModel
         $result['count'] =  $result['total'];
 
         if (empty($where)) $where = "status=1";
-        $result['other'] = $this->GetRow($where, "COUNT(ID)TotalCount,ABS(SUM(Money))TotalMoney");
+//        $result['other'] = $this->GetRow($where, "COUNT(ID)TotalCount,ABS(SUM(Money))TotalMoney");
         return $result;
     }
 
