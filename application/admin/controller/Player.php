@@ -5167,12 +5167,20 @@ class Player extends Main
         $type = $this->request->param('type');
 
         $sendDm = $amount * bl;
-        $data = $this->sendGameMessage('CMD_MD_GM_SET_JOB', [$roleId, 10213, $sendDm], "DC", 'returnComm');
+        $key = 0;
+        if ($type == 1){
+            $key = 10213; //增加彩金
+        }elseif ($type == 2){
+            $key = 10215; //增加首充彩金
+        }
+        $data = $this->sendGameMessage('CMD_MD_GM_SET_JOB', [$roleId, $key, $sendDm], "DC", 'returnComm');
         if ($data['iResult'] == 1) {
             if ($type == 1) {
                 $comment = '增加玩家彩金：' . $amount;
-            } else {
-                $comment = '扣减玩家彩金:' . $amount;
+            } elseif($type == 2) {
+                $comment = '增加玩家首冲彩金:' . $amount;
+            }else{
+                $comment = '无效彩金增加:' . $amount;
             }
             $db = new GameOCDB();
             $db->setTable('T_PlayerComment')->Insert([

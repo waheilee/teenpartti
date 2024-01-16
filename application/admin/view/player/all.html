@@ -168,6 +168,7 @@
     {/if}
     <a class="layui-btn layui-btn-xs" lay-event="prohibitWithdrawals">{:lang('禁止提现')}</a>
     <a class="layui-btn layui-btn-xs" lay-event="colorMoney">{:lang('彩金')}</a>
+    <a class="layui-btn layui-btn-xs" lay-event="firstColorMoney">{:lang('首充彩金')}</a>
 </script>
 <script src="__js__/cache.js"></script>
 <script src="__js__/Barrett.js"></script>
@@ -1030,14 +1031,7 @@
                                         }
                                         editPddReward(data.ID, lCurWaged, 1);
                                     }
-                                    // , btn2: function (index, layero) {
-                                    //     var lCurWaged = $("#lCurWaged").val();
-                                    //     if (lCurWaged == '') {
-                                    //         layer.msg("{:lang('请输入值')}");
-                                    //         return;
-                                    //     }
-                                    //     editPddReward(data.ID, lCurWaged, 2);
-                                    // }
+
                                 });
                             }else if (layEvent === 'prohibitWithdrawals') {
                                 layer.confirm( '禁止玩家：'+data.ID +'进行提现', {
@@ -1106,14 +1100,26 @@
                                         }
                                         editColorMoney(data.ID, lCurWaged, 1);
                                     }
-                                    // , btn2: function (index, layero) {
-                                    //     var lCurWaged = $("#lCurWaged").val();
-                                    //     if (lCurWaged == '') {
-                                    //         layer.msg("{:lang('请输入值')}");
-                                    //         return;
-                                    //     }
-                                    //     editPddReward(data.ID, lCurWaged, 2);
-                                    // }
+
+                                });
+                            }else if (layEvent === 'firstColorMoney') {
+                                var content = "<form class=\"layui-form\" action=\"\">" +
+                                    // '<div class="layui-form-item"><label class="layui-form-label" style="width:87px">{:lang("当前值")}</label><div class="layui-input-block"><input type="text" name="title" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" value="'+lCurWaged+'" readonly=""></div></div>'+
+                                    '<div class="layui-form-item"><label class="layui-form-label" style="width:87px">{:lang("首充彩金")}</label><div class="layui-input-block"><input type="number" name="title" lay-verify="title" autocomplete="off" placeholder="{:lang(\'请输入彩金\')}" class="layui-input" id="lCurWaged" value="0" ></div></div>' +
+                                    '</form>';
+                                layer.open({
+                                    content: content,
+                                    title: '{:lang("首充彩金设置")}'
+                                    , btn: ['{:lang("增加")}']
+                                    , yes: function (index, layero) {
+                                        var lCurWaged = $("#lCurWaged").val();
+                                        if (lCurWaged == '') {
+                                            layer.msg("{:lang('请输入首冲彩金值')}");
+                                            return;
+                                        }
+                                        editColorMoney(data.ID, lCurWaged, 2);
+                                    }
+
                                 });
                             }
                         })
