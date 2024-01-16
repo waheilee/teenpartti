@@ -113,6 +113,7 @@
                     parent.layer.close(_layer_index);
                     layer.msg(res.msg, {icon: 1, time: 1500}, function () {
                     });
+                    window.location.reload();
                 } else {
                     layer.msg(res.msg, {icon: 2});
                 }
