@@ -991,7 +991,7 @@ class Player extends Main
         switch (input('Action')) {
             case 'list':
                 $db = new  GameOCDB();
-                return $this->apiJson($db->GMSendMoney());
+                return $this->apiJson($db->GMSendMoneyBusiness());
                 break;
             case  'add':
                 if (request()->isAjax()) {
