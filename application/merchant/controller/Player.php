@@ -1653,11 +1653,11 @@ class Player extends Main
                     if (!$pwd) {
                         return json(['code' => 2, 'msg' => '密码错误']);
                     }
-                    $userModel = new userModel();
-                    $userInfo = $userModel->getRow(['id' => session('userid')]);
-                    if (md5($userInfo['salt'] . $pwd) !== $userInfo['password']) {
-                        return json(['code' => 2, 'msg' => '密码有误，请重新输入']);
-                    }
+//                    $userModel = new userModel();
+//                    $userInfo = $userModel->getRow(['id' => session('userid')]);
+//                    if (md5($userInfo['salt'] . $pwd) !== $userInfo['password']) {
+//                        return json(['code' => 2, 'msg' => '密码有误，请重新输入']);
+//                    }
                     $money = (int)input('Money');
                     $roleID = input('RoleID');
                     $operatetype = input('operatetype');

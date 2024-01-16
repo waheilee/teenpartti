@@ -1002,13 +1002,13 @@ class Player extends Main
 //                    }
                     $username = session('business_LoginAccount');
                     $password = input('password');
-                    $userInfo = (new \app\model\GameOCDB)
-                        ->getTableObject('T_ProxyChannelConfig')
-                        ->where('LoginAccount',$username)
-                        ->find();
-                    if (md5($password) !== $userInfo['PassWord']) {
-                        return json(['code' => 3, 'msg' => lang('密码错误')]);
-                    }
+//                    $userInfo = (new \app\model\GameOCDB)
+//                        ->getTableObject('T_ProxyChannelConfig')
+//                        ->where('LoginAccount',$username)
+//                        ->find();
+//                    if (md5($password) !== $userInfo['PassWord']) {
+//                        return json(['code' => 3, 'msg' => lang('密码错误')]);
+//                    }
 
                     $money = (int)input('Money');
                     $roleID = input('RoleID');
