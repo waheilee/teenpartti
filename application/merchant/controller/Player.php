@@ -1643,10 +1643,10 @@ class Player extends Main
             case  'add':
                 if (request()->isAjax()) {
                     //权限验证 
-                    $auth_ids = $this->getAuthIds();
-                    if (!in_array(10001, $auth_ids)) {
-                        return $this->apiReturn(2, [], '没有权限');
-                    }
+//                    $auth_ids = $this->getAuthIds();
+//                    if (!in_array(10001, $auth_ids)) {
+//                        return $this->apiReturn(2, [], '没有权限');
+//                    }
                     $password = input('password');
                     $user_controller = new \app\admin\controller\User();
                     $pwd = $user_controller->rsacheck($password);
