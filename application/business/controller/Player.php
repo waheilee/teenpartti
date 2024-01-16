@@ -988,10 +988,6 @@ class Player extends Main
     /**Gm充值管理*/
     public function TransferManager()
     {
-
-        $business = (new GameOCDB())->getTableObject('T_ProxyChannelConfig')->where('ProxyChannelId',session('business_ProxyChannelId'))->find();
-        $merchant_OperatorId = $business['OperatorId'];
-
         switch (input('Action')) {
             case 'list':
                 $db = new  GameOCDB();
@@ -1000,10 +996,18 @@ class Player extends Main
             case  'add':
                 if (request()->isAjax()) {
                     //权限验证
+//                    $auth_ids = $this->getAuthIds();
+//                    if (!in_array(10001, $auth_ids)) {
+//                        return $this->apiReturn(2, [], '没有权限');
+//                    }
+                    $username = session('business_LoginAccount');
                     $password = input('password');
-
-                    if (md5($password) != $business['PassWord']) {
-                        return $this->error('密码错误!');
+                    $userInfo = (new \app\model\GameOCDB)
+                        ->getTableObject('T_ProxyChannelConfig')
+                        ->where('LoginAccount',$username)
+                        ->find();
+                    if (md5($password) !== $userInfo['PassWord']) {
+                        return json(['code' => 3, 'msg' => lang('密码错误')]);
                     }
 
                     $money = (int)input('Money');
@@ -1011,78 +1015,76 @@ class Player extends Main
                     $operatetype = input('operatetype');
                     $descript = input('descript');
 
-                    $userinfo = (new AccountDB())->getTableObject('T_Accounts')->where(['AccountID'=>$roleID,'ProxyChannelId'=>session('business_ProxyChannelId')])->find();
-                    if (!$userinfo) {
-                        return $this->error('玩家不存在或非本业务员玩家!');
-                    }
+                    if ($money <= 0)
+                        $this->error('金额不能为0或者负数!');
 
-                    if ($money <= 0){
-                        return $this->error('金额不能为0或者负数!');
-                    }
-                    if (config('is_usa') == 1) {
-                        if ($operatetype != 1 && $operatetype != 2) {
-                            return $this->error('类型有误!');
-                        }
-                    } else {
-                        if ($operatetype != 1 && $operatetype != 3) {
-                            return $this->error('类型有误!');
-                        }
-                    }
-
-                    //额度
-                    $ed = (new GameOCDB())->getTableObject('T_OperatorQuotaManage')->where('OperatorId',$merchant_OperatorId)->find()?:[];
-                    //测试
-                    if (strlen($roleID) == 7) {
-                        if ($operatetype == 3) {
-                            return $this->error('测试号禁止佣金上分!');
-                        }
-                        $total_ed = $ed['TestMemberQuota'] ?? 0;
-                        $used_ed  = $ed['TestMemberUsed'] ?? 0;
-                        $used_ed_name = 'TestMemberUsed';
-                    }
-                    //正式
-                    if (strlen($roleID) == 8) {
-                        if ($operatetype == 1 || $operatetype == 2) {
-                            $total_ed = $ed['BalanceQuota'] ?? 0;
-                            $used_ed  = $ed['BalanceUsed'] ?? 0;
-                            $used_ed_name = 'BalanceUsed';
-                        }
-                        if ($operatetype == 3 || $operatetype == 4) {
-                            $total_ed = $ed['CommissionQuota'] ?? 0;
-                            $used_ed  = $ed['CommissionUsed'] ?? 0;
-                            $used_ed_name = 'CommissionUsed';
-                        }
-                    }
-                    if (($used_ed + $money) > $total_ed) {
-                        return $this->error('额度不足!');
-                    }
                     if ($money > 0 && $operatetype == 2) {
                         $money = 0 - $money;
                     }
                     if ($money > 0 && $operatetype == 4) {
                         $money = 0 - $money;
                     }
-                    $db = new  GameOCDB('',true);
-                    $res = (new GameOCDB())->getTableObject('T_OperatorQuotaManage')->where('OperatorId',$merchant_OperatorId)->data([$used_ed_name=>($used_ed + abs($money))])->update();
-                    $row = $db->GMSendMoneyAdd(['RoleId' => $roleID, 'Money' => $money, 'status' => 0, 'Note' => $descript, 'checkUser' => "operator:".$merchant_OperatorId.'-'.session('business_ProxyChannelId'), 'OperateType' => $operatetype]);
+                    $db = new  GameOCDB();
+                    $row = $db->GMSendMoneyAdd(['RoleId' => $roleID, 'Money' => $money, 'status' => 0, 'Note' => $descript, 'checkUser' => session('business_LoginAccount'), 'OperateType' => $operatetype]);
                     if ($row > 0) {
-
-                        // $res = $db->setTable('T_PlayerComment')->Insert([
-                        //     'roleid' => $roleID,
-                        //     'adminid' => session('userid'),
-                        //     'type' => 1,
-                        //     'opt_time' => date('Y-m-d H:i:s'),
-                        //     'comment' => $descript
-                        // ]);
+                        $res = $db->setTable('T_PlayerComment')->Insert([
+                            'roleid' => $roleID,
+                            'adminid' => session('userid'),
+                            'type' => 1,
+                            'opt_time' => date('Y-m-d H:i:s'),
+                            'comment' => $descript
+                        ]);
                         return $this->success("添加扣款成功,进入审核状态");
                     }
                     return $this->error('添加失败');
                 }
                 return $this->fetch('transfer_item');
                 break;
+            case 'send':
+                if (request()->isAjax()) {
+                    $db = new  GameOCDB();
+                    $data = $db->TGMSendMoney()->GetRow("ID=" . input('ID'));
+                    if ($data['OperateType'] == 1) {
+                        try {
+                            $res = $this->sendGameMessage('CMD_WD_BUY_HAPPYBEAN', [$data['RoleId'], $data['Money']]);
+                            $res = unpack('Lcode/', $res);
+                        } catch (Exception $exception) {
+                            return $this->error('连接服务器失败,请稍后重试!');
+                        }
+                        if ($res['code'] == 0) {
+                            $row = $db->TGMSendMoney()->UPData(["status" => 1, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . $data['ID']);
+                            if ($row > 0) return $this->success("审核成功");
+                        }
+                        return $this->error('审核失败');
+                    } else if ($data['OperateType'] == 2) {
+                        try {
+                            $res = $this->sendGameMessage('CMD_MD_ADD_ROLE_MONERY', [$data['RoleId'], $data['Money'] * bl, 1, 0, getClientIP()]);
+                            $res = unpack('Lcode/', $res);
+                        } catch (Exception $exception) {
+                            return $this->error('连接服务器失败,请稍后重试!');
+                        }
+                        if ($res['code'] == 0) {
+                            $row = $db->TGMSendMoney()->UPData(["status" => 1, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . $data['ID']);
+                            if ($row > 0) return $this->success("审核成功");
+                        }
+                        return $this->error('审核失败');
+                    } else {
+                        return $this->error('不存在的上下分类型');
+                    }
+                }
+                break;
+            case 'deny':
+                $db = new  GameOCDB();
+                $row = $db->TGMSendMoney()->UPData(["status" => 2, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . input('ID'));
+                if ($row > 0) return $this->success("成功");
+                return $this->error('失败');
             case 'exec':
                 //权限验证
-                $db = new  GameOCDB('',true);
+                // $auth_ids = $this->getAuthIds();
+                // if (!in_array(10008, $auth_ids)) {
+                //     return $this->apiJson(["code"=>1,"msg"=>"没有权限"]);
+                // }
+                $db = new  GameOCDB();
                 $result = $db->GMSendMoney();
                 $outAll = input('outall', false);
                 if ((int)input('exec', 0) == 0) {
