@@ -20,7 +20,7 @@
         <div class="layui-input-block">
             <input type="radio" name="OperateType" id="OperateType_1" value="1" title="游戏上分" checked>
             <input type="radio" name="OperateType" id="OperateType_2" value="2" title="游戏下分" >
-            {if(config('yongjing_sxf') == 1)}
+            {if(config('yongjing_sxf') == 1 && config('is_usa') == 0)}
             <input type="radio" name="OperateType" id="OperateType_3" value="3" title="佣金上分" >
             <input type="radio" name="OperateType" id="OperateType_4" value="4" title="佣金下分" >
             {/if}
