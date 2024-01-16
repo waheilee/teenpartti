@@ -1647,12 +1647,12 @@ class Player extends Main
 //                    if (!in_array(10001, $auth_ids)) {
 //                        return $this->apiReturn(2, [], '没有权限');
 //                    }
-                    $password = input('password');
-                    $user_controller = new \app\admin\controller\User();
-                    $pwd = $user_controller->rsacheck($password);
-                    if (!$pwd) {
-                        return json(['code' => 2, 'msg' => '密码错误']);
-                    }
+//                    $password = input('password');
+//                    $user_controller = new \app\admin\controller\User();
+//                    $pwd = $user_controller->rsacheck($password);
+//                    if (!$pwd) {
+//                        return json(['code' => 2, 'msg' => '密码错误']);
+//                    }
 //                    $userModel = new userModel();
 //                    $userInfo = $userModel->getRow(['id' => session('userid')]);
 //                    if (md5($userInfo['salt'] . $pwd) !== $userInfo['password']) {
