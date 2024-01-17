@@ -1845,42 +1845,73 @@ class GameOCDB extends BaseModel
     public function GMSendMoneyBusiness()
     {
         $this->table = 'T_GMSendMoney';
-        $RoleId = input('RoleId', -1);
-        $VerifyState = input('VerifyState', -1);
-        $operatortype = input('operatortype', -1);
+        $RoleId = input('RoleId', '');
+        $VerifyState = input('VerifyState', '');
+        $operatortype = input('operatortype', '');
         $OperateId = input('OperateId');
         $Amount = input('Amount');
         $start = input('start');
         $end = input('end', date('Y-m-d'));
         $limit = (int)input('limit', 20);
 
-        $where = "1=1";
-        if (session('merchant_OperatorId') && request()->module() == 'merchant') {
-            $where .= " AND checkUser LIKE 'operator:".session('merchant_OperatorId')."%'";
-            $where .= " AND b.OperatorId=".session('merchant_OperatorId');
+//        $where = "1=1";
+//        if (session('merchant_OperatorId') && request()->module() == 'merchant') {
+//            $where .= " AND checkUser LIKE 'operator:".session('merchant_OperatorId')."%'";
+//            $where .= " AND b.OperatorId=".session('merchant_OperatorId');
+//
+//        } else if (session('business_ProxyChannelId') && request()->module() == 'business') {
+//            $where .= " AND checkUser LIKE '%-".session('business_ProxyChannelId')."'";
+//            $where .= " AND b.ProxyChannelId= ".session('business_ProxyChannelId');
+//        }
+//        if ($RoleId >= 0 && !empty($RoleId)) $where .= " AND RoleId=$RoleId";
+//        if ($Amount >= 0 && !empty($Amount)) $where .= " AND Money=" . (0 - $Amount);
+//        if ($VerifyState >= 0) $where .= " AND status=$VerifyState";
+//        if (!empty($start)) $where .= " AND InsertTime BETWEEN '$start 00:00:00' AND '$end 23:59:59'";
+//        if ($operatortype > 0) {
+//            $where .= " AND OperateType=" . $operatortype;
+//        }
+//        if ($OperateId != '') {
+//            $where .= " AND checkUser LIKE 'operator:".$OperateId."%'";
+//        }
 
-        } else if (session('business_ProxyChannelId') && request()->module() == 'business') {
-            $where .= " AND checkUser LIKE '%-".session('business_ProxyChannelId')."'";
-            $where .= " AND b.ProxyChannelId= ".session('business_ProxyChannelId');
-        }
-        if ($RoleId >= 0 && !empty($RoleId)) $where .= " AND RoleId=$RoleId";
-        if ($Amount >= 0 && !empty($Amount)) $where .= " AND Money=" . (0 - $Amount);
-        if ($VerifyState >= 0) $where .= " AND status=$VerifyState";
-        if (!empty($start)) $where .= " AND InsertTime BETWEEN '$start 00:00:00' AND '$end 23:59:59'";
-        if ($operatortype > 0) {
-            $where .= " AND OperateType=" . $operatortype;
-        }
-        if ($OperateId != '') {
-            $where .= " AND checkUser LIKE 'operator:".$OperateId."%'";
-        }
         $Operators = $this->getTableObject('T_OperatorSubAccount')->where('1=1')->column('*','OperatorId');//OperatorName
         $business  = $this->getTableObject('T_ProxyChannelConfig')->where('1=1')->column('*','ProxyChannelId');//AccountName
         // $result = $this->GetPage($where, 'ID DESC');
         $result = $this->getTableObject('T_GMSendMoney')->alias('a')
-            ->join('[CD_Account].[dbo].[T_Accounts] b','b.AccountID=a.RoleId','left')
-            ->where('checkUser','like','%'.session('business_LoginAccount').'%')
             ->field('a.*,b.ProxyChannelId,b.OperatorId')
-            ->order('ID DESC')
+            ->join('[CD_Account].[dbo].[T_Accounts] b','b.AccountID=a.RoleId','left')
+            ->where('ProxyChannelId',session('business_ProxyChannelId'))
+            ->where(function ($q) use($RoleId){
+                if(!empty($RoleId)){
+                    $q->where('RoleId',$RoleId);
+                }
+            })
+            ->where(function ($q) use($Amount){
+                if(!empty($Amount)){
+                    $q->where('Money',$Amount);
+                }
+            })
+            ->where(function ($q) use($operatortype){
+                if(!empty($operatortype)){
+                    $q->where('OperateType',$operatortype);
+                }
+            })
+            ->where(function ($q) use($VerifyState){
+                if($VerifyState != '-1'){
+                    $q->where('status',$VerifyState);
+                }
+            })
+            ->where(function ($q) use ($start, $end) {
+                if (!empty($start)) {
+                    $q->where('InsertTime', '>', "$start 00:00:00");
+                }
+                if (!empty($end)) {
+                    $q->where('InsertTime', '<', "$end 23:59:59");
+                }
+                if (!empty($start) && !empty($end)) {
+                    $q->where('InsertTime', 'between time', ["$start 00:00:00", "$end 23:59:59"]);
+                }
+            })
             ->paginate($limit)
             ->toArray();
         foreach ($result['data'] as $key => &$item) {
@@ -1909,37 +1940,16 @@ class GameOCDB extends BaseModel
         $RoleId = input('RoleId', '');
         $VerifyState = input('VerifyState', '');
         $operatortype = input('operatortype', '');
-        $OperateId = input('OperateId');
         $Amount = input('Amount');
         $start = input('start');
         $end = input('end', date('Y-m-d'));
         $limit = (int)input('limit', 20);
-
-//        $where = "1=1";
-//        if (session('merchant_OperatorId') && request()->module() == 'merchant') {
-//            $where .= " AND checkUser LIKE 'operator:".session('merchant_OperatorId')."%'";
-//            $where .= " AND b.OperatorId=".session('merchant_OperatorId');
-//
-//        } else if (session('business_ProxyChannelId') && request()->module() == 'business') {
-//            $where .= " AND checkUser LIKE '%-".session('business_ProxyChannelId')."'";
-//            $where .= " AND b.ProxyChannelId= ".session('business_ProxyChannelId');
-//        }
-////        if ($RoleId >= 0 && !empty($RoleId)) $where .= " AND RoleId=$RoleId";
-//        if ($Amount >= 0 && !empty($Amount)) $where .= " AND Money=" . (0 - $Amount);
-//        if ($VerifyState >= 0) $where .= " AND status=$VerifyState";
-//        if (!empty($start)) $where .= " AND InsertTime BETWEEN '$start 00:00:00' AND '$end 23:59:59'";
-//        if ($operatortype > 0) {
-//            $where .= " AND OperateType=" . $operatortype;
-//        }
-//        if ($OperateId != '') {
-//            $where .= " AND checkUser LIKE 'operator:".$OperateId."%'";
-//        }
         $Operators = $this->getTableObject('T_OperatorSubAccount')->where('1=1')->column('*','OperatorId');//OperatorName
         $business  = $this->getTableObject('T_ProxyChannelConfig')->where('1=1')->column('*','ProxyChannelId');//AccountName
-        // $result = $this->GetPage($where, 'ID DESC');
+
         $result = $this->getTableObject('T_GMSendMoney')->alias('a')
+            ->field('a.*,b.ProxyChannelId,b.OperatorId')
             ->join('[CD_Account].[dbo].[T_Accounts] b','b.AccountID=a.RoleId','left')
-//            ->where('checkUser','like','%'.session('merchant_OperatorName').'%')
             ->where('OperatorId',session('merchant_OperatorId'))
             ->where(function ($q) use($RoleId){
                 if(!empty($RoleId)){
@@ -1957,7 +1967,7 @@ class GameOCDB extends BaseModel
                 }
             })
             ->where(function ($q) use($VerifyState){
-                if(!empty($VerifyState)){
+                if($VerifyState != '-1'){
                     $q->where('status',$VerifyState);
                 }
             })
@@ -1972,7 +1982,7 @@ class GameOCDB extends BaseModel
                     $q->where('InsertTime', 'between time', ["$start 00:00:00", "$end 23:59:59"]);
                 }
             })
-            ->field('a.*,b.ProxyChannelId,b.OperatorId')
+
             ->order('ID DESC')
             ->paginate($limit)
             ->toArray();
