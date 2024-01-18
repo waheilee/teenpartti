@@ -1504,21 +1504,24 @@ class GameOCDB extends BaseModel
             if (isset($result[0])) {
                 $list = $result[0];
                 $userDB = new UserDB();
-                $redisKey = 'GET_USER_ALL_LIST';
-                $userList = Redis::get($redisKey);
-                if (!$userList) {
-                    $data = $userDB->getTableObject('T_UserProxyInfo')
-                        ->field('RoleID,ParentID')
-                        ->select();
-                    $userList = Redis::set($redisKey, $data, 3600);
-                }
+//                $redisKey = 'GET_USER_ALL_LIST';
+//                $userList = Redis::get($redisKey);
+//                if (!$userList) {
+//                    $data = $userDB->getTableObject('T_UserProxyInfo')
+//                        ->field('RoleID,ParentID')
+//                        ->select();
+//                    $userList = Redis::set($redisKey, $data, 3600);
+//                }
                 $userSubsetList = '';
                 if (!empty($roleid)) {
-                    $userSubsetList = Redis::get('USER_SUBSET_LIST_' . $roleid);
-                    if (!$userSubsetList) {
-                        $userSubsetList = sortList($userList, $roleid);
-                        Redis::set('USER_SUBSET_LIST_' . $roleid, $userSubsetList, 3600);
-                    }
+                    $getUserSql = "exec GetSubordinateUsers $roleid";
+                    $userList = $this->getTableQuery($getUserSql);
+                    $userSubsetList = $userList[0]['RoleID'];
+//                    $userSubsetList = Redis::get('USER_SUBSET_LIST_' . $roleid);
+//                    if (!$userSubsetList) {
+//                        $userSubsetList = sortList($userList, $roleid);
+//                        Redis::set('USER_SUBSET_LIST_' . $roleid, $userSubsetList, 3600);
+//                    }
                 }
                 $flippedData = '';
                 if (!empty($operatorId)) {
