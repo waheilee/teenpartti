@@ -120,19 +120,23 @@ class AgentWaterDailyExport extends Main
             ->join('[CD_UserDB].[dbo].[T_UserProxyInfo](NOLOCK) b', 'a.ProxyId=b.RoleID', 'LEFT')
             ->join('[T_UserDailyDeposit](NOLOCK) c', $day.'=c.DayTime and a.ProxyId=c.RoleID', 'LEFT')
             ->field('AddTime,ProxyId,DailyDeposit,DailyTax,
-        DailyRunning,Lv1PersonCount,Lv1Deposit,Lv1Tax,Lv1Running,
-        Lv2PersonCount,Lv2Deposit,Lv2Tax,Lv2Running,Lv3PersonCount,
-        Lv3Deposit,Lv3Tax,Lv3Running,Lv1FirstDepositPlayers,
-        Lv2FirstDepositPlayers,Lv3FirstDepositPlayers,A.ValidInviteCount,
-        Lv2ValidInviteCount,Lv3ValidInviteCount,FirstDepositMoney,
-        c.Lv1FirstDepositMoney,c.Lv2FirstDepositMoney,c.Lv3FirstDepositMoney,
-        c.Lv1WithdrawalMoney,c.Lv2WithdrawalMoney,c.Lv3WithdrawalMoney')
+                        DailyRunning,Lv1PersonCount,Lv1Deposit,Lv1Tax,Lv1Running,
+                        Lv2PersonCount,Lv2Deposit,Lv2Tax,Lv2Running,Lv3PersonCount,
+                        Lv3Deposit,Lv3Tax,Lv3Running,Lv1FirstDepositPlayers,
+                        Lv2FirstDepositPlayers,Lv3FirstDepositPlayers,A.ValidInviteCount,
+                        Lv2ValidInviteCount,Lv3ValidInviteCount,FirstDepositMoney,
+                        c.Lv1FirstDepositMoney,c.Lv2FirstDepositMoney,c.Lv3FirstDepositMoney,
+                        c.Lv1WithdrawalMoney,c.Lv2WithdrawalMoney,c.Lv3WithdrawalMoney,b.OperatorId')
             ->where(function ($q) use($roleId){
                 if (!empty($roleId)){
                     $q->where('a.ProxyId',$roleId);
                 }
             })
+            ->where(function ($q){
+                if (request()->module() == 'merchant' && session('merchant_OperatorId')){
+                    $q->where('b.OperatorId',session('merchant_OperatorId'));
+                }
+            })
             ->select();
-
     }
 }
