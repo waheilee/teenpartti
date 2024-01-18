@@ -208,8 +208,8 @@
                                 async: true,
                                 url: "{:url('agent/AgentWaterDailySumData')}",
                                 success: function (data) {
-                                    $('#FirstDepositPerson').html(data['other'][0]['FirstDepositPersons']);
-                                    $('#FirstDepositMoney').html(data['other'][0]['FirstDepositMoneys']);
+                                    $('#FirstDepositPerson').html(data['other'][0]['FirstDepositPerson']);
+                                    $('#FirstDepositMoney').html(data['other'][0]['FirstDepositMoney']);
                                     $('#Lv1PersonCount').html(data['other'][0]['Lv1PersonCount']);
                                     $('#Lv1Tax').html(data['other'][0]['ValidInviteCount']);
                                     $('#Lv2Tax').html(data['other'][0]['Lv2ValidInviteCount']);
@@ -253,8 +253,8 @@
                                 async: true,
                                 url: "{:url('agent/AgentWaterDailySumData')}",
                                 success: function (data) {
-                                    $('#FirstDepositPerson').html(data['other'][0]['FirstDepositPersons']);
-                                    $('#FirstDepositMoney').html(data['other'][0]['FirstDepositMoneys']);
+                                    $('#FirstDepositPerson').html(data['other'][0]['FirstDepositPerson']);
+                                    $('#FirstDepositMoney').html(data['other'][0]['FirstDepositMoney']);
                                     $('#Lv1PersonCount').html(data['other'][0]['Lv1PersonCount']);
                                     $('#Lv1Tax').html(data['other'][0]['ValidInviteCount']);
                                     $('#Lv2Tax').html(data['other'][0]['Lv2ValidInviteCount']);

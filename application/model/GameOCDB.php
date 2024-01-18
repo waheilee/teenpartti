@@ -1555,15 +1555,15 @@ class GameOCDB extends BaseModel
 
                     if ($roleid) {
                         //首充人数
-                        $item['FirstDepositPersons'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 1);
+                        $item['FirstDepositPerson'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 1);
                         //首充金额
-                        $item['FirstDepositMoneys'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 2);
+                        $item['FirstDepositMoney'] = $this->getFirstDeposit($roleid, '', $userSubsetList, $begin, $end, 2);
                     } elseif ($operatorId) {
-                        $item['FirstDepositPersons'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 1);
-                        $item['FirstDepositMoneys'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 2);
+                        $item['FirstDepositPerson'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 1);
+                        $item['FirstDepositMoney'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 2);
                     }else{
-                        $item['FirstDepositPersons'] = $this->getFirstDeposit('', '', [], $begin, $end, 1);
-                        $item['FirstDepositMoneys'] = $this->getFirstDeposit('', '', [], $begin, $end, 2);
+                        $item[''] = $this->getFirstDeposit('', '', [], $begin, $end, 1);
+                        $item['FirstDepositMoney'] = $this->getFirstDeposit('', '', [], $begin, $end, 2);
                     }
                     $item['Lv1PersonCount'] = $v['Lv1PersonCount'];
                     $item['Lv2ValidInviteCount'] = $v['Lv2ValidInviteCount'];
