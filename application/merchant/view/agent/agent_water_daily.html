@@ -194,13 +194,28 @@
                     }, page: true, limit: 15, cols: [cols], sort: true, autoSort: false,
                     done: function (res, curr, count) {
                         tzTbale()
-                        $('#FirstDepositPerson').html(res['other'][0]['FirstDepositPersons']);
-                        $('#FirstDepositMoney').html(res['other'][0]['FirstDepositMoneys']);
-                        $('#Lv1PersonCount').html(res['other'][0]['Lv1PersonCount']);
-                        $('#Lv1Tax').html(res['other'][0]['ValidInviteCount']);
-                        $('#Lv2Tax').html(res['other'][0]['Lv2ValidInviteCount']);
-                        $('#Lv3Tax').html(res['other'][0]['Lv3ValidInviteCount']);
-                        $('#dmNum').html(res['other'][0]['dm']);
+                        $.ajax({
+                            type: 'POST',
+                            data: {
+                                'roleid': 0,
+                                'start': $.trim($('#LAY-component-form-group-date1').val()),
+                                'end': $.trim($('#LAY-component-form-group-date2').val())
+                            },
+                            async: true,
+                            url: "{:url('agent/AgentWaterDailySumData')}",
+                            success: function (data) {
+                                $('#FirstDepositPerson').html(data['other'][0]['FirstDepositPerson']);
+                                $('#FirstDepositMoney').html(data['other'][0]['FirstDepositMoney']);
+                                $('#Lv1PersonCount').html(data['other'][0]['Lv1PersonCount']);
+                                $('#Lv1Tax').html(data['other'][0]['ValidInviteCount']);
+                                $('#Lv2Tax').html(data['other'][0]['Lv2ValidInviteCount']);
+                                $('#Lv3Tax').html(data['other'][0]['Lv3ValidInviteCount']);
+                                $('#dmNum').html(data['other'][0]['dm']);
+                            },
+                            error: function (XMLHttpRequest, textStatus, e) {
+
+                            }
+                        });
                     }
                 });
             },
@@ -218,13 +233,28 @@
                     },
                     done: function (res, curr, count) {
                         tzTbale()
-                        $('#FirstDepositPerson').html(res['other'][0]['FirstDepositPersons']);
-                        $('#FirstDepositMoney').html(res['other'][0]['FirstDepositMoneys']);
-                        $('#Lv1PersonCount').html(res['other'][0]['Lv1PersonCount']);
-                        $('#Lv1Tax').html(res['other'][0]['ValidInviteCount']);
-                        $('#Lv2Tax').html(res['other'][0]['Lv2ValidInviteCount']);
-                        $('#Lv3Tax').html(res['other'][0]['Lv3ValidInviteCount']);
-                        $('#dmNum').html(res['other'][0]['dm']);
+                        $.ajax({
+                            type: 'POST',
+                            data: {
+                                'roleid': $.trim($('#RoleID').val()),
+                                'start': $.trim($('#LAY-component-form-group-date1').val()),
+                                'end': $.trim($('#LAY-component-form-group-date2').val())
+                            },
+                            async: true,
+                            url: "{:url('agent/AgentWaterDailySumData')}",
+                            success: function (data) {
+                                $('#FirstDepositPerson').html(data['other'][0]['FirstDepositPerson']);
+                                $('#FirstDepositMoney').html(data['other'][0]['FirstDepositMoney']);
+                                $('#Lv1PersonCount').html(data['other'][0]['Lv1PersonCount']);
+                                $('#Lv1Tax').html(data['other'][0]['ValidInviteCount']);
+                                $('#Lv2Tax').html(data['other'][0]['Lv2ValidInviteCount']);
+                                $('#Lv3Tax').html(data['other'][0]['Lv3ValidInviteCount']);
+                                $('#dmNum').html(data['other'][0]['dm']);
+                            },
+                            error: function (XMLHttpRequest, textStatus, e) {
+
+                            }
+                        });
 
                     }
                 });
