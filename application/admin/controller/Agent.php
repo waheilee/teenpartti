@@ -526,8 +526,8 @@ class Agent extends Main
             case 'list':
                 $db = new GameOCDB();
                 $result = $db->GetAgentRecord(true);
-                $sumdata = $db->GetAgentRecordSum(true);
-                $result['other'] = $sumdata;
+//                $sumdata = $db->GetAgentRecordSum(true);
+//                $result['other'] = $sumdata;
                 $result['other']['startdate'] = $result['startdate'];
                 $result['other']['enddate'] = $result['enddate'];
                 return $this->apiJson($result);
@@ -543,6 +543,19 @@ class Agent extends Main
         $this->assign('startdate', $startdate);
         $this->assign('enddate', $enddate);
         return $this->fetch();
+    }
+
+    public function AgentWaterDailySumData()
+    {
+        $roleid = input('roleid');
+        $parentid = input('parentid', 0);
+        $startdate = input('startdate', '');
+        $enddate = input('enddate', '');
+        $db = new GameOCDB();
+        $sumdata = $db->GetAgentRecordSum(true);
+
+        $result['other'] = $sumdata;
+        return $this->apiJson($result);
     }
 
 
