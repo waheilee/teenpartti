@@ -1562,7 +1562,7 @@ class GameOCDB extends BaseModel
                         $item['FirstDepositPerson'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 1);
                         $item['FirstDepositMoney'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 2);
                     }else{
-                        $item[''] = $this->getFirstDeposit('', '', [], $begin, $end, 1);
+                        $item['FirstDepositPerson'] = $this->getFirstDeposit('', '', [], $begin, $end, 1);
                         $item['FirstDepositMoney'] = $this->getFirstDeposit('', '', [], $begin, $end, 2);
                     }
                     $item['Lv1PersonCount'] = $v['Lv1PersonCount'];
