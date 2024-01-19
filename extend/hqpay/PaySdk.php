@@ -55,7 +55,7 @@ class PaySdk
         if (isset($config['apiurl']) && !empty($config['apiurl'])) {
             $this->api_url = $config['apiurl'];
         }
-        save_log('hqpay','提交三方订单号:'.$OrderNo);
+
         if (isset($order['PayWayType'])){
             if ($order['PayWayType'] == 6) {
                 //PHONE
@@ -107,8 +107,8 @@ class PaySdk
             'sign:' . $sign,
             'appKey:' . $this->appid,
         ];
-
-        $resultData = $this->httpRequestDataTest($this->api_url.'pay/v1/mkcPay/createPixTransfer', json_encode($postData), $header);//发送http的post请求
+        save_log('hqpay','提交三方参数:'.json_encode($postData).'--头部信息--：'.json_encode($header));
+        $resultData = $this->httpRequestDataTest($this->api_url.'/pay/v1/mkcPay/createPixTransfer', json_encode($postData), $header);//发送http的post请求
         save_log('hqpay','返回参数---'.json_encode($resultData));
         if(empty($resultData)){
             $result['message'] = '错误，返回参数为空';
