@@ -152,34 +152,7 @@ class PaySdk
             }
             $result['message'] = $msg;
             $result['status'] = false;
-            $result['pay_type'] = 'hqpay';
-
-
-            (new BankDB())->updateTable('userdrawback', [
-                'status' => 5,
-                'IsDrawback'=>5,
-                'TransactionNo' => '',
-                'UpdateTime' => date('Y-m-d H:i:s',time())
-            ], ['OrderNo' => $OrderNo]);
-            save_log('hqpay','失败订单---'.$OrderNo);
-            $sendQuery=new  sendQuery();
-            $realMoney = intval($order['iMoney']/1000);
-            $res = $sendQuery->callback("CMD_MD_USER_DRAWBACK_MONEY_NEW", [$order['AccountID'], 2, $OrderNo, $realMoney, $order['iMoney'],$order['DrawBackWay'],$order['FreezonMoney'],$order['CurWaged'],$order['NeedWaged']]);
-            $res = unpack("Cint", $res)['int'];
-            $log_txt='第三方处理失败并返还金币';
-            if ($res != 0){
-                $log_txt='第三方处理失败金币未返还';
-            }
-            $gameoc = new GameOCDB();
-            $data =[
-                'OrderId'=>$OrderNo,
-                'Controller'=>'Notify',
-                'Method' => __METHOD__,
-                'Parameter'=>$resultData,
-                'Error'=>$log_txt,
-                'AddTime' => date('Y-m-d H:i:s',time())
-            ];
-            $gameoc->GetPayNotifyLogTable()->Insert($data);
+            $result['pay_type'] = 'mkcpay';
         }
 
         return $result;
