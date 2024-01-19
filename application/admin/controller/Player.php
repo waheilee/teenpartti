@@ -1148,6 +1148,8 @@ class Player extends Main
 
                     ConVerMoney($item['Money']);
                     ConVerMoney($item['ProxyBonus']);
+                    ConVerMoney($item['ColorFirstCharge']);
+                    ConVerMoney($item['ColorHand']);
 
                     //获取pg链接
                     $gameidkey = rand(0,9);
