@@ -113,6 +113,7 @@ class PaySdk
         if(empty($resultData)){
             $result['message'] = '错误，返回参数为空';
             $result['status'] = false;
+            $result['pay_type'] = 'mkcpay';
             Redis::set('PAYOUT_ORDER_SUCCESS_'.$OrderNo,$OrderNo,60);
             return $result;
         }
