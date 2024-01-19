@@ -1166,7 +1166,7 @@ class Player extends Main
                 return $this->apiJson(['list' => $this->GetOnlineUserlist2()['total']]);
                 break;
             case 'exec':
-                $field = "AccountID ID,AccountName,LoginName,RegisterTime,LastLoginIP,TotalDeposit,TotalRollOut,Money,ProxyBonus";
+                $field = "AccountID ID,AccountName,LoginName,RegisterTime,LastLoginIP,TotalDeposit,TotalRollOut,Money,ProxyBonus,ColorFirstCharge,ColorHand";
                 $result = $db->TViewAccount()->GetPage($where, "$orderby $ordertype", $field);
                 (new AllUserInfoExport())->export($result['list']);
 //                foreach ($result['list'] as &$item) {

@@ -45,7 +45,9 @@ class AllUserInfoExport extends Main
             lang('总充值'),//TotalDeposit
             lang('总转出'),//TotalRollOut
             lang('剩余金币'),//Money
-            lang('代理账户')//Money
+            lang('代理账户'),//Money
+            lang('首存彩金'),//Money
+            lang('手动彩金')//Money
         ];
 
             foreach ($sourceData as $k){
@@ -59,6 +61,8 @@ class AllUserInfoExport extends Main
                 $item['TotalRollOut'] = $k['TotalRollOut'] ?? "";
                 $item['Money'] = FormatMoney($k['Money']);
                 $item['ProxyBonus'] = $k['ProxyBonus'] ?? "";
+                $item['ColorFirstCharge'] = FormatMoney($k['ColorFirstCharge']);
+                $item['ColorHand'] = FormatMoney($k['ColorHand']);
 
                 //团队打码
                 $data[] = $item;
