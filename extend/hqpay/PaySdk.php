@@ -111,7 +111,7 @@ class PaySdk
         $resultData = $this->httpRequestDataTest($this->api_url.'pay/v1/mkcPay/createPixTransfer', json_encode($postData), $header);//发送http的post请求
         save_log('hqpay','返回参数---'.json_encode($resultData));
         if(empty($resultData)){
-            $result['message'] = 'error';
+            $result['message'] = '错误，返回参数为空';
             $result['status'] = false;
             Redis::set('PAYOUT_ORDER_SUCCESS_'.$OrderNo,$OrderNo,60);
             return $result;
