@@ -5223,7 +5223,7 @@ class Player extends Main
 
                 })
                 ->where(function($q) use($changeType){
-                    if($changeType > 0){
+                    if($changeType >= 0){
                         $q->where('ChangeType',$changeType);
                     }
 
