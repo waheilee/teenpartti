@@ -5294,8 +5294,8 @@ class Player extends Main
         $roleId = input('roleid','');
         $start = input('start','');
         $end = input('end','');
-        $changeType = input('ChangeType','');
-        $moneyKey = input('MoneyKey','');
+        $changeType = input('ChangeType',-1);
+        $moneyKey = input('MoneyKey',-1);
         $m = new DataChangelogsDB();
         $list = $m->getTableObject('T_ColorMoneyLog')
             ->where(function($q) use($roleId){
