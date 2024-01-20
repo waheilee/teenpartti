@@ -1,0 +1,483 @@
+{extend name="common/base" /}
+
+{block name="title"}金币日志{/block}
+{block name="css"}{/block}
+{block name="content"}
+
+<div class="layui-row layui-col-space20">
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('手动彩金人数')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="handUserCount"
+                                                                 style="color: #009688"></p></div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('首存彩金人数')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="firstUserCount"
+                                                                 style="color: #009688"></p></div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('手动彩金金额')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="handColorMoney"
+                                                                 style="color: #009688"></p></div>
+        </div>
+    </div>
+
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('首存彩金金额')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="firstColorMoney"
+                                                                 style="color: #009688"></p></div>
+        </div>
+    </div>
+
+
+
+
+</div>
+<div class="layui-card" style="margin-top: 10px;">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('玩家ID')}</label>
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="RoleID"
+                               lay-verify="number" name="RoleID" value=""
+                               type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('修改类型')}</label>
+                    <div class="layui-input-inline">
+                        <select id="ChangeType" name="ChangeType">
+                            <option value=-1>{:lang('选择修改类型')}</option>
+                            <option value="0">{:lang('首充添加')}</option>
+                            <option value="1">{:lang('后台添加')}</option>
+                            <option value="2">{:lang('完成打码')}</option>
+                            <option value="3">{:lang('提现清空首充')}</option>
+                            <option value="4">{:lang('进行游戏变化')}</option>
+                            <option value="5">{:lang('打码需求变化')}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('彩金类型')}</label>
+                    <div class="layui-input-inline">
+                        <select id="MoneyKey" name="MoneyKey">
+                            <option value="-1">{:lang('选择彩金类型')}</option>
+                            <option value="10210">{:lang('首存彩金A')}</option>
+                            <option value="10211">{:lang('手动彩金B')}</option>
+                            <option value="10212">{:lang('手动彩金 冻结部分C')}</option>
+                            <option value="90001">{:lang('打码需求变化')}</option>
+
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <!--        <label class="layui-form-label">日期</label>-->
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date" name="start" type="text" value="{:date('Y-m-d').' 00:00:00'}">
+                    </div>
+                    <div class="layui-form-mid"> -</div>
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date2" name="end" type="text" value="{:date('Y-m-d').' 23:59:59'}">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <!-- <div class="layui-input-inline"> -->
+                    <a class="layui-btn" data-type="reload" id="search">{:lang('搜索')}</a>
+                    <!--                            <a class="layui-btn" id="output">{:lang('导出记录')}</a>-->
+                    <!-- </div> -->
+                </div>
+                <div class="layui-inline">
+
+
+                </div>
+
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <div class="layui-row layui-col-space30">
+
+            <div id="alllist" class="layui-col-md12">
+                <table id="proxylist" lay-filter="proxylist"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+
+<script>
+    url = "{:url('player/colorMoneyCoinLog')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'RoleId', align: 'center', title: "{:lang('用户ID')}", minWidth: 120},
+                    {field: 'ChangeType', align: 'center', title: "{:lang('修改类型')}", minWidth: 180,templet: function (d)
+                        {
+                            switch (Number(d.ChangeType)){
+                                case 0:
+                                    return '首充添加';
+                                case 1:
+                                    return '后台添加';
+                                case 2:
+                                    return '完成打码';
+                                case 3:
+                                    return '提现清空首充';
+                                case 4:
+                                    return '进行游戏变化';
+                                case 5:
+                                    return '打码需求变化';
+                            }
+                        }},
+                    {field: 'MoneyKey', align: 'center', title: "{:lang('彩金类型')}", minWidth: 150,templet: function (d)
+                        {
+                            switch (Number(d.MoneyKey)){
+                                case 10210:
+                                    return '首存彩金A';
+                                case 10211:
+                                    return '手动彩金B';
+                                case 10212:
+                                    return '手动彩金 冻结部分C';
+                                case 90001:
+                                    return '打码需求变化';
+                            }
+                        }
+                    },
+                    {field: 'ChangeMoney', align: 'center', title: "{:lang('修改金额')}", minWidth: 150,templet: function (d) { return "<span style='color:" + (d.ChangeMoney > 0 ? "red'>+" : "ChangeMoney'>") + d.ChangeMoney + "</span>" }},
+                    {field: 'LastMoney', align: 'center', title: "{:lang('改变后金额')}", minWidth: 150},
+                    {field: 'AddTime', align: 'center', title: "{:lang('时间')}", minWidth: 180},
+
+
+                ];
+
+                table.render({
+                    elem: '#proxylist',					url: url,
+                    page: true, where: {Action: 'list'},
+                    cols: [cols],
+                    autoSort: false,
+                    done: function (res) {
+                        $.ajax({
+                            type: 'POST',
+                            data: {
+                                // 'roleid': 0,
+                                // 'start': $.trim($('#LAY-component-form-group-date').val()),
+                                // 'end': $.trim($('#LAY-component-form-group-date2').val())
+                            },
+                            async: true,
+                            url: "{:url('player/colorMoneyCoinLogSumData')}",
+                            success: function (data) {
+                                $('#firstColorMoney').html(data['other']['firstColorMoney']);
+                                $('#handColorMoney').html(data['other']['handColorMoney']);
+                                $('#firstUserCount').html(data['other']['firstUserCount']);
+                                $('#handUserCount').html(data['other']['handUserCount']);
+
+                            },
+                            error: function (XMLHttpRequest, textStatus, e) {
+
+                            }
+                        });
+                    }
+                });
+            },
+            search: function () {
+                //执行重载
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        roleid: $.trim($('#RoleID').val()),
+                        start:$.trim($('#LAY-component-form-group-date').val()),
+                        end:$.trim($('#LAY-component-form-group-date2').val()),
+                        ChangeType:  $.trim($('#ChangeType').val()),
+                        MoneyKey: $.trim($('#MoneyKey').val()),
+                    },done: function (res, curr, count) {
+                        tzTbale()
+                        $.ajax({
+                            type: 'POST',
+                            data: {
+                                'roleid': $.trim($('#RoleID').val()),
+                                'start': $.trim($('#LAY-component-form-group-date').val()),
+                                'end': $.trim($('#LAY-component-form-group-date2').val()),
+                                'ChangeType': $.trim($('#ChangeType').val()),
+                                'MoneyKey': $.trim($('#MoneyKey').val()),
+                            },
+                            async: true,
+                            url: "{:url('player/colorMoneyCoinLogSumData')}",
+                            success: function (data) {
+                                $('#firstColorMoney').html(data['other']['firstColorMoney']);
+                                $('#handColorMoney').html(data['other']['handColorMoney']);
+                                $('#firstUserCount').html(data['other']['firstUserCount']);
+                                $('#handUserCount').html(data['other']['handUserCount']);
+                            },
+                            error: function (XMLHttpRequest, textStatus, e) {
+
+                            }
+                        });
+
+                    }
+                });
+            },
+            //操作事件
+            extraEvent: function () {
+                //编辑
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'detail') {
+                        var url = 'playerDetail?roleid=' + data.RoleID;
+                        x_admin_show('{:lang(\'玩家详情\')}', url, $(window).width() * 0.7, $(window).height() * 0.6);
+                    }
+                });
+            },
+
+
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+                laydate.render({
+                    elem: '#LAY-component-form-group-date'
+                    , format: 'yyyy-MM-dd HH:mm:ss'
+                    , max: 1
+                    , lang:'{$datelang ?: "cn"}'
+                    , btns: ['clear', 'confirm']
+                    , type: 'datetime'
+                    // , value: new Date()
+                });
+                laydate.render({
+                    elem: '#LAY-component-form-group-date2'
+                    , format: 'yyyy-MM-dd HH:mm:ss'
+                    , max: 1
+                    , lang:'{$datelang ?: "cn"}'
+                    , btns: ['clear', 'confirm']
+                    , type: 'datetime'
+                    // , value: new Date()
+                });
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+        laydate.render({elem: '#start_date', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+        laydate.render({elem: '#end_date', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+        main.init();
+    });
+    // $('#output').click(function () {
+    //     where = {
+    //         OperatorId: $.trim($('#OperatorId').val()),
+    //         limit: 10000000,
+    //         Action: 'exec',
+    //         start_date:$('#start_date').val(),
+    //         end_date:$('#end_date').val()
+    //     }
+    //
+    //     download();
+    //
+    //     function download() {
+    //         var params = Object.keys(where).map(function (key) {
+    //             return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+    //         }).join("&");
+    //         outurl = url + "?" + params;
+    //         $.ajax({
+    //             type: 'POST',
+    //             dataType: 'json',
+    //             async: true,
+    //             url: outurl, // 生成文件，保存在服务器
+    //             success: function (data) {
+    //                 var result = data;
+    //                 console.info(data);
+    //                 switch (result["code"]) {
+    //                     case 0:
+    //                         parent.parent.open(outurl + "&exec=1&outall=true");
+    //                         break;
+    //                     case 1:
+    //                         layer.msg(result["message"]);
+    //                         break;
+    //                     case 2:
+    //                         layer.confirm(result['message'], {
+    //                             btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
+    //                         }, function () {
+    //                             parent.parent.open(outurl + "&exec=1&outall=true");
+    //                             layer.msg('', {icon: 6, time: 1000}, function () {
+    //                                 window.location.reload();
+    //                             });
+    //                         });
+    //                 }
+    //             },
+    //             error: function (XMLHttpRequest, textStatus, e) {
+    //                 console.log("oilDetection.js  method exportOilDetection" + e);
+    //             }
+    //         });
+    //     }
+    // });
+</script>
+
+
+
+
+
+
+
+<!--<script>-->
+<!--	url = "{:url('player/colorMoneyCoinLog')}";-->
+<!--	layui.config({-->
+<!--		base: '__layui__/' //静态资源所在路径-->
+<!--	}).extend({-->
+<!--		index: 'lib/index' //主入口模块-->
+
+<!--	}).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {-->
+<!--        var element = layui.element-->
+<!--            , layer = layui.layer-->
+<!--            , laydate = layui.laydate-->
+<!--            , table = layui.table-->
+<!--            , $ = layui.$-->
+<!--            , form = layui.form;-->
+
+<!--		// console.info(RoomList[0]['RoomID']);-->
+
+<!--		var main = {-->
+<!--			renderData: function () {-->
+
+<!--				// var is_portrait = "{:config('is_portrait')}";-->
+<!--			    // if (is_portrait == 1) {-->
+<!--			    //     cols.splice(1,0,{field: 'OperatorId', align: 'center', title: "{:lang('渠道ID')}", width: 150})-->
+<!--			    // }-->
+<!--				table.render({-->
+<!--                    elem: '#proxylist'-->
+<!--                    , url: url //数据接口-->
+<!--                    , page: true //开启分页-->
+<!--                    , limit: 15-->
+<!--                    ,toolbar: '#toolbarDemo'-->
+<!--                    ,defaultToolbar:[]-->
+<!--                    , where: {Action:'list'}-->
+<!--                    , cols: [cols]-->
+<!--                    ,-->
+<!--                    done: function (res, curr, count) {-->
+
+
+<!--                    }-->
+<!--				});-->
+<!--			},-->
+<!--			//搜索-->
+<!--			search: function () {-->
+<!--				//执行重载-->
+<!--				table.reload('proxylist', {-->
+<!--					page: {-->
+<!--						curr: 1 //重新从第 1 页开始-->
+<!--					},-->
+<!--					-->
+<!--				});-->
+<!--			},-->
+
+
+
+<!--            init: function () {-->
+<!--                form.render(null, 'component-form-group');-->
+<!--                laydate.render({-->
+<!--                    elem: '#LAY-component-form-group-date'-->
+<!--                    , format: 'yyyy-MM-dd'-->
+<!--                    , max: 1-->
+<!--                    , lang:'{$datelang ?: "cn"}'-->
+<!--                    , btns: ['clear', 'confirm']-->
+<!--                    , type: 'datetime'-->
+<!--                    // , value: new Date()-->
+<!--                });-->
+<!--                laydate.render({-->
+<!--                    elem: '#LAY-component-form-group-date2'-->
+<!--                    , format: 'yyyy-MM-dd'-->
+<!--                    , max: 1-->
+<!--                    , lang:'{$datelang ?: "cn"}'-->
+<!--                    , btns: ['clear', 'confirm']-->
+<!--                    , type: 'datetime'-->
+<!--                    // , value: new Date()-->
+<!--                });-->
+<!--                main.extraEvent();-->
+<!--                main.renderData();-->
+<!--                $('#search').on('click', function (e) {-->
+<!--                    e.preventDefault();-->
+<!--                    main.search();-->
+<!--                });-->
+<!--            }-->
+<!--		};-->
+
+<!--		main.init();-->
+<!--	});-->
+<!--	// $('#output').click(function () {-->
+<!--	// 	where = {-->
+<!--	// 		roleid: $.trim($('#roleid').val()),-->
+<!--	// 		strartdate:  $.trim($('#LAY-component-form-group-date').val()),-->
+<!--	// 		enddate: $.trim($('#LAY-component-form-group-date2').val()),-->
+<!--	// 		changetype:  $.trim($('#changetype').val()),-->
+<!--	// 		usertype: $.trim($('#usertype').val()),-->
+<!--	// 		OperatorId: $.trim($('#OperatorId').val()),-->
+<!--	// 		limit: 20000,-->
+<!--	// 		Action: 'exec',-->
+<!--	// 	}-->
+<!--    //-->
+<!--	// 	// download();-->
+<!--    //-->
+<!--	// 	// function download() {-->
+<!--	// 	// 	var params = Object.keys(where).map(function (key) {-->
+<!--	// 	// 		return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);-->
+<!--	// 	// 	}).join("&");-->
+<!--	// 	// 	url = url +"?"+ params;-->
+<!--	// 	// 	$.ajax({-->
+<!--	// 	// 		type: 'POST',-->
+<!--	// 	// 		dataType: 'json',-->
+<!--	// 	// 		async: true,-->
+<!--	// 	// 		url: url, // 生成文件，保存在服务器-->
+<!--	// 	// 		success: function (data) {-->
+<!--	// 	// 			var result = data;-->
+<!--	// 	// 			console.info(data);-->
+<!--	// 	// 			switch (result["code"]) {-->
+<!--	// 	// 				case 0:-->
+<!--	// 	// 					parent.parent.open(url + "&exec=1&outall=true");-->
+<!--	// 	// 					break;-->
+<!--	// 	// 				case 1:-->
+<!--	// 	// 					layer.msg(result["message"]);-->
+<!--	// 	// 					break;-->
+<!--	// 	// 				case 2:-->
+<!--	// 	// 					layer.confirm(result['message'], {-->
+<!--	// 	// 						btn: ['{:lang("是")}', '{:lang("否")}'] //按钮-->
+<!--	// 	// 					}, function () {-->
+<!--	// 	// 						parent.parent.open(url + "&exec=1&outall=true");-->
+<!--	// 	// 						layer.msg('', {icon: 6, time: 1000}, function () {-->
+<!--	// 	// 							window.location.reload();-->
+<!--	// 	// 						});-->
+<!--	// 	// 					})                            ;-->
+<!--	// 	// 			}-->
+<!--	// 	// 		},-->
+<!--	// 	// 		error: function (XMLHttpRequest, textStatus, e) {-->
+<!--	// 	// 			console.log("oilDetection.js  method exportOilDetection" + e);-->
+<!--	// 	// 		}-->
+<!--	// 	// 	});-->
+<!--	// 	// }-->
+<!--	// });-->
+<!--</script>-->
+{/block}
