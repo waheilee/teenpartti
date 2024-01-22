@@ -169,6 +169,10 @@
     <a class="layui-btn layui-btn-xs" lay-event="prohibitWithdrawals">{:lang('禁止提现')}</a>
     <a class="layui-btn layui-btn-xs" lay-event="colorMoney">{:lang('彩金')}</a>
     <a class="layui-btn layui-btn-xs" lay-event="firstColorMoney">{:lang('首充彩金')}</a>
+    {if(config('noDmColorMoney')==1)}
+    <a class="layui-btn layui-btn-xs" lay-event="noDmColorMoney">{:lang('不打码彩金')}</a>
+    <a class="layui-btn layui-btn-xs" lay-event="noDmFirstColorMoney">{:lang('不打码首充彩金')}</a>
+    {/if}
 </script>
 <script src="__js__/cache.js"></script>
 <script src="__js__/Barrett.js"></script>
@@ -294,7 +298,7 @@
             function editColorMoney(id, amount, t) {
                 $.ajax({
                     type: 'post',
-                    url: "{:url('Player/setColorMoney')}",
+                    url: "{:url('ColorMoney/setColorMoney')}",
                     beforeSend: function () {
                         var layindex = layer.msg("{:lang('稍等片刻,马上就好')}", {
                             icon:16,
@@ -1116,10 +1120,48 @@
                                     , yes: function (index, layero) {
                                         var lCurWaged = $("#lCurWaged").val();
                                         if (lCurWaged == '') {
-                                            layer.msg("{:lang('请输入首冲彩金值')}");
+                                            layer.msg("{:lang('请输入首充彩金值')}");
                                             return;
                                         }
                                         editColorMoney(data.ID, lCurWaged, 2);
+                                    }
+
+                                });
+                            }else if (layEvent === 'noDmColorMoney') {
+                                var content = "<form class=\"layui-form\" action=\"\">" +
+                                    // '<div class="layui-form-item"><label class="layui-form-label" style="width:87px">{:lang("当前值")}</label><div class="layui-input-block"><input type="text" name="title" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" value="'+lCurWaged+'" readonly=""></div></div>'+
+                                    '<div class="layui-form-item"><label class="layui-form-label" style="width:87px">{:lang("不打码彩金")}</label><div class="layui-input-block"><input type="number" name="title" lay-verify="title" autocomplete="off" placeholder="{:lang(\'请输入彩金\')}" class="layui-input" id="lCurWaged" value="0" ></div></div>' +
+                                    '</form>';
+                                layer.open({
+                                    content: content,
+                                    title: '{:lang("彩金设置")}'
+                                    , btn: ['{:lang("增加")}']
+                                    , yes: function (index, layero) {
+                                        var lCurWaged = $("#lCurWaged").val();
+                                        if (lCurWaged == '') {
+                                            layer.msg("{:lang('请输入彩金值')}");
+                                            return;
+                                        }
+                                        editColorMoney(data.ID, lCurWaged, 3);
+                                    }
+
+                                });
+                            }else if (layEvent === 'noDmFirstColorMoney') {
+                                var content = "<form class=\"layui-form\" action=\"\">" +
+                                    // '<div class="layui-form-item"><label class="layui-form-label" style="width:87px">{:lang("当前值")}</label><div class="layui-input-block"><input type="text" name="title" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" value="'+lCurWaged+'" readonly=""></div></div>'+
+                                    '<div class="layui-form-item"><label class="layui-form-label" style="width:87px">{:lang("不打码首充彩金")}</label><div class="layui-input-block"><input type="number" name="title" lay-verify="title" autocomplete="off" placeholder="{:lang(\'请输入彩金\')}" class="layui-input" id="lCurWaged" value="0" ></div></div>' +
+                                    '</form>';
+                                layer.open({
+                                    content: content,
+                                    title: '{:lang("首充彩金设置")}'
+                                    , btn: ['{:lang("增加")}']
+                                    , yes: function (index, layero) {
+                                        var lCurWaged = $("#lCurWaged").val();
+                                        if (lCurWaged == '') {
+                                            layer.msg("{:lang('请输入首充彩金值')}");
+                                            return;
+                                        }
+                                        editColorMoney(data.ID, lCurWaged, 4);
                                     }
 
                                 });
