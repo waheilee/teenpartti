@@ -71,6 +71,8 @@ class ColorMoney extends Main
             $end = input('end', '');
             $changeType = input('ChangeType', -1);
             $moneyKey = input('MoneyKey', -1);
+            $order = input('orderby','');
+            $orderType = input('ordertype');
             $m = new DataChangelogsDB();
             $count = $m->getTableObject('T_ColorMoneyLog')
                 ->where(function ($q) use ($roleId) {
@@ -122,6 +124,7 @@ class ColorMoney extends Main
                         $q->where('AddTime', 'between time', [$start, $end]);
                     }
                 })
+                ->order($order,$orderType)
                 ->limit($limit)
                 ->page($page)
                 ->select();

@@ -168,15 +168,17 @@
                         }
                     },
                     {field: 'ChangeMoney', align: 'center', title: "{:lang('修改金额')}", minWidth: 150,templet: function (d) { return "<span style='color:" + (d.ChangeMoney > 0 ? "red'>+" : "ChangeMoney'>") + d.ChangeMoney + "</span>" }},
-                    {field: 'LastMoney', align: 'center', title: "{:lang('改变后金额')}", minWidth: 150},
+                    {field: 'LastMoney', align: 'center', title: "{:lang('改变后金额')}", minWidth: 150,sort:true},
                     {field: 'AddTime', align: 'center', title: "{:lang('时间')}", minWidth: 180},
 
 
                 ];
 
                 table.render({
-                    elem: '#proxylist',					url: url,
-                    page: true, where: {Action: 'list'},
+                    elem: '#proxylist',
+                    url: url,
+                    page: true,
+                    where: {Action: 'list'},
                     cols: [cols],
                     autoSort: false,
                     done: function (res) {
@@ -253,6 +255,31 @@
                         var url = 'playerDetail?roleid=' + data.RoleID;
                         x_admin_show('{:lang(\'玩家详情\')}', url, $(window).width() * 0.7, $(window).height() * 0.6);
                     }
+                });
+                table.on('sort(proxylist)', function (obj) {
+                    var roleid= $.trim($('#RoleID').val());
+                    // var start=$.trim($('#LAY-component-form-group-date').val());
+                    // var end=$.trim($('#LAY-component-form-group-date2').val());
+                    var ChangeType=  $.trim($('#ChangeType').val());
+                    var MoneyKey= $.trim($('#MoneyKey').val());
+                    //执行重载
+                    table.reload('proxylist', {
+                        initSort: obj,
+                        page: {
+                            curr: 1 //重新从第 1 页开始
+                        },
+                        where: {
+                            'orderby': obj.field,
+                            'ordertype': obj.type,
+                            'roleid': roleid,
+                            // 'start': start,
+                            // 'end': end,
+                            'ChangeType': ChangeType,
+                            'MoneyKey': MoneyKey,
+
+                        }
+                    });
+
                 });
             },
 
