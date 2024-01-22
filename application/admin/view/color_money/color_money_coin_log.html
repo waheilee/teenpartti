@@ -118,7 +118,7 @@
 {block name="script"}
 
 <script>
-    url = "{:url('player/colorMoneyCoinLog')}";
+    url = "{:url('ColorMoney/colorMoneyCoinLog')}";
     layui.config({
         base: '__layui__/' //静态资源所在路径
     }).extend({
@@ -188,7 +188,7 @@
                                 // 'end': $.trim($('#LAY-component-form-group-date2').val())
                             },
                             async: true,
-                            url: "{:url('player/colorMoneyCoinLogSumData')}",
+                            url: "{:url('ColorMoney/colorMoneyCoinLogSumData')}",
                             success: function (data) {
                                 $('#firstColorMoney').html(data['other']['firstColorMoney']);
                                 $('#handColorMoney').html(data['other']['handColorMoney']);
@@ -227,7 +227,7 @@
                                 'MoneyKey': $.trim($('#MoneyKey').val()),
                             },
                             async: true,
-                            url: "{:url('player/colorMoneyCoinLogSumData')}",
+                            url: "{:url('ColorMoney/colorMoneyCoinLogSumData')}",
                             success: function (data) {
                                 $('#firstColorMoney').html(data['other']['firstColorMoney']);
                                 $('#handColorMoney').html(data['other']['handColorMoney']);
@@ -288,196 +288,27 @@
         laydate.render({elem: '#end_date', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
         main.init();
     });
-    // $('#output').click(function () {
-    //     where = {
-    //         OperatorId: $.trim($('#OperatorId').val()),
-    //         limit: 10000000,
-    //         Action: 'exec',
-    //         start_date:$('#start_date').val(),
-    //         end_date:$('#end_date').val()
-    //     }
-    //
-    //     download();
-    //
-    //     function download() {
-    //         var params = Object.keys(where).map(function (key) {
-    //             return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
-    //         }).join("&");
-    //         outurl = url + "?" + params;
-    //         $.ajax({
-    //             type: 'POST',
-    //             dataType: 'json',
-    //             async: true,
-    //             url: outurl, // 生成文件，保存在服务器
-    //             success: function (data) {
-    //                 var result = data;
-    //                 console.info(data);
-    //                 switch (result["code"]) {
-    //                     case 0:
-    //                         parent.parent.open(outurl + "&exec=1&outall=true");
-    //                         break;
-    //                     case 1:
-    //                         layer.msg(result["message"]);
-    //                         break;
-    //                     case 2:
-    //                         layer.confirm(result['message'], {
-    //                             btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
-    //                         }, function () {
-    //                             parent.parent.open(outurl + "&exec=1&outall=true");
-    //                             layer.msg('', {icon: 6, time: 1000}, function () {
-    //                                 window.location.reload();
-    //                             });
-    //                         });
-    //                 }
-    //             },
-    //             error: function (XMLHttpRequest, textStatus, e) {
-    //                 console.log("oilDetection.js  method exportOilDetection" + e);
-    //             }
-    //         });
-    //     }
-    // });
+    $('#output').click(function () {
+        where = {
+            roleid: $.trim($('#RoleID').val()),
+            start:$.trim($('#LAY-component-form-group-date').val()),
+            end:$.trim($('#LAY-component-form-group-date2').val()),
+            ChangeType:  $.trim($('#ChangeType').val()),
+            MoneyKey: $.trim($('#MoneyKey').val()),
+            limit: 10000000,
+            output: 'exec',
+            Action:'exec'
+        }
+
+        download();
+
+        function download() {
+            var params = Object.keys(where).map(function (key) {
+                return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+            }).join("&");
+            url = url + "?" + params;
+            parent.parent.open(url + "&exec=1&outall=true");
+        }
+    });
 </script>
-
-
-
-
-
-
-
-<!--<script>-->
-<!--	url = "{:url('player/colorMoneyCoinLog')}";-->
-<!--	layui.config({-->
-<!--		base: '__layui__/' //静态资源所在路径-->
-<!--	}).extend({-->
-<!--		index: 'lib/index' //主入口模块-->
-
-<!--	}).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {-->
-<!--        var element = layui.element-->
-<!--            , layer = layui.layer-->
-<!--            , laydate = layui.laydate-->
-<!--            , table = layui.table-->
-<!--            , $ = layui.$-->
-<!--            , form = layui.form;-->
-
-<!--		// console.info(RoomList[0]['RoomID']);-->
-
-<!--		var main = {-->
-<!--			renderData: function () {-->
-
-<!--				// var is_portrait = "{:config('is_portrait')}";-->
-<!--			    // if (is_portrait == 1) {-->
-<!--			    //     cols.splice(1,0,{field: 'OperatorId', align: 'center', title: "{:lang('渠道ID')}", width: 150})-->
-<!--			    // }-->
-<!--				table.render({-->
-<!--                    elem: '#proxylist'-->
-<!--                    , url: url //数据接口-->
-<!--                    , page: true //开启分页-->
-<!--                    , limit: 15-->
-<!--                    ,toolbar: '#toolbarDemo'-->
-<!--                    ,defaultToolbar:[]-->
-<!--                    , where: {Action:'list'}-->
-<!--                    , cols: [cols]-->
-<!--                    ,-->
-<!--                    done: function (res, curr, count) {-->
-
-
-<!--                    }-->
-<!--				});-->
-<!--			},-->
-<!--			//搜索-->
-<!--			search: function () {-->
-<!--				//执行重载-->
-<!--				table.reload('proxylist', {-->
-<!--					page: {-->
-<!--						curr: 1 //重新从第 1 页开始-->
-<!--					},-->
-<!--					-->
-<!--				});-->
-<!--			},-->
-
-
-
-<!--            init: function () {-->
-<!--                form.render(null, 'component-form-group');-->
-<!--                laydate.render({-->
-<!--                    elem: '#LAY-component-form-group-date'-->
-<!--                    , format: 'yyyy-MM-dd'-->
-<!--                    , max: 1-->
-<!--                    , lang:'{$datelang ?: "cn"}'-->
-<!--                    , btns: ['clear', 'confirm']-->
-<!--                    , type: 'datetime'-->
-<!--                    // , value: new Date()-->
-<!--                });-->
-<!--                laydate.render({-->
-<!--                    elem: '#LAY-component-form-group-date2'-->
-<!--                    , format: 'yyyy-MM-dd'-->
-<!--                    , max: 1-->
-<!--                    , lang:'{$datelang ?: "cn"}'-->
-<!--                    , btns: ['clear', 'confirm']-->
-<!--                    , type: 'datetime'-->
-<!--                    // , value: new Date()-->
-<!--                });-->
-<!--                main.extraEvent();-->
-<!--                main.renderData();-->
-<!--                $('#search').on('click', function (e) {-->
-<!--                    e.preventDefault();-->
-<!--                    main.search();-->
-<!--                });-->
-<!--            }-->
-<!--		};-->
-
-<!--		main.init();-->
-<!--	});-->
-<!--	// $('#output').click(function () {-->
-<!--	// 	where = {-->
-<!--	// 		roleid: $.trim($('#roleid').val()),-->
-<!--	// 		strartdate:  $.trim($('#LAY-component-form-group-date').val()),-->
-<!--	// 		enddate: $.trim($('#LAY-component-form-group-date2').val()),-->
-<!--	// 		changetype:  $.trim($('#changetype').val()),-->
-<!--	// 		usertype: $.trim($('#usertype').val()),-->
-<!--	// 		OperatorId: $.trim($('#OperatorId').val()),-->
-<!--	// 		limit: 20000,-->
-<!--	// 		Action: 'exec',-->
-<!--	// 	}-->
-<!--    //-->
-<!--	// 	// download();-->
-<!--    //-->
-<!--	// 	// function download() {-->
-<!--	// 	// 	var params = Object.keys(where).map(function (key) {-->
-<!--	// 	// 		return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);-->
-<!--	// 	// 	}).join("&");-->
-<!--	// 	// 	url = url +"?"+ params;-->
-<!--	// 	// 	$.ajax({-->
-<!--	// 	// 		type: 'POST',-->
-<!--	// 	// 		dataType: 'json',-->
-<!--	// 	// 		async: true,-->
-<!--	// 	// 		url: url, // 生成文件，保存在服务器-->
-<!--	// 	// 		success: function (data) {-->
-<!--	// 	// 			var result = data;-->
-<!--	// 	// 			console.info(data);-->
-<!--	// 	// 			switch (result["code"]) {-->
-<!--	// 	// 				case 0:-->
-<!--	// 	// 					parent.parent.open(url + "&exec=1&outall=true");-->
-<!--	// 	// 					break;-->
-<!--	// 	// 				case 1:-->
-<!--	// 	// 					layer.msg(result["message"]);-->
-<!--	// 	// 					break;-->
-<!--	// 	// 				case 2:-->
-<!--	// 	// 					layer.confirm(result['message'], {-->
-<!--	// 	// 						btn: ['{:lang("是")}', '{:lang("否")}'] //按钮-->
-<!--	// 	// 					}, function () {-->
-<!--	// 	// 						parent.parent.open(url + "&exec=1&outall=true");-->
-<!--	// 	// 						layer.msg('', {icon: 6, time: 1000}, function () {-->
-<!--	// 	// 							window.location.reload();-->
-<!--	// 	// 						});-->
-<!--	// 	// 					})                            ;-->
-<!--	// 	// 			}-->
-<!--	// 	// 		},-->
-<!--	// 	// 		error: function (XMLHttpRequest, textStatus, e) {-->
-<!--	// 	// 			console.log("oilDetection.js  method exportOilDetection" + e);-->
-<!--	// 	// 		}-->
-<!--	// 	// 	});-->
-<!--	// 	// }-->
-<!--	// });-->
-<!--</script>-->
 {/block}
