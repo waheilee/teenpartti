@@ -2,6 +2,8 @@
 
 namespace app\admin\controller;
 
+use app\admin\controller\Export\AgentWaterDailyExport;
+use app\admin\controller\Export\ColorMoneyLogExport;
 use app\model\DataChangelogsDB;
 
 class ColorMoney extends Main
@@ -108,7 +110,7 @@ class ColorMoney extends Main
 
             $where .= " AND AddTime>='$start' AND AddTime<='$end'";
         }
-        $sql = "exec ColorMoneyCoinLogSumData ".'"'.$where.'"' ;
+        $sql = "exec ColorMoneyCoinLogSumData " . '"' . $where . '"';
         $result = $m->getTableQuery($sql);
         $data = $result[0][0];
 
@@ -119,5 +121,11 @@ class ColorMoney extends Main
 
         $result['other'] = $count;
         return $this->apiJson($result);
+    }
+
+    public function colorMoneyLogExport()
+    {
+        $export = new ColorMoneyLogExport();
+        $export->export();
     }
 }
