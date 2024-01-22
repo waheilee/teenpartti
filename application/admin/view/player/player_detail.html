@@ -484,9 +484,7 @@
                     <table id="Table7" lay-filter="Table7"></table>
                 </div>
                 <!--彩金日志 -->
-                <div class="layui-tab-item">
-                    <table id="Table13" lay-filter="Table13"></table>
-                </div>
+
 
 
                 <div class="layui-tab-item">
@@ -559,7 +557,9 @@
                 <div class="layui-tab-item">
                     <table id="Table12" lay-filter="Table12" style="margin-top: 10px;"></table>
                 </div>
-
+                <div class="layui-tab-item">
+                    <table id="Table13" lay-filter="Table13"></table>
+                </div>
             </div>
         </div>
     </div>
@@ -576,7 +576,7 @@
 
     }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
         var tb0 = 'Table0', tb1 = 'Table1', tb2 = 'Table2', tb3 = 'Table3', tb4 = 'Table4', tb5 = 'Table5', tb6 = 'Table6',tb7 = 'Table7'
-            ,tb8 = 'Table8',tb9 = 'Table9',tb10 = 'Table10',tb11 = 'Table11',tb12 = 'Table12';
+            ,tb8 = 'Table8',tb9 = 'Table9',tb10 = 'Table10',tb11 = 'Table11',tb12 = 'Table12',tb13 = 'Table13';
         var element = layui.element, layer = layui.layer, laydate = layui.laydate, util = layui.util,
             table = layui.table, $ = layui.$, form = layui.form;
         //增加页签  闭包增加 TabxxxxEvn
@@ -876,7 +876,7 @@
             tab11Evn: function () { table.render({elem: '#' + tb11, where: {strartdate:$('#startdate2').val(),enddate:$('#enddate2').val(),changetype:$('#changetype').val()}, url: "{:url('player/coinlog2',['roleid'=>$user.AccountID,'Action'=>'list'])}", page: true, cols: [cols11], autoSort: false,});},
 
             tab12Evn: function () { table.render({elem: '#' + tb12, where: {}, url: "{:url('agent/relation',['parentid'=>$user.AccountID,'action'=>'list'])}", page: true, cols: [cols12], autoSort: false,});},
-            tab13Evn: function () { table.render({elem: '#' + tb12, where: {}, url: "{:url('ColorMoney/colorMoneyCoinLog',['roleid'=>$user.AccountID])}", page: true, cols: [cols13], autoSort: false,});}
+            tab13Evn: function () { table.render({elem: '#' + tb13, where: {}, url: "{:url('ColorMoney/colorMoneyCoinLog',['roleid'=>$user.AccountID])}", page: true, cols: [cols13], autoSort: false,});}
 
         };
         TabReload = {
