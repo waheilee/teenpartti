@@ -133,7 +133,7 @@ class ColorMoney extends Main
             foreach ($list as &$key) {
                 ConVerMoney($key['ChangeMoney']);
                 ConVerMoney($key['LastMoney']);
-                $key['AddTime'] = date('Y-m-d', strtotime($key['AddTime']));
+                $key['AddTime'] = date('Y-m-d　H:i:s', strtotime($key['AddTime']));
             }
 
 
