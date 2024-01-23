@@ -1,0 +1,307 @@
+{extend name="common/base" /}
+
+{block name="title"}{/block}
+{block name="css"}
+<style type="text/css">
+    .layui-table-cell {
+        text-align: center;
+        height: auto;
+        white-space: normal;
+    }
+
+</style>
+{/block}
+{block name="content"}
+<div class="layui-card-header layuiadmin-card-header-auto">
+    <form class="layui-form" lay-filter="component-form-group">
+        <!--    <div class="layui-form-item">-->
+
+        <!--      <div class="layui-inline">-->
+        <!--        <label class="layui-form-label">{:lang('活动名称')}</label>-->
+        <!--        <div class="layui-input-inline">-->
+        <!--          <input type="text" id="activity_name" name="activity_name" autocomplete="off" class="layui-input">-->
+        <!--        </div>-->
+        <!--      </div>-->
+        <!--      <div class="layui-inline">-->
+        <!--        <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>-->
+        <!--        <button type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>-->
+        <!--      </div>-->
+        <!--    </div>-->
+
+    </form>
+</div>
+<div class="layui-card">
+    <div class="layui-card-body">
+        <a style="margin-bottom: 10px;" class="layui-btn"
+           onclick="x_admin_show('{:lang(\'添加红包雨\')}','addRedPack.html', 700,800)">
+            <i class="layui-icon layui-icon-add-circle"></i>
+        </a>
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script type="text/html" id="msg-bar">
+    <!--  <a class="layui-btn layui-btn-xs" lay-event="edit"><i class="layui-icon layui-icon-edit"></i></a>-->
+    <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete"><i
+            class="layui-icon layui-icon-delete"></i></a>
+    <!--  <a class="layui-btn layui-btn-xs" lay-event="detail">{:lang('查看详情')}</a>-->
+
+</script>
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+
+        function getWhere() {
+
+            var title = $('#activity_name').val();
+            return {
+                'title': title
+            };
+        }
+
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'ID', title: 'id', width: 50},
+                    {field: 'BeginDay', title: "{:lang('开始日期')}", width: 150},
+                    {field: 'EndDay', title: "{:lang('结束日期')}", width: 150},
+                    {field: 'DailyBeginHour', title: "{:lang('开始时间')}", width: 150},
+                    {field: 'DailyEndHour', title: "{:lang('结束时间')}", width: 150},
+                    {field: 'RedPackNum', title: "{:lang('红包总数')}", width: 150},
+                    {field: 'RedPackTotalMoney', title: "{:lang('红包雨总金额')}", width: 150},
+                    {field: 'RedPackCellMoneyMin', title: "{:lang('随机红包最小金额')}", width: 150},
+                    {field: 'RedPackCellMoneyMax', title: "{:lang('随机红包最大金额')}", width: 150},
+                    {
+                        field: 'CheckType', title: "{:lang('领取玩家类型')}", width: 160, templet: function (d) {
+                            switch (Number(d.CheckType)) {
+                                case 0:
+                                    return '注册用户';
+                                case 1:
+                                    return '当天充值用户';
+                                case 2:
+                                    return '历史充值用户';
+                            }
+                        }
+                    },
+                    {field: 'GetMaxCount', title: "{:lang('同时间单个玩家领取数')}", width: 160},
+                    {
+                        field: 'OnOff', title: "{:lang('状态')}", width: 150, templet: function (d) {
+                            var myid = d.ID;
+                            if (d.OnOff == 1) {
+                                return '<a class="myopen" myid="' + myid + '" style="margin-left: 10px" lay-event="setOnOff"><input type="checkbox" name="open" lay-filter="setOnOff" lay-skin="switch" checked lay-text="{:lang(\'开启|关闭\')}"></a>';
+                            } else {
+                                return '<a class="myopen" myid="' + myid + '" style="margin-left: 10px" lay-event="setOnOff"><input type="checkbox"  name="open" lay-filter="setOnOff" lay-skin="switch"  lay-text="{:lang(\'开启|关闭\')}"></a>';
+                            }
+                        }
+                    },
+                    {fixed: 'right', title: "{:lang('操作')}", align: 'center', minWidth: 100, toolbar: '#msg-bar'}
+
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('RedEnvelopeRain/list')}" //数据接口
+                    , where: getWhere()
+                    , page: true //开启分页
+                    , cols: [cols],
+                    done: function (res) {
+                        //表头部分
+                        //动态监听表头高度变化，冻结行跟着改变高度
+                        $(".layui-table-header  tr").resize(function () {
+                            $(".layui-table-header  tr").each(function (index, val) {
+                                $($(".layui-table-fixed .layui-table-header table tr")[index]).height($(val).height());
+                            });
+                        });
+                        //初始化高度，使得冻结行表头高度一致
+                        $(".layui-table-header  tr").each(function (index, val) {
+                            $($(".layui-table-fixed .layui-table-header table tr")[index]).height($(val).height());
+                        });
+
+                        //表体部分
+                        //动态监听表体高度变化，冻结行跟着改变高度
+                        $(".layui-table-body  tr").resize(function () {
+                            $(".layui-table-body  tr").each(function (index, val) {
+                                $($(".layui-table-fixed .layui-table-body table tr")[index]).height($(val).height());
+                            });
+                        });
+                        //初始化高度，使得冻结行表体高度一致
+                        $(".layui-table-body  tr").each(function (index, val) {
+                            $($(".layui-table-fixed .layui-table-body table tr")[index]).height($(val).height());
+                        });
+                    }
+                });
+            },
+
+            //搜索
+            search: function () {
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: getWhere(),
+                    done: function (res) {
+                        tzTbale();
+                    }
+                });
+            },
+
+
+            //操作事件
+            extraEvent: function () {
+                //编辑&&删除
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+
+                    if (obj.event === 'copy1') {
+                        copy(data.UrlLink)
+                    }
+                    if (layEvent === 'edit') {
+                        var id = data.Id
+                            , type = data.type
+                        x_admin_show("{:lang('编辑活动信息')}", 'addGiftCard?id=' + id, 700, 800);
+                    } else if (layEvent === 'delete') {
+                        layer.confirm("{:lang('确认删除这条记录？')}", {btn: ['{:lang("确定")}', '{:lang("取消")}']}, function () {
+                            $.ajax({
+                                type: 'post',
+                                url: "{:url('RedEnvelopeRain/delete')}",
+                                data: {
+                                    'id': data.ID
+                                },
+                                dataType: 'json',
+                                success: function (res) {
+                                    if (res.code === 0) {
+                                        layer.msg(res.msg, {icon: 6, time: 1000}, function () {
+                                            window.location.reload();
+                                        });
+                                    } else {
+                                        layer.msg(res.msg, {icon: 5});
+                                    }
+                                }
+                            });
+                        });
+                    } else if (layEvent === 'detail') {
+                        var id = data.Id
+                            , type = data.type
+                        x_admin_show("{:lang('礼品卡')}", 'getGiftReceive?id=' + id, 900, 500);
+                    }
+                });
+
+                $(document).off('mousedown', '.layui-table-grid-down').on('mousedown', '.layui-table-grid-down', function (event) {
+                    table._tableTrCurrr = $(this).closest('td');
+                });
+                $(document).off('click', '.layui-table-tips-main [lay-event]').on('click', '.layui-table-tips-main [lay-event]', function (event) {
+                    //debugger
+                    var elem = $(this);
+                    var tableTrCurrr = table._tableTrCurrr;
+                    if (!tableTrCurrr) {
+                        return;
+                    }
+                    var layerIndex = elem.closest('.layui-table-tips').attr('times');
+                    console.log(layerIndex);
+                    layer.close(layerIndex);
+                    table._tableTrCurrr.find('[lay-event="' + elem.attr('lay-event') + '"]').click();
+                });
+
+                form.on('switch(setstatus)', function (data) {
+                    var selected = data.elem.checked === true ? 1 : 0; //开关是否开启，true或者false
+                    var id = $(data.elem).parent().attr('myid');
+                    //设置开关
+                    $.ajax({
+                        url: "{:url('activity/setGiftCardStatus')}",
+                        type: 'post',
+                        data: {
+                            'id': id,
+                            'status': selected
+                        },
+                        success: function (res) {
+                            if (res.code === 0) {
+                                layer.msg(res.msg, {icon: 6});
+                            } else {
+                                layer.msg(res.msg, {icon: 5});
+                                // if (selected == 0) {
+                                //     //重新添加checked要用prop
+                                //     $(data.elem).prop('checked', 'true');
+                                //     $(data.elem).next().addClass('layui-form-onswitch');
+                                //     $(data.elem).next().find('em').html("{:lang('开启')}");
+                                // } else {
+                                //     $(data.elem).removeAttr('checked');
+                                //     $(data.elem).next().removeClass('layui-form-onswitch');
+                                //     $(data.elem).next().find('em').html("{:lang('关闭')}");
+                                // }
+                            }
+                        }
+                    });
+                });
+                form.on('switch(setOnOff)', function (data) {
+                    var selected = data.elem.checked === true ? 1 : 0; //开关是否开启，true或者false
+                    var id = $(data.elem).parent().attr('myid');
+                    //设置开关
+                    $.ajax({
+                        url: "{:url('RedEnvelopeRain/setStatusOnOff')}",
+                        type: 'post',
+                        data: {
+                            'id': id,
+                            'status': selected
+                        },
+                        success: function (res) {
+                            if (res.code === 0) {
+                                layer.msg(res.msg, {icon: 6});
+                            } else {
+                                layer.msg(res.msg, {icon: 5});
+                                // if (selected == 0) {
+                                //     //重新添加checked要用prop
+                                //     $(data.elem).prop('checked', 'true');
+                                //     $(data.elem).next().addClass('layui-form-onswitch');
+                                //     $(data.elem).next().find('em').html("{:lang('开启')}");
+                                // } else {
+                                //     $(data.elem).removeAttr('checked');
+                                //     $(data.elem).next().removeClass('layui-form-onswitch');
+                                //     $(data.elem).next().find('em').html("{:lang('关闭')}");
+                                // }
+                            }
+                        }
+                    });
+                });
+
+            },
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+
+    function copy(value) {
+        var oInput = document.createElement('input');
+        oInput.value = value;
+        document.body.appendChild(oInput);
+        oInput.select(); // 选择对象
+        document.execCommand("Copy"); // 执行浏览器复制命令
+        oInput.className = 'oInput';
+        oInput.style.display = 'none';
+        layer.msg('{:lang("复制成功")}');
+    }
+</script>
+{/block}
