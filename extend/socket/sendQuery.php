@@ -90,6 +90,7 @@ define('CMD_MD_GM_PDD_COMMI_SUC', 10004);// 审核通过
 define('CMD_MD_GM_ADD_JOB', 10005);// 审核通过
 define('CMD_MD_GM_SET_JOB', 10005);// 彩金增加
 define('CMD_MD_GM_PDD_REFUND', 10002);//pdd gm  操作 退款
+define('CMD_MD_COLOR_HAND', 10009);//设置手动彩金, 包含获取最大值
 
 
 
@@ -1387,6 +1388,16 @@ class sendQuery
         $this->in_stream->WriteULong($roleid);
         $this->in_stream->WriteULong($nKey);
         $this->in_stream->WriteINT64($nAddVal);
+        $in_head = $this->comm->MakeSendHead(CMD_MD_GM_SET_JOB, $this->in_stream->len, 0, REQ_OM, REQ_DC);
+        $in = $this->in_stream->data;
+        $res = $socket->request($in_head, $in);
+    }
+
+    public function CMD_MD_COLOR_HAND($socket, $roleid, $colorMoney, $max)
+    {
+        $this->in_stream->WriteULong($roleid);
+        $this->in_stream->WriteULong($colorMoney);
+        $this->in_stream->WriteULong($max);
         $in_head = $this->comm->MakeSendHead(CMD_MD_GM_SET_JOB, $this->in_stream->len, 0, REQ_OM, REQ_DC);
         $in = $this->in_stream->data;
         $res = $socket->request($in_head, $in);

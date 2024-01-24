@@ -172,6 +172,7 @@
     {if(config('noDmColorMoney')==1)}
     <a class="layui-btn layui-btn-xs" lay-event="noDmColorMoney">{:lang('不打码彩金')}</a>
     <a class="layui-btn layui-btn-xs" lay-event="noDmFirstColorMoney">{:lang('不打码首充彩金')}</a>
+    <a class="layui-btn layui-btn-xs" lay-event="setColorMoneyMax">{:lang('彩金最大值')}</a>
     {/if}
 </script>
 <script src="__js__/cache.js"></script>
@@ -310,6 +311,36 @@
                         'roleid': id,
                         'amount': amount,
                         'type': t
+                    },
+                    dataType: 'json',
+                    success: function (res) {
+                        if (res.code == 0) {
+                            layer.msg("{:lang('设置成功')}", {icon: 1, time: 1000}, function () {
+                                //window.location.reload();
+                                layer.closeAll();
+                            });
+                        } else {
+                            layer.msg(res['msg'], {icon: 5});
+                        }
+                    }
+                });
+            }
+
+            function editColorMoneyMax(id, amount, max) {
+                $.ajax({
+                    type: 'post',
+                    url: "{:url('ColorMoney/setColorMoneyMax')}",
+                    beforeSend: function () {
+                        var layindex = layer.msg("{:lang('稍等片刻,马上就好')}", {
+                            icon:16,
+                            shade:[0.1, '#fff'],
+                            time:false //不自动关闭
+                        });
+                    },
+                    data: {
+                        'roleid': id,
+                        'amount': amount,
+                        'max': max
                     },
                     dataType: 'json',
                     success: function (res) {
@@ -1162,6 +1193,40 @@
                                             return;
                                         }
                                         editColorMoney(data.ID, lCurWaged, 4);
+                                    }
+
+                                });
+                            }else if (layEvent === 'setColorMoneyMax') {
+                                var content = "<form class=\"layui-form\" action=\"\">" +
+                                    '<div class="layui-form-item">' +
+                                    '<label class="layui-form-label" style="width:87px">{:lang("请输入彩金")}</label>' +
+                                    '<div class="layui-input-block">' +
+                                    '<input type="number" name="title" lay-verify="title" autocomplete="off" placeholder="{:lang(\'请输入彩金\')}" class="layui-input" id="colorMoney" value="0">' +
+                                    '</div>' +
+                                    '</div>'+
+                                    '<div class="layui-form-item">' +
+                                    '<label class="layui-form-label" style="width:87px">{:lang("请输入彩金获得最大值")}</label>' +
+                                    '<div class="layui-input-block">' +
+                                    '<input type="number" name="title" lay-verify="title" autocomplete="off" placeholder="{:lang(\'请输入彩金获得最大值\')}" class="layui-input" id="colorMoneyMax" value="0" >' +
+                                    '</div>' +
+                                    '</div>' +
+                                    '</form>';
+                                layer.open({
+                                    content: content,
+                                    title: '{:lang("首充彩金设置")}'
+                                    , btn: ['{:lang("增加")}']
+                                    , yes: function (index, layero) {
+                                        var colorMoney = $("#colorMoney").val();
+                                        var colorMoneyMax = $("#colorMoneyMax").val();
+                                        if (colorMoney == '') {
+                                            layer.msg("{:lang('请输入彩金值')}");
+                                            return;
+                                        }
+                                        if (colorMoneyMax == '') {
+                                            layer.msg("{:lang('请输入彩金值')}");
+                                            return;
+                                        }
+                                        editColorMoneyMax(data.ID, colorMoney,colorMoneyMax);
                                     }
 
                                 });

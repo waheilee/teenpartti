@@ -184,4 +184,33 @@ class ColorMoney extends Main
         $export = new ColorMoneyLogExport();
         $export->export();
     }
+
+
+    public function setColorMoneyMax()
+    {
+        $roleId = $this->request->param('roleid');
+        $amount = $this->request->param('amount');
+        $max = $this->request->param('max');
+
+        $colorMoney = $amount * bl;
+        $sendMax = $max * bl;
+        $data = $this->sendGameMessage('CMD_MD_COLOR_HAND', [$roleId, $colorMoney, $sendMax], "DC", 'returnComm');
+        if ($data['iResult'] == 1) {
+
+            $db = new GameOCDB();
+            $db->setTable('T_PlayerComment')->Insert([
+                'roleid' => $roleId,
+                'adminid' => session('userid'),
+                'type' => 2,
+                'opt_time' => date('Y-m-d H:i:s'),
+                'comment' => '设置彩金领取最大值'
+            ]);
+
+            GameLog::logData(__METHOD__, [$roleId, $amount, $max], 1, '设置彩金领取最大值');
+            return $this->apiReturn(0, '', '操作成功');
+        } else {
+            GameLog::logData(__METHOD__, [$roleId, $amount, $max], 0, '操作失败');
+            return $this->apiReturn(1, '', '操作失败');
+        }
+    }
 }
