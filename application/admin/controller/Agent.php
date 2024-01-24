@@ -1266,12 +1266,12 @@ class Agent extends Main
             if (!$pwd) {
                 return json(['code' => 1, 'msg' => '密码错误']);
             }
-            $userModel = new UserModel();
-            $userInfo = $userModel->getRow(['id' => session('userid')]);
-
-            if (md5($userInfo['salt'] . $pwd) !== $userInfo['password']) {
-                return json(['code' => 1, 'msg' => '密码有误，请重新输入']);
-            }
+//            $userModel = new UserModel();
+//            $userInfo = $userModel->getRow(['id' => session('userid')]);
+//
+//            if (md5($userInfo['salt'] . $pwd) !== $userInfo['password']) {
+//                return json(['code' => 1, 'msg' => '密码有误，请重新输入']);
+//            }
             // $has_next = $m->getTableObject('T_UserProxyInfo')->where('ParentID',$roleid)->find();
             // if ($has_next) {
             //     return $this->apiReturn(1,'','受邀人已有下级，不可换绑');
