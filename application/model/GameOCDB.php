@@ -1985,9 +1985,9 @@ class GameOCDB extends BaseModel
         $business  = $this->getTableObject('T_ProxyChannelConfig')->where('1=1')->column('*','ProxyChannelId');//AccountName
 
         $count = $this->getTableObject('T_GMSendMoney')->alias('a')
-//            ->field(' COUNT(RoleId) as TotalCount,ABS(SUM(a.Money)) as TotalMoney')
+            ->field(' COUNT(RoleId) as TotalCount,ABS(SUM(a.Money)) as TotalMoney')
             ->join('[CD_Account].[dbo].[T_Accounts] b','b.AccountID=a.RoleId','left')
-            ->where('ProxyChannelId',session('business_ProxyChannelId'))
+            ->where('OperatorId',session('merchant_OperatorId'))
             ->where(function ($q) use($RoleId){
                 if(!empty($RoleId)){
                     $q->where('RoleId',$RoleId);
@@ -2018,7 +2018,7 @@ class GameOCDB extends BaseModel
                 if (!empty($start) && !empty($end)) {
                     $q->where('InsertTime', 'between time', ["$start 00:00:00", "$end 23:59:59"]);
                 }
-            })->count();
+            })->select();
 
 
         $result = $this->getTableObject('T_GMSendMoney')->alias('a')
