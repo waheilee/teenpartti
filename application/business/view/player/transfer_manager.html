@@ -161,7 +161,7 @@
                     done: function (d) {
                         tzTbale()
                         $('#TotalCount').html(d.other.TotalCount);
-                        $('#TotalMoney').html(d.other.TotalMoney);
+                        $('#TotalMoney').html(d.other.TotalMoney == null ? 0 : d.other.TotalMoney);
                     }
                 });
             },
