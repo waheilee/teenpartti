@@ -2018,7 +2018,7 @@ class GameOCDB extends BaseModel
                 if (!empty($start) && !empty($end)) {
                     $q->where('InsertTime', 'between time', ["$start 00:00:00", "$end 23:59:59"]);
                 }
-            })->find();
+            })->select();
 
 
         $result = $this->getTableObject('T_GMSendMoney')->alias('a')
