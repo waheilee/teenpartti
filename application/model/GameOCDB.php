@@ -1984,6 +1984,43 @@ class GameOCDB extends BaseModel
         $Operators = $this->getTableObject('T_OperatorSubAccount')->where('1=1')->column('*','OperatorId');//OperatorName
         $business  = $this->getTableObject('T_ProxyChannelConfig')->where('1=1')->column('*','ProxyChannelId');//AccountName
 
+        $count = $this->getTableObject('T_GMSendMoney')->alias('a')
+            ->field('a.*,b.ProxyChannelId,b.OperatorId,COUNT(ID)TotalCount,ABS(SUM(Money))TotalMoney')
+            ->join('[CD_Account].[dbo].[T_Accounts] b','b.AccountID=a.RoleId','left')
+            ->where('ProxyChannelId',session('business_ProxyChannelId'))
+            ->where(function ($q) use($RoleId){
+                if(!empty($RoleId)){
+                    $q->where('RoleId',$RoleId);
+                }
+            })
+            ->where(function ($q) use($Amount){
+                if(!empty($Amount)){
+                    $q->where('Money',$Amount);
+                }
+            })
+            ->where(function ($q) use($operatortype){
+                if(!empty($operatortype)){
+                    $q->where('OperateType',$operatortype);
+                }
+            })
+            ->where(function ($q) use($VerifyState){
+                if($VerifyState != '-1'){
+                    $q->where('status',$VerifyState);
+                }
+            })
+            ->where(function ($q) use ($start, $end) {
+                if (!empty($start)) {
+                    $q->where('InsertTime', '>', "$start 00:00:00");
+                }
+                if (!empty($end)) {
+                    $q->where('InsertTime', '<', "$end 23:59:59");
+                }
+                if (!empty($start) && !empty($end)) {
+                    $q->where('InsertTime', 'between time', ["$start 00:00:00", "$end 23:59:59"]);
+                }
+            })->find();
+
+
         $result = $this->getTableObject('T_GMSendMoney')->alias('a')
             ->field('a.*,b.ProxyChannelId,b.OperatorId')
             ->join('[CD_Account].[dbo].[T_Accounts] b','b.AccountID=a.RoleId','left')
@@ -2039,7 +2076,7 @@ class GameOCDB extends BaseModel
         $result['count'] =  $result['total'];
 
         if (empty($where)) $where = "status=1";
-//        $result['other'] = $this->GetRow($where, "COUNT(ID)TotalCount,ABS(SUM(Money))TotalMoney");
+        $result['other'] = $count;
         return $result;
     }
 
