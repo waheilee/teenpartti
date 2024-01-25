@@ -1985,7 +1985,7 @@ class GameOCDB extends BaseModel
         $business  = $this->getTableObject('T_ProxyChannelConfig')->where('1=1')->column('*','ProxyChannelId');//AccountName
 
         $count = $this->getTableObject('T_GMSendMoney')->alias('a')
-            ->field('COUNT(*)TotalCount,ABS(SUM(Money))TotalMoney')
+            ->field('COUNT(*)TotalCount,ABS(SUM(a.Money))TotalMoney')
             ->join('[CD_Account].[dbo].[T_Accounts] b','b.AccountID=a.RoleId','left')
             ->where('ProxyChannelId',session('business_ProxyChannelId'))
             ->where(function ($q) use($RoleId){
