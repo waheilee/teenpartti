@@ -1844,7 +1844,11 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
             $db=new MasterDB();
             $info = $db->getTableObject('T_OperatorLink(nolock)')->field('*')->where(' OperatorId='.$v['OperatorId'])->find();
             if (isset($info['CountApiStatus']) && $info['CountApiStatus'] == 1){
-                $v['pggamewin'] = bcadd($v['pggamewin'],$v['pgtax']);
+                $pgtax = 0;
+                if (isset($total['pgtax'])){
+                    $pgtax = $total['pgtax'];
+                }
+                $v['pggamewin'] = bcadd($v['pggamewin'],$pgtax);
             }
             ConVerMoney($v['totalpayorder']);
             ConVerMoney($v['totalpayout']);
