@@ -56,9 +56,12 @@ function ajax(){
             success:function(ret){
                 if (ret.code == 0) {
                   layer.msg('操作成功');
-                  setTimeout(function(){parent.layer.closeAll()},1500);
+                  setTimeout(function(){
+                      parent.layer.closeAll()
+                      window.location.reload();
+                  },1500);
                   parent.$(".layui-laypage-btn")[0].click();
-                  window.location.reload();
+
                 }
                 if (ret.code == 1) {
                     layer.msg(ret.msg);
