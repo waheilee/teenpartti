@@ -17,10 +17,10 @@
                     <label class="layui-form-label">{:lang('业务员级别')}</label>
                     <div class="layui-input-inline">
                         <select name="bustype" id="bustype" class="layui-input">
-                                <option value="">{:lang('全部')}</option>
-                                <option value="1">{:lang('业务组长')}</option>
-                                <option value="2">{:lang('普通业务员')}</option>
-                          </select>
+                            <option value="">{:lang('全部')}</option>
+                            <option value="1">{:lang('业务组长')}</option>
+                            <option value="2">{:lang('普通业务员')}</option>
+                        </select>
                     </div>
                 </div>
                 <div class="layui-inline">
@@ -44,21 +44,19 @@
             <table id="proxylist" lay-filter="proxylist"></table>
         </div>
     </div>
-      <script type="text/html" id="toolbar">
-       <a class="layui-btn layui-btn-xs" lay-event="edit">{:lang('编辑')}</a>
-       <!-- <a class="layui-btn layui-btn-xs" lay-event="remain">{:lang('首充留存')}</a> -->
-       {if(config('business_report') == 0)}
-       <a class="layui-btn layui-btn-xs" lay-event="report">{:lang('每月财报')}</a>
-       {/if}
-  </script>
+    <script type="text/html" id="toolbar">
+        <a class="layui-btn layui-btn-xs" lay-event="edit">{:lang('编辑')}</a>
+        <!-- <a class="layui-btn layui-btn-xs" lay-event="remain">{:lang('首充留存')}</a> -->
+        <a class="layui-btn layui-btn-xs" lay-event="report">{:lang('每月财报')}</a>
+    </script>
 </div>
 <script type="text/html" id="is_default">
     {{#  if(d.isDefault == 1){ }}
-      <input type="checkbox" checked="" name="is_default" lay-skin="switch" lay-filter="is_default" lay-text="是|否">
+    <input type="checkbox" checked="" name="is_default" lay-skin="switch" lay-filter="is_default" lay-text="是|否">
     {{#  } else { }}
-       <input type="checkbox" name="is_default" lay-skin="switch" lay-filter="is_default" lay-text="是|否">
+    <input type="checkbox" name="is_default" lay-skin="switch" lay-filter="is_default" lay-text="是|否">
     {{#  } }}
-  </script>
+</script>
 {/block}
 {block name="script"}
 
@@ -73,7 +71,7 @@
         var form  = layui.form;
         var $ = layui.$;
         var element  = layui.element;
-          table.render({
+        table.render({
             elem: '#proxylist'
             ,height: 'full-180'
             ,url: url+'?action=list'//数据接口
@@ -83,41 +81,41 @@
             ,autoSort:false
             ,cols: [[ //表头
 
-               {field: 'ProxyChannelId', title: "{:lang('业务员ID')}", minWidth: 100,  align: 'center', templet: function(d){
-                    return d.ProxyChannelId
-                }},
+                {field: 'ProxyChannelId', title: "{:lang('业务员ID')}", minWidth: 100,  align: 'center', templet: function(d){
+                        return d.ProxyChannelId
+                    }},
                 {field: 'AccountName', title: "{:lang('业务员名称')}", minWidth: 200,  align: 'center', templet: function(d){
-                    return d.AccountName;
-                }},
+                        return '<a class="font-primary layui-btn  layui-btn-xs  layui-btn-primary" lay-event="toIndex">'+d.AccountName+'</a>'
+                    }},
                 {field: 'LoginAccount', title: "{:lang('登陆账号')}", minWidth: 200,  align: 'center', templet: function(d){
-                    return d.LoginAccount;
-                }},
+                        return d.LoginAccount;
+                    }},
                 {field: 'type', title: "{:lang('业务员级别')}", minWidth: 100,  align: 'center'},
                 {field: 'parentName', title: "{:lang('组长名称')}", minWidth: 100,  align: 'center'},
                 {field: 'InviteUrl', title: "{:lang('推广链接')}", minWidth: 400,  align: 'center', templet: function(d){
-                    return '<a class="font-primary layui-btn  layui-btn-xs  layui-btn-primary" href="'+d.InviteUrl+'" target="_blank">'+d.InviteUrl+'</a>'
-                }},
+                        return '<a class="font-primary layui-btn  layui-btn-xs  layui-btn-primary" href="'+d.InviteUrl+'" target="_blank">'+d.InviteUrl+'</a>'
+                    }},
 
                 {title:'操作', toolbar: '#toolbar',minWidth: 180,  align: 'center'}
             ]]
-          });
-          // 搜索 
-          $("#search").on('click', function(){
-             table.reload('proxylist', {
-              page:{
-                  curr:1 
-              },
-              where: {
-                  ProxyId: $('#ProxyId').val(),
-                  RoleID: $('#RoleID').val(),
-                  ChannelID:$('#ChannelID').val(),
-                  bustype:$('#bustype').val(),
-                  parentName:$('#parentName').val(),
-              }
+        });
+        // 搜索
+        $("#search").on('click', function(){
+            table.reload('proxylist', {
+                page:{
+                    curr:1
+                },
+                where: {
+                    ProxyId: $('#ProxyId').val(),
+                    RoleID: $('#RoleID').val(),
+                    ChannelID:$('#ChannelID').val(),
+                    bustype:$('#bustype').val(),
+                    parentName:$('#parentName').val(),
+                }
             })
-          });
-          //监听单元格switch
-          form.on('switch(Disable)', function (data) {
+        });
+        //监听单元格switch
+        form.on('switch(Disable)', function (data) {
             var RoleID = data.elem.attributes['RoleID'].nodeValue;
             var swtype = data.elem.checked;
             var type = 0;
@@ -158,8 +156,24 @@
             if (obj.event === 'report') {
                 x_admin_show('{:lang(\'每月财报\')}', "{:url('/merchant/channel/proxyChannelStatic')}?RoleID="+data.ProxyChannelId, 1300, 700);
             }
-          });
-          $('#output').click(function () {
+            if (obj.event === 'toIndex') {
+                $.ajax({
+                    url: '/merchant/channel/toIndex',
+                    type: 'POST',
+                    data: {ProxyChannelId:data.ProxyChannelId},
+                    dataType: 'json',
+                    success: function (ret) {
+                        if (ret.code == 0) {
+                            window.open("{:url('/merchant/channel/toIndex2')}?ProxyChannelId=" + data.ProxyChannelId);
+                        } else {
+
+                        }
+                    }
+                });
+                //
+            }
+        });
+        $('#output').click(function () {
             where = {
                 ProxyId: $('#ProxyId').val(),
                 RoleID: $('#RoleID').val(),
