@@ -71,7 +71,11 @@ class My extends Main
         // $user = $db->getTableObject('T_Operator_GameStatisticTotal')->where($where)->find();
         $config = (new MasterDB)->getTableObject('T_OperatorLink')->where('OperatorId', session('merchant_OperatorId'))->find();
         if (isset($config['CountApiStatus']) && $config['CountApiStatus'] == 1){
-            $total['pggamewin'] = bcadd($total['pggamewin'],$total['pgtax']);
+            $pgtax = 0;
+            if (isset($total['pgtax'])){
+                $pgtax = $total['pgtax'];
+            }
+            $total['pggamewin'] = bcadd($total['pggamewin'],$pgtax);
         }
         $data = [];
 
