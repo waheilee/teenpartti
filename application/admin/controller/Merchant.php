@@ -440,32 +440,5 @@ class Merchant extends Main
 
     }
 
-    //额度管理
-    public function quotaManage(){
-        if (input('action') == 'list') {
-            $data = (new \app\model\GameOCDB())->quotaManage();
-            return $this->apiReturn(0, $data['data'], 'success', $data['total']);
-        } else {
-            return $this->fetch();
-        }
-    }
-
-    public function editQuota(){
-        if ($this->request->method() == 'POST') {
-            $OperatorId = request()->param('OperatorId');
-            $data = request()->param();
-            $res = (new GameOCDB())->getTableObject('T_OperatorQuotaManage')->where('OperatorId',$OperatorId)->data($data)->update();
-            if ($res) {
-                return $this->apiReturn(0, '', '操作成功');
-            } else {
-                return $this->apiReturn(1, '', '操作失败');
-            }
-        }
-        $OperatorId = request()->param('OperatorId');
-        $data = (new GameOCDB())->getTableObject('T_OperatorQuotaManage')->where('OperatorId',$OperatorId)->find();
-        $this->assign('data',$data);
-        return $this->fetch();
-    }
-
 
 }
