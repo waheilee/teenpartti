@@ -92,6 +92,8 @@ class Merchant extends Main
                 $APIFee .= ",FCGame";
             }
             $APIFee .= ",PPLive";
+            $APIFee .= ",PGGame";
+
             $APIFee .= ")";
             $this->assign('APIFee', $APIFee);
             return $this->fetch();

@@ -61,18 +61,14 @@ class My extends Main
         sum(convert(bigint,yesbingo)) as yesbingo,
         sum(convert(bigint,fcgame)) as fcgame,
         sum(convert(bigint,tadagame)) as tadagame,
-        sum(convert(bigint,pplive)) as pplive';
-        if (config('pgtax') == 1){
-            $field.=',sum(convert(bigint,pgtax)) as pgtax';
-        }
+        sum(convert(bigint,pplive)) as pplive,
+        sum(convert(bigint,fakepggame)) as fakepggame';
+
         $total = $db->getTableObject('T_Operator_GameStatisticTotal')->where($where)->field($field)->find();
         $pay = $db->getTableObject('T_Operator_GameStatisticPay')->where($where)->field('sum(convert(bigint,totalpay)) totalpay')->find();
         $out = $db->getTableObject('T_Operator_GameStatisticPayOut')->where($where)->field('sum(convert(bigint,totalpayout)) totalpayout')->find();
         // $user = $db->getTableObject('T_Operator_GameStatisticTotal')->where($where)->find();
         $config = (new MasterDB)->getTableObject('T_OperatorLink')->where('OperatorId', session('merchant_OperatorId'))->find();
-        if (isset($config['CountApiStatus']) && $config['CountApiStatus'] == 1){
-            $total['pggamewin'] = bcadd($total['pggamewin'],$total['pgtax']);
-        }
         $data = [];
 
         $data['total_recharge'] = FormatMoney($pay['totalpay'] ?? 0);
@@ -85,13 +81,15 @@ class My extends Main
         $total['pggamewin'] = FormatMoney($total['pggamewin'] ?? 0);
         $total['evolivewin'] = FormatMoney($total['evolivewin'] ?? 0);
         $total['spribewin'] = FormatMoney($total['spribewin'] ?? 0);
+        $total['jiliwin'] = FormatMoney($total['jiliwin'] ?? 0);
         $total['hacksaw'] = FormatMoney($total['hacksaw'] ?? 0);
         $total['habawin'] = FormatMoney($total['habawin'] ?? 0);
-        $total['jiliwin'] = FormatMoney($total['jiliwin'] ?? 0);
         $total['yesbingo'] = FormatMoney($total['yesbingo'] ?? 0);
         $total['fcgame'] = FormatMoney($total['fcgame'] ?? 0);
         $total['tadagame'] = FormatMoney($total['tadagame'] ?? 0);
         $total['pplive'] = FormatMoney($total['pplive'] ?? 0);
+        $total['fakepggame'] = FormatMoney($total['fakepggame'] ?? 0);
+
 
         $data['recharge_fee'] = bcmul($data['total_recharge'], $config['RechargeFee'], 3);
         $data['payout_fee'] = bcmul($data['totalpayout'], $config['WithdrawalFee'], 3);
@@ -107,6 +105,7 @@ class My extends Main
         $APIFee[8] = $APIFee[8] ?? 0; //tadagame
         $APIFee[9] = $APIFee[9] ?? 0; //fcgame
         $APIFee[10] = $APIFee[10] ?? 0; //pplive
+        $APIFee[11] = $APIFee[11] ?? 0; //fakepggame
 
         $totalpp = bcmul($APIFee[0], $total['ppgamewin'], 4);
         $totalpg = bcmul($APIFee[1], $total['pggamewin'], 4);
@@ -119,6 +118,7 @@ class My extends Main
         $tadagame = bcmul($APIFee[8], $total['tadagame'], 4);
         $fcgame = bcmul($APIFee[9], $total['fcgame'], 4);
         $pplive = bcmul($APIFee[10], $total['pplive'], 4);
+        $fakepggame = bcmul($APIFee[11], $total['fakepggame'], 4);
 
         $TotalAPICost = 0;
         if ($totalpp < 0) {//系统赢算费用
@@ -159,6 +159,10 @@ class My extends Main
 
         if ($pplive < 0) {//系统赢算费用
             $TotalAPICost += abs($pplive);
+        }
+
+        if ($fakepggame < 0) {//系统赢算费用
+            $TotalAPICost += abs($fakepggame);
         }
 
         $data['TotalAPICost'] = round($TotalAPICost, 3);

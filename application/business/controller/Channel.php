@@ -372,7 +372,8 @@ class Channel extends Main
         sum(convert(bigint,Spribe)) as Spribe,
         sum(convert(bigint,tadagame)) as tadagame,
         sum(convert(bigint,fcgame)) as fcgame,
-        sum(convert(bigint,pplive)) as pplive')->find();
+        sum(convert(bigint,pplive)) as pplive,
+        sum(convert(bigint,fakepggame)) as fakepggame')->find();
 
         $data['total_recharge'] = FormatMoney($total['TotalRecharge'] ?? 0);
         $data['totalpayout'] = FormatMoney($total['TotalPayOut'] ?? 0);
@@ -394,6 +395,7 @@ class Channel extends Main
         $APIFee[8] = $APIFee[8] ?? 0; //tadagame
         $APIFee[9] = $APIFee[9] ?? 0; //fcgame
         $APIFee[10] = $APIFee[10] ?? 0; //pplive
+        $APIFee[11] = $APIFee[11] ?? 0; //fakepggame
 
 
         $TotalAPICost = 0;
@@ -409,6 +411,7 @@ class Channel extends Main
         $tadagame = bcmul($APIFee[8], $total['tadagame'], 4);
         $fcgame = bcmul($APIFee[9], $total['fcgame'], 4);
         $pplive = bcmul($APIFee[10], $total['pplive'], 4);
+        $fakepggame = bcmul($APIFee[11], $total['fakepggame'], 4);
 
 
 
@@ -452,6 +455,10 @@ class Channel extends Main
 
         if ($pplive < 0) {//系统赢算费用
             $TotalAPICost += abs($pplive);
+        }
+
+        if ($fakepggame < 0) {//系统赢算费用
+            $TotalAPICost += abs($fakepggame);
         }
 
 
