@@ -1,0 +1,269 @@
+{extend name="common/base" /}
+{block name="title"}关系列表{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-card" style="padding: 20px">
+    <form class="layui-form" id='edit_form' onsubmit="return false">
+         <div class="layui-form-item layui-form-pane">
+            <div class="layui-form-item">
+                <label class="layui-form-label">RTP设置</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="rtp" autocomplete="off" class="layui-input" id='rtp' value="{$rtp ?? -1}">
+                </div>
+                <div class="layui-form-mid layui-word-aux">(正整数，-1为未设置)</div>
+            </div>
+            <div class="layui-input-inline">
+                <button class="layui-btn layui-btn-fluid"  lay-filter="formDemo"  id="sub">保存</button>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('PG 游戏ID')}</label>
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="pg_id" lay-verify="number" name="pg_id" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <a class="layui-btn" data-type="reload" id="search">{:lang('搜索')}</a>
+                    <a class="layui-btn layui-btn-normal" id="addpg">新增</a>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+    
+</div>
+<script type="text/html" id="toolbarDemo">
+    <div class="layui-btn-container">
+
+        <button class="layui-btn layui-btn-sm layui-bg-green" lay-event="onekeyopen">{:lang('一键开启')}</button>
+        <button class="layui-btn layui-btn-sm layui-bg-green" lay-event="onekeyclose">{:lang('一键关闭')}</button>
+    </div>
+</script>
+{/block}
+{block name="script"}
+<script src="__js__/cache.js"></script>
+<script src="__js__/Barrett.js"></script>
+<script src="__js__/BigInt.js"></script>
+<script src="__js__/RSA.js"></script>
+<script>
+    url = "{:url('pggame/index')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var table = layui.table;
+        var form  = layui.form;
+        var laydate  = layui.laydate;
+        var $ = layui.$;
+        var element  = layui.element;
+          table.render({
+            elem: '#proxylist'
+            // ,height: 'full-280'
+            ,url: url+'?action=list'//数据接口
+            ,limit:20
+            ,page: true //开启分页
+            ,id:'proxylist'
+            ,autoSort:false
+            ,sort: true
+            ,toolbar: '#toolbarDemo'
+            ,defaultToolbar:[]
+            ,cols: [[ //表头
+                {field:'id', title: "{:lang('PGGAME 游戏ID')}",align:'center', minWidth: 200},
+                {field:'name', title: "{:lang('游戏名称')}",align:'center', minWidth: 200},
+                {field:'pg_id', title: "{:lang('PG 游戏ID')}",align:'center', minWidth: 200},
+                {field:'status', title: '开关',align:'center',minWidth: 100,templet: function(d){
+                    if(d.status == 1){
+                       return '<input type="checkbox" checked="" value="'+d.pg_id+'" lay-skin="switch" lay-filter="changeStatus" lay-text="开启|关闭">';
+                    } else if(d.status == 0){
+                       return '<input type="checkbox"  lay-skin="switch" value="'+d.pg_id+'" lay-filter="changeStatus" lay-text="开启|关闭">';
+                    }
+                }},
+                {title:'操作',align:'center', minWidth: 160, templet: function(d){
+                    return  '<a class="layui-btn layui-btn-sm" lay-event="edit">编辑</a>'+
+                            '<a class="layui-btn layui-btn-sm" lay-event="del">删除</a>';
+              }}
+            ]]
+            , done: function (res) {
+
+            }
+          });
+          laydate.render({elem: '#start_date', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+          laydate.render({elem: '#end_date', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+
+          // 搜索 
+          $("#search").on('click', function(){
+             table.reload('proxylist', {
+              page:{
+                  curr:1 
+              },
+              where: {
+                  pg_id:$('#pg_id').val()
+              }
+            })
+          });
+          $(document).off('mousedown','.layui-table-grid-down').
+                on('mousedown','.layui-table-grid-down',function (event) {
+                    table._tableTrCurrr = $(this).closest('td');
+                });
+                $(document).off('click','.layui-table-tips-main [lay-event]').
+                on('click','.layui-table-tips-main [lay-event]',function (event) {
+                    //debugger
+                    var elem = $(this);
+                    var tableTrCurrr =  table._tableTrCurrr;
+                    if(!tableTrCurrr){
+                        return;
+                    }
+                    var layerIndex = elem.closest('.layui-table-tips').attr('times');
+                    console.log(layerIndex);
+                    layer.close(layerIndex);
+                    table._tableTrCurrr.find('[lay-event="' + elem.attr('lay-event') +'"]').click();
+                });
+            table.on('tool(proxylist)', function (obj) {
+            var data = obj.data //获得当前行数据
+                , layEvent = obj.event; //获得 lay-event 对应的值
+            tr = obj.tr; //获得当前行 tr 的DOM对象
+            if (layEvent === 'edit') {
+                layer.open({
+                type: 2 ,
+                title: '编辑',   //标题
+                area: ['800px', '600px'],   //宽高
+                shade: 0.4,   //遮罩透明度
+                content: "{:url('pggame/edit')}?pg_id="+data.pg_id,//支持获取DOM元素
+                // end:function(){
+                //   $(".layui-laypage-btn")[0].click();
+                // }
+                });
+            }
+            if (layEvent === 'del') {
+                layer.confirm('确定删除？', function(index){
+                    $.ajax({
+                      url:"{:url('pggame/del')}?pg_id="+data.pg_id,
+                      type:'GET',
+                      dataType:'json',
+                      success:function(ret){
+                        if(ret.code == 0) {
+                          layer.msg('删除成功');
+                          setTimeout(function(){layer.closeAll()},1500);
+                          obj.del();
+                        } else {
+                          layer.msg('删除失败');
+                        }
+                      }
+                    });
+                  });
+            }
+        });
+        table.on('toolbar(proxylist)', function (obj) {
+            if (obj.event === 'onekeyopen') {
+                layer.confirm("{:lang('是否全部开启？')}", {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
+                    $.ajax({
+                        type: 'post',
+                        url: "{:url('pggame/onekey')}",
+                        dataType: 'json',
+                        data:{status:1},
+                        success: function (res) {
+                            if (res.code === 0) {
+                                layer.msg(res.msg, {icon: 1, time: 1000}, function () {
+                                    window.location.reload();
+                                });
+                            } else {
+                                layer.msg(res.msg, {icon: 2});
+                            }
+                        }
+                    });
+                });
+            }
+            if (obj.event === 'onekeyclose') {
+                layer.confirm("{:lang('是否全部关闭？')}", {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
+                    $.ajax({
+                        type: 'post',
+                        url: "{:url('pggame/onekey')}",
+                        dataType: 'json',
+                        data:{status:0},
+                        success: function (res) {
+                            if (res.code === 0) {
+                                layer.msg(res.msg, {icon: 1, time: 1000}, function () {
+                                    window.location.reload();
+                                });
+                            } else {
+                                layer.msg(res.msg, {icon: 2});
+                            }
+                        }
+                    });
+                });
+            }
+
+        });
+        $("#addpg").on('click', function(){
+             layer.open({
+                type: 2 ,
+                title: '编辑',   //标题
+                area: ['800px', '600px'],   //宽高
+                shade: 0.4,   //遮罩透明度
+                content: "{:url('pggame/edit')}",//支持获取DOM元素
+                // end:function(){
+                //   $(".layui-laypage-btn")[0].click();
+                // }
+                });
+          });
+        form.on('switch(changeStatus)', function(obj){
+        if (obj.elem.checked) {
+          var status = 1;
+        } else {
+          var status = 0;
+        }
+        $.ajax({
+          url:"{:url('pggame/changeStatus')}?pg_id="+this.value+"&status="+status,
+          type:'GET',
+          dataType:'json',
+          success:function(ret){
+            if(ret.code == 0) {
+                $(".layui-laypage-btn")[0].click();
+                layer.msg('修改成功');
+            } else {
+              $(".layui-laypage-btn")[0].click();
+              layer.msg('修改失败');
+            }
+          }
+        });
+      });
+    });
+
+$("#sub").on('click', function(){
+    var post_data = $('#edit_form').serialize();
+    var index = layer.msg('正在拼命处理...' , {
+      icon: 16 ,
+      shade: 0.6 ,
+      time: 0 ,
+    });
+    $.ajax({
+            url:"{:url('pggame/setrtp')}",
+            type:"POST",
+            data:post_data,
+            dataType:'json',
+            success:function(ret){
+                if (ret.code == 0) {
+                  layer.msg('操作成功');
+                  // parent.$(".layui-laypage-btn")[0].click();
+                  // setTimeout(function(){parent.layer.closeAll()},1500);
+                }
+                if (ret.code == 1) {
+                    layer.msg(ret.msg);
+                }
+            }
+        });
+});
+</script>
+{/block}
