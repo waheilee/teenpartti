@@ -375,6 +375,7 @@ SELECT  TypeId as RoomID,NodeName+'-('+CONVERT(VARCHAR,TypeId)+')' RoomName
                 $apiroom[] = ['RoomID' => 45000, 'RoomName' => 'TaDa-(45000)'];
             }
             $apiroom[] = ['RoomID' => 46000, 'RoomName' => 'PPLive-(46000)'];
+            $apiroom[] = ['RoomID' => 47000, 'RoomName' => 'FakePgGame-(47000)'];
             $rsult = array_merge($rsult, $apiroom);
             unset($item);
             Cache::set($key, $rsult, 86400);
