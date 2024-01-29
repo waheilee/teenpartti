@@ -9,7 +9,6 @@ use redis\Redis;
 use socket\QuerySocket;
 use think\Exception;
 
-
 class Index extends Base
 {
 
@@ -49,6 +48,7 @@ class Index extends Base
             $time     = $params['time'];
             $sign     = $params['sign'];
 
+
             if(empty($roleid) || empty($gameid) ||empty($time) ||empty($sign)){
                 return $this->failjson('Missing parameter');
             }
@@ -57,6 +57,17 @@ class Index extends Base
             $key = md5($roleid . $gameid . $language . $time . $clientkey);
             if ($key != strtolower($sign)) {
                 return $this->failjson('sign is error');
+            }
+
+            //是否走假pg
+            $fake_pg_data = Redis::get('pgfake_data');
+            if (!empty($fake_pg_data)) {
+                $fake_pg_data =json_decode($fake_pg_data,true);
+                if (isset($fake_pg_data[$gameid])) {
+                    if ($fake_pg_data[$gameid]['status'] == 1 && strlen($roleid)==8) {
+                        return (new \app\pgfake\controller\Index())->createuser($params);
+                    }
+                }
             }
             if (strtoupper($language) == 'BR') {
                 $language = 'pt';

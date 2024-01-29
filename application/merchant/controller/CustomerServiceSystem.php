@@ -959,4 +959,210 @@ class CustomerServiceSystem extends Main
         }
         return $this->apiReturn(0, '', 'success');
     }
+
+    public function testMember(){
+        if (input('action') == 'list' || input('action') == 'output') {
+            $limit          = request()->param('limit') ?: 15;
+            $RoleID         = request()->param('RoleID');
+            $start_date     = request()->param('start_date');
+            $end_date       = request()->param('end_date');
+
+            $orderby = input('orderby', 'AccountId');
+            $orderType = input('ordertype', 'desc');
+
+            $where = 'a.OperatorId='.session('merchant_OperatorId');
+            if ($RoleID != '') {
+                $where .= ' and a.AccountId=' . $RoleID;
+            }
+            if ($start_date != '') {
+                $where .= ' and a.RegisterTime>=\'' . $start_date . '\'';
+            }
+            if ($end_date != '') {
+                $where .= ' and a.RegisterTime<\'' . $end_date . '\'';
+            }
+            if (input('action') == 'list') {
+                $data = (new \app\model\GameOCDB())->getTableObject('T_TestGameID')->alias('a')
+                    ->join('[CD_UserDB].[dbo].[T_UserGameWealth] b','a.AccountId=b.RoleID')
+                    ->where($where)
+                    ->field('a.*,b.Money')
+                    ->order("$orderby $orderType")
+                    ->paginate($limit)
+                    ->toArray();
+                foreach ($data['data'] as $key => &$val) {
+                    $val['Money'] = FormatMoney($val['Money']);
+                }
+                return $this->apiReturn(0, $data['data'], 'success', $data['total']);
+            }
+            if (input('action') == 'output') {
+                $total_data = (new \app\model\GameOCDB())->getTableObject('T_TestGameID')->alias('a')
+                    ->join('[CD_UserDB].[dbo].[T_UserGameWealth] b','a.AccountId=b.RoleID')
+                    ->where($where)
+                    ->field('a.*,b.Money')
+                    ->order("$orderby $orderType")
+                    ->select();
+                $data = [];
+                $data['data'] = &$total_data;
+                $data['total'] = count($total_data);
+                if (empty($data['data'])) {
+                    $result = ["count" => 0, "code" => 1, 'msg' => lang("没有找到任何数据,换个姿势再试试?")];
+                    return $this->apiJson($result);
+                };
+                $result = [];
+                $result['list'] = &$data['data'];
+                $result['count'] = &$data['total'];
+                $outAll = input('outall', false);
+                if ((int)input('exec', 0) == 0) {
+                    if ($result['count'] == 0) {
+                        $result = ["count" => 0, "code" => 1, 'msg' => lang("没有找到任何数据,换个姿势再试试?")];
+                    }
+                    if ($result['count'] >= 5000 && $outAll == false) {
+                        $result = ["code" => 2, 'msg' => lang("数据超过5000行是否全部导出?<br>只能导出一部分数据.</br>请选择筛选条件,让数据少于5000行<br>当前数据一共有") . $result['count'] . lang("行")];
+                    }
+                    unset($result['list']);
+                    return $this->apiJson($result);
+                }
+                //导出表格
+                if ((int)input('exec', 0) == 1 && $outAll = true) {
+                    $header_types = [
+                        lang('ID') => 'string',
+                        lang('账号') => 'string',
+                        lang('密码') => "string",
+                        lang('余额') => "string",
+                        lang('注册时间') => "string"
+                    ];
+                    $filename = lang('测试账号') . '-' . date('YmdHis');
+                    $rows =& $result['list'];
+                    $writer = $this->GetExcel($filename, $header_types, $rows, true);
+                    foreach ($rows as $index => &$row) {
+
+                        $item = [
+                            $row['AccountId'],
+                            $row['AccountName'],
+                            $row['Password'],
+                            $row['Money']/bl,
+                            $row['RegisterTime'],
+                        ];
+                        $writer->writeSheetRow('sheet1', $item, ['height' => 16, 'halign' => 'center',]);
+                        unset($rows[$index]);
+                    }
+                    unset($row, $item);
+                    $writer->writeToStdOut();
+                    exit();
+                }
+            }
+        } else {
+            return $this->fetch();
+        }
+    }
+
+    public function createtest(){
+        $operatorId = session('merchant_OperatorId');
+        $ed = (new GameOCDB())->getTableObject('T_OperatorQuotaManage')->where('OperatorId',$operatorId)->find();
+        $ed['TestMemberNum'] = $ed['TestMemberNum']??0;
+        $ed['TestMemberNumUsed'] = $ed['TestMemberNumUsed']??0;
+        $leftnum = floor($ed['TestMemberNum'] - $ed['TestMemberNumUsed']);
+
+        if ($this->request->method() == 'POST') {
+            $totalnum = input('num');
+            if ($totalnum>$leftnum) {
+                return $this->apiReturn(1, '', '剩余额度不足');
+            }
+            $res = (new GameOCDB())->getTableObject('T_OperatorQuotaManage')->where('OperatorId', $operatorId)->data(['TestMemberNumUsed'=>($ed['TestMemberNumUsed'] + $totalnum)])->update();
+            $sqlExec = "exec Proc_TestGameid_Insert  $totalnum,$operatorId";
+            $res = (new AccountDB())->getTableQuery($sqlExec);
+            if ($res) {
+                return $this->apiReturn(0, '', '操作成功');
+            } else {
+                return $this->apiReturn(1, '', '操作失败');
+            }
+        }
+
+        $this->assign('leftnum',$leftnum);
+        return $this->fetch();
+    }
+
+    public function edittest(){
+        $password = input('password');
+        $AccountId = input('AccountId');
+        $res =  (new \app\model\GameOCDB())->getTableObject('T_TestGameID')->where(['AccountId'=>$AccountId,'OperatorId'=>session('merchant_OperatorId')])->data(['Password'=>$password])->update();
+        if ($res) {
+            $res = $this->sendGameMessage('CMD_MA_RESET_LOGIN_PWD', [$AccountId, md5($password)], "AC");
+            $res = unpack('Lcode/', $res);
+            //log记录
+            // GameLog::logData(__METHOD__, "密码修改 ID=$roleId 新密码=" . input('Password'), 1);
+            if (isset($res['code']) && $res['code'] == 0) {
+                return $this->apiReturn(0, '', '操作成功');
+            } else {
+                return $this->apiReturn(1, '', '操作失败');
+            }
+
+            // $res =  (new \app\model\AccountDB())->getTableObject('T_Accounts')->where(['AccountID'=>$AccountId,'OperatorId'=>session('merchant_OperatorId')])->data(['[Password'=>md5($password)])->update();
+            return $this->apiReturn(0, '', '操作成功');
+        } else {
+            return $this->apiReturn(1, '', '操作失败');
+        }
+
+
+    }
+
+    //抽税白名单
+    public function taxFreeUser(){
+        if (input('action') == 'list') {
+            $data = (new \app\model\MasterDB())->taxFreeUser();
+            return $this->apiReturn(0, $data['data'], 'success', $data['total']);
+        } else {
+            return $this->fetch();
+        }
+    }
+
+    //增删抽税白名单
+    public function editTaxFreeUser()
+    {
+        $RoleID      = input('RoleID', 0);
+        $ProxySwitch = input('type', 0);
+        $opentype = input('opentype', 0);
+        $RoleInfo    = (new \app\model\AccountDB())->getTableObject('T_Accounts')->where(['AccountID'=>$RoleID,'OperatorId'=>session('merchant_OperatorId')])->find();
+        if(empty($RoleInfo)){
+            return ['code' => 1,'msg'=>'权限不足'];
+        }
+        //服务端
+        $data = $this->sendGameMessage('CND_MD_TAX_FREE_USER', [$ProxySwitch,$RoleID,$opentype], "DC", 'returnComm');
+        if ($data['iResult'] == 1) {
+            return ['code' => 0,'msg'=>'操作成功'];
+        } else {
+            return ['code' => 1,'msg'=>'操作失败'];
+        }
+    }
+
+    //掉绑白名单
+    public function disableBindWhiteList(){
+        if (input('action') == 'list') {
+            $data = (new \app\model\MasterDB())->disableBindWhiteList();
+            return $this->apiReturn(0, $data['data'], 'success', $data['total']);
+        } else {
+            return $this->fetch();
+        }
+    }
+
+    //增删掉绑白名单
+    public function editDisableBindWhiteList()
+    {
+        return (new \app\model\MasterDB())->editDisableBindWhiteList();
+    }
+
+    //自动出款白名单
+    public function autoWithdrawalUser(){
+        if (input('action') == 'list') {
+            $data = (new \app\model\GameOCDB())->autoWithdrawalUser();
+            return $this->apiReturn(0, $data['data'], 'success', $data['total']);
+        } else {
+            return $this->fetch();
+        }
+    }
+
+    //增删自动出款白名单
+    public function editAutoWithdrawalUser()
+    {
+        return (new \app\model\GameOCDB())->editAutoWithdrawalUser();
+    }
 }
