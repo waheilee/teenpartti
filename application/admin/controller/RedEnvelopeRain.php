@@ -20,8 +20,10 @@ class RedEnvelopeRain extends Main
         $lists = $masterDB->getTableObject('T_RedBackCfg')->select();
 
         foreach ($lists as &$list) {
-            $list['DailyBeginHour'] = date('H:i:s', strtotime($list['DailyBeginHour']));
-            $list['DailyEndHour'] = date('H:i:s', strtotime($list['DailyEndHour']));
+            $list['DailyBeginHour'] = $list['DailyBeginHour'].':00:00';
+            $list['DailyEndHour'] = $list['DailyEndHour'].':00:00';
+            $list['BeginDay'] = date('Y-m-d',$list['BeginDay']);
+            $list['EndDay'] = date('Y-m-d',$list['EndDay']);
         }
         return $this->apiReturn(0, $lists, '', $count);
     }
@@ -38,8 +40,8 @@ class RedEnvelopeRain extends Main
         $endDay = input('EndDay');//结束日期
         $dailyBeginHour = input('DailyBeginHour');//开始时间
         $dailyEndHour = input('DailyEndHour');//结束时间
-        $redPackCellMoneyMin = input('RedPackCellMoneyMin');//红包随机最小值
-        $redPackCellMoneyMax = input('RedPackCellMoneyMax');//红包随机最大值
+//        $redPackCellMoneyMin = input('RedPackCellMoneyMin');//红包随机最小值
+//        $redPackCellMoneyMax = input('RedPackCellMoneyMax');//红包随机最大值
         $redPackNum = input('RedPackNum');//红包总数
         $redPackTotalMoney = input('RedPackTotalMoney');//红包总金额
         $getMaxCount = input('GetMaxCount');//玩家同时时段内可领取红包个数
@@ -47,12 +49,10 @@ class RedEnvelopeRain extends Main
         $onOff = input('OnOff');//红包状态
         $masterDB = new MasterDB();
         $data = [
-            'BeginDay' => $beginDay,
-            'EndDay' => $endDay,
+            'BeginDay' => strtotime($beginDay),
+            'EndDay' => strtotime($endDay),
             'DailyBeginHour' => $dailyBeginHour,
             'DailyEndHour' => $dailyEndHour,
-            'RedPackCellMoneyMin' => $redPackCellMoneyMin,
-            'RedPackCellMoneyMax' => $redPackCellMoneyMax,
             'RedPackNum' => $redPackNum,
             'RedPackTotalMoney' => $redPackTotalMoney,
             'GetMaxCount' => $getMaxCount,
@@ -72,10 +72,10 @@ class RedEnvelopeRain extends Main
             $res = $masterDB->getTableObject('T_RedBackCfg')
                 ->where('ID', $id)
                 ->delete();
-            if ($res){
+            if ($res) {
                 return $this->apiReturn(0, '', '删除成功');
 
-            }else{
+            } else {
                 return $this->apiReturn(100, '', '删除失败');
             }
         } else {
@@ -113,6 +113,70 @@ class RedEnvelopeRain extends Main
             return $this->successData([], '操作成功');
         } catch (\Exception $ex) {
             return $this->failData($ex->getMessage());
+        }
+    }
+
+    public function redPackVipGetCfgList()
+    {
+        if ($this->request->isAjax()) {
+            $masterDB = new MasterDB();
+            $count = $masterDB->getTableObject('T_RedBackVipGetCfg')
+                ->count();
+            $lists = $masterDB->getTableObject('T_RedBackVipGetCfg')
+                ->select();
+
+            foreach ($lists as &$list) {
+                $list['DailyBeginHour'] = $list['DailyBeginHour'].':00:00';
+                $list['DailyEndHour'] = $list['DailyEndHour'].':00:00';
+            }
+            return $this->apiReturn(0, $lists, '', $count);
+        }
+        return $this->fetch();
+    }
+
+    public function addRedPackVipCfg()
+    {
+        if ($this->request->isAjax()) {
+
+            $dailyBeginHour = input('DailyBeginHour');//开始时间
+            $dailyEndHour = input('DailyEndHour');//结束时间
+            $redPackCellMoneyMin = input('RedPackCellMoneyMin');//红包随机最小值
+            $redPackCellMoneyMax = input('RedPackCellMoneyMax');//红包随机最大值
+            $vipLvMin = input('VipLvMin');//红包总数
+            $vipLvMax = input('VipLvMax');//红包总金额
+
+            $masterDB = new MasterDB();
+            $data = [
+                'DailyBeginHour' => $dailyBeginHour,
+                'DailyEndHour' => $dailyEndHour,
+                'RedPackCellMoneyMin' => $redPackCellMoneyMin,
+                'RedPackCellMoneyMax' => $redPackCellMoneyMax,
+                'VipLvMin' => $vipLvMin,
+                'VipLvMax' => $vipLvMax,
+            ];
+            $callback = $masterDB->getTableObject('T_RedBackVipGetCfg')->insert($data);
+            return $this->successJSON('');
+        }
+        return $this->fetch();
+    }
+
+
+    public function deleteRedPackVipCfg()
+    {
+        $id = input('id', 0, 'intval');
+        $masterDB = new MasterDB();
+        if ($id > 0) {
+            $res = $masterDB->getTableObject('T_RedBackVipGetCfg')
+                ->where('ID', $id)
+                ->delete();
+            if ($res) {
+                return $this->apiReturn(0, '', '删除成功');
+
+            } else {
+                return $this->apiReturn(100, '', '删除失败');
+            }
+        } else {
+            return $this->apiReturn(100, '', 'ID不存在，删除失败');
         }
     }
 }

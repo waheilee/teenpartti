@@ -33,7 +33,7 @@
 <div class="layui-card">
     <div class="layui-card-body">
         <a style="margin-bottom: 10px;" class="layui-btn"
-           onclick="x_admin_show('{:lang(\'添加红包雨\')}','addRedPack.html', 700,800)">
+           onclick="x_admin_show('{:lang(\'添加红包雨\')}','addRedPackVipCfg.html', 700,800)">
             <i class="layui-icon layui-icon-add-circle"></i>
         </a>
         <div id="alllist">
@@ -78,36 +78,38 @@
             renderData: function () {
                 var cols = [ //表头
                     {field: 'ID', title: 'id', width: 50},
-                    {field: 'BeginDay', title: "{:lang('开始日期')}", width: 150},
-                    {field: 'EndDay', title: "{:lang('结束日期')}", width: 150},
+                    // {field: 'BeginDay', title: "{:lang('开始日期')}", width: 150},
+                    // {field: 'EndDay', title: "{:lang('结束日期')}", width: 150},
                     {field: 'DailyBeginHour', title: "{:lang('开始时间')}", width: 150},
                     {field: 'DailyEndHour', title: "{:lang('结束时间')}", width: 150},
-                    {field: 'RedPackNum', title: "{:lang('红包总数')}", width: 150},
-                    {field: 'RedPackTotalMoney', title: "{:lang('红包雨总金额')}", width: 150},
-                    // {field: 'RedPackCellMoneyMin', title: "{:lang('随机红包最小金额')}", width: 150},
-                    // {field: 'RedPackCellMoneyMax', title: "{:lang('随机红包最大金额')}", width: 150},
+                    // {field: 'RedPackNum', title: "{:lang('红包总数')}", width: 150},
+                    // {field: 'RedPackTotalMoney', title: "{:lang('红包雨总金额')}", width: 150},
+                    {field: 'RedPackCellMoneyMin', title: "{:lang('随机红包最小金额')}", width: 300},
+                    {field: 'RedPackCellMoneyMax', title: "{:lang('随机红包最大金额')}", width: 300},
+                    {field: 'VipLvMin', title: "{:lang('最小VIP等级')}", width: 300},
+                    {field: 'VipLvMax', title: "{:lang('最大VIP等级')}", width: 300},
+                    // {
+                    //     field: 'CheckType', title: "{:lang('领取玩家类型')}", width: 160, templet: function (d) {
+                    //         switch (Number(d.CheckType)) {
+                    //             case 0:
+                    //                 return '注册用户';
+                    //             case 1:
+                    //                 return '当天充值用户';
+                    //             case 2:
+                    //                 return '历史充值用户';
+                    //         }
+                    //     }
+                    // },
+                    // {field: 'GetMaxCount', title: "{:lang('同时间单个玩家领取数')}", width: 160},
                     {
-                        field: 'CheckType', title: "{:lang('领取玩家类型')}", width: 160, templet: function (d) {
-                            switch (Number(d.CheckType)) {
-                                case 0:
-                                    return '注册用户';
-                                case 1:
-                                    return '当天充值用户';
-                                case 2:
-                                    return '历史充值用户';
-                            }
-                        }
-                    },
-                    {field: 'GetMaxCount', title: "{:lang('同时间单个玩家领取数')}", width: 160},
-                    {
-                        field: 'OnOff', title: "{:lang('状态')}", width: 150, templet: function (d) {
-                            var myid = d.ID;
-                            if (d.OnOff == 1) {
-                                return '<a class="myopen" myid="' + myid + '" style="margin-left: 10px" lay-event="setOnOff"><input type="checkbox" name="open" lay-filter="setOnOff" lay-skin="switch" checked lay-text="{:lang(\'开启|关闭\')}"></a>';
-                            } else {
-                                return '<a class="myopen" myid="' + myid + '" style="margin-left: 10px" lay-event="setOnOff"><input type="checkbox"  name="open" lay-filter="setOnOff" lay-skin="switch"  lay-text="{:lang(\'开启|关闭\')}"></a>';
-                            }
-                        }
+                        // field: 'OnOff', title: "{:lang('状态')}", width: 150, templet: function (d) {
+                        //     var myid = d.ID;
+                        //     if (d.OnOff == 1) {
+                        //         return '<a class="myopen" myid="' + myid + '" style="margin-left: 10px" lay-event="setOnOff"><input type="checkbox" name="open" lay-filter="setOnOff" lay-skin="switch" checked lay-text="{:lang(\'开启|关闭\')}"></a>';
+                        //     } else {
+                        //         return '<a class="myopen" myid="' + myid + '" style="margin-left: 10px" lay-event="setOnOff"><input type="checkbox"  name="open" lay-filter="setOnOff" lay-skin="switch"  lay-text="{:lang(\'开启|关闭\')}"></a>';
+                        //     }
+                        // }
                     },
                     {fixed: 'right', title: "{:lang('操作')}", align: 'center', minWidth: 100, toolbar: '#msg-bar'}
 
@@ -115,7 +117,7 @@
 
                 table.render({
                     elem: '#proxylist'
-                    , url: "{:url('RedEnvelopeRain/list')}" //数据接口
+                    , url: "{:url('RedEnvelopeRain/redPackVipGetCfgList')}" //数据接口
                     , where: getWhere()
                     , page: true //开启分页
                     , cols: [cols],
@@ -168,18 +170,11 @@
                     var data = obj.data //获得当前行数据
                         , layEvent = obj.event; //获得 lay-event 对应的值
 
-                    if (obj.event === 'copy1') {
-                        copy(data.UrlLink)
-                    }
-                    if (layEvent === 'edit') {
-                        var id = data.Id
-                            , type = data.type
-                        x_admin_show("{:lang('编辑活动信息')}", 'addGiftCard?id=' + id, 700, 800);
-                    } else if (layEvent === 'delete') {
+                    if (layEvent === 'delete') {
                         layer.confirm("{:lang('确认删除这条记录？')}", {btn: ['{:lang("确定")}', '{:lang("取消")}']}, function () {
                             $.ajax({
                                 type: 'post',
-                                url: "{:url('RedEnvelopeRain/delete')}",
+                                url: "{:url('RedEnvelopeRain/deleteRedPackVipCfg')}",
                                 data: {
                                     'id': data.ID
                                 },
@@ -195,10 +190,6 @@
                                 }
                             });
                         });
-                    } else if (layEvent === 'detail') {
-                        var id = data.Id
-                            , type = data.type
-                        x_admin_show("{:lang('礼品卡')}", 'getGiftReceive?id=' + id, 900, 500);
                     }
                 });
 

@@ -5,24 +5,10 @@
 {/block}
 {block name="content"}
 
-<form class="layui-form" action="{:url('RedEnvelopeRain/create')}" method="post" id="addProxy" >
+<form class="layui-form" action="{:url('RedEnvelopeRain/addRedPackVipCfg')}" method="post" id="addProxy" >
 
 <!--  <input type="hidden" name="id" id="id" value="{if(!empty($info))}{$info.Id}{/if}" />-->
 
-  <div class="layui-form-item" >
-    <label class="layui-form-label">{:lang('红包雨日期')}：</label>
-    <div class="layui-input-inline">
-      <input type="text" name="BeginDay" id="LAY-component-form-group-date" autocomplete="off"
-             class="layui-input" value="">
-    </div>
-    <div class="layui-form-mid">
-      -
-    </div>
-    <div class="layui-input-inline">
-      <input type="text" name="EndDay" id="LAY-component-form-group-date2" autocomplete="off"
-             class="layui-input" value="">
-    </div>
-  </div>
 
   <div class="layui-form-item" >
     <label class="layui-form-label">{:lang('红包雨时间')}：</label>
@@ -42,67 +28,37 @@
 
 
 
-<!--  <div class="layui-form-item">-->
-
-<!--    <label class="layui-form-label">{:lang('红包随机值')}：</label>-->
-<!--    <div class="layui-input-inline">-->
-<!--      <input type="text" name="RedPackCellMoneyMin" id="RedPackCellMoneyMin" autocomplete="off"-->
-<!--             class="layui-input" value="">-->
-<!--    </div>-->
-<!--    <div class="layui-form-mid">-->
-<!--      - -->
-<!--    </div>-->
-<!--    <div class="layui-input-inline">-->
-<!--      <input type="text" name="RedPackCellMoneyMax" id="RedPackCellMoneyMax" autocomplete="off"-->
-<!--             class="layui-input" value="">-->
-<!--    </div>-->
-<!--  </div>-->
-
-
-
   <div class="layui-form-item">
-    <label class="layui-form-label">{:lang('红包总数量')}：</label>
-    <div class="layui-input-block">
-      <input type="number" id="RedPackNum" name='RedPackNum' value="" lay-verify="required" placeholder="{:lang('红包数量')}" autocomplete="off" class="layui-input">
+
+    <label class="layui-form-label">{:lang('红包随机值')}：</label>
+    <div class="layui-input-inline">
+      <input type="number" name="RedPackCellMoneyMin" id="RedPackCellMoneyMin" autocomplete="off"
+             class="layui-input" value="">
     </div>
-  </div>
-  <div class="layui-form-item">
-    <label class="layui-form-label">{:lang('红包总金额')}：</label>
-    <div class="layui-input-block">
-      <input type="number" id="RedPackTotalMoney" name='RedPackTotalMoney' value="" lay-verify="required" placeholder="{:lang('红包总金额')}" autocomplete="off" class="layui-input">
+    <div class="layui-form-mid">
+      -
+    </div>
+    <div class="layui-input-inline">
+      <input type="number" name="RedPackCellMoneyMax" id="RedPackCellMoneyMax" autocomplete="off"
+             class="layui-input" value="">
     </div>
   </div>
 
   <div class="layui-form-item">
-    <label class="layui-form-label">{:lang('同一时间玩家领取数量')}：</label>
-    <div class="layui-input-block">
-      <input type="number" id="GetMaxCount" name='GetMaxCount' value="" lay-verify="required" placeholder="{:lang('同一时间玩家领取数量')}" autocomplete="off" class="layui-input">
+
+    <label class="layui-form-label">{:lang('可领取VIP等级')}：</label>
+    <div class="layui-input-inline">
+      <input type="number" name="VipLvMin" id="VipLvMin" autocomplete="off"
+             class="layui-input" value="">
+    </div>
+    <div class="layui-form-mid">
+      -
+    </div>
+    <div class="layui-input-inline">
+      <input type="number" name="VipLvMax" id="VipLvMax" autocomplete="off"
+             class="layui-input" value="">
     </div>
   </div>
-
-
-
-
-  <div class="layui-form-item">
-    <div class="layui-inline">
-      <label class="layui-form-label">{:lang('领取类型')}：</label>
-      <div class="layui-input-inline">
-        <input lay-filter="CheckType" type="radio"  name="CheckType" value="0" title="{:lang('注册用户')}" checked>
-        <input lay-filter="CheckType" type="radio"  name="CheckType" value="1" title="{:lang('当天充值用户')}">
-        <input lay-filter="CheckType" type="radio"  name="CheckType" value="2" title="{:lang('历史充值用户')}">
-      </div>
-    </div>
-  </div>
-
-  <div class="layui-form-item">
-    <label class="layui-form-label">{:lang('状态')}：</label>
-    <div class="layui-input-block">
-
-      <input type="radio" name="OnOff" value="0" title="关闭" checked>
-      <input type="radio" name="OnOff" value="1" title="开启" >
-    </div>
-  </div>
-
 
   <div class="layui-form-item">
     <div class="layui-input-block">
