@@ -17,6 +17,8 @@ class WeekSalaryCfg extends Main
                 ->count();
             $lists = $masterDb->getTableObject('T_WeekSalaryCfg')
                 ->select();
+            $lists['Running'] = FormatMoney($lists['Running']);
+            $lists['BaseWeekSalary'] = FormatMoney($lists['BaseWeekSalary']);
             return $this->apiReturn(0, $lists, 'success', $count);
 
         }
@@ -41,8 +43,8 @@ class WeekSalaryCfg extends Main
         $lv2Rate = input('Lv2Rate');
         $level = input('Level');
         $data = [
-            'Running' => $running,
-            'BaseWeekSalary' => $baseWeekSalary,
+            'Running' => $running * bl,
+            'BaseWeekSalary' => $baseWeekSalary * bl,
             'Lv1Rate' => $lv1Rate,
             'Lv2Rate' => $lv2Rate,
             'Level' => $level,
@@ -57,6 +59,8 @@ class WeekSalaryCfg extends Main
         $id = input('id');
         $masterDb = new MasterDB();
         $info = $masterDb->getTableObject('T_WeekSalaryCfg')->where('ID',$id)->find();
+        $info['Running'] = FormatMoney($info['Running']);
+        $info['BaseWeekSalary'] = FormatMoney($info['BaseWeekSalary']);
         $this->assign('info',$info);
         return $this->fetch();
     }
@@ -69,8 +73,8 @@ class WeekSalaryCfg extends Main
         $lv2Rate = input('Lv2Rate');
         $level = input('Level');
         $data = [
-            'Running' => $running,
-            'BaseWeekSalary' => $baseWeekSalary,
+            'Running' => $running * bl,
+            'BaseWeekSalary' => $baseWeekSalary * bl,
             'Lv1Rate' => $lv1Rate,
             'Lv2Rate' => $lv2Rate,
             'Level' => $level,
