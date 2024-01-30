@@ -16,8 +16,8 @@ class RedEnvelopeRain extends Main
     public function list()
     {
         $masterDB = new MasterDB();
-        $count = $masterDB->getTableObject('T_RedBackCfg')->count();
-        $lists = $masterDB->getTableObject('T_RedBackCfg')->select();
+        $count = $masterDB->getTableObject('T_RedPackCfg')->count();
+        $lists = $masterDB->getTableObject('T_RedPackCfg')->select();
 
         foreach ($lists as &$list) {
             $list['DailyBeginHour'] = $list['DailyBeginHour'].':00:00';
@@ -37,7 +37,7 @@ class RedEnvelopeRain extends Main
 
         }
         $masterDB = new MasterDB();
-        $configInfo = $masterDB->getTableObject('T_RedBackCfg')
+        $configInfo = $masterDB->getTableObject('T_RedPackCfg')
             ->where('ID',$id)
             ->find();
         $configInfo['BeginDay'] = date('Y-m-d',$configInfo['BeginDay']);
@@ -81,7 +81,7 @@ class RedEnvelopeRain extends Main
             if (!$setVipArray){
                 return $this->failJSON('VIP配置不能为空');
             }
-            $callbackId = $masterDB->getTableObject('T_RedBackCfg')
+            $callbackId = $masterDB->getTableObject('T_RedPackCfg')
                 ->where('ID',$id)
                 ->update($data);
             $masterDB->getTableObject('T_RedBackVipGetCfg')
@@ -141,7 +141,7 @@ class RedEnvelopeRain extends Main
             if (!$setVipArray){
                 return $this->failJSON('VIP配置不能为空');
             }
-            $callbackId = $masterDB->getTableObject('T_RedBackCfg')->insertGetId($data);
+            $callbackId = $masterDB->getTableObject('T_RedPackCfg')->insertGetId($data);
             $setVipData = [];
             foreach ($setVipArray as $k){
                 $item = [];
@@ -153,7 +153,7 @@ class RedEnvelopeRain extends Main
                 $setVipData[]=$item;
             }
             $masterDB->getTableObject('T_RedBackVipGetCfg')->insertAll($setVipData);
-            $masterDB->getTableObject('T_RedBackCfg')
+            $masterDB->getTableObject('T_RedPackCfg')
                 ->where('ID',$callbackId)
                 ->update(['ActivityId'=>$callbackId]);
             $masterDB->commit();
@@ -171,7 +171,7 @@ class RedEnvelopeRain extends Main
         $id = input('id', 0, 'intval');
         $masterDB = new MasterDB();
         if ($id > 0) {
-            $res = $masterDB->getTableObject('T_RedBackCfg')
+            $res = $masterDB->getTableObject('T_RedPackCfg')
                 ->where('ID', $id)
                 ->delete();
             $masterDB->getTableObject('T_RedBackVipGetCfg')->where('ActivityId',$id)->delete();
@@ -206,7 +206,7 @@ class RedEnvelopeRain extends Main
                     $updateStatus = 1;
                 }
                 $masterDB = new MasterDB();
-                $masterDB->getTableObject('T_RedBackCfg')
+                $masterDB->getTableObject('T_RedPackCfg')
                     ->where('ID', $id)
                     ->update(['OnOff' => $updateStatus]);
 
