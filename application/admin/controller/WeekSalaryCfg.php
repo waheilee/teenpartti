@@ -17,8 +17,11 @@ class WeekSalaryCfg extends Main
                 ->count();
             $lists = $masterDb->getTableObject('T_WeekSalaryCfg')
                 ->select();
-            $lists['Running'] = FormatMoney($lists['Running']);
-            $lists['BaseWeekSalary'] = FormatMoney($lists['BaseWeekSalary']);
+            foreach ($lists as &$list){
+                ConVerMoney($list['Running']);
+                ConVerMoney($list['BaseWeekSalary']);
+            }
+
             return $this->apiReturn(0, $lists, 'success', $count);
 
         }
