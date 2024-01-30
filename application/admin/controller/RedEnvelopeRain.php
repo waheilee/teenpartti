@@ -153,6 +153,9 @@ class RedEnvelopeRain extends Main
                 $setVipData[]=$item;
             }
             $masterDB->getTableObject('T_RedBackVipGetCfg')->insertAll($setVipData);
+            $masterDB->getTableObject('T_RedBackCfg')
+                ->where('ID',$callbackId)
+                ->update(['ActivityId'=>$callbackId]);
             $masterDB->commit();
         }catch (\Exception $e){
             $masterDB->rollback();
