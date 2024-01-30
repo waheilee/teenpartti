@@ -1,0 +1,221 @@
+{extend name="common/base" /}
+
+{block name="title"}{/block}
+{block name="css"}
+<style type="text/css">
+    .layui-table-cell {
+        text-align: center;
+        height: auto;
+        white-space: normal;
+    }
+
+</style>
+{/block}
+{block name="content"}
+<div class="layui-card-header layuiadmin-card-header-auto">
+    <form class="layui-form" lay-filter="component-form-group">
+        <!--    <div class="layui-form-item">-->
+
+        <!--      <div class="layui-inline">-->
+        <!--        <label class="layui-form-label">{:lang('活动名称')}</label>-->
+        <!--        <div class="layui-input-inline">-->
+        <!--          <input type="text" id="activity_name" name="activity_name" autocomplete="off" class="layui-input">-->
+        <!--        </div>-->
+        <!--      </div>-->
+        <!--      <div class="layui-inline">-->
+        <!--        <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>-->
+        <!--        <button type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>-->
+        <!--      </div>-->
+        <!--    </div>-->
+
+    </form>
+</div>
+<div class="layui-card">
+    <div class="layui-card-body">
+        <a style="margin-bottom: 10px;" class="layui-btn"
+           onclick="x_admin_show('{:lang(\'周薪\')}','addWeekSalary.html', 700,800)">
+            <i class="layui-icon layui-icon-add-circle"></i>
+        </a>
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script type="text/html" id="msg-bar">
+    <!--  <a class="layui-btn layui-btn-xs" lay-event="edit"><i class="layui-icon layui-icon-edit"></i></a>-->
+    <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete"><i
+            class="layui-icon layui-icon-delete"></i></a>
+    <a class="layui-btn layui-btn-xs" lay-event="edit">{:lang('编辑')}</a>
+
+</script>
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+
+        function getWhere() {
+
+            var title = $('#activity_name').val();
+            return {
+                'title': title
+            };
+        }
+
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'ID', title: 'id', width: 50},
+                    {field: 'Running', title: "{:lang('打码量')}", width: 300},
+                    {field: 'BaseWeekSalary', title: "{:lang('周薪')}", width: 300},
+                    {field: 'Lv1Rate', title: "{:lang('一级打码返利')}", width: 300},
+                    {field: 'Lv2Rate', title: "{:lang('二级打码返利')}", width: 300},
+                    {field: 'Level', title: "{:lang('等级')}", width: 300},
+                    {fixed: 'right', title: "{:lang('操作')}", align: 'center', minWidth: 100, toolbar: '#msg-bar'}
+
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('WeekSalaryCfg/list')}" //数据接口
+                    , where: getWhere()
+                    , page: true //开启分页
+                    , cols: [cols],
+                    done: function (res) {
+                        //表头部分
+                        //动态监听表头高度变化，冻结行跟着改变高度
+                        $(".layui-table-header  tr").resize(function () {
+                            $(".layui-table-header  tr").each(function (index, val) {
+                                $($(".layui-table-fixed .layui-table-header table tr")[index]).height($(val).height());
+                            });
+                        });
+                        //初始化高度，使得冻结行表头高度一致
+                        $(".layui-table-header  tr").each(function (index, val) {
+                            $($(".layui-table-fixed .layui-table-header table tr")[index]).height($(val).height());
+                        });
+
+                        //表体部分
+                        //动态监听表体高度变化，冻结行跟着改变高度
+                        $(".layui-table-body  tr").resize(function () {
+                            $(".layui-table-body  tr").each(function (index, val) {
+                                $($(".layui-table-fixed .layui-table-body table tr")[index]).height($(val).height());
+                            });
+                        });
+                        //初始化高度，使得冻结行表体高度一致
+                        $(".layui-table-body  tr").each(function (index, val) {
+                            $($(".layui-table-fixed .layui-table-body table tr")[index]).height($(val).height());
+                        });
+                    }
+                });
+            },
+
+            //搜索
+            search: function () {
+                table.reload('proxylist', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: getWhere(),
+                    done: function (res) {
+                        tzTbale();
+                    }
+                });
+            },
+
+
+            //操作事件
+            extraEvent: function () {
+                //编辑&&删除
+                table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+
+                    if (obj.event === 'copy1') {
+                        copy(data.UrlLink)
+                    }
+                    if (layEvent === 'edit') {
+                        var id = data.ID
+                            , type = data.type
+                        x_admin_show("{:lang('编辑活动信息')}", 'editWeekSalary?id=' + id, 700, 800);
+                    } else if (layEvent === 'delete') {
+                        layer.confirm("{:lang('确认删除这条记录？')}", {btn: ['{:lang("确定")}', '{:lang("取消")}']}, function () {
+                            $.ajax({
+                                type: 'post',
+                                url: "{:url('WeekSalaryCfg/delete')}",
+                                data: {
+                                    'id': data.ID
+                                },
+                                dataType: 'json',
+                                success: function (res) {
+                                    if (res.code === 0) {
+                                        layer.msg(res.msg, {icon: 6, time: 1000}, function () {
+                                            window.location.reload();
+                                        });
+                                    } else {
+                                        layer.msg(res.msg, {icon: 5});
+                                    }
+                                }
+                            });
+                        });
+                    } else if (layEvent === 'detail') {
+                        var id = data.Id
+                            , type = data.type
+                        x_admin_show("{:lang('礼品卡')}", 'getGiftReceive?id=' + id, 900, 500);
+                    }
+                });
+
+                $(document).off('mousedown', '.layui-table-grid-down').on('mousedown', '.layui-table-grid-down', function (event) {
+                    table._tableTrCurrr = $(this).closest('td');
+                });
+                $(document).off('click', '.layui-table-tips-main [lay-event]').on('click', '.layui-table-tips-main [lay-event]', function (event) {
+                    //debugger
+                    var elem = $(this);
+                    var tableTrCurrr = table._tableTrCurrr;
+                    if (!tableTrCurrr) {
+                        return;
+                    }
+                    var layerIndex = elem.closest('.layui-table-tips').attr('times');
+                    console.log(layerIndex);
+                    layer.close(layerIndex);
+                    table._tableTrCurrr.find('[lay-event="' + elem.attr('lay-event') + '"]').click();
+                });
+
+
+            },
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+
+    function copy(value) {
+        var oInput = document.createElement('input');
+        oInput.value = value;
+        document.body.appendChild(oInput);
+        oInput.select(); // 选择对象
+        document.execCommand("Copy"); // 执行浏览器复制命令
+        oInput.className = 'oInput';
+        oInput.style.display = 'none';
+        layer.msg('{:lang("复制成功")}');
+    }
+</script>
+{/block}
