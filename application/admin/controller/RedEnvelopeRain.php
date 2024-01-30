@@ -91,8 +91,8 @@ class RedEnvelopeRain extends Main
             foreach ($setVipArray as $k){
                 $item = [];
                 $item['ActivityId'] = $id;
-                $item['RedPackCellMoneyMin'] = $k['RedPackCellMoneyMin'];
-                $item['RedPackCellMoneyMax'] = $k['RedPackCellMoneyMax'];
+                $item['RedPackCellMoneyMin'] = $k['RedPackCellMoneyMin'] * bl;
+                $item['RedPackCellMoneyMax'] = $k['RedPackCellMoneyMax'] * bl;
                 $item['VipLvMin'] = $k['VipLvMin'];
                 $item['VipLvMax'] = $k['VipLvMax'];
                 $setVipData[]=$item;
@@ -146,8 +146,8 @@ class RedEnvelopeRain extends Main
             foreach ($setVipArray as $k){
                 $item = [];
                 $item['ActivityId'] = $callbackId;
-                $item['RedPackCellMoneyMin'] = $k['RedPackCellMoneyMin'];
-                $item['RedPackCellMoneyMax'] = $k['RedPackCellMoneyMax'];
+                $item['RedPackCellMoneyMin'] = $k['RedPackCellMoneyMin'] * bl;
+                $item['RedPackCellMoneyMax'] = $k['RedPackCellMoneyMax'] * bl;
                 $item['VipLvMin'] = $k['VipLvMin'];
                 $item['VipLvMax'] = $k['VipLvMax'];
                 $setVipData[]=$item;
@@ -290,6 +290,10 @@ class RedEnvelopeRain extends Main
         $vipInfo = $masterDB->getTableObject('T_RedBackVipGetCfg')
             ->where('ActivityId',$id)
             ->select();
+        foreach ($vipInfo as &$info){
+            ConVerMoney($info['RedPackCellMoneyMin']);
+            ConVerMoney($info['RedPackCellMoneyMax']);
+        }
         return $this->successJSON($vipInfo);
     }
 }
