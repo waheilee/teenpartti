@@ -17,30 +17,26 @@
         <form class="layui-form" lay-filter="component-form-group">
             <div class="layui-form-item">
                 <div class="layui-inline">
-                    <input autocomplete="off" class="layui-input" id="RoleId" lay-verify="number" name="RoleId"
-                           placeholder="{:lang('用户ID')}" type="text">
+                    <input autocomplete="off" class="layui-input" id="RoleId" lay-verify="number" name="RoleId" placeholder="{:lang('用户ID')}" type="text">
                 </div>
                 <div class="layui-inline">
-                    <input autocomplete="off" style="width: 100px" class="layui-input " id="Amount" lay-verify="number"
-                           name="Amount" placeholder="{:lang('金额')}" type="text">
+                    <input autocomplete="off" style="width: 100px" class="layui-input " id="Amount" lay-verify="number" name="Amount" placeholder="{:lang('金额')}" type="text">
                 </div>
                 <div class="layui-inline" style="width: 263px">
                     <label class="layui-form-label" style="width: auto">{:lang('日期')}</label>
                     <div class="layui-input-inline" style="width: 90px">
-                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off"
-                               class="layui-input">
+                        <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off" class="layui-input">
                     </div>
                     <div class="layui-form-mid"> -</div>
                     <div class="layui-input-inline" style="width: 90px">
-                        <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date2" name="end"
-                               type="text">
+                        <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date2" name="end" type="text">
                     </div>
                 </div>
                 <div class="layui-inline">
                     <label class="layui-form-label" style="width: auto">{:lang('类型')}</label>
                     <div class="layui-input-inline" style="width: 90px">
                         <select id="operatetype" name="operatetype">
-                            <option value="0">{:lang('全部')}</option>
+                            <option value="-1">{:lang('全部')}</option>
                             <option value="1">{:lang('游戏上分')}</option>
                             {if(config('is_usa') == 1)}
                             <option value="2">{:lang('游戏下分')}</option>
@@ -92,16 +88,13 @@
     var main;
     url = "{:url('Player/transferManager')}";
     layui.config({base: '__layui__/'}).extend({index: 'lib/index'}).use(['table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
-        var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$,
-            form = layui.form;
+        var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
         main = {
             renderData: function () {
                 var cols = [ //表头
-                    {
-                        field: 'ID', align: 'center', title: 'ID', width: 100, templet: function (d) {
+                    {field: 'ID', align: 'center', title: 'ID', width: 100, templet: function (d) {
                             return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.RoleId + "</a>";
-                        }
-                    },
+                        }},
                     {field: 'RoleId', title: '{:lang("用户ID")}', minWidth: 60},
                     {
                         field: 'OperateType', title: '{:lang("类型")}', minWidth: 100, templet: function (d) {
@@ -137,16 +130,8 @@
 
                         }
                     },
-                    {
-                        field: 'InsertTime', title: '{:lang("操作时间")}', minWidth: 110, templet: function (d) {
-                            return d.InsertTime.substr(0, 19)
-                        }
-                    },
-                    {
-                        field: 'UpdateTime', title: '{:lang("更新时间")}', minWidth: 110, templet: function (d) {
-                            return d.UpdateTime == null ? "" : d.UpdateTime.substr(0, 19)
-                        }
-                    },
+                    {field: 'InsertTime', title: '{:lang("操作时间")}', minWidth: 110, templet: function (d) {return d.InsertTime.substr(0, 19) }},
+                    {field: 'UpdateTime', title: '{:lang("更新时间")}', minWidth: 110, templet: function (d) {return d.UpdateTime == null ? "" : d.UpdateTime.substr(0, 19) }},
                     {field: 'checkUser', title: '{:lang("操作人员")}', minWidth: 100},
 
 
@@ -161,7 +146,7 @@
                     done: function (d) {
                         tzTbale()
                         $('#TotalCount').html(d.other.TotalCount);
-                        $('#TotalMoney').html(d.other.TotalMoney == null ? 0 : d.other.TotalMoney);
+                        $('#TotalMoney').html(d.other.TotalMoney);
                     }
                 });
             },
@@ -170,7 +155,7 @@
             search: function () {
 //                var roleid = $.trim($('#bankname').html());
                 var roleid = $.trim($('#bankname option:selected').text());
-                var operatortype = $.trim($('#operatetype').val());
+                var operatortype =$.trim($('#operatetype').val());
                 if (roleid == '{:lang("请选择渠道")}') {
                     roleid = '';
                 }
@@ -182,7 +167,7 @@
                         start: $.trim($("#LAY-component-form-group-date").val()),
                         end: $.trim($("#LAY-component-form-group-date2").val()),
                         VerifyState: $.trim($("#VerifyState").val()),
-                        operatortype: operatortype
+                        operatortype:operatortype
                     }, done: function (d) {
                         tzTbale()
                         $('#TotalCount').html(d.other.TotalCount);
@@ -261,7 +246,7 @@
                     }
 
                     if (layEvent === 'detail') {
-                        var url = '/admin/player/playerDetail?roleid=' + data.RoleId;
+                        var url = '/business/player/playerDetail?roleid=' + data.RoleId;
                         x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.6);
                     }
                 });
@@ -342,11 +327,10 @@
             });
         }
     });
-
-    function add() {
-        openBarWinParent('{:lang("添加扣款")}', 700, 600, url + '?Action=add', function () {
+    function add(){
+        openBarWinParent('{:lang("添加扣款")}', 700,600,url+'?Action=add',function (){
             main.search();
-        }, ['{:lang("保存")}', '{:lang("取消")}']);
+        },['{:lang("保存")}', '{:lang("取消")}']);
     }
 </script>
 {/block}

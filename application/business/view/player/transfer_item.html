@@ -24,7 +24,7 @@
             {else}
             {if(config('yongjing_sxf') == 1)}
             <input type="radio" name="OperateType" id="OperateType_3" value="3" title="佣金上分" >
-<!--             <input type="radio" name="OperateType" id="OperateType_4" value="4" title="佣金下分" >-->
+            <!-- <input type="radio" name="OperateType" id="OperateType_4" value="4" title="佣金下分" > -->
             {/if}
             {/if}
         </div>
@@ -36,12 +36,12 @@
             <input autocomplete="off" class="layui-input" id="totalmoney" lay-verify="number" name="totalmoney" placeholder="{:lang('请输入金额，必须是正数')}" type="text">
         </div>
     </div>
-<!--    <div class="layui-form-item">-->
-<!--        <label class="layui-form-label">{:lang('确认密码')}：</label>-->
-<!--        <div class="layui-input-block">-->
-<!--            <input autocomplete="off" class="layui-input" id="password" lay-verify="text" name="totalmoney" placeholder="{:lang('请输入确认密码')}" type="text">-->
-<!--        </div>-->
-<!--    </div>-->
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('确认密码')}：</label>
+        <div class="layui-input-block">
+            <input autocomplete="off" class="layui-input" id="password" lay-verify="text" name="totalmoney" placeholder="{:lang('请输入确认密码')}" type="text">
+        </div>
+    </div>
     <div class="layui-form-item">
         <label class="layui-form-label">{:lang('备注')}：</label>
         <div class="layui-input-block">
@@ -85,10 +85,10 @@
             layer.msg('{:lang("扣款金额必须为正数")}', {icon: 2});
             return false;
         }
-        // if (password == '') {
-        //     layer.msg('{:lang("请输入确认密码")}', {icon: 2});
-        //     return false;
-        // }
+        if (password == '') {
+            layer.msg('{:lang("请输入确认密码")}', {icon: 2});
+            return false;
+        }
         if (roleid.length == 7 && operatetype==3) {
             layer.msg('{:lang("测试号禁止佣金上分")}', {icon: 2});
             return false;
@@ -113,7 +113,6 @@
                     parent.layer.close(_layer_index);
                     layer.msg(res.msg, {icon: 1, time: 1500}, function () {
                     });
-                    window.location.reload();
                 } else {
                     layer.msg(res.msg, {icon: 2});
                 }
