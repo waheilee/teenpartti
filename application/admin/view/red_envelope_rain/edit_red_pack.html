@@ -5,22 +5,22 @@
 {/block}
 {block name="content"}
 
-<form class="layui-form" action="{:url('RedEnvelopeRain/create')}" method="post" id="addProxy" >
+<form class="layui-form" action="{:url('RedEnvelopeRain/updateRedPack')}" method="post" id="addProxy" >
 
-<!--  <input type="hidden" name="id" id="id" value="{if(!empty($info))}{$info.Id}{/if}" />-->
+  <input type="hidden" name="id" id="id" value="{if(!empty($info))}{$info.ID}{/if}" />
 
   <div class="layui-form-item" >
     <label class="layui-form-label">{:lang('红包雨日期')}：</label>
     <div class="layui-input-inline">
       <input type="text" name="BeginDay" id="LAY-component-form-group-date" autocomplete="off" lay-verify="required"
-             class="layui-input" value="">
+             class="layui-input" value="{$info['BeginDay']}">
     </div>
     <div class="layui-form-mid">
       -
     </div>
     <div class="layui-input-inline">
       <input type="text" name="EndDay" id="LAY-component-form-group-date2" autocomplete="off" lay-verify="required"
-             class="layui-input" value="">
+             class="layui-input" value="{$info['EndDay']}">
     </div>
   </div>
 
@@ -28,55 +28,37 @@
     <label class="layui-form-label">{:lang('红包雨时间')}：</label>
     <div class="layui-input-inline">
       <input type="text" name="DailyBeginHour" id="LAY-component-form-group-date-time" autocomplete="off" lay-verify="required"
-             class="layui-input" value="">
+             class="layui-input" value="{$info['DailyBeginHour']}">
     </div>
     <div class="layui-form-mid">
       -
     </div>
     <div class="layui-input-inline">
       <input type="text" name="DailyEndHour" id="LAY-component-form-group-date2-time" autocomplete="off" lay-verify="required"
-             class="layui-input" value="">
+             class="layui-input" value="{$info['DailyEndHour']}">
     </div>
   </div>
 
-
-
-
-<!--  <div class="layui-form-item">-->
-
-<!--    <label class="layui-form-label">{:lang('红包随机值')}：</label>-->
-<!--    <div class="layui-input-inline">-->
-<!--      <input type="text" name="RedPackCellMoneyMin" id="RedPackCellMoneyMin" autocomplete="off"-->
-<!--             class="layui-input" value="">-->
-<!--    </div>-->
-<!--    <div class="layui-form-mid">-->
-<!--      - -->
-<!--    </div>-->
-<!--    <div class="layui-input-inline">-->
-<!--      <input type="text" name="RedPackCellMoneyMax" id="RedPackCellMoneyMax" autocomplete="off"-->
-<!--             class="layui-input" value="">-->
-<!--    </div>-->
-<!--  </div>-->
 
 
 
   <div class="layui-form-item">
     <label class="layui-form-label">{:lang('红包总数量')}：</label>
     <div class="layui-input-block">
-      <input type="number" id="RedPackNum" name='RedPackNum' value="" lay-verify="required" placeholder="{:lang('红包数量')}" autocomplete="off" class="layui-input">
+      <input type="number" id="RedPackNum" name='RedPackNum' value="{$info['RedPackNum']}" lay-verify="required" placeholder="{:lang('红包数量')}" autocomplete="off" class="layui-input">
     </div>
   </div>
   <div class="layui-form-item">
     <label class="layui-form-label">{:lang('红包总金额')}：</label>
     <div class="layui-input-block">
-      <input type="number" id="RedPackTotalMoney" name='RedPackTotalMoney' value="" lay-verify="required" placeholder="{:lang('红包总金额')}" autocomplete="off" class="layui-input">
+      <input type="number" id="RedPackTotalMoney" name='RedPackTotalMoney' value="{$info['RedPackTotalMoney']}" lay-verify="required" placeholder="{:lang('红包总金额')}" autocomplete="off" class="layui-input">
     </div>
   </div>
 
   <div class="layui-form-item">
     <label class="layui-form-label">{:lang('同一时间玩家领取数量')}：</label>
     <div class="layui-input-block">
-      <input type="number" id="GetMaxCount" name='GetMaxCount' value="" lay-verify="required" placeholder="{:lang('同一时间玩家领取数量')}" autocomplete="off" class="layui-input">
+      <input type="number" id="GetMaxCount" name='GetMaxCount' value="{$info['GetMaxCount']}" lay-verify="required" placeholder="{:lang('同一时间玩家领取数量')}" autocomplete="off" class="layui-input">
     </div>
   </div>
 
@@ -87,9 +69,9 @@
     <div class="layui-inline">
       <label class="layui-form-label">{:lang('领取类型')}：</label>
       <div class="layui-input-inline">
-        <input lay-filter="CheckType" type="radio"  name="CheckType" value="0" title="{:lang('注册用户')}" checked>
-        <input lay-filter="CheckType" type="radio"  name="CheckType" value="1" title="{:lang('当天充值用户')}">
-        <input lay-filter="CheckType" type="radio"  name="CheckType" value="2" title="{:lang('历史充值用户')}">
+        <input lay-filter="CheckType" type="radio"  name="CheckType" value="0" title="{:lang('注册用户')}" {php} if($info['CheckType']==0){echo 'checked';} {/php}>
+        <input lay-filter="CheckType" type="radio"  name="CheckType" value="1" title="{:lang('当天充值用户')}" {php} if($info['CheckType']==1){echo 'checked';} {/php}>
+        <input lay-filter="CheckType" type="radio"  name="CheckType" value="2" title="{:lang('历史充值用户')}" {php} if($info['CheckType']==2){echo 'checked';} {/php}>
       </div>
     </div>
   </div>
@@ -98,41 +80,18 @@
     <label class="layui-form-label">{:lang('状态')}：</label>
     <div class="layui-input-block">
 
-      <input type="radio" name="OnOff" value="0" title="关闭" checked>
-      <input type="radio" name="OnOff" value="1" title="开启" >
+      <input type="radio" name="OnOff" value="0" title="关闭" {php} if($info['OnOff']==0){echo 'checked';} {/php}>
+      <input type="radio" name="OnOff" value="1" title="开启" {php} if($info['OnOff']==1){echo 'checked';} {/php}>
     </div>
   </div>
   <div id="divOrderFh" >
     <table id="tbContent"  lay-skin="nob">
+      <button type="button" class="layui-btn layui-btn-xs" id="CopyPackageControl">+ 新增</button>
+<!--      <label class="layui-form-label">{:lang('VIP配置')}：</label>-->
       <tbody>
-      <tr>
-        <td>
-          <div class="layui-form-item" >
-            <label class="layui-form-label">{:lang('VIP配置')}：</label>
-            <div class="layui-input-inline"  style="width: 110px;">
-              <input type="text" name="setVIP[0][VipLvMin]" id="VipLvMin" autocomplete="off" placeholder="{:lang('可领取最小vip')}" lay-verify="required"
-                     class="layui-input" value="">
-            </div>
-            <div class="layui-input-inline"  style="width: 110px;">
-              <input type="text" name="setVIP[0][VipLvMax]" id="VipLvMax" autocomplete="off" placeholder="{:lang('可领取最大vip')}" lay-verify="required"
-                     class="layui-input" value="">
-            </div>
-            <div class="layui-input-inline"  style="width: 110px;">
-              <input type="text" name="setVIP[0][RedPackCellMoneyMin]" id="RedPackCellMoneyMin" autocomplete="off" placeholder="{:lang('随机最小值')}" lay-verify="required"
-                     class="layui-input" value="">
-            </div>
-            <div class="layui-input-inline"  style="width: 110px;">
-              <input type="text" name="setVIP[0][RedPackCellMoneyMax]" id="RedPackCellMoneyMax" autocomplete="off" placeholder="{:lang('随机最大值')}" lay-verify="required"
-                     class="layui-input" value="">
-            </div>
-            <button type="button" class="layui-btn layui-btn-xs" id="CopyPackageControl">+ 新增</button>
-          </div>
-        </td>
-      </tr>
+
       </tbody>
     </table>
-<!--    <a style="margin-left: 15%" type="button" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="CopyPackageControl" id="CopyPackageControl" >{:lang('新增包裹')}</a>-->
-
   </div>
 
   <div class="layui-form-item">
@@ -238,43 +197,104 @@
           e.preventDefault();
           x_admin_close();
         })
+        $.ajax({
+          type:'post',
+          url:"{:url('RedEnvelopeRain/getSetVipInfo')}",
+          data:{
+            'id':'{$info.ID}'
+          },
+          dataType:'json',
+          success: function(res) {
+
+            if (res.code === 0) {
+                console.log(res.data)
+              var oTable = document.getElementById("tbContent");
+              var index = oTable.rows.length;
+              console.log(index)
+              let array = res.data;
+// 使用for循环来迭代这个数组
+              for (let i = 0; i < array.length; i++) {
+
+
+                var newRow = oTable.insertRow(index);
+                newRow.innerHTML = '   <tr>' +
+                        // '<td style="vertical-align: top"><label class="layui-form-label">包裹' + parseInt(index + 1) + '：</label></td>' +
+                        '<td> ' +
+                        // '<span style="float: right; margin: -42px -12px; cursor: pointer" onclick="doRemoveDiv(event)"><i class="layui-icon layui-icon-close-fill" style="color: #999; font-size: 24px"></i></span>' +
+                        '<div class="layui-form-item" >\n' +
+                        '            <label class="layui-form-label">' + parseInt(index + 1) + '</label>\n' +
+                        '            <div class="layui-input-inline"  style="width: 110px;">\n' +
+                        '              <input type="text" name="setVIP[' + parseInt(index + 1) + '][VipLvMin]" id="VipLvMin" autocomplete="off" placeholder="{:lang(\'可领取最小vip\')}"\n' +
+                        '                     class="layui-input" value="'+array[i]['VipLvMin']+'">\n' +
+                        '            </div>\n' +
+                        '            <div class="layui-input-inline"  style="width: 110px;">\n' +
+                        '              <input type="text" name="setVIP[' + parseInt(index + 1) + '][VipLvMax]" id="VipLvMax" autocomplete="off" placeholder="{:lang(\'可领取最大vip\')}"\n' +
+                        '                     class="layui-input" value="'+array[i]['VipLvMax']+'">\n' +
+                        '            </div>\n' +
+                        '            <div class="layui-input-inline"  style="width: 110px;">\n' +
+                        '              <input type="text" name="setVIP[' + parseInt(index + 1) + '][RedPackCellMoneyMin]" id="RedPackCellMoneyMin" autocomplete="off" placeholder="{:lang(\'随机最小值\')}"\n' +
+                        '                     class="layui-input" value="'+array[i]['RedPackCellMoneyMin']+'">\n' +
+                        '            </div>\n' +
+                        '            <div class="layui-input-inline"  style="width: 110px;">\n' +
+                        '              <input type="text" name="setVIP[' + parseInt(index + 1) + '][RedPackCellMoneyMax]" id="RedPackCellMoneyMax" autocomplete="off" placeholder="{:lang(\'随机最大值\')}"\n' +
+                        '                     class="layui-input" value="'+array[i]['RedPackCellMoneyMax']+'">\n' +
+                        '            </div>\n' +
+                        // '            <button type="button" class="layui-btn layui-btn-xs"  id="CopyPackageControl">+ 新增</button>\n' +
+                        '            <button type="button" class="layui-btn layui-btn-xs layui-btn-danger"  onclick="doRemoveDiv(event)">删除</button>\n' +
+                        '</div>' +
+                        '</td> ' +
+                        '</tr>';
+
+                newRow.className = "divItemSon";
+                index++
+              }
+
+
+
+
+            } else {
+              layer.msg(res.msg, {icon:2});
+            }
+          }
+        });
       },
 
       init : function () {
         main.bindEvent();
+        laydate.render({
+          elem: '#LAY-component-form-group-date'
+          , format: 'yyyy-MM-dd'
+          , type: 'date'
+          , btns: ['clear', 'confirm']
+        });
+        laydate.render({
+          elem: '#LAY-component-form-group-date2'
+          , format: 'yyyy-MM-dd'
+          , type: 'date'
+          , btns: ['clear', 'confirm']
+        });
+
+        laydate.render({
+          elem: '#LAY-component-form-group-date-time'
+          , format: 'HH'
+          , type: 'time'
+          , btns: ['clear', 'confirm']
+          ,eventElem: '#LAY-component-form-group-date-time'
+          ,trigger: 'click'
+        });
+        laydate.render({
+          elem: '#LAY-component-form-group-date2-time'
+          , format: 'HH'
+          , type: 'time'
+          , btns: ['clear', 'confirm']
+          ,eventElem: '#LAY-component-form-group-date2-time'
+          ,trigger: 'click'
+        });
       }
+
     };
 
 
-    laydate.render({
-      elem: '#LAY-component-form-group-date'
-      , format: 'yyyy-MM-dd'
-      , type: 'date'
-      , btns: ['clear', 'confirm']
-    });
-    laydate.render({
-      elem: '#LAY-component-form-group-date2'
-      , format: 'yyyy-MM-dd'
-      , type: 'date'
-      , btns: ['clear', 'confirm']
-    });
-
-    laydate.render({
-      elem: '#LAY-component-form-group-date-time'
-      , format: 'HH'
-      , type: 'time'
-      , btns: ['clear', 'confirm']
-      ,eventElem: '#LAY-component-form-group-date-time'
-      ,trigger: 'click'
-    });
-    laydate.render({
-      elem: '#LAY-component-form-group-date2-time'
-      , format: 'HH'
-      , type: 'time'
-      , btns: ['clear', 'confirm']
-      ,eventElem: '#LAY-component-form-group-date2-time'
-      ,trigger: 'click'
-    });
     main.init();
   });
   //删除包裹控件
