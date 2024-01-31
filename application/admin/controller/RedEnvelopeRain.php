@@ -202,15 +202,17 @@ class RedEnvelopeRain extends Main
                 if (empty($id)) {
                     throw new \Exception(lang('id不能为空'));
                 }
+//                dump($id);dump($status);die();
                 if ($status === 0) {
-                    $updateStatus = 0;
+                    $updateStatus = '0';
                 } else {
-                    $updateStatus = 1;
+                    $updateStatus = '1';
                 }
+//                dump($updateStatus);die();
                 $masterDB = new MasterDB();
                 $masterDB->getTableObject('T_RedPackCfg')
                     ->where('ID', $id)
-                    ->update(['OnOff' => $updateStatus]);
+                    ->setField('OnOff', $updateStatus);
 
             } else {
                 throw new \Exception(lang('请求方式错误'));

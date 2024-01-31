@@ -102,7 +102,7 @@
                     {
                         field: 'OnOff', title: "{:lang('状态')}", width: 150, templet: function (d) {
                             var myid = d.ID;
-                            if (d.OnOff == 1) {
+                            if (d.OnOff == 0) {
                                 return '<a class="myopen" myid="' + myid + '" style="margin-left: 10px" lay-event="setOnOff"><input type="checkbox" name="open" lay-filter="setOnOff" lay-skin="switch" checked lay-text="{:lang(\'开启|关闭\')}"></a>';
                             } else {
                                 return '<a class="myopen" myid="' + myid + '" style="margin-left: 10px" lay-event="setOnOff"><input type="checkbox"  name="open" lay-filter="setOnOff" lay-skin="switch"  lay-text="{:lang(\'开启|关闭\')}"></a>';
@@ -249,7 +249,7 @@
                     });
                 });
                 form.on('switch(setOnOff)', function (data) {
-                    var selected = data.elem.checked === true ? 1 : 0; //开关是否开启，true或者false
+                    var selected = data.elem.checked === true ? 0 : 1; //开关是否开启，true或者false
                     var id = $(data.elem).parent().attr('myid');
                     //设置开关
                     $.ajax({
