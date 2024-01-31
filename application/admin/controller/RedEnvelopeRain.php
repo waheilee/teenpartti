@@ -382,7 +382,10 @@ class RedEnvelopeRain extends Main
             ->find();
 
         if (!$activity){
-            return [];
+            return [
+                'residueRedPack' =>'0/0',
+                'residueMoney' => '0/0'
+            ];
         }
         $residueRedPack = $activity['RedPackNum'] - $residueRedPackNum .'/'. $activity['RedPackNum'];
         $residueMoney = bcsub($activity['RedPackTotalMoney'] , $residuePrice,2) / bl .'/'. $activity['RedPackTotalMoney'] / bl;
