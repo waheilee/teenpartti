@@ -62,6 +62,8 @@
                             <option value="3">{:lang('提现清空首充')}</option>
                             <option value="4">{:lang('进行游戏变化')}</option>
                             <option value="5">{:lang('打码需求变化')}</option>
+                            <option value="6">{:lang('邮件获得')}</option>
+                            <option value="7">{:lang('后台修改')}</option>
                         </select>
                     </div>
                 </div>
@@ -74,6 +76,7 @@
                             <option value="10211">{:lang('手动彩金B')}</option>
                             <option value="10212">{:lang('手动彩金 冻结部分C')}</option>
                             <option value="90001">{:lang('打码需求变化')}</option>
+                            <option value="10217">{:lang('手动彩金最大获得')}</option>
 
                         </select>
                     </div>
@@ -151,6 +154,10 @@
                                     return '进行游戏变化';
                                 case 5:
                                     return '打码需求变化';
+                                case 6:
+                                    return '邮件获得';
+                                case 7:
+                                    return '后台修改';
                             }
                         }},
                     {field: 'MoneyKey', align: 'center', title: "{:lang('彩金类型')}", minWidth: 150,templet: function (d)
@@ -164,6 +171,8 @@
                                     return '手动彩金 冻结部分C';
                                 case 90001:
                                     return '打码需求变化';
+                                case 10217:
+                                    return '手动彩金最大获得';
                             }
                         }
                     },

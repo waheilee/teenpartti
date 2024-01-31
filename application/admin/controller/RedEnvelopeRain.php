@@ -71,7 +71,7 @@ class RedEnvelopeRain extends Main
                 'DailyBeginHour' => $dailyBeginHour,
                 'DailyEndHour' => $dailyEndHour,
                 'RedPackNum' => $redPackNum,
-                'RedPackTotalMoney' => $redPackTotalMoney,
+                'RedPackTotalMoney' => $redPackTotalMoney * bl,
                 'GetMaxCount' => $getMaxCount,
                 'CheckType' => $checkType,
                 'OnOff' => $onOff
@@ -132,7 +132,7 @@ class RedEnvelopeRain extends Main
                 'DailyBeginHour' => $dailyBeginHour,
                 'DailyEndHour' => $dailyEndHour,
                 'RedPackNum' => $redPackNum,
-                'RedPackTotalMoney' => $redPackTotalMoney,
+                'RedPackTotalMoney' => $redPackTotalMoney * bl,
                 'GetMaxCount' => $getMaxCount,
                 'CheckType' => $checkType,
                 'OnOff' => $onOff
