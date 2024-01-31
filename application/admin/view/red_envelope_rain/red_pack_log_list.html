@@ -28,6 +28,21 @@
         </div>
     </div>
 
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('领取个数')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="packNum"
+                                                                 style="color: #009688"></p></div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('领取金额')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="totalMoney"
+                                                                 style="color: #009688"></p></div>
+        </div>
+    </div>
+
 
 </div>
 <div class="layui-card-header layuiadmin-card-header-auto">
@@ -133,9 +148,9 @@
                         $.ajax({
                             type: 'POST',
                             data: {
-                                'roleid': 0,
-                                'start': $.trim($('#LAY-component-form-group-date1').val()),
-                                'end': $.trim($('#LAY-component-form-group-date2').val())
+                                // 'roleid': 0,
+                                // 'start': $.trim($('#LAY-component-form-group-date1').val()),
+                                // 'end': $.trim($('#LAY-component-form-group-date2').val())
                             },
                             async: true,
                             url: "{:url('RedEnvelopeRain/redPackSumData')}",
@@ -143,6 +158,8 @@
 
                                 $('#residueMoney').html(data['other']['residueMoney']);
                                 $('#residueRedPack').html(data['other']['residueRedPack']);
+                                $('#packNum').html(data['other']['packNum']);
+                                $('#totalMoney').html(data['other']['totalMoney']);
 
                             },
                             error: function (XMLHttpRequest, textStatus, e) {
@@ -165,24 +182,22 @@
                         end: $.trim($('#LAY-component-form-group-date2').val()),
                     },
                     done: function (res, curr, count) {
-                        console.log(res)
-                        console.log(curr)
-                        console.log(count)
                         tzTbale()
                         $.ajax({
                             type: 'POST',
                             data: {
-                                'roleid': $.trim($('#RoleID').val()),
-                                'start': $.trim($('#LAY-component-form-group-date1').val()),
+                                'activityId':$.trim($('#activityId').val()),
+                                'roleId': $.trim($('#roleId').val()),
+                                'start': $.trim($('#LAY-component-form-group-date').val()),
                                 'end': $.trim($('#LAY-component-form-group-date2').val())
                             },
                             async: true,
                             url: "{:url('RedEnvelopeRain/redPackSumData')}",
                             success: function (data) {
-                                var res = data.data
-                                $('#residueMoney').html(res['residueMoney']);
-                                $('#residueRedPack').html(res['residueRedPack']);
-
+                                $('#residueMoney').html(data['other']['residueMoney']);
+                                $('#residueRedPack').html(data['other']['residueRedPack']);
+                                $('#packNum').html(data['other']['packNum']);
+                                $('#totalMoney').html(data['other']['totalMoney']);
                             },
                             error: function (XMLHttpRequest, textStatus, e) {
 

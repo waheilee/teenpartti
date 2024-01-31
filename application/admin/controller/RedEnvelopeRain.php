@@ -358,6 +358,10 @@ class RedEnvelopeRain extends Main
 
     public function redPackSumData()
     {
+        $Id = input('activityId', '');
+        $roleId = input('roleId', '');
+        $start = input('start', '');
+        $end = input('end', '');
         $masterDB = new MasterDB();
         $newActivityKey = $masterDB->getTableObject('T_GlobalCache')
             ->whereIn('GlobalKey',[5,6,9])
@@ -389,11 +393,33 @@ class RedEnvelopeRain extends Main
             $result['other'] = $data;
             return  $this->apiJson($result);
         }
+        $where = '1=1';
+        if (!empty($Id)) {
+            $where .= ' and ActivityId=' . "'$Id'";
+        }
+        if (!empty($roleId)) {
+            $where .= ' and RoleId=' . $roleId;
+        }
+
+        if (!empty($start) && !empty($end)) {
+            $startDate = strtotime($start . '00:00:00');
+            $endDate = strtotime($end . '23:59:59');
+            $where .= ' and AddTime>=' . "'$startDate'" . ' and AddTime<=' . "'$endDate'";
+
+        }
+        $changeLogDB = new DataChangelogsDB();
+        $count = $changeLogDB->getTableObject('T_RedPackHistory')
+            ->where($where)
+            ->field('count(*) as packNum,SUM(Money) as totalMoney')
+            ->find();
+
         $residueRedPack = $activity['RedPackNum'] - $residueRedPackNum .'/'. $activity['RedPackNum'];
         $residueMoney = bcsub($activity['RedPackTotalMoney'] , $residuePrice,2) / bl .'/'. $activity['RedPackTotalMoney'] / bl;
         $data = [
             'residueRedPack' =>$residueRedPack,
-            'residueMoney' => $residueMoney
+            'residueMoney' => $residueMoney,
+            'packNum' => $count['packNum'],
+            'totalMoney' => FormatMoney($count['totalMoney'])
         ];
         $result['other'] = $data;
         return  $this->apiJson($result);
