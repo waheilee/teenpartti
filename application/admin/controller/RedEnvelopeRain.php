@@ -3,6 +3,7 @@
 namespace app\admin\controller;
 
 use app\model\MasterDB;
+use Ramsey\Uuid\DeprecatedUuidMethodsTrait;
 
 class RedEnvelopeRain extends Main
 {
@@ -24,6 +25,7 @@ class RedEnvelopeRain extends Main
             $list['DailyEndHour'] = $list['DailyEndHour'].':00:00';
             $list['BeginDay'] = date('Y-m-d',$list['BeginDay']);
             $list['EndDay'] = date('Y-m-d',$list['EndDay']);
+            $list['RedPackTotalMoney'] = FormatMoney($list['RedPackTotalMoney']);
         }
         return $this->apiReturn(0, $lists, '', $count);
     }
@@ -42,6 +44,7 @@ class RedEnvelopeRain extends Main
             ->find();
         $configInfo['BeginDay'] = date('Y-m-d',$configInfo['BeginDay']);
         $configInfo['EndDay'] = date('Y-m-d',$configInfo['EndDay']);
+        $configInfo['RedPackTotalMoney'] = FormatMoney($configInfo['RedPackTotalMoney']);
 
         $this->assign('info',$configInfo);
         return $this->fetch();
@@ -62,6 +65,7 @@ class RedEnvelopeRain extends Main
         $checkType = input('CheckType');//可领红包的玩家类型
         $onOff = input('OnOff');//红包状态
         $setVip = $this->request->param();
+
         $masterDB = new MasterDB();
         try {
             $masterDB->startTrans();
@@ -77,27 +81,32 @@ class RedEnvelopeRain extends Main
                 'OnOff' => $onOff
             ];
 
-            $setVipArray = $setVip['setVIP'];
-            if (!$setVipArray){
-                return $this->failJSON('VIP配置不能为空');
-            }
-            $callbackId = $masterDB->getTableObject('T_RedPackCfg')
+
+            $masterDB->getTableObject('T_RedPackCfg')
                 ->where('ID',$id)
                 ->update($data);
-            $masterDB->getTableObject('T_RedBackVipGetCfg')
-                ->where('ActivityId',$id)
-                ->delete();
-            $setVipData = [];
-            foreach ($setVipArray as $k){
-                $item = [];
-                $item['ActivityId'] = $id;
-                $item['RedPackCellMoneyMin'] = $k['RedPackCellMoneyMin'] * bl;
-                $item['RedPackCellMoneyMax'] = $k['RedPackCellMoneyMax'] * bl;
-                $item['VipLvMin'] = $k['VipLvMin'];
-                $item['VipLvMax'] = $k['VipLvMax'];
-                $setVipData[]=$item;
+
+
+            if (!isset($setVip['setVIP']) || !$setVip['setVIP']){
+                return '';
+            }else{
+                $masterDB->getTableObject('T_RedBackVipGetCfg')
+                    ->where('ActivityId',$id)
+                    ->delete();
+                $setVipArray = $setVip['setVIP'];
+                $setVipData = [];
+                foreach ($setVipArray as $k){
+                    $item = [];
+                    $item['ActivityId'] = $id;
+                    $item['RedPackCellMoneyMin'] = $k['RedPackCellMoneyMin'] * bl;
+                    $item['RedPackCellMoneyMax'] = $k['RedPackCellMoneyMax'] * bl;
+                    $item['VipLvMin'] = $k['VipLvMin'];
+                    $item['VipLvMax'] = $k['VipLvMax'];
+                    $setVipData[]=$item;
+                }
+                $masterDB->getTableObject('T_RedBackVipGetCfg')->insertAll($setVipData);
             }
-            $masterDB->getTableObject('T_RedBackVipGetCfg')->insertAll($setVipData);
+
             $this->synconfig();
             $masterDB->commit();
         }catch (\Exception $e){
