@@ -1830,17 +1830,32 @@ class GameOCDB extends BaseModel
      * Gm充值管理
      * @return array
      */
-    public function GMSendMoney()
+    public function GMSendMoney($is_merchant=0)
     {
         $this->table = 'T_GMSendMoney';
         $RoleId = input('RoleId', -1);
         $VerifyState = input('VerifyState', -1);
         $operatortype = input('operatortype', -1);
-        $adminType = input('adminType');
+        $OperateId = input('OperateId');
         $Amount = input('Amount');
         $start = input('start');
         $end = input('end', date('Y-m-d'));
-        $where = "";
+        $limit = (int)input('limit', 20);
+
+        $where = "1=1";
+        if (session('merchant_OperatorId') && request()->module() == 'merchant') {
+            $where .= " AND checkUser LIKE 'operator:".session('merchant_OperatorId')."%'";
+
+        } else if (session('business_ProxyChannelId') && request()->module() == 'business') {
+            $where .= " AND checkUser LIKE '%-".session('business_ProxyChannelId')."'";
+        } else {
+            if ($is_merchant == 1) {
+                $where .= " AND checkUser LIKE 'operator:%'";
+            } else {
+                $where .= " AND checkUser NOT LIKE 'operator:%'";
+            }
+
+        }
         if ($RoleId >= 0 && !empty($RoleId)) $where .= " AND RoleId=$RoleId";
         if ($Amount >= 0 && !empty($Amount)) $where .= " AND Money=" . (0 - $Amount);
         if ($VerifyState >= 0) $where .= " AND status=$VerifyState";
@@ -1848,13 +1863,35 @@ class GameOCDB extends BaseModel
         if ($operatortype > 0) {
             $where .= " AND OperateType=" . $operatortype;
         }
-        if ($adminType == 'business') {
-            (string)$businessAccount = session('business_LoginAccount');
-            $where .= " AND checkUser='$businessAccount'";
+        if ($OperateId != '') {
+            $where .= " AND checkUser LIKE 'operator:".$OperateId."%'";
         }
-        $result = $this->GetPage($where, 'ID DESC');
+        $Operators = $this->getTableObject('T_OperatorSubAccount')->where('1=1')->column('*','OperatorId');//OperatorName
+        $business  = $this->getTableObject('T_ProxyChannelConfig')->where('1=1')->column('*','ProxyChannelId');//AccountName
+        // $result = $this->GetPage($where, 'ID DESC');
+        $result = $this->getTableObject('T_GMSendMoney')->alias('a')
+            ->join('[CD_Account].[dbo].[T_Accounts] b','b.AccountID=a.RoleId','left')
+            ->where($where)
+            ->field('a.*,b.ProxyChannelId,b.OperatorId')
+            ->order('ID DESC')
+            ->paginate($limit)
+            ->toArray();
+        foreach ($result['data'] as $key => &$item) {
+            if ($item['OperatorId']>0) {
+                $item['OperatorName'] = $Operators[$item['OperatorId']]['OperatorName'];
+            } else {
+                $item['OperatorName'] = '';
+            }
+            if ($item['ProxyChannelId']>0) {
+                $item['ProxyChannelName'] = $business[$item['ProxyChannelId']]['AccountName'];
+            } else {
+                $item['ProxyChannelName'] = '';
+            }
+        }
+        $result['list'] =  $result['data'];
+        $result['count'] =  $result['total'];
+
         if (empty($where)) $where = "status=1";
-        else $where = "1=1 " . $where;
         $result['other'] = $this->GetRow($where, "COUNT(ID)TotalCount,ABS(SUM(Money))TotalMoney");
         return $result;
     }
