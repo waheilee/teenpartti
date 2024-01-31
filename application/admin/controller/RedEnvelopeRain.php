@@ -2,6 +2,7 @@
 
 namespace app\admin\controller;
 
+use app\model\DataChangelogsDB;
 use app\model\MasterDB;
 use Ramsey\Uuid\DeprecatedUuidMethodsTrait;
 
@@ -21,10 +22,10 @@ class RedEnvelopeRain extends Main
         $lists = $masterDB->getTableObject('T_RedPackCfg')->select();
 
         foreach ($lists as &$list) {
-            $list['DailyBeginHour'] = $list['DailyBeginHour'].':00:00';
-            $list['DailyEndHour'] = $list['DailyEndHour'].':00:00';
-            $list['BeginDay'] = date('Y-m-d',$list['BeginDay']);
-            $list['EndDay'] = date('Y-m-d',$list['EndDay']);
+            $list['DailyBeginHour'] = $list['DailyBeginHour'] . ':00:00';
+            $list['DailyEndHour'] = $list['DailyEndHour'] . ':00:00';
+            $list['BeginDay'] = date('Y-m-d', $list['BeginDay']);
+            $list['EndDay'] = date('Y-m-d', $list['EndDay']);
             $list['RedPackTotalMoney'] = FormatMoney($list['RedPackTotalMoney']);
         }
         return $this->apiReturn(0, $lists, '', $count);
@@ -35,18 +36,18 @@ class RedEnvelopeRain extends Main
     {
 
         $id = input('id');
-        if ($this->request->isAjax()){
+        if ($this->request->isAjax()) {
 
         }
         $masterDB = new MasterDB();
         $configInfo = $masterDB->getTableObject('T_RedPackCfg')
-            ->where('ID',$id)
+            ->where('ID', $id)
             ->find();
-        $configInfo['BeginDay'] = date('Y-m-d',$configInfo['BeginDay']);
-        $configInfo['EndDay'] = date('Y-m-d',$configInfo['EndDay']);
+        $configInfo['BeginDay'] = date('Y-m-d', $configInfo['BeginDay']);
+        $configInfo['EndDay'] = date('Y-m-d', $configInfo['EndDay']);
         $configInfo['RedPackTotalMoney'] = FormatMoney($configInfo['RedPackTotalMoney']);
 
-        $this->assign('info',$configInfo);
+        $this->assign('info', $configInfo);
         return $this->fetch();
     }
 
@@ -83,33 +84,33 @@ class RedEnvelopeRain extends Main
 
 
             $masterDB->getTableObject('T_RedPackCfg')
-                ->where('ID',$id)
+                ->where('ID', $id)
                 ->update($data);
 
 
-            if (!isset($setVip['setVIP']) || !$setVip['setVIP']){
+            if (!isset($setVip['setVIP']) || !$setVip['setVIP']) {
                 return '';
-            }else{
+            } else {
                 $masterDB->getTableObject('T_RedBackVipGetCfg')
-                    ->where('ActivityId',$id)
+                    ->where('ActivityId', $id)
                     ->delete();
                 $setVipArray = $setVip['setVIP'];
                 $setVipData = [];
-                foreach ($setVipArray as $k){
+                foreach ($setVipArray as $k) {
                     $item = [];
                     $item['ActivityId'] = $id;
                     $item['RedPackCellMoneyMin'] = $k['RedPackCellMoneyMin'] * bl;
                     $item['RedPackCellMoneyMax'] = $k['RedPackCellMoneyMax'] * bl;
                     $item['VipLvMin'] = $k['VipLvMin'];
                     $item['VipLvMax'] = $k['VipLvMax'];
-                    $setVipData[]=$item;
+                    $setVipData[] = $item;
                 }
                 $masterDB->getTableObject('T_RedBackVipGetCfg')->insertAll($setVipData);
             }
 
             $this->synconfig();
             $masterDB->commit();
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             $masterDB->rollback();
             save_log('RedEnvelopeRain', '===' . $e->getMessage() . $e->getTraceAsString() . $e->getLine());
         }
@@ -148,27 +149,27 @@ class RedEnvelopeRain extends Main
             ];
 
             $setVipArray = $setVip['setVIP'];
-            if (!$setVipArray){
+            if (!$setVipArray) {
                 return $this->failJSON('VIP配置不能为空');
             }
             $callbackId = $masterDB->getTableObject('T_RedPackCfg')->insertGetId($data);
             $setVipData = [];
-            foreach ($setVipArray as $k){
+            foreach ($setVipArray as $k) {
                 $item = [];
                 $item['ActivityId'] = $callbackId;
                 $item['RedPackCellMoneyMin'] = $k['RedPackCellMoneyMin'] * bl;
                 $item['RedPackCellMoneyMax'] = $k['RedPackCellMoneyMax'] * bl;
                 $item['VipLvMin'] = $k['VipLvMin'];
                 $item['VipLvMax'] = $k['VipLvMax'];
-                $setVipData[]=$item;
+                $setVipData[] = $item;
             }
             $masterDB->getTableObject('T_RedBackVipGetCfg')->insertAll($setVipData);
             $masterDB->getTableObject('T_RedPackCfg')
-                ->where('ID',$callbackId)
-                ->update(['ActivityId'=>$callbackId]);
+                ->where('ID', $callbackId)
+                ->update(['ActivityId' => $callbackId]);
             $this->synconfig();
             $masterDB->commit();
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             $masterDB->rollback();
             save_log('RedEnvelopeRain', '===' . $e->getMessage() . $e->getTraceAsString() . $e->getLine());
         }
@@ -185,7 +186,7 @@ class RedEnvelopeRain extends Main
             $res = $masterDB->getTableObject('T_RedPackCfg')
                 ->where('ID', $id)
                 ->delete();
-            $masterDB->getTableObject('T_RedBackVipGetCfg')->where('ActivityId',$id)->delete();
+            $masterDB->getTableObject('T_RedBackVipGetCfg')->where('ActivityId', $id)->delete();
             if ($res) {
                 return $this->apiReturn(0, '', '删除成功');
 
@@ -301,12 +302,95 @@ class RedEnvelopeRain extends Main
         $id = input('id');
         $masterDB = new MasterDB();
         $vipInfo = $masterDB->getTableObject('T_RedBackVipGetCfg')
-            ->where('ActivityId',$id)
+            ->where('ActivityId', $id)
             ->select();
-        foreach ($vipInfo as &$info){
+        foreach ($vipInfo as &$info) {
             ConVerMoney($info['RedPackCellMoneyMin']);
             ConVerMoney($info['RedPackCellMoneyMax']);
         }
         return $this->successJSON($vipInfo);
+    }
+
+
+    public function redPackLogList()
+    {
+        if ($this->request->isAjax()) {
+            $activityId = input('activityId', '');
+            $roleId = input('roleId', '');
+            $start = input('start', '');
+            $end = input('end', '');
+            $page = input('page');
+            $limit = input('limit');
+            $where = '1=1';
+            if (!empty($activityId)) {
+                $where .= ' and ActivityId=' . "'$activityId'";
+            }
+            if (!empty($roleId)) {
+                $where .= ' and RoleId=' . $roleId;
+            }
+
+            if (!empty($start) && !empty($end)) {
+                $startDate = strtotime($start . '00:00:00');
+                $endDate = strtotime($end . '23:59:59');
+                $where .= ' and AddTime>=' . "'$startDate'" . ' and AddTime<=' . "'$endDate'";
+
+            }
+
+            $changeLogDB = new DataChangelogsDB();
+            $count = $changeLogDB->getTableObject('T_RedPackHistory')
+                ->where($where)
+                ->count();
+            $lists = $changeLogDB->getTableObject('T_RedPackHistory')
+                ->where($where)
+                ->limit($limit)
+                ->page($page)
+                ->select();
+
+            foreach ($lists as &$list) {
+                $list['Money'] = FormatMoney($list['Money']);
+                $list['AddTime'] = date('Y-m-d', $list['AddTime']);
+            }
+            return $this->apiReturn(0, $lists, '', $count);
+        }
+        return $this->fetch();
+    }
+
+
+    public function redPackSumData()
+    {
+        $masterDB = new MasterDB();
+        $newActivityKey = $masterDB->getTableObject('T_GlobalCache')
+            ->whereIn('GlobalKey',[5,6,9])
+            ->select();
+        $activityId = 0;
+        $residueRedPackNum = 0;
+        $residuePrice = 0;
+        foreach ($newActivityKey as $k){
+            if ($k['GlobalKey'] == 5){
+                $residueRedPackNum = $k['GlobalValue'];
+            }
+            if ($k['GlobalKey'] == 6){
+                $residuePrice = $k['GlobalValue'];
+            }
+            if ($k['GlobalKey'] == 9){
+                $activityId = $k['GlobalValue'];
+            }
+        }
+
+        $activity = $masterDB->getTableObject('T_RedPackCfg')
+            ->where('ID',$activityId)
+            ->find();
+
+        if (!$activity){
+            return [];
+        }
+        $residueRedPack = $activity['RedPackNum'] - $residueRedPackNum .'/'. $activity['RedPackNum'];
+        $residueMoney = bcsub($activity['RedPackTotalMoney'] , $residuePrice,2) / bl .'/'. $activity['RedPackTotalMoney'] / bl;
+        $data = [
+            'residueRedPack' =>$residueRedPack,
+            'residueMoney' => $residueMoney
+        ];
+        $result['other'] = $data;
+        return  $this->apiJson($result);
     }
 }

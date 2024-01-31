@@ -1,0 +1,231 @@
+{extend name="common/base" /}
+
+{block name="title"}{/block}
+{block name="css"}
+<style type="text/css">
+    .layui-table-cell {
+        text-align: center;
+        height: auto;
+        white-space: normal;
+    }
+
+</style>
+{/block}
+{block name="content"}
+<div class="layui-row layui-col-space20">
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('已领取红包金额 / 总红包金额')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="residueMoney"
+                                                                 style="color: #009688"></p></div>
+        </div>
+    </div>
+    <div class="layui-col-md2">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('已经领取红包个数 / 总红包个数')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="residueRedPack"
+                                                                 style="color: #009688"></p></div>
+        </div>
+    </div>
+
+
+</div>
+<div class="layui-card-header layuiadmin-card-header-auto">
+    <form class="layui-form" lay-filter="component-form-group">
+        <div class="layui-form-item">
+
+            <div class="layui-inline">
+                <label class="layui-form-label">{:lang('红包雨ID')}</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="activityId" name="activityId" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">{:lang('玩家ID')}</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="roleId" name="roleId" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">日期</label>
+                <div class="layui-input-inline" style="width: 150px;">
+                    <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date" name="start" type="text">
+                </div>
+                <div class="layui-form-mid">
+                    -
+                </div>
+                <div class="layui-input-inline" style="width: 100px;">
+                    <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date2" name="end" type="text">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
+                <button type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>
+            </div>
+        </div>
+
+    </form>
+</div>
+<div class="layui-card">
+    <div class="layui-card-body">
+<!--        <a style="margin-bottom: 10px;" class="layui-btn"-->
+<!--           onclick="x_admin_show('{:lang(\'添加红包雨\')}','addRedPack.html', 700,800)">-->
+<!--            <i class="layui-icon layui-icon-add-circle"></i>-->
+<!--        </a>-->
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script type="text/html" id="msg-bar">
+    <!--  <a class="layui-btn layui-btn-xs" lay-event="edit"><i class="layui-icon layui-icon-edit"></i></a>-->
+<!--    <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete"><i-->
+<!--            class="layui-icon layui-icon-delete"></i></a>-->
+<!--    <a class="layui-btn layui-btn-xs" lay-event="edit">{:lang('编辑')}</a>-->
+
+</script>
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var element = layui.element
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , table = layui.table
+            , $ = layui.$
+            , form = layui.form;
+
+        function getWhere() {
+
+            var title = $('#activity_name').val();
+            return {
+                'title': title
+            };
+        }
+
+        var main = {
+            renderData: function () {
+                var cols = [ //表头
+                    {field: 'ID', title: 'id', width: 50},
+                    {field: 'RoleId', title: "{:lang('玩家ID')}", width: 350},
+                    {field: 'AddTime', title: "{:lang('时间')}", width: 350},
+                    {field: 'ActivityId', title: "{:lang('红包雨ID')}", width: 350},
+                    {field: 'Money', title: "{:lang('领取金额')}", width: 350},
+                    // {fixed: 'right', title: "{:lang('操作')}", align: 'center', minWidth: 100, toolbar: '#msg-bar'}
+
+                ];
+
+                table.render({
+                    elem: '#proxylist'
+                    , url: "{:url('RedEnvelopeRain/redPackLogList')}" //数据接口
+                    , where: getWhere()
+                    , page: true //开启分页
+                    , cols: [cols],
+                    done: function (res) {
+                        tzTbale()
+                        $.ajax({
+                            type: 'POST',
+                            data: {
+                                'roleid': 0,
+                                'start': $.trim($('#LAY-component-form-group-date1').val()),
+                                'end': $.trim($('#LAY-component-form-group-date2').val())
+                            },
+                            async: true,
+                            url: "{:url('RedEnvelopeRain/redPackSumData')}",
+                            success: function (data) {
+
+                                $('#residueMoney').html(data['other']['residueMoney']);
+                                $('#residueRedPack').html(data['other']['residueRedPack']);
+
+                            },
+                            error: function (XMLHttpRequest, textStatus, e) {
+
+                            }
+                        });
+                    }
+                });
+            },
+
+            //搜索
+            search: function () {
+                //执行重载
+                table.reload('proxylist', {
+                    page: {curr: 1},
+                    where: {
+                        activityId: $.trim($('#activityId').val()),
+                        roleId: $.trim($('#roleId').val()),
+                        start: $.trim($('#LAY-component-form-group-date').val()),
+                        end: $.trim($('#LAY-component-form-group-date2').val()),
+                    },
+                    done: function (res, curr, count) {
+                        console.log(res)
+                        console.log(curr)
+                        console.log(count)
+                        tzTbale()
+                        $.ajax({
+                            type: 'POST',
+                            data: {
+                                'roleid': $.trim($('#RoleID').val()),
+                                'start': $.trim($('#LAY-component-form-group-date1').val()),
+                                'end': $.trim($('#LAY-component-form-group-date2').val())
+                            },
+                            async: true,
+                            url: "{:url('RedEnvelopeRain/redPackSumData')}",
+                            success: function (data) {
+                                var res = data.data
+                                $('#residueMoney').html(res['residueMoney']);
+                                $('#residueRedPack').html(res['residueRedPack']);
+
+                            },
+                            error: function (XMLHttpRequest, textStatus, e) {
+
+                            }
+                        });
+                    }
+                });
+            },
+
+
+            //操作事件
+            extraEvent: function () {
+                //编辑&&删除
+            },
+            init: function () {
+                main.renderData();
+                main.extraEvent();
+                laydate.render({
+                    elem: '#LAY-component-form-group-date'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , lang:'{$datelang ?: "cn"}'
+                    , btns: ['clear', 'confirm']
+                    , value: new Date()
+                });
+                laydate.render({
+                    elem: '#LAY-component-form-group-date2'
+                    , format: 'yyyy-MM-dd'
+                    , max: 1
+                    , lang:'{$datelang ?: "cn"}'
+                    , btns: ['clear', 'confirm']
+                    , value: new Date()
+                });
+
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    main.search();
+                });
+            }
+        };
+
+        main.init();
+    });
+
+</script>
+{/block}
