@@ -368,34 +368,36 @@ class RedEnvelopeRain extends Main
         $end = input('end', '');
         $masterDB = new MasterDB();
         $newActivityKey = $masterDB->getTableObject('T_GlobalCache')
-            ->whereIn('GlobalKey',[5,6,9])
+            ->whereIn('GlobalKey', [5, 6, 9])
             ->select();
         $activityId = 0;
         $residueRedPackNum = 0;
         $residuePrice = 0;
-        foreach ($newActivityKey as $k){
-            if ($k['GlobalKey'] == 5){
+        foreach ($newActivityKey as $k) {
+            if ($k['GlobalKey'] == 5) {
                 $residueRedPackNum = $k['GlobalValue'];
             }
-            if ($k['GlobalKey'] == 6){
+            if ($k['GlobalKey'] == 6) {
                 $residuePrice = $k['GlobalValue'];
             }
-            if ($k['GlobalKey'] == 9){
+            if ($k['GlobalKey'] == 9) {
                 $activityId = $k['GlobalValue'];
             }
         }
 
         $activity = $masterDB->getTableObject('T_RedPackCfg')
-            ->where('ID',$activityId)
+            ->where('ID', $activityId)
             ->find();
 
-        if (!$activity){
+        if (!$activity) {
             $data = [
-                'residueRedPack' =>'0/0',
-                'residueMoney' => '0/0'
+                'residueRedPack' => '0/0',
+                'residueMoney' => '0/0',
+                'packNum' => '0',
+                'totalMoney' => '0'
             ];
             $result['other'] = $data;
-            return  $this->apiJson($result);
+            return $this->apiJson($result);
         }
         $where = '1=1';
         if (!empty($Id)) {
@@ -417,15 +419,15 @@ class RedEnvelopeRain extends Main
             ->field('count(*) as packNum,SUM(Money) as totalMoney')
             ->find();
 
-        $residueRedPack = $activity['RedPackNum'] - $residueRedPackNum .'/'. $activity['RedPackNum'];
-        $residueMoney = bcsub($activity['RedPackTotalMoney'] , $residuePrice,2) / bl .'/'. $activity['RedPackTotalMoney'] / bl;
+        $residueRedPack = $activity['RedPackNum'] - $residueRedPackNum . '/' . $activity['RedPackNum'];
+        $residueMoney = bcsub($activity['RedPackTotalMoney'], $residuePrice, 2) / bl . '/' . $activity['RedPackTotalMoney'] / bl;
         $data = [
-            'residueRedPack' =>$residueRedPack,
+            'residueRedPack' => $residueRedPack,
             'residueMoney' => $residueMoney,
             'packNum' => $count['packNum'],
             'totalMoney' => FormatMoney($count['totalMoney'])
         ];
         $result['other'] = $data;
-        return  $this->apiJson($result);
+        return $this->apiJson($result);
     }
 }
