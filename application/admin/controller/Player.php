@@ -638,6 +638,7 @@ class Player extends Main
             ConVerMoney($user['ProxyBonus']);
             ConVerMoney($user['ColorFirstCharge']);
             ConVerMoney($user['ColorHand']);
+            ConVerMoney($user['LockColorMoney']);
 
             //gm上分统计
             $user['addgm'] = $gameOCDB->getTableObject('T_GMSendMoney')->where('RoleId',$roleId)->where('status',1)->where('operatetype',1)->sum('Money')?:0;
