@@ -62,7 +62,14 @@
     </div>
   </div>
 
+  <div class="layui-form-item">
+    <label class="layui-form-label">{:lang('今日已领取玩家能否参与')}：</label>
+    <div class="layui-input-block">
 
+      <input type="radio" name="DailyGetOne" value="1" title="开启" {php} if($info['DailyGetOne']==1){echo 'checked';} {/php}>
+      <input type="radio" name="DailyGetOne" value="0" title="关闭" {php} if($info['DailyGetOne']==0){echo 'checked';} {/php}>
+    </div>
+  </div>
 
 
   <div class="layui-form-item">

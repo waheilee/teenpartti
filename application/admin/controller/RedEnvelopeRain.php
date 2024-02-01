@@ -66,6 +66,7 @@ class RedEnvelopeRain extends Main
         $checkType = input('CheckType');//可领红包的玩家类型
         $onOff = input('OnOff');//红包状态
         $setVip = $this->request->param();
+        $dailyGetOne = input('DailyGetOne');
 
         $masterDB = new MasterDB();
         try {
@@ -79,7 +80,8 @@ class RedEnvelopeRain extends Main
                 'RedPackTotalMoney' => $redPackTotalMoney * bl,
                 'GetMaxCount' => $getMaxCount,
                 'CheckType' => $checkType,
-                'OnOff' => $onOff
+                'OnOff' => $onOff,
+                'DailyGetOne' => $dailyGetOne
             ];
 
 
@@ -132,6 +134,7 @@ class RedEnvelopeRain extends Main
         $getMaxCount = input('GetMaxCount');//玩家同时时段内可领取红包个数
         $checkType = input('CheckType');//可领红包的玩家类型
         $onOff = input('OnOff');//红包状态
+        $dailyGetOne = input('DailyGetOne');
         $setVip = $this->request->param();
         $masterDB = new MasterDB();
         try {
@@ -145,7 +148,8 @@ class RedEnvelopeRain extends Main
                 'RedPackTotalMoney' => $redPackTotalMoney * bl,
                 'GetMaxCount' => $getMaxCount,
                 'CheckType' => $checkType,
-                'OnOff' => $onOff
+                'OnOff' => $onOff,
+                'DailyGetOne' => $dailyGetOne
             ];
 
             $setVipArray = $setVip['setVIP'];
