@@ -64,6 +64,7 @@
                             <option value="5">{:lang('打码需求变化')}</option>
                             <option value="6">{:lang('邮件获得')}</option>
                             <option value="7">{:lang('后台修改')}</option>
+                            <option value="8">{:lang('每日充值')}</option>
                         </select>
                     </div>
                 </div>
@@ -77,6 +78,8 @@
                             <option value="10212">{:lang('手动彩金 冻结部分C')}</option>
                             <option value="90001">{:lang('打码需求变化')}</option>
                             <option value="10217">{:lang('手动彩金最大获得')}</option>
+                            <option value="10216">{:lang('首存彩金最大获得')}</option>
+                            <option value="10214">{:lang('首充彩金增加打码量')}</option>
 
                         </select>
                     </div>
@@ -158,6 +161,8 @@
                                     return '邮件获得';
                                 case 7:
                                     return '后台修改';
+                                case 8:
+                                    return '每日充值';
                             }
                         }},
                     {field: 'MoneyKey', align: 'center', title: "{:lang('彩金类型')}", minWidth: 150,templet: function (d)
@@ -173,6 +178,10 @@
                                     return '打码需求变化';
                                 case 10217:
                                     return '手动彩金最大获得';
+                                case 10216:
+                                    return '首存彩金最大获得';
+                                case 10214:
+                                    return '首充彩金增加打码量';
                             }
                         }
                     },
