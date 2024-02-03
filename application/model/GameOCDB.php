@@ -291,7 +291,7 @@ class GameOCDB extends BaseModel
                 }
 
 
-                if(($v['Water']-$v['WinScore'] + $v['Tax']) < 0 || $v['Water'] < 0){
+                if(($v['Water']-$v['WinScore'] + $v['Tax']) <= 0 || $v['Water'] <= 0){
                     $v['GameRate'] = 0;
                 }else{
                     $v['GameRate'] = ($v['Water']-$v['WinScore'] + $v['Tax'])/$v['Water'] * 100;
