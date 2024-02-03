@@ -96,7 +96,7 @@ class Statistical extends Main
                 //     return $this->apiJson(["code"=>1,"msg"=>"没有权限"]);
                 // }
                 $db = new GameOCDB();
-                $result = $db->getGameRGDlist();
+                $result = $db->getOperatorGameRGDlist();
                 $outAll = input('outall', false);
                 if ((int)input('exec', 0) == 0) {
                     if ($result['count'] == 0) {
