@@ -195,7 +195,7 @@ class GameOCDB extends BaseModel
         $this->table = 'View_Operator_RoomTax';
         $start = input('strartdate', date('Y-m-d'));
         $end = input('enddate', date('Y-m-d'));
-        $orderby = input('orderby', 'SortID');
+        $orderby = input('orderby', 'AddTime');
         $orderType = input('orderytpe', 'asc');
         $kindid = trim(input('kindid')) ? trim(input('kindid')) : 0;
         $roomid = intval(input('roomid')) ? intval(input('roomid')) : 0;
