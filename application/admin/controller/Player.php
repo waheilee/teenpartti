@@ -2,6 +2,7 @@
 
 namespace app\admin\controller;
 
+use app\admin\controller\Export\GameLog2Export;
 use app\admin\controller\traits\getSocketRoom;
 use app\admin\controller\traits\search;
 use app\common\Api;
@@ -461,69 +462,73 @@ class Player extends Main
                 $result['other'] = $sumdata;
                 return $this->apiJson($result, true);
             case 'exec':
+                $export = new GameLog2Export();
+                $export->export();
+
+
                 //权限验证 
-                $auth_ids = $this->getAuthIds();
-                if (!in_array(10008, $auth_ids)) {
-                    return $this->apiJson(["code" => 1, "msg" => "没有权限"]);
-                }
-                $db = new  GameOCDB();
-                $result = $db->GetGameRecord();
-                $outAll = input('outall', false);
-                if ((int)input('exec', 0) == 0) {
-                    if ($result['count'] == 0) {
-                        $result = ["count" => 0, "code" => 1, 'msg' => lang("没有找到任何数据,换个姿势再试试?")];
-                    }
-                    if ($result['count'] >= 5000 && $outAll == false) {
-                        $result = ["code" => 2, 'msg' => lang("数据超过5000行是否全部导出?<br>只能导出一部分数据.</br>请选择筛选条件,让数据少于5000行<br>当前数据一共有") . $result['count'] . lang("行")];
-                    }
-                    unset($result['list']);
-                    return $this->apiJson($result);
-                }
-                //导出表格
-                if ((int)input('exec', 0) == 1 && $outAll = true) {
-                    $header_types = [
-                        lang('玩家ID') => 'integer',
-                        lang('房间名') => 'string',
-                        lang('输赢情况') => "0.00",
-                        lang('免费游戏') => 'string',
-                        lang('下注金额') => "0.00",
-                        lang('输赢金币') => "0.00",
-                        lang('中奖金币') => "0.00",
-                        lang('上局金币') => "0.00",
-                        lang('当前金币') => "0.00",
-                        lang('创建时间') => 'datetime'
-                    ];
-                    $filename = lang('游戏日志') . '-' . date('YmdHis');
-                    $rows =& $result['list'];
-                    $writer = $this->GetExcel($filename, $header_types, $rows, true);
-                    foreach ($rows as $index => &$row) {
-                        $gamestate = '';
-                        switch ($row['ChangeType']) {
-                            case 0:
-                                $gamestate = lang('赢');
-                                break;
-                            case 1:
-                                $gamestate = lang('输');
-                                break;
-                            case 2:
-                                $gamestate = lang('和');
-                                break;
-                            case 3:
-                                $gamestate = lang('逃');
-                                break;
-                        }
-                        $item = [
-                            $row['RoleID'], $row['RoomName'], $gamestate, $row['FreeGame'],
-                            $row['GameRoundRunning'], $row['Money'], $row['AwardMoney'],
-                            $row['PreMoney'], $row['LastMoney'], $row['AddTime']
-                        ];
-                        $writer->writeSheetRow('sheet1', $item, ['height' => 16, 'halign' => 'center',]);
-                        unset($rows[$index]);
-                    }
-                    unset($row, $item);
-                    $writer->writeToStdOut();
-                    exit();
-                }
+//                $auth_ids = $this->getAuthIds();
+//                if (!in_array(10008, $auth_ids)) {
+//                    return $this->apiJson(["code" => 1, "msg" => "没有权限"]);
+//                }
+//                $db = new  GameOCDB();
+//                $result = $db->GetGameRecord();
+//                $outAll = input('outall', false);
+//                if ((int)input('exec', 0) == 0) {
+//                    if ($result['count'] == 0) {
+//                        $result = ["count" => 0, "code" => 1, 'msg' => lang("没有找到任何数据,换个姿势再试试?")];
+//                    }
+//                    if ($result['count'] >= 5000 && $outAll == false) {
+//                        $result = ["code" => 2, 'msg' => lang("数据超过5000行是否全部导出?<br>只能导出一部分数据.</br>请选择筛选条件,让数据少于5000行<br>当前数据一共有") . $result['count'] . lang("行")];
+//                    }
+//                    unset($result['list']);
+//                    return $this->apiJson($result);
+//                }
+//                //导出表格
+//                if ((int)input('exec', 0) == 1 && $outAll = true) {
+//                    $header_types = [
+//                        lang('玩家ID') => 'integer',
+//                        lang('房间名') => 'string',
+//                        lang('输赢情况') => "0.00",
+//                        lang('免费游戏') => 'string',
+//                        lang('下注金额') => "0.00",
+//                        lang('输赢金币') => "0.00",
+//                        lang('中奖金币') => "0.00",
+//                        lang('上局金币') => "0.00",
+//                        lang('当前金币') => "0.00",
+//                        lang('创建时间') => 'datetime'
+//                    ];
+//                    $filename = lang('游戏日志') . '-' . date('YmdHis');
+//                    $rows =& $result['list'];
+//                    $writer = $this->GetExcel($filename, $header_types, $rows, true);
+//                    foreach ($rows as $index => &$row) {
+//                        $gamestate = '';
+//                        switch ($row['ChangeType']) {
+//                            case 0:
+//                                $gamestate = lang('赢');
+//                                break;
+//                            case 1:
+//                                $gamestate = lang('输');
+//                                break;
+//                            case 2:
+//                                $gamestate = lang('和');
+//                                break;
+//                            case 3:
+//                                $gamestate = lang('逃');
+//                                break;
+//                        }
+//                        $item = [
+//                            $row['RoleID'], $row['RoomName'], $gamestate, $row['FreeGame'],
+//                            $row['GameRoundRunning'], $row['Money'], $row['AwardMoney'],
+//                            $row['PreMoney'], $row['LastMoney'], $row['AddTime']
+//                        ];
+//                        $writer->writeSheetRow('sheet1', $item, ['height' => 16, 'halign' => 'center',]);
+//                        unset($rows[$index]);
+//                    }
+//                    unset($row, $item);
+//                    $writer->writeToStdOut();
+//                    exit();
+//                }
         }
         $selectData = $this->getRoomList();
         $this->assign('selectData', $selectData);
