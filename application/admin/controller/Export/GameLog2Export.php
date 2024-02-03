@@ -27,7 +27,7 @@ class GameLog2Export extends Main
         $rows = $this->getExcelData($datesArray['list']);
 
         $writer->writeSheet($rows);
-        $filename = lang('代理明细') . '-' . date('YmdHis');
+        $filename = lang('游戏日志') . '-' . date('YmdHis');
 
         header('Content-disposition: attachment; filename="' . XLSXWriter::sanitize_filename("$filename.xlsx") . '"');
         header("Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
