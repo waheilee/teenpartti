@@ -264,6 +264,33 @@ class Main extends Controller
                 ['RoomID'=>37000,'RoomName'=>'EvoLive-(37000)'],
                 ['RoomID'=>38000,'RoomName'=>'PP-(38000)']
             ];
+            if (config('has_jili') == 1) {
+                $apiroom[] = ['RoomID' => 39000, 'RoomName' => 'JILI-(39000)'];
+            }
+
+            if (config('has_spr') == 1) {
+                $apiroom[] = ['RoomID' => 39400, 'RoomName' => 'JDB-(39400)'];
+            }
+            if (config('has_haba') == 1) {
+                $apiroom[] = ['RoomID' => 40000, 'RoomName' => 'HaBa-(40000)'];
+            }
+            if (config('has_hacksaw') == 1) {
+                $apiroom[] = ['RoomID' => 41000, 'RoomName' => 'HackSaw-(41000)'];
+            }
+
+            if (config('has_yesbingo') == 1) {
+                $apiroom[] = ['RoomID' => 42000, 'RoomName' => 'YESBINGO-(42000)'];
+            }
+
+            if (config('has_fcgame') == 1) {
+                $apiroom[] = ['RoomID' => 44000, 'RoomName' => 'FCGame-(44000)'];
+            }
+
+            if (config('has_tadagame') == 1) {
+                $apiroom[] = ['RoomID' => 45000, 'RoomName' => 'TaDa-(45000)'];
+            }
+            $apiroom[] = ['RoomID' => 46000, 'RoomName' => 'PPLive-(46000)'];
+            $apiroom[] = ['RoomID' => 47000, 'RoomName' => 'FakePgGame-(47000)'];
             $rsult=array_merge($rsult,$apiroom);
             Cache::set($key, $rsult, 86400);
             return $rsult;
