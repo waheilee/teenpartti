@@ -389,16 +389,6 @@ class RedEnvelopeRain extends Main
             ->where('ID', $activityId)
             ->find();
 
-        if (!$activity) {
-            $data = [
-                'residueRedPack' => '0/0',
-                'residueMoney' => '0/0',
-                'packNum' => '0',
-                'totalMoney' => '0'
-            ];
-            $result['other'] = $data;
-            return $this->apiJson($result);
-        }
         $where = '1=1';
         if (!empty($Id)) {
             $where .= ' and ActivityId=' . "'$Id'";
@@ -419,12 +409,15 @@ class RedEnvelopeRain extends Main
             ->field('count(*) as packNum,SUM(Money) as totalMoney')
             ->find();
 
-        $residueRedPack = $activity['RedPackNum'] - $residueRedPackNum . '/' . $activity['RedPackNum'];
-        $residueMoney = bcsub($activity['RedPackTotalMoney'], $residuePrice, 2) / bl . '/' . $activity['RedPackTotalMoney'] / bl;
+        if (!empty($activity)){
+            $residueRedPack = $activity['RedPackNum'] - $residueRedPackNum . '/' . $activity['RedPackNum'];
+            $residueMoney = bcsub($activity['RedPackTotalMoney'], $residuePrice, 2) / bl . '/' . $activity['RedPackTotalMoney'] / bl;
+        }
+
         $data = [
-            'residueRedPack' => $residueRedPack,
-            'residueMoney' => $residueMoney,
-            'packNum' => $count['packNum'],
+            'residueRedPack' => $residueRedPack ?? 0,
+            'residueMoney' => $residueMoney ?? 0,
+            'packNum' => $count['packNum'] ?? 0,
             'totalMoney' => FormatMoney($count['totalMoney'])
         ];
         $result['other'] = $data;
