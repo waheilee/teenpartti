@@ -481,43 +481,97 @@
 
 		download();
 
-		function download() {
-			var params = Object.keys(where).map(function (key) {
-				return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
-			}).join("&");
-			url = url + "?" + params;
-			$.ajax({
-				type: 'POST',
-				dataType: 'json',
-				async: true,
-				url: url, // 生成文件，保存在服务器
-				success: function (data) {
-					var result = data;
-					// console.info(data);
-					switch (result["code"]) {
-						case 0:
-							parent.parent.open(url + "&exec=1&outall=true");
-							break;
-						case 1:
-							layer.msg(result["message"]);
-							break;
-						case 2:
-							layer.confirm(result['message'], {
-								btn: ["{:lang('是')}", "{:lang('否')}"] //按钮
-							}, function () {
-								parent.parent.open(url + "&exec=1&outall=true");
-								layer.msg('', {icon: 6, time: 1000}, function () {
-									window.location.reload();
-								});
-							});
-					}
-				},
-				error: function (XMLHttpRequest, textStatus, e) {
-					console.log("oilDetection.js  method exportOilDetection" + e);
-				}
-			});
-		}
+        function download() {
+            var params = Object.keys(where).map(function (key) {
+                return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+            }).join("&");
+            url = url + "?" + params;
+            parent.parent.open(url + "&exec=1&outall=true");
+            // $.ajax({
+            //     type: 'POST',
+            //     dataType: 'json',
+            //     async: true,
+            //     url: url, // 生成文件，保存在服务器
+            //     success: function (data) {
+            //         var result = data;
+            //         console.info(data);
+            //         switch (result["code"]) {
+            //             case 0:
+            //                 parent.parent.open(url + "&exec=1&outall=true");
+            //                 break;
+            //             case 1:
+            //                 layer.msg(result["message"]);
+            //                 break;
+            //             case 2:
+            //                 layer.confirm(result['message'], {
+            //                     btn: ["{:lang('是')}", "{:lang('否')}"] //按钮
+            //                 }, function () {
+            //                     parent.parent.open(url + "&exec=1&outall=true");
+            //                     layer.msg('', {icon: 6, time: 1000}, function () {
+            //                         window.location.reload();
+            //                     });
+            //                 });
+            //         }
+            //     },
+            //     error: function (XMLHttpRequest, textStatus, e) {
+            //         console.log("oilDetection.js  method exportOilDetection" + e);
+            //         window.location.reload();
+            //     }
+            // });
+        }
 	});
+
+    // $('#output').click(function () {
+    //     where = {
+    //         roleid: $.trim($('#RoleID').val()),
+    //         start: $.trim($('#LAY-component-form-group-date1').val()),
+    //         end: $.trim($('#LAY-component-form-group-date2').val()),
+    //         limit: 10000000,
+    //         output: 'exec',
+    //         Action:'exec'
+    //     }
+    //
+    //     download();
+    //
+    //     function download() {
+    //         var params = Object.keys(where).map(function (key) {
+    //             return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+    //         }).join("&");
+    //         url = url + "?" + params;
+    //         parent.parent.open(url + "&exec=1&outall=true");
+    //         // $.ajax({
+    //         //     type: 'POST',
+    //         //     dataType: 'json',
+    //         //     async: true,
+    //         //     url: url, // 生成文件，保存在服务器
+    //         //     success: function (data) {
+    //         //         var result = data;
+    //         //         console.info(data);
+    //         //         switch (result["code"]) {
+    //         //             case 0:
+    //         //                 parent.parent.open(url + "&exec=1&outall=true");
+    //         //                 break;
+    //         //             case 1:
+    //         //                 layer.msg(result["message"]);
+    //         //                 break;
+    //         //             case 2:
+    //         //                 layer.confirm(result['message'], {
+    //         //                     btn: ["{:lang('是')}", "{:lang('否')}"] //按钮
+    //         //                 }, function () {
+    //         //                     parent.parent.open(url + "&exec=1&outall=true");
+    //         //                     layer.msg('', {icon: 6, time: 1000}, function () {
+    //         //                         window.location.reload();
+    //         //                     });
+    //         //                 });
+    //         //         }
+    //         //     },
+    //         //     error: function (XMLHttpRequest, textStatus, e) {
+    //         //         console.log("oilDetection.js  method exportOilDetection" + e);
+    //         //         window.location.reload();
+    //         //     }
+    //         // });
+    //     }
+    // });
 
 </script>
 {/block}
