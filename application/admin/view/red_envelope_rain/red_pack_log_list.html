@@ -64,18 +64,19 @@
             <div class="layui-inline">
                 <label class="layui-form-label">日期</label>
                 <div class="layui-input-inline" style="width: 150px;">
-                    <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date" name="start" type="text">
+                    <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date" name="start" type="text" >
                 </div>
                 <div class="layui-form-mid">
                     -
                 </div>
-                <div class="layui-input-inline" style="width: 100px;">
-                    <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date2" name="end" type="text">
+                <div class="layui-input-inline" style="width: 150px;">
+                    <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date2" name="end" type="text" >
                 </div>
             </div>
             <div class="layui-inline">
                 <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
                 <button type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>
+                <a class="layui-btn" id="output">{:lang('导出记录')}</a>
             </div>
         </div>
 
@@ -128,11 +129,11 @@
         var main = {
             renderData: function () {
                 var cols = [ //表头
-                    {field: 'ID', title: 'id', width: 50},
+                    {field: 'ID', title: 'id', width: 100},
                     {field: 'RoleId', title: "{:lang('玩家ID')}", width: 350},
                     {field: 'AddTime', title: "{:lang('时间')}", width: 350},
                     {field: 'ActivityId', title: "{:lang('红包雨ID')}", width: 350},
-                    {field: 'Money', title: "{:lang('领取金额')}", width: 350},
+                    {field: 'Money', title: "{:lang('领取金额')}", width: 350,sort:true},
                     // {fixed: 'right', title: "{:lang('操作')}", align: 'center', minWidth: 100, toolbar: '#msg-bar'}
 
                 ];
@@ -143,6 +144,7 @@
                     , where: getWhere()
                     , page: true //开启分页
                     , cols: [cols],
+                    sort: true,
                     done: function (res) {
                         tzTbale()
                         $.ajax({
@@ -210,28 +212,51 @@
 
             //操作事件
             extraEvent: function () {
+                //排序
+                table.on('sort(proxylist)', function (obj) {
+                    //执行重载
+                    table.reload('proxylist', {
+                        initSort: obj,
+                        page: {curr: 1},
+                        where: {
+                            activityId: $.trim($('#activityId').val()),
+                            roleId: $.trim($('#roleId').val()),
+                            // start: $.trim($('#LAY-component-form-group-date').val()),
+                            // end: $.trim($('#LAY-component-form-group-date2').val()),
+                            orderType: obj.type,
+                            orderBy: obj.field,
+                        },
+                        done: function (res, curr, count) {
+                            tzTbale()
+                            $.ajax({
+                                type: 'POST',
+                                data: {
+                                    'activityId':$.trim($('#activityId').val()),
+                                    'roleId': $.trim($('#roleId').val()),
+                                    // 'start': $.trim($('#LAY-component-form-group-date').val()),
+                                    // 'end': $.trim($('#LAY-component-form-group-date2').val())
+                                },
+                                async: true,
+                                url: "{:url('RedEnvelopeRain/redPackSumData')}",
+                                success: function (data) {
+                                    $('#residueMoney').html(data['other']['residueMoney']);
+                                    $('#residueRedPack').html(data['other']['residueRedPack']);
+                                    $('#packNum').html(data['other']['packNum']);
+                                    $('#totalMoney').html(data['other']['totalMoney']);
+                                },
+                                error: function (XMLHttpRequest, textStatus, e) {
+
+                                }
+                            });
+                        }
+                    });
+
+                });
                 //编辑&&删除
             },
             init: function () {
                 main.renderData();
                 main.extraEvent();
-                laydate.render({
-                    elem: '#LAY-component-form-group-date'
-                    , format: 'yyyy-MM-dd'
-                    , max: 1
-                    , lang:'{$datelang ?: "cn"}'
-                    , btns: ['clear', 'confirm']
-                    , value: new Date()
-                });
-                laydate.render({
-                    elem: '#LAY-component-form-group-date2'
-                    , format: 'yyyy-MM-dd'
-                    , max: 1
-                    , lang:'{$datelang ?: "cn"}'
-                    , btns: ['clear', 'confirm']
-                    , value: new Date()
-                });
-
                 $('#search').on('click', function (e) {
                     e.preventDefault();
                     main.search();
@@ -240,7 +265,42 @@
         };
 
         main.init();
+        laydate.render({
+            elem: '#LAY-component-form-group-date'
+            , format: 'yyyy-MM-dd'
+            , max: 1
+            , lang:'{$datelang ?: "cn"}'
+            , btns: ['clear', 'confirm']
+            , value: ''
+        });
+        laydate.render({
+            elem: '#LAY-component-form-group-date2'
+            , format: 'yyyy-MM-dd'
+            , max: 1
+            , lang:'{$datelang ?: "cn"}'
+            , btns: ['clear', 'confirm']
+            , value: ''
+        });
     });
+    $('#output').click(function () {
+        where = {
+            activityId: $.trim($('#activityId').val()),
+            roleId: $.trim($('#roleId').val()),
+            start: $.trim($('#LAY-component-form-group-date').val()),
+            end: $.trim($('#LAY-component-form-group-date2').val()),
+            limit: 10000000,
 
+        }
+
+        download();
+
+        function download() {
+            var params = Object.keys(where).map(function (key) {
+                return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+            }).join("&");
+            url = "{:url('RedEnvelopeRain/redPackExport')}"+ "?" + params;
+            parent.parent.open(url + "&exec=1&outall=true");
+        }
+    });
 </script>
 {/block}

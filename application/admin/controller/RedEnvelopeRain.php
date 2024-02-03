@@ -2,6 +2,7 @@
 
 namespace app\admin\controller;
 
+use app\admin\controller\Export\RedPackLogExport;
 use app\model\DataChangelogsDB;
 use app\model\MasterDB;
 use Ramsey\Uuid\DeprecatedUuidMethodsTrait;
@@ -325,6 +326,8 @@ class RedEnvelopeRain extends Main
             $end = input('end', '');
             $page = input('page');
             $limit = input('limit');
+            $orderType = input('orderType');
+            $orderBy = input('orderBy');
             $where = '1=1';
             if (!empty($activityId)) {
                 $where .= ' and ActivityId=' . "'$activityId'";
@@ -346,10 +349,10 @@ class RedEnvelopeRain extends Main
                 ->count();
             $lists = $changeLogDB->getTableObject('T_RedPackHistory')
                 ->where($where)
+                ->order($orderBy,$orderType)
                 ->limit($limit)
                 ->page($page)
                 ->select();
-
             foreach ($lists as &$list) {
                 $list['Money'] = FormatMoney($list['Money']);
                 $list['AddTime'] = date('Y-m-d', $list['AddTime']);
@@ -422,5 +425,12 @@ class RedEnvelopeRain extends Main
         ];
         $result['other'] = $data;
         return $this->apiJson($result);
+    }
+
+
+    public function redPackExport()
+    {
+        $export = new RedPackLogExport();
+        $export->export();
     }
 }
