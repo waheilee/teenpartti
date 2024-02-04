@@ -137,9 +137,6 @@ class GameOCDB extends BaseModel
                 if ($v['TotalNum'] == null) $v['TotalNum'] = 1;
                 ConVerMoney($v['Water']);
                 ConVerMoney($v['RoundBets']);
-                if (config('pgtax') != 1) {
-                    $v['WinScore'] = bcadd($v['WinScore'], $v['Tax'], 2);
-                }
                 ConVerMoney($v['WinScore']);
                 ConVerMoney($v['Tax']);
                 if ($v['TotalNum'] > 0) {
@@ -286,9 +283,14 @@ class GameOCDB extends BaseModel
                         case 44000:
                             $v['RoomName'] = 'FCGame';
                             break;
-
                         case 45000:
-                            $v['RoomName'] = 'TadaGame';
+                            $v['RoomName'] = 'TADA';
+                            break;
+                        case 46000:
+                            $v['RoomName'] = 'PPlive';
+                            break;
+                        case 47000:
+                            $v['RoomName'] = 'FakePgGame';
                             break;
                     }
                 }
@@ -309,7 +311,9 @@ class GameOCDB extends BaseModel
                 $v['WinScore'] = $v['WinScore'] - $v['Tax'];
                 if ($v['TotalNum'] == null) $v['TotalNum'] = 1;
                 ConVerMoney($v['Water']);
-                if (config('pgtax') != 1) {
+                $db=new MasterDB();
+                $info = $db->getTableObject('T_OperatorLink(nolock)')->field('*')->where(' OperatorId='.$v['OperatorId'])->find();
+                if (isset($info['CountApiStatus']) && $info['CountApiStatus'] != 1){
                     $v['WinScore'] = bcadd($v['WinScore'], $v['Tax'], 2);
                 }
                 ConVerMoney($v['WinScore']);
