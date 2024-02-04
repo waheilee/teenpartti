@@ -219,10 +219,16 @@
                 });
             }
             if (obj.event === 'apiCostSwitch') {
+                if (data.CountApiStatus == 1){
+                    var apiStatus = '开启'
+                }else{
+                    var apiStatus = '关闭'
+                }
                 layer.open({
                     area: ['50px', '150px'],
-                    title:'{:lang("APIf费用开关")}'
+                    title:'{:lang("API费用开关")}'
                     ,btn: ['{:lang("开启")}', '{:lang("关闭")}']
+                    ,content: '当前状态：'+ apiStatus
                     ,yes: function(index, layero){
                         //按钮【按钮一】的回调
                         $.ajax({
