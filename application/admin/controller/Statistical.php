@@ -1836,7 +1836,9 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
              ,sum(convert(bigint,yesbingo)) as yesbingo
              ,sum(convert(bigint,pplive)) as pplive
              ,sum(convert(bigint,fakepggame)) as fakepggame';
-
+        if (config('pgtax') == 1){
+            $field.=',sum(convert(bigint,pgtax)) as pgtax';
+        }
         $db = new UserDB();
         $data = $db->getTableObject('View_Operator_Index')->alias('a')
             ->join('[OM_GameOC].[dbo].[T_OperatorSubAccount](NOLOCK) b', 'a.OperatorId=b.OperatorId','left')
@@ -1852,6 +1854,9 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
         {
             $db=new MasterDB();
             $info = $db->getTableObject('T_OperatorLink(nolock)')->field('*')->where(' OperatorId='.$v['OperatorId'])->find();
+            if (isset($info['CountApiStatus']) && $info['CountApiStatus'] == 1){
+                $v['pggamewin'] = bcadd($v['pggamewin'],$v['pgtax']);
+            }
             ConVerMoney($v['totalpayorder']);
             ConVerMoney($v['totalpayout']);
             ConVerMoney($v['totalprofit']);
