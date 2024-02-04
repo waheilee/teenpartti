@@ -36,7 +36,7 @@
                 <li class="" lay-id="5" id="c5">{:lang('充值记录')}</li>
                 <li class="" lay-id="6" id="c6">{:lang('提现记录')}</li>
                 <li class="" lay-id="7" id="c7">{:lang('登陆日志')}</li>
-                {if(!isset(config('isCheckIp')))}
+                {if(config('isCheckIp') == 0)}
                 <li class="" lay-id="8" id="c8">{:lang('同ip查询')}</li>
                 {/if}
                 <li class="" lay-id="8" id="c10">{:lang('玩家备注')}</li>
