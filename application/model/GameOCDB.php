@@ -137,6 +137,9 @@ class GameOCDB extends BaseModel
                 if ($v['TotalNum'] == null) $v['TotalNum'] = 1;
                 ConVerMoney($v['Water']);
                 ConVerMoney($v['RoundBets']);
+                if (!isset($info['CountApiStatus']) || $info['CountApiStatus'] != 1) {
+                    $v['WinScore'] = bcadd($v['WinScore'], $v['Tax'], 2);
+                }
                 ConVerMoney($v['WinScore']);
                 ConVerMoney($v['Tax']);
                 if ($v['TotalNum'] > 0) {
@@ -306,6 +309,9 @@ class GameOCDB extends BaseModel
                 $v['WinScore'] = $v['WinScore'] - $v['Tax'];
                 if ($v['TotalNum'] == null) $v['TotalNum'] = 1;
                 ConVerMoney($v['Water']);
+                if (!isset($info['CountApiStatus']) || $info['CountApiStatus'] != 1) {
+                    $v['WinScore'] = bcadd($v['WinScore'], $v['Tax'], 2);
+                }
                 ConVerMoney($v['WinScore']);
                 ConVerMoney($v['Tax']);
                 $v['WinRate'] = sprintf("%.2f", ($v['WinNum'] / $v['TotalNum']) * 100);
