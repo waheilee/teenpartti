@@ -796,7 +796,9 @@ class UserDB extends BaseModel
             $where = "";
             if ($status != 0) {
                 $checkUser = input('checkUser', session('username'));
-                if ($checkUser != '0') $where .= " and checkUser like '$checkUser'";
+                if (request()->module() != 'business') {
+                    if ($checkUser != '0') $where .= " and checkUser like '$checkUser'";
+                }
             }
             if (!empty($account)) $roleid = $this->GetUserIDByAccount($account);
             if ($roleid > 0) $where .= " and AccountID=$roleid";
