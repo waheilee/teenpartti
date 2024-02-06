@@ -936,7 +936,7 @@ class UserDB extends BaseModel
             }
 
         }
-        $field = "SUM(iMoney-Tax) AS TotalScore , SUM(Tax)AS TotalTax, SUM(iMoney) AS TotalGold";
+        $field = "SUM(iMoney-Tax) AS TotalScore , SUM(Tax)AS TotalTax, SUM(iMoney) AS TotalGold,ProxyChannelId";
         $result['other'] = $this->GetRow("1=1 $where", $field);
         ConVerMoney($result['other']['TotalScore']);
         ConVerMoney($result['other']['TotalTax']);
