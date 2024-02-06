@@ -820,7 +820,7 @@ class UserDB extends BaseModel
 
         }
         // var_dump($where);die();
-        $feild = "iMoney,Tax,OrderNo,AccountID,PayWay,RealName,CardNo,IsDrawback,BankName,status,checkTime,AddTime,UpdateTime,TransactionNo,ChannelId,checkUser,totalPay,TotalDS,EamilMoney,cheatLevel,Province,Descript,City,OperatorId,DrawBackWay";
+        $feild = "iMoney,Tax,OrderNo,AccountID,PayWay,RealName,CardNo,IsDrawback,BankName,status,checkTime,AddTime,UpdateTime,TransactionNo,ChannelId,checkUser,totalPay,TotalDS,EamilMoney,cheatLevel,Province,Descript,City,OperatorId,DrawBackWay,ProxyChannelId";
         if (config('app_name') == 'TATUWIN') {
             $feild .= ',RiskLevel';
         }
