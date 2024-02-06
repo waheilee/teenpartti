@@ -826,7 +826,10 @@ class UserDB extends BaseModel
         }
         if (session('merchant_OperatorId') && request()->module() == 'merchant') {
             $where .= ' AND OperatorId=' . session('merchant_OperatorId');
-        } else {
+        } elseif (session('business_ProxyChannelId') && request()->module() == 'business') {
+            $where .= ' AND ProxyChannelId=' . session('business_ProxyChannelId');
+
+        }{
             if (!empty($operatorId)) {
                 $where .= ' AND OperatorId=' . $operatorId;
             }
