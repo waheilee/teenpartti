@@ -938,7 +938,7 @@ class UserDB extends BaseModel
 
         }
         $field = "SUM(iMoney-Tax) AS TotalScore , SUM(Tax)AS TotalTax, SUM(iMoney) AS TotalGold";
-        $result['other'] = $this->GetRow("1=1 $where2", $field);
+        $result['other'] = $this->GetRow("1=1 $where", $field);
         ConVerMoney($result['other']['TotalScore']);
         ConVerMoney($result['other']['TotalTax']);
         ConVerMoney($result['other']['TotalGold']);
