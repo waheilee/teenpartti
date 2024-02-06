@@ -351,7 +351,11 @@ class Channel extends Main
             $date = date('Y-m');
         }
         $db = new GameOCDB();
-
+        if (session('business_ProxyChannelId') &&
+            request()->module() == 'business' &&
+            empty($proxychannelId)) {
+            $proxychannelId = session('business_ProxyChannelId');
+        }
         $where = ' channelid=' . $proxychannelId;
 
         $firstdate = $date . '-01';
