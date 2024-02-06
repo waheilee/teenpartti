@@ -821,6 +821,7 @@ class UserDB extends BaseModel
             if (!empty($cpf)) $where .= " AND Province like '%{$cpf}%'";
 
         }
+        $where2 = $where;
         // var_dump($where);die();
         $feild = "iMoney,Tax,OrderNo,AccountID,PayWay,RealName,CardNo,IsDrawback,BankName,status,checkTime,AddTime,UpdateTime,TransactionNo,ChannelId,checkUser,totalPay,TotalDS,EamilMoney,cheatLevel,Province,Descript,City,OperatorId,DrawBackWay,ProxyChannelId";
         if (config('app_name') == 'TATUWIN') {
@@ -936,8 +937,8 @@ class UserDB extends BaseModel
             }
 
         }
-        $field = "SUM(iMoney-Tax) AS TotalScore , SUM(Tax)AS TotalTax, SUM(iMoney) AS TotalGold,ProxyChannelId";
-        $result['other'] = $this->GetRow("1=1 $where", $field);
+        $field = "SUM(iMoney-Tax) AS TotalScore , SUM(Tax)AS TotalTax, SUM(iMoney) AS TotalGold";
+        $result['other'] = $this->GetRow("1=1 $where2", $field);
         ConVerMoney($result['other']['TotalScore']);
         ConVerMoney($result['other']['TotalTax']);
         ConVerMoney($result['other']['TotalGold']);
