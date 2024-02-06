@@ -2023,4 +2023,13 @@ class Agent extends Main
         }
     }
 
+    public function blogger(){
+        if (input('action') == 'list') {
+            $data = (new \app\model\UserDB())->getBloggerData();
+            return $this->apiReturn(0, $data['data'], 'success', $data['total']);
+        } else {
+            return $this->fetch();
+        }
+    }
+
 }

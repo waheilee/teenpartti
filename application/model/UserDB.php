@@ -1032,4 +1032,149 @@ class UserDB extends BaseModel
             return $this->getXbusiness($xChannelIds);
         }
     }
+
+    public function getBloggerData(){
+        $limit          = request()->param('limit') ?: 15;
+        $RoleID         = request()->param('RoleID');
+        $OperatorId     = request()->param('OperatorId');
+        $ProxyChannelId = request()->param('ProxyChannelId');
+        $start_date     = request()->param('start_date');
+        $end_date       = request()->param('end_date');
+        $orderby        = request()->param('orderby');
+        $ordertype      = request()->param('ordertype');
+
+        $where = 'A.IsBlogger=1';
+        if (session('merchant_OperatorId') && request()->module() == 'merchant') {
+            $where .= ' and A.OperatorId='.session('merchant_OperatorId');
+        }
+
+        if (session('business_ProxyChannelId') && request()->module() == 'business') {
+            $where .= ' and A.ProxyChannelId='.session('business_ProxyChannelId');
+        }
+
+        if ($RoleID != '') {
+            $where .= ' and A.AccountID=' . $RoleID;
+        }
+        if ($OperatorId != '') {
+            $where .= ' and A.OperatorId=' . $OperatorId;
+        }
+        if ($ProxyChannelId != '') {
+            $where .= ' and A.ProxyChannelId=' . $ProxyChannelId;
+        }
+        if ($start_date != '') {
+            $where .= ' and A.BloggerDate>=\'' . $start_date . '\'';
+        }
+        if ($end_date != '') {
+            $where .= ' and A.BloggerDate<\'' . $end_date . '\'';
+        }
+        if (empty($orderby) || empty($ordertype)) {
+            $orderby = 'BloggerDate';
+            $ordertype = 'desc';
+        }
+        $field = 'A.AccountID,A.BloggerDate,A.WeChat,A.OperatorId,A.ProxyChannelId,ISNULL(B.Lv1PersonCount,0) AS Lv1PersonCount,ISNULL(B.Lv1Deposit,0) AS Lv1Deposit,ISNULL(B.Lv1DepositPlayers,0) AS Lv1DepositPlayers,ISNULL(B.Lv1WithdrawCount,0) AS Lv1WithdrawCount,ISNULL(B.Lv1WithdrawAmount,0) AS Lv1WithdrawAmount,ValidInviteCount,C.emailAmount,D.withdrawAmount,(ISNULL(B.Lv1Deposit,0)*1000-ISNULL(B.Lv1WithdrawAmount,0)-ISNULL(D.withdrawAmount,0)) as profit,ISNULL(E.gmmoney,0) gmmoney';
+
+        $mail_sql = "(select RoleId as AccountID,sum(Amount) emailAmount from [CD_DataChangelogsDB].[dbo].[T_ProxyMsgLog](NOLOCK) where RecordType=8 and Amount>0  and VerifyState=1 group by RoleId) as C";
+
+        $withdraw_sql  ="(SELECT sum(iMoney) withdrawAmount,AccountID FROM [OM_BankDB].[dbo].[UserDrawBack](NOLOCK) WHERE status=100 GROUP BY AccountID) as D";
+
+        $gm_sql  ="(select RoleId,sum(Money) gmmoney from [OM_GameOC].[dbo].[T_GMSendMoney] where operatetype in(1,3) and status=1 group by RoleId) as E";
+
+        $data =  (new \app\model\AccountDB())->getTableObject('T_Accounts(NOLOCK)')
+            ->alias('A')
+            ->join('[CD_UserDB].[dbo].[T_ProxyCollectData](NOLOCK) B', 'B.ProxyId=A.AccountID', 'LEFT')
+            ->join($mail_sql,'C.AccountID=A.AccountID', 'LEFT')
+            ->join($withdraw_sql,'D.AccountID=A.AccountID', 'LEFT')
+            ->join($gm_sql,'E.RoleId=A.AccountID', 'LEFT')
+            ->where($where)
+            ->field($field)
+            ->order("$orderby $ordertype")
+            ->paginate($limit)
+            ->toArray();
+
+        $AccountIDs = array_column($data['data'], 'AccountID');
+        $AccountIDs = implode(',',$AccountIDs);
+
+        $sql1 = "(select RoleId as AccountID,addtime,Amount from T_ProxyMsgLog where id in(select min(id) from T_ProxyMsgLog where RoleId in(".$AccountIDs.") and RecordType=8 and Amount>0 and VerifyState=1 group by RoleId)) as sql1";
+        if ($AccountIDs) {
+            $mail_first_time = (new \app\model\DataChangelogsDB())->getTableObject($sql1)->column('addtime,Amount','AccountID');
+        } else {
+            $mail_first_time = [];
+        }
+
+
+        $sql2 = "(select RoleId as AccountID,addtime,Amount from T_ProxyMsgLog where id in(select max(id) from T_ProxyMsgLog where RoleId in(".$AccountIDs.") and RecordType=8 and Amount>0 and VerifyState=1 group by RoleId)) as sql2";
+        if ($AccountIDs) {
+            $mail_last_time = (new \app\model\DataChangelogsDB())->getTableObject($sql2)->column('addtime,Amount','AccountID');
+        } else {
+            $mail_last_time = [];
+        }
+        $GameOCDB = new \app\model\GameOCDB();
+        foreach ($data['data'] as $key => &$val) {
+            $AccountID = $val['AccountID'];
+            $val['emailFristDate'] = $mail_first_time[$AccountID]['addtime'] ?? '';
+            $val['emailLastDate'] = $mail_last_time[$AccountID]['addtime'] ?? '';
+
+            $val['emailAmount'] = FormatMoney($val['emailAmount']);
+            $val['withdrawAmount'] = FormatMoney($val['withdrawAmount']);
+            $val['Lv1WithdrawAmount'] = FormatMoney($val['Lv1WithdrawAmount']);
+            $val['profit'] = FormatMoney($val['profit']);
+
+            $val['gamesf'] = $GameOCDB->getTableObject('T_GMSendMoney')->where('RoleId',$AccountID)->where('status',1)->where('OperateType','in','1,2')->sum('Money')?:0;
+            $val['commisionsf'] = $GameOCDB->getTableObject('T_GMSendMoney')->where('RoleId',$AccountID)->where('status',1)->where('OperateType','in','3,4')->sum('Money')?:0;
+            $val['totalsf'] = bcadd($val['gamesf'], $val['commisionsf'],2)/1;
+        }
+        return $data;
+    }
+
+    //掉绑记录
+    public function unbindRecord(){
+        $limit          = request()->param('limit') ?: 15;
+        $RoleID         = request()->param('RoleID');
+        $DisableBindParentId  = request()->param('DisableBindParentId');
+        $OperatorId     = request()->param('OperatorId');
+        $ProxyChannelId = request()->param('ProxyChannelId');
+        $start_date     = request()->param('start_date');
+        $end_date       = request()->param('end_date');
+
+        $where = 'a.DisableBindParentId<>0';
+        if (session('merchant_OperatorId') && request()->module() == 'merchant') {
+            $where .= ' and c.OperatorId='.session('merchant_OperatorId');
+        }
+
+        if (session('business_ProxyChannelId') && request()->module() == 'business') {
+            $where .= ' and c.ProxyChannelId='.session('business_ProxyChannelId');
+        }
+
+        if ($RoleID != '') {
+            $where .= ' and a.RoleID=' . $RoleID;
+        }
+        if ($DisableBindParentId != '') {
+            $where .= ' and a.DisableBindParentId=' . $DisableBindParentId;
+        }
+        if ($OperatorId != '') {
+            $where .= ' and c.OperatorId=' . $OperatorId;
+        }
+        if ($ProxyChannelId != '') {
+            $where .= ' and c.ProxyChannelId=' . $ProxyChannelId;
+        }
+        if ($start_date != '') {
+            $where .= ' and c.RegisterTime>=\'' . $start_date . '\'';
+        }
+        if ($end_date != '') {
+            $where .= ' and c.RegisterTime<\'' . $end_date . '\'';
+        }
+        $data = (new \app\model\UserDB())->getTableObject('T_UserProxyInfo')->alias('a')
+            ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) c', 'c.AccountID=a.RoleID', 'left')
+            ->join('[CD_UserDB].[dbo].[T_UserCollectData](NOLOCK) d', 'd.RoleID=a.RoleID', 'left')
+            ->where($where)
+            ->field('a.RoleID as AccountID,a.ParentID,a.DisableBindParentId,c.RegisterTime,c.OperatorId,c.ProxyChannelId,c.RegIP,c.LastLoginTime,d.TotalDeposit,d.TotalRollOut')
+            ->paginate($limit)
+            ->toArray();
+        foreach ($data['data'] as $key => &$val) {
+            $val['RegisterTime'] = date('Y-m-d H:i:s', strtotime($val['RegisterTime']));
+            $val['TotalDeposit'] = bcdiv($val['TotalDeposit'] ?: 0, 1, 3) / 1;
+            $val['TotalRollOut'] = bcdiv($val['TotalRollOut'] ?: 0, 1, 3) / 1;
+        }
+        return $data;
+    }
 }
