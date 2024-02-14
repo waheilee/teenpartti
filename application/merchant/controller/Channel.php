@@ -1769,9 +1769,7 @@ class Channel extends Main
         }
         $db = new GameOCDB();
         $where = ' OperatorId=' . session('merchant_OperatorId');
-        if ($proxychannelId) {
-            $where .= ' and channelid=' . $proxychannelId;
-        }
+        $where .= ' and channelid=' . $proxychannelId;
 
         $firstdate = $date . '-01';
         $where .= " and Date>='$firstdate' ";
@@ -1779,7 +1777,21 @@ class Channel extends Main
         $lastdate = date('Y-m-d', $lasttime);
         $where .= " and Date<='$lastdate'";
 
-        $total = $db->getTableObject('T_ChannelDailyCollect')->where($where)->field('sum(convert(bigint,TotalRecharge)) TotalRecharge,sum(convert(bigint,TotalDrawMoney)) TotalPayOut,sum(convert(bigint,PPBet)) as ppgamewin,sum(convert(bigint,PGBet)) as pggamewin,sum(convert(bigint,EvoLiveBet)) as evolivewin,sum(convert(bigint,Spribe)) as spribegamewin,sum(convert(bigint,habawin)) as habawin,sum(convert(bigint,hacksaw)) as hacksaw,sum(convert(bigint,JiLiBet)) as jiliwin,sum(convert(bigint,yesbingo)) as yesbingo,sum(convert(bigint,fcgame)) as fcgame,sum(convert(bigint,tadagame)) as tadagame')->find();
+        $total = $db->getTableObject('T_ChannelDailyCollect')->where($where)->field('sum(convert(bigint,TotalRecharge)) TotalRecharge,
+        sum(convert(bigint,TotalDrawMoney)) TotalPayOut,
+        sum(convert(bigint,PPBet)) as ppgamewin,
+        sum(convert(bigint,PGBet)) as pggamewin,
+        sum(convert(bigint,EvoLiveBet)) as evolivewin,
+        sum(convert(bigint,Spribe)) as spribegamewin,
+        sum(convert(bigint,habawin)) as habawin,
+        sum(convert(bigint,hacksaw)) as hacksaw,
+        sum(convert(bigint,JiLiBet)) as jiliwin,
+        sum(convert(bigint,yesbingo)) as yesbingo,
+        sum(convert(bigint,fcgame)) as fcgame,
+        sum(convert(bigint,tadagame)) as tadagame,
+        sum(convert(bigint,pplive)) as pplive,
+        sum(convert(bigint,fakepggame)) as fakepggame')->find();
+
 
         $data['total_recharge'] = FormatMoney($total['TotalRecharge'] ?? 0);
         $data['totalpayout'] = FormatMoney($total['TotalPayOut'] ?? 0);
@@ -1799,6 +1811,8 @@ class Channel extends Main
         $APIFee[7] = $APIFee[7] ?? 0; //yesbingo
         $APIFee[8] = $APIFee[8] ?? 0; //jiliwin
         $APIFee[9] = $APIFee[9] ?? 0; //yesbingo
+        $APIFee[10] = $APIFee[10] ?? 0; //pplive
+        $APIFee[11] = $APIFee[11] ?? 0; //fakepggame
 
         $TotalAPICost = 0;
         $totalpp = bcmul($APIFee[0], $total['ppgamewin'], 4);
@@ -1811,6 +1825,10 @@ class Channel extends Main
         $totalyesbingo = bcmul($APIFee[7], $total['yesbingo'], 4);
         $tadagame = bcmul($APIFee[8], $total['tadagame'], 4);
         $fcgame = bcmul($APIFee[9], $total['fcgame'], 4);
+        $pplive = bcmul($APIFee[10], $total['pplive'], 4);
+        $fakepggame = bcmul($APIFee[11], $total['fakepggame'], 4);
+
+
 
         if ($totalpp < 0) {//系统赢算费用
             $TotalAPICost += abs($totalpp);
@@ -1846,6 +1864,15 @@ class Channel extends Main
         if ($fcgame < 0) {//系统赢算费用
             $TotalAPICost += abs($fcgame);
         }
+        if ($pplive < 0) {//系统赢算费用
+            $TotalAPICost += abs($pplive);
+        }
+
+        if ($fakepggame < 0) {//系统赢算费用
+            $TotalAPICost += abs($fakepggame);
+        }
+
+
 
         $data['TotalAPICost'] = FormatMoney($TotalAPICost);
         $data['totalprofit'] = round(($data['total_recharge']) - ($data['totalpayout'] + $data['recharge_fee'] + $data['payout_fee'] + $data['TotalAPICost']), 3);
