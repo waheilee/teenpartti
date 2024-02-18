@@ -285,10 +285,10 @@ class GameOCDB extends BaseModel
                 }
 
 
-                if(($v['Water']-$v['WinScore'] + $v['Tax']) < 0 || $v['Water'] < 0){
+                if (($v['Water'] - $v['WinScore'] + $v['Tax']) < 0 || $v['Water'] < 0) {
                     $v['GameRate'] = 0;
-                }else{
-                    $v['GameRate'] = ($v['Water']-$v['WinScore'] + $v['Tax'])/$v['Water'] * 100;
+                } else {
+                    $v['GameRate'] = ($v['Water'] - $v['WinScore'] + $v['Tax']) / $v['Water'] * 100;
                 }
                 $gamerate = sprintf("%.2f", $v['GameRate']);
                 $v['GameRate'] = sprintf("%.2f", $v['GameRate']) . "%";
@@ -497,7 +497,7 @@ class GameOCDB extends BaseModel
             if ($OperatorId !== '') {
                 $join .= " WHERE A.OperatorId=" . $OperatorId;
             }
-        }elseif (!empty($OperatorId)){
+        } elseif (!empty($OperatorId)) {
             $join .= " WHERE A.OperatorId=" . $OperatorId;
         }
         $business_id = '';
@@ -1007,7 +1007,7 @@ class GameOCDB extends BaseModel
     {
         $startdate = input('start', date('Y-m-d', time()));
         $enddate = input('end', date('Y-m-d', time()));
-        $roleid = input('roleid');
+        $roleId = input('roleid');
         $parentid = input('parentid', 0);
         $where = "";
 
@@ -1025,8 +1025,13 @@ class GameOCDB extends BaseModel
         if (!empty($AccountName)) $join .= " AND AccountName=''$AccountName''";
 //        if (!empty($NickName)) $join .= " AND LoginName=''$NickName''";
 
-        if ($roleid > 0)
-            $where .= ' and proxyid=' . $roleid;
+        if ($roleId != '') {
+            $roleId = str_replace('，', ',', $roleId);
+            $roleId = trim($roleId, ',');
+            $where .= " and proxyid in(" . $roleId . ")";
+        }
+//        if ($roleid > 0)
+//            $where .= ' and proxyid=' . $roleid;
 
         if (session('merchant_OperatorId') && request()->module() == 'merchant') {
             $where .= ' and OperatorId=' . session('merchant_OperatorId');
@@ -1035,20 +1040,20 @@ class GameOCDB extends BaseModel
         switch ($tab) {
             case 'today':
                 $startdate = date('Y-m-d');
-                $enddate   = $startdate;
+                $enddate = $startdate;
                 break;
             case 'yestoday':
-                $startdate = date('Y-m-d',strtotime('-1 days'));
-                $enddate   = $startdate;
+                $startdate = date('Y-m-d', strtotime('-1 days'));
+                $enddate = $startdate;
                 break;
             case 'month':
-                $startdate = date('Y-m').'-01';
-                $enddate   = date('Y-m-d');
+                $startdate = date('Y-m') . '-01';
+                $enddate = date('Y-m-d');
 
                 break;
             case 'lastmonth':
-                $startdate = date('Y-m-01',strtotime('-1 month'));
-                $enddate   = date('Y-m-d',strtotime(date('Y-m').'-01')-1);
+                $startdate = date('Y-m-01', strtotime('-1 month'));
+                $enddate = date('Y-m-d', strtotime(date('Y-m') . '-01') - 1);
 
                 break;
             case 'week':
@@ -1056,9 +1061,9 @@ class GameOCDB extends BaseModel
                 if ($w == 0) {
                     $w = 7;
                 }
-                $w = mktime(0,0,0,date('m'),date('d')-$w+1,date('y'));
-                $startdate = date('Y-m-d',$w);
-                $enddate   = date('Y-m-d');
+                $w = mktime(0, 0, 0, date('m'), date('d') - $w + 1, date('y'));
+                $startdate = date('Y-m-d', $w);
+                $enddate = date('Y-m-d');
 
                 break;
             case 'lastweek':
@@ -1066,17 +1071,17 @@ class GameOCDB extends BaseModel
                 if ($w == 0) {
                     $w = 7;
                 }
-                $w = mktime(0,0,0,date('m'),date('d')-$w+1,date('y'));
-                $startdate = date('Y-m-d',$w-7*86400);
-                $enddate   = date('Y-m-d',strtotime(date('Y-m-d',$w))-1);
+                $w = mktime(0, 0, 0, date('m'), date('d') - $w + 1, date('y'));
+                $startdate = date('Y-m-d', $w - 7 * 86400);
+                $enddate = date('Y-m-d', strtotime(date('Y-m-d', $w)) - 1);
                 break;
             case 'q_day':
-                $startdate = date('Y-m-d',strtotime($startdate)-86400);
-                $enddate   = $startdate;
+                $startdate = date('Y-m-d', strtotime($startdate) - 86400);
+                $enddate = $startdate;
                 break;
             case 'h_day':
-                $enddate = date('Y-m-d',strtotime($enddate)+86400);
-                $startdate   = $enddate;
+                $enddate = date('Y-m-d', strtotime($enddate) + 86400);
+                $startdate = $enddate;
                 break;
             default:
 
@@ -1138,14 +1143,14 @@ class GameOCDB extends BaseModel
                 ConVerMoney($v['Lv3Running']);
                 ConVerMoney($v['Lv2Running']);
                 ConVerMoney($v['Lv1Running']);
-                if(config('AgentWaterDaily') == 1){
+                if (config('AgentWaterDaily') == 1) {
                     $v['Lv1FirstDepositMoney'] = 0;
                     $v['Lv2FirstDepositMoney'] = 0;
                     $v['Lv3FirstDepositMoney'] = 0;
                     $v['Lv1WithdrawalMoney'] = 0;
                     $v['Lv2WithdrawalMoney'] = 0;
                     $v['Lv3WithdrawalMoney'] = 0;
-                    $time = date('Ymd',strtotime($v['AddTime']));
+                    $time = date('Ymd', strtotime($v['AddTime']));
                     //Lv1FirstDepositMoney(一级首充金额)
                     //Lv2FirstDepositMoney(二级首充金额)
                     //Lv3FirstDepositMoney(三级首充金额)
@@ -1153,10 +1158,10 @@ class GameOCDB extends BaseModel
                     //Lv2WithdrawalMoney(二级提现金额)
                     //Lv3WithdrawalMoney(三级提现金额)
                     $agentTemDeposit = (new GameOCDB())->getTableObject('T_UserDailyDeposit')
-                        ->where('DayTime',$time)
-                        ->where('RoleId',$v['ProxyId'])
+                        ->where('DayTime', $time)
+                        ->where('RoleId', $v['ProxyId'])
                         ->find();
-                    if (!empty($agentTemDeposit)){
+                    if (!empty($agentTemDeposit)) {
                         $v['Lv1FirstDepositMoney'] = FormatMoney($agentTemDeposit['Lv1FirstDepositMoney']);
                         $v['Lv2FirstDepositMoney'] = FormatMoney($agentTemDeposit['Lv2FirstDepositMoney']);
                         $v['Lv3FirstDepositMoney'] = FormatMoney($agentTemDeposit['Lv3FirstDepositMoney']);
@@ -1168,7 +1173,7 @@ class GameOCDB extends BaseModel
                 }
 
                 //团队打码
-                $v['dm'] = bcadd($v['Lv1Running'], $v['Lv2Running'],3);
+                $v['dm'] = bcadd($v['Lv1Running'], $v['Lv2Running'], 3);
             }
             unset($v);
         }
@@ -1349,20 +1354,19 @@ class GameOCDB extends BaseModel
                 }
 
 
-
                 $flippedData = '';
                 if (!empty($businessProxyChannelId)) {
                     $channelIds = $this->getTableObject('T_ProxyChannelConfig')
-                        ->where('pid',$businessProxyChannelId)
+                        ->where('pid', $businessProxyChannelId)
                         ->column('ProxyChannelId');
-                    if (!empty($channelIds)){
+                    if (!empty($channelIds)) {
                         $businessProxyChannelIdArray = array_flip($channelIds);
                     }
                     $businessProxyChannelIdArray[] = $businessProxyChannelId;
 //                    $flippedData = Redis::get('USER_OPERATOR_SUBSET_LIST_' . $operatorId);
 //                    if (!$flippedData) {
                     $operatorIdUserList = $userDB->getTableObject('View_Accountinfo')
-                        ->wherein('ProxyChannelId',  $businessProxyChannelIdArray)
+                        ->wherein('ProxyChannelId', $businessProxyChannelIdArray)
                         ->column('AccountID');
                     $flippedData = array_flip($operatorIdUserList);
 //                        Redis::set('USER_OPERATOR_SUBSET_LIST_' . $operatorId, $flippedData, 3600);
@@ -1527,10 +1531,10 @@ class GameOCDB extends BaseModel
                 if (!empty($operatorId)) {
                     $flippedData = Redis::get('USER_OPERATOR_SUBSET_LIST_' . $operatorId);
                     if (!$flippedData) {
-                    $operatorIdUserList = $userDB->getTableObject('View_Accountinfo')
-                        ->where('OperatorId', '=', $operatorId)
-                        ->column('AccountID');
-                    $flippedData = array_flip($operatorIdUserList);
+                        $operatorIdUserList = $userDB->getTableObject('View_Accountinfo')
+                            ->where('OperatorId', '=', $operatorId)
+                            ->column('AccountID');
+                        $flippedData = array_flip($operatorIdUserList);
                         Redis::set('USER_OPERATOR_SUBSET_LIST_' . $operatorId, $flippedData, 3600);
                     }
                 }
@@ -1561,7 +1565,7 @@ class GameOCDB extends BaseModel
                     } elseif ($operatorId) {
                         $item['FirstDepositPerson'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 1);
                         $item['FirstDepositMoney'] = $this->getFirstDeposit('', $operatorId, $flippedData, $begin, $end, 2);
-                    }else{
+                    } else {
                         $item['FirstDepositPerson'] = $this->getFirstDeposit('', '', [], $begin, $end, 1);
                         $item['FirstDepositMoney'] = $this->getFirstDeposit('', '', [], $begin, $end, 2);
                     }

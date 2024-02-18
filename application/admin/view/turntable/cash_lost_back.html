@@ -161,7 +161,7 @@
                     },
                     where: {
                         begin_time: begin_time,
-                        end_time: end_time,
+                        // end_time: end_time,
                         take_status: take_status,
                         roleid: $.trim($('#roleid').val()),
                     },
@@ -172,7 +172,7 @@
                             type: "POST",
                             data: {
                                 'begin_time':begin_time,
-                                'end_time': end_time,
+                                // 'end_time': end_time,
                                 'take_status':take_status
                             },
                             dataType: 'json',
@@ -362,7 +362,7 @@
                     , max: 1
                     , lang: '{$datelang ?: "cn"}'
                     , btns: ['clear', 'confirm']
-                    , type: 'datetime'
+                    , type: 'date'
                     // , value: new Date()
                 });
                 laydate.render({

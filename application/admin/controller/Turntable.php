@@ -774,7 +774,7 @@ class Turntable extends Main
         if ($this->request->isAjax()) {
             $page = input('page');
             $limit = input('limit');
-            $beginTime = input('begin_time');
+            $date = input('begin_time');
 //            $endTime = input('end_time');
             $roleId = input('roleid');
             $takeStatus = input('take_status');
@@ -783,6 +783,28 @@ class Turntable extends Main
             $masterDB = new UserDB();
 
             $count = $masterDB->getTableObject('T_UserCashLoseBack')
+                ->where(function ($q) use ($roleId) {
+                    if ($roleId) {
+                        $q->where('RoleId', $roleId);
+                    }
+                })
+                ->where(function ($q) use ($date) {
+                    if (!empty($date)) {
+                        $beginTime = $date . ' 00:00:00';
+                        $endTime = $date . ' 23:59:59';
+                        $beginTime = strtotime($beginTime);
+                        $endTime = strtotime($endTime);
+                        $q->where('BeginTime', 'between', [$beginTime, $endTime]);
+                    }
+                })
+                ->where(function ($q) use ($takeStatus) {
+                    if ($takeStatus == 1) {
+                        $q->where('GetTime', '>', 0);
+                    }
+                    if ($takeStatus == 2) {
+                        $q->where('GetTime', 0);
+                    }
+                })
                 ->count();
             if (empty($orderBy)) {
                 $orderBy = "WeekLoseMoney asc";
@@ -797,12 +819,13 @@ class Turntable extends Main
                         $q->where('RoleId', $roleId);
                     }
                 })
-                ->where(function ($q) use ($beginTime) {
-                    if (!empty($beginTime)) {
+                ->where(function ($q) use ($date) {
+                    if (!empty($date)) {
+                        $beginTime = $date . ' 00:00:00';
+                        $endTime = $date . ' 23:59:59';
                         $beginTime = strtotime($beginTime);
-                        $q->where('BeginTime', '<=', $beginTime)
-                            ->where('EndTime', '>=', $beginTime);
-
+                        $endTime = strtotime($endTime);
+                        $q->where('BeginTime', 'between', [$beginTime, $endTime]);
                     }
                 })
                 ->where(function ($q) use ($takeStatus) {
@@ -839,19 +862,18 @@ class Turntable extends Main
 
     public function getTotal()
     {
-        $beginTime = input('begin_time');
-        $endTime = input('end_time');
+        $date = input('begin_time');
+//        $endTime = input('end_time');
         $takeStatus = input('take_status');
         $userDB = new UserDB();
         $data = $userDB->getTableObject('T_UserCashLoseBack')
-            ->where(function ($q) use ($beginTime, $endTime) {
-                if (!empty($beginTime) && !empty($endTime)) {
+            ->where(function ($q) use ($date) {
+                if (!empty($date)) {
+                    $beginTime = $date . ' 00:00:00';
+                    $endTime = $date . ' 23:59:59';
                     $beginTime = strtotime($beginTime);
                     $endTime = strtotime($endTime);
-                    $q->where('BeginTime', 'between', [$beginTime, $endTime])
-                        ->whereOr('EndTime', 'between', [$beginTime, $endTime])
-                        ->whereOr('BeginTime', '<', $beginTime)
-                        ->whereOr('EndTime', '>', $endTime);
+                    $q->where('BeginTime', 'between', [$beginTime, $endTime]);
                 }
             })
             ->where(function ($q) use ($takeStatus) {

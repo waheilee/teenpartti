@@ -61,6 +61,7 @@ class AgentWaterDailyExport extends Main
             lang('二级首充金额'),
             lang('三级首充金额'),
             lang('一级提现金额'),
+            lang('一级首充人数'),
         ];
         foreach($datesArray as $day){
             $sourceData = $this->getDayData($day,$roleId);;
@@ -101,6 +102,7 @@ class AgentWaterDailyExport extends Main
                     $item['Lv1WithdrawalMoney'] = FormatMoney($dayData['Lv1WithdrawalMoney']);
 
                 }
+                $item['Lv1WithdrawalMoney'] = FormatMoney($dayData['Lv1FirstDepositPlayers']);
                 $item['dm'] = bcadd($item['Lv1Running'], $item['Lv2Running'],3);
                 //团队打码
                 $data[] = $item;
