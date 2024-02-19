@@ -2,6 +2,8 @@
 
 namespace app\admin\lib;
 
+use app\model\BankDB;
+use app\model\DataChangelogsDB;
 use app\model\UserDB;
 
 class DailyStatisticsLib {
@@ -193,6 +195,9 @@ class DailyStatisticsLib {
 
                 $new_record['lottery_bonus'] = $this->countDailyGoldCoinsByChangeType($table, [$dsModel::ACTT_DAY_LOTTERY_BONUS]);
 
+                $withdrawalFirstRecharge = $this->withdrawalFirstRecharge($day);
+                $new_record['withdrawal_first_recharge'] = $withdrawalFirstRecharge['money'] ?? 0; //首存提现金额
+                $new_record['withdrawal_num_first_recharge'] = $withdrawalFirstRecharge['total'] ?? 0;//首存提现人数
                 // 添加日况记录
                 $new_record['update_time'] = date('Y-m-d H:i:s', time());
                 $dms_record = $dsModel->getDailyStatisticsByDay($day, 'id,day');
@@ -373,6 +378,31 @@ class DailyStatisticsLib {
         $end_day = date('Y-m-d 00:00:00', strtotime("+1 day", strtotime($day)));
         $subQuery = "(SELECT SUM(RealMoney) as Money,AccountID FROM [CD_UserDB].[dbo].[T_UserTransactionChannel] WHERE AddTime>'$start_day' AND AddTime<'$end_day' GROUP BY AccountID) as a";
         return $userDB->getTableObject($subQuery)->sum('Money') * bl;
+    }
+
+
+    /**
+     * 首存提现金额
+     * 计算当天所有首充人的提现金额
+     * @return array|bool|\PDOStatement|string|\think\Model|null
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public function withdrawalFirstRecharge()
+    {
+        $day = date('Y-m-d');
+        $accountIdArr = (new DataChangelogsDB())->getFirstChargeAccountId($day);
+        $start_day = date('Y-m-d 00:00:00', strtotime($day));
+        $end_day = date('Y-m-d 00:00:00', strtotime("+1 day", strtotime($day)));
+
+        return (new BankDB())->getTableObject('UserDrawBack')
+            ->field('count(*) as total,sum(iMoney) as money')
+            ->whereIn('AccountID',$accountIdArr)
+            ->where('IsDrawback',100)
+            ->where('UpdateTime','>=',$start_day)
+            ->where('UpdateTime','<=',$end_day)
+            ->find();
     }
 
 }

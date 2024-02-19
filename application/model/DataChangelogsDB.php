@@ -176,4 +176,24 @@ class DataChangelogsDB extends BaseModel
             return 0;
         }
     }
+
+    /**
+     * @param $day
+     * @return array
+     */
+    public function getFirstChargeAccountId($day)
+    {
+        $this->table = $this->transactionlog;
+        $where = " datediff(d,addtime,'$day')=0 and IfFirstCharge=1 ";
+        $list = $this->getTableObject($this->table)
+            ->field('roleid')
+            ->where($where)
+            ->select();
+
+        $data = [];
+        foreach ($list as $k){
+            $data[] = $k['roleid'];
+        }
+        return $data;
+    }
 }
