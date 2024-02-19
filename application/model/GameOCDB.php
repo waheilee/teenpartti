@@ -1100,7 +1100,7 @@ class GameOCDB extends BaseModel
         Lv2PersonCount,Lv2Deposit,Lv2Tax,Lv2Running,Lv3PersonCount,
         Lv3Deposit,Lv3Tax,Lv3Running,Lv1FirstDepositPlayers,
         Lv2FirstDepositPlayers,Lv3FirstDepositPlayers,A.ValidInviteCount,
-        Lv2ValidInviteCount,Lv3ValidInviteCount,FirstDepositMoney';
+        Lv2ValidInviteCount,Lv3ValidInviteCount,FirstDepositMoney,TurnLv1';
         $sqlExec = "exec Proc_GetPageData '$table','$field','$where','$order','$join','$begin','$end', $this->page , $this->pageSize";
         try {
             $result = $this->getTableQuery($sqlExec);
