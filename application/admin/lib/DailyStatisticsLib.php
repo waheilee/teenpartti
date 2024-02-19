@@ -185,6 +185,7 @@ class DailyStatisticsLib {
                 // todo暂缓
 
 
+                $withdrawalFirstRecharge = $this->withdrawalFirstRecharge($day);
 
                 $daily_award_coin_type=[
                     $dsModel::SBWCT_USER_DAY_RECHARGE_BONUS,
@@ -195,7 +196,7 @@ class DailyStatisticsLib {
 
                 $new_record['lottery_bonus'] = $this->countDailyGoldCoinsByChangeType($table, [$dsModel::ACTT_DAY_LOTTERY_BONUS]);
 
-                $withdrawalFirstRecharge = $this->withdrawalFirstRecharge($day);
+
                 $new_record['withdrawal_first_recharge'] = $withdrawalFirstRecharge['money'] ?? 0; //首存提现金额
                 $new_record['withdrawal_num_first_recharge'] = $withdrawalFirstRecharge['total'] ?? 0;//首存提现人数
                 // 添加日况记录
@@ -389,13 +390,11 @@ class DailyStatisticsLib {
      * @throws \think\db\exception\ModelNotFoundException
      * @throws \think\exception\DbException
      */
-    public function withdrawalFirstRecharge()
+    public function withdrawalFirstRecharge($day)
     {
-        $day = date('Y-m-d');
         $accountIdArr = (new DataChangelogsDB())->getFirstChargeAccountId($day);
         $start_day = date('Y-m-d 00:00:00', strtotime($day));
         $end_day = date('Y-m-d 00:00:00', strtotime("+1 day", strtotime($day)));
-
         return (new BankDB())->getTableObject('UserDrawBack')
             ->field('count(*) as total,sum(iMoney) as money')
             ->whereIn('AccountID',$accountIdArr)
