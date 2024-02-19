@@ -1170,6 +1170,9 @@ class GameOCDB extends BaseModel
                         $v['Lv3WithdrawalMoney'] = FormatMoney($agentTemDeposit['Lv3WithdrawalMoney']);
 
                     }
+                    if (!isset($v['TurnLv1'])){
+                        $v['TurnLv1'] = 0;
+                    }
                 }
 
                 //团队打码
