@@ -91,6 +91,7 @@ define('CMD_MD_GM_ADD_JOB', 10005);// 审核通过
 define('CMD_MD_GM_PDD_REFUND', 10002);//pdd gm  操作 退款
 
 define('CMD_MD_WEEK_BONUS_GET', 86);//周薪发送
+define('CMD_MD_JOB_USER_INFO', 84);//修改玩家状态信息。进入游戏，提现等
 
 class sendQuery
 {
@@ -1387,6 +1388,16 @@ class sendQuery
         $this->in_stream->WriteULong($id);
         $this->in_stream->WriteULong($roleid);
         $in_head = $this->comm->MakeSendHead(CMD_MD_WEEK_BONUS_GET, $this->in_stream->len, 0, REQ_OM, REQ_DC);
+        $in = $this->in_stream->data;
+        $res = $socket->request($in_head, $in);
+    }
+
+    public function CMD_MD_JOB_USER_INFO($socket, $roleid, $type,$value)
+    {
+        $this->in_stream->WriteULong($roleid);
+        $this->in_stream->WriteULong($type);
+        $this->in_stream->WriteULong($value);
+        $in_head = $this->comm->MakeSendHead(CMD_MD_JOB_USER_INFO, $this->in_stream->len, 0, REQ_OM, REQ_DC);
         $in = $this->in_stream->data;
         $res = $socket->request($in_head, $in);
     }

@@ -602,7 +602,8 @@ class Player extends Main
 
             $userProxyInfo = new UserProxyInfo();
             $proxyinfo = $userProxyInfo->getDataRow(['RoleID' => $roleId], 'ParentID,ParentIds,AbleProfit,TotalProfit,RoleID,ProxySwitch');
-
+            $proxyinfo['ThirdgameSwitch'] = (new UserDB())->getTableObject('T_Job_UserInfo')->where('RoleID', $roleId)->where('job_key',17)->value('value') ?: 0;
+            $proxyinfo['WinthdrawSwitch'] = (new UserDB())->getTableObject('T_Job_UserInfo')->where('RoleID', $roleId)->where('job_key',18)->value('value') ?: 0;
             $user['parentId'] = $proxyinfo['ParentID'] ?: 0;
             $gameOCDB = new GameOCDB();
             $ParentIds = array_filter(explode(',', $proxyinfo['ParentIds']));
@@ -5127,5 +5128,33 @@ class Player extends Main
 
     public function getGroupId($adminId){
         return Db::table('game_auth_group_access')->where('uid',$adminId)->value('group_id');
+    }
+
+    public function ThirdgameSwitch()
+    {
+        $RoleID = input('RoleID', 0);
+        $ProxySwitch = input('type', 0);
+
+        //服务端
+        $data = $this->sendGameMessage('CMD_MD_JOB_USER_INFO', [$RoleID, 17,$ProxySwitch], "DC", 'returnComm');
+        if ($data['iResult'] == 1) {
+            return ['code' => 0];
+        } else {
+            return ['code' => 1];
+        }
+    }
+
+    public function WinthdrawSwitch()
+    {
+        $RoleID = input('RoleID', 0);
+        $ProxySwitch = input('type', 0);
+
+        //服务端
+        $data = $this->sendGameMessage('CMD_MD_JOB_USER_INFO', [$RoleID, 18,$ProxySwitch], "DC", 'returnComm');
+        if ($data['iResult'] == 1) {
+            return ['code' => 0];
+        } else {
+            return ['code' => 1];
+        }
     }
 }
