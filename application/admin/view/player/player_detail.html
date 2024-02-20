@@ -178,31 +178,31 @@
                             <td>{:lang('锁定彩金')}:</td>
                             <td>{$user.LockColorMoney}</td>
                         </tr>
-                        <tr>
-                            <td>{:lang('禁止进入游戏')}:</td>
-                            <td>
-                                <div class="layui-inline layui-form">
-                                    {if($proxyinfo.ThirdgameSwitch == 1)}
-                                    <input type="checkbox" RoleID="{$proxyinfo.RoleID}" name="switch" lay-skin="switch" lay-text="{:lang('开')}|{:lang('关')}" lay-filter='ThirdgameSwitch' checked>
-                                    {else/}
-                                    <input type="checkbox" RoleID="{$proxyinfo.RoleID}" name="switch" lay-skin="switch" lay-text="{:lang('开')}|{:lang('关')}" lay-filter='ThirdgameSwitch'>
-                                    {/if}
-                                </div>
-                            </td>
+<!--                        <tr>-->
+<!--                            <td>{:lang('禁止进入游戏')}:</td>-->
+<!--                            <td>-->
+<!--                                <div class="layui-inline layui-form">-->
+<!--                                    {if($proxyinfo.ThirdgameSwitch == 1)}-->
+<!--                                    <input type="checkbox" RoleID="{$proxyinfo.RoleID}" name="switch" lay-skin="switch" lay-text="{:lang('开')}|{:lang('关')}" lay-filter='ThirdgameSwitch' checked>-->
+<!--                                    {else/}-->
+<!--                                    <input type="checkbox" RoleID="{$proxyinfo.RoleID}" name="switch" lay-skin="switch" lay-text="{:lang('开')}|{:lang('关')}" lay-filter='ThirdgameSwitch'>-->
+<!--                                    {/if}-->
+<!--                                </div>-->
+<!--                            </td>-->
 
-                            <td>{:lang('禁止玩家提现')}:</td>
-                            <td>
-                                <div class="layui-inline layui-form">
-                                    {if($proxyinfo.WinthdrawSwitch == 1)}
-                                    <input type="checkbox" RoleID="{$proxyinfo.RoleID}" name="switch" lay-skin="switch" lay-text="{:lang('开')}|{:lang('关')}" lay-filter='WinthdrawSwitch' checked>
-                                    {else/}
-                                    <input type="checkbox" RoleID="{$proxyinfo.RoleID}" name="switch" lay-skin="switch" lay-text="{:lang('开')}|{:lang('关')}" lay-filter='WinthdrawSwitch'>
-                                    {/if}
-                                </div>
-                            </td>
-                            <td></td>
-                            <td></td>
-                        </tr>
+<!--                            <td>{:lang('禁止玩家提现')}:</td>-->
+<!--                            <td>-->
+<!--                                <div class="layui-inline layui-form">-->
+<!--                                    {if($proxyinfo.WinthdrawSwitch == 1)}-->
+<!--                                    <input type="checkbox" RoleID="{$proxyinfo.RoleID}" name="switch" lay-skin="switch" lay-text="{:lang('开')}|{:lang('关')}" lay-filter='WinthdrawSwitch' checked>-->
+<!--                                    {else/}-->
+<!--                                    <input type="checkbox" RoleID="{$proxyinfo.RoleID}" name="switch" lay-skin="switch" lay-text="{:lang('开')}|{:lang('关')}" lay-filter='WinthdrawSwitch'>-->
+<!--                                    {/if}-->
+<!--                                </div>-->
+<!--                            </td>-->
+<!--                            <td></td>-->
+<!--                            <td></td>-->
+<!--                        </tr>-->
                         </tbody>
                     </table>
                     <div class="layui-fluid">
