@@ -790,11 +790,10 @@ class Turntable extends Main
                 })
                 ->where(function ($q) use ($date) {
                     if (!empty($date)) {
-                        $beginTime = $date . ' 00:00:00';
-                        $endTime = $date . ' 23:59:59';
-                        $beginTime = strtotime($beginTime);
-                        $endTime = strtotime($endTime);
-                        $q->where('BeginTime', 'between', [$beginTime, $endTime]);
+                        $beginTime = strtotime($date);
+                        $q->where('BeginTime', '<=', $beginTime)
+                            ->where('EndTime', '>=', $beginTime);
+
                     }
                 })
                 ->where(function ($q) use ($takeStatus) {
@@ -821,11 +820,10 @@ class Turntable extends Main
                 })
                 ->where(function ($q) use ($date) {
                     if (!empty($date)) {
-                        $beginTime = $date . ' 00:00:00';
-                        $endTime = $date . ' 23:59:59';
-                        $beginTime = strtotime($beginTime);
-                        $endTime = strtotime($endTime);
-                        $q->where('BeginTime', 'between', [$beginTime, $endTime]);
+                        $beginTime = strtotime($date);
+                        $q->where('BeginTime', '<=', $beginTime)
+                            ->where('EndTime', '>=', $beginTime);
+
                     }
                 })
                 ->where(function ($q) use ($takeStatus) {
@@ -869,11 +867,10 @@ class Turntable extends Main
         $data = $userDB->getTableObject('T_UserCashLoseBack')
             ->where(function ($q) use ($date) {
                 if (!empty($date)) {
-                    $beginTime = $date . ' 00:00:00';
-                    $endTime = $date . ' 23:59:59';
-                    $beginTime = strtotime($beginTime);
-                    $endTime = strtotime($endTime);
-                    $q->where('BeginTime', 'between', [$beginTime, $endTime]);
+                    $beginTime = strtotime($date);
+                    $q->where('BeginTime', '<=', $beginTime)
+                        ->where('EndTime', '>=', $beginTime);
+
                 }
             })
             ->where(function ($q) use ($takeStatus) {
