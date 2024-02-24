@@ -531,7 +531,8 @@
                         layer.msg(res['msg'], {icon: 1, time: 1000}, function () {
                             // main.renderData();
                             $(".layui-laypage-btn")[0].click();
-                            layer.closeAll();
+                            window.location.reload();
+                            // layer.closeAll();
                         });
                     } else {
                         layer.msg(res['msg'], {icon: 5});
