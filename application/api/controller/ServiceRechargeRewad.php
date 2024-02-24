@@ -325,6 +325,7 @@ class ServiceRechargeRewad extends Controller
     public function testSend()
     {
         $sendQuery = new sendQuery();
-        $res = $sendQuery->callback("CMD_MD_SYSTEM_MAILv2", [0, 39873346, 8, 10, 10000, 0, 10, 0, 1, 'test', 'test', '', '', '']);
+        $res = $sendQuery->callback("CMD_MD_SYSTEM_MAILv2", [39873346, 10000, 1]);
+        echo 123;
     }
 }

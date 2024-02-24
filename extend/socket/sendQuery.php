@@ -92,6 +92,7 @@ define('CMD_MD_GM_PDD_REFUND', 10002);//pdd gm  操作 退款
 
 define('CMD_MD_WEEK_BONUS_GET', 86);//周薪发送
 define('CMD_MD_JOB_USER_INFO', 84);//修改玩家状态信息。进入游戏，提现等
+define('CMD_MD_DAY_DEPOSIT_AWARD', 10010);//每日累计充值
 
 class sendQuery
 {
@@ -1398,6 +1399,16 @@ class sendQuery
         $this->in_stream->WriteULong($type);
         $this->in_stream->WriteULong($value);
         $in_head = $this->comm->MakeSendHead(CMD_MD_JOB_USER_INFO, $this->in_stream->len, 0, REQ_OM, REQ_DC);
+        $in = $this->in_stream->data;
+        $res = $socket->request($in_head, $in);
+    }
+
+    public function CMD_MD_DAY_DEPOSIT_AWARD($socket, $roleid, $money,$type)
+    {
+        $this->in_stream->WriteULong($roleid);
+        $this->in_stream->WriteULong($money);
+        $this->in_stream->WriteULong($type);
+        $in_head = $this->comm->MakeSendHead(CMD_MD_DAY_DEPOSIT_AWARD, $this->in_stream->len);
         $in = $this->in_stream->data;
         $res = $socket->request($in_head, $in);
     }
