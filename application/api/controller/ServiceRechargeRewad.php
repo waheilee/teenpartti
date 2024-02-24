@@ -77,7 +77,8 @@ class ServiceRechargeRewad extends Controller
                         $rewardcoin = bcmul($v['RealMoney'], $return_rate, 3);
                         $rewardcoin = $rewardcoin * 1000;
                         $sendQuery = new sendQuery();
-                        $res = $sendQuery->callback("CMD_MD_SYSTEM_MAILv2", [0, $v['AccountID'], 8, 10, $rewardcoin, 0, 10, 0, 1, $activetitle, $descript, '', '', '']);
+                        $res = $sendQuery->callback("CMD_MD_DAY_DEPOSIT_AWARD", [$v['AccountID'], $rewardcoin, 1]);
+//                        $res = $sendQuery->callback("CMD_MD_SYSTEM_MAILv2", [0, $v['AccountID'], 8, 10, $rewardcoin, 0, 10, 0, 1, $activetitle, $descript, '', '', '']);
                         $retcode = unpack('cint', $res)['int'];
                         save_log('rechargereturn', '玩家id:' . $v['AccountID'] . '========金额:' . $rewardcoin . ',更新状态' . json_encode($retcode));
                         Redis::set($key, 100);
