@@ -365,7 +365,7 @@
                     success: function (res) {
                         if (res.code == 0) {
                             layer.msg("{:lang('设置成功')}", {icon: 1, time: 1000}, function () {
-                                //window.location.reload();
+                                window.location.reload();
                                 layer.closeAll();
                             });
                         } else {
