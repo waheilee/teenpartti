@@ -634,7 +634,13 @@ class Player extends Main
             if (!empty($user['Mobile'])) {
                 $user['Mobile'] = substr_replace($user['Mobile'], '**', -2);
             }
-            $user['AccountName'] = substr_replace($user['AccountName'], '**', -4);
+            if(config('AccountName') == 1){
+                $accountName = $user['AccountName'];
+            }else{
+                $accountName = substr_replace($user['AccountName'], '**', -4);
+            }
+            $user['AccountName'] = $accountName;
+
             ConVerMoney($user['Money']);
             ConVerMoney($user['PayOut']);
             ConVerMoney($user['PayOutAll']);
