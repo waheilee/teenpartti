@@ -124,6 +124,8 @@ class PaySdk
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
         $res = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        save_log('brpay', 'http_code:' . json_encode($httpCode));
         curl_close($ch);
         return $res;
     }
