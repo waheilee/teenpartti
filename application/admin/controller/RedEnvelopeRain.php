@@ -404,7 +404,7 @@ class RedEnvelopeRain extends Main
             $startDate = strtotime($start . '00:00:00');
             $endDate = strtotime($end . '23:59:59');
             $where .= ' and AddTime>=' . "'$startDate'" . ' and AddTime<=' . "'$endDate'";
-
+            save_log('RedEnvelopeRain', 'start:' . $startDate . ',end:' . $endDate);
         }
         $changeLogDB = new DataChangelogsDB();
         $count = $changeLogDB->getTableObject('T_RedPackHistory')
