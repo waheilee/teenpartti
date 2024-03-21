@@ -658,7 +658,9 @@ class Playertrans extends Main
                     GameLog::logData(__METHOD__, [$userID, $OrderNo, $channelcode, lang('提交第三方成功')], 1, lang('提交第三方成功'));
                     return $this->apiReturn(0, '', 'success');
                 } else {
-                    (new BankDB())->updateTable('userdrawback', ['status' => $bankM::DRAWBACK_STATUS_AUDIT_PASS,], ['OrderNo' => $OrderNo]);
+                    if (isset($result['pay_type']) && $result['pay_type'] != 'mkcpay' || $result['pay_type'] != 'brpay') {
+                        (new BankDB())->updateTable('userdrawback', ['status' => $bankM::DRAWBACK_STATUS_AUDIT_PASS,], ['OrderNo' => $OrderNo]);
+                    }
                     Redis::rm($key);
                     GameLog::logData(__METHOD__, [$userID, $OrderNo, $channelcode, $result['message']], 1, $result['message']);
                     return $this->apiReturn(100, '', $result['message']);
