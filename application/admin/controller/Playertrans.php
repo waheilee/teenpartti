@@ -2475,7 +2475,7 @@ class Playertrans extends Main
         $status = $bankModel::DRAWBACK_STATUS_ORDER_PAYMENT;
         $res = $bankModel->getTableObject('UserDrawBack')
             ->where('OrderNo', $orderId)
-            ->data(['status' => $status])
+            ->data(['IsDrawback' => $status])
             ->update();
         if ($res) {
             return $this->apiReturn(0, '', '操作成功');
