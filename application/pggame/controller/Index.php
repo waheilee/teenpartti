@@ -62,6 +62,7 @@ class Index extends Base
             $isInWhiteList = $masterDB->getTableObject('T_PgWhiteConfigList')
                 ->where('account_id',$roleid)
                 ->find();
+            save_log('pggame', '===白名单===' . json_encode($isInWhiteList));
             //如果不再白名单中就走假PG
             if (empty($isInWhiteList)) {
                 //是否走假pg
