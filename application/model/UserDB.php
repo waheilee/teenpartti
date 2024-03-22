@@ -802,7 +802,7 @@ class UserDB extends BaseModel
             }
             if (!empty($account)) $roleid = $this->GetUserIDByAccount($account);
             if ($roleid > 0) $where .= " and AccountID=$roleid";
-            if ($status >= 0) $where .= " and status = $status";
+            if ($status >= 0) $where .= " and status = $status or status = 29";
             if ($tranNO != 0) $where .= " and OrderNo='$tranNO'";
             if ($amount > 0) {
                 $min_amount = $amount * bl;
@@ -895,6 +895,9 @@ class UserDB extends BaseModel
                     break;
                 case 100:
                     $str = lang('订单完成');
+                    break;
+                case 29:
+                    $str = lang('付款中');
                     break;
             }
             $item['orderType'] = $str;

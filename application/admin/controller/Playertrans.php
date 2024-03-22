@@ -2467,4 +2467,21 @@ class Playertrans extends Main
         $this->assign('data', $data);
         return $this->fetch();
     }
+
+    public function editOrderStatus()
+    {
+        $orderId = request()->param('order_id');
+        $bankModel = new BankDB();
+        $status = $bankModel::DRAWBACK_STATUS_ORDER_PAYMENT;
+        $res = $bankModel->getTableObject('UserDrawBack')
+            ->where('OrderNo', $orderId)
+            ->data(['status' => $status])
+            ->update();
+        if ($res) {
+            return $this->apiReturn(0, '', '操作成功');
+        } else {
+            return $this->apiReturn(1, '', '操作失败');
+        }
+
+    }
 }

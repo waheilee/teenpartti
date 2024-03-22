@@ -11,6 +11,7 @@ class BankDB extends BaseModel
     const DRAWBACK_STATUS_THIRD_PARTY_HANDLING = 4; // 第三方处理中
     const DRAWBACK_STATUS_HANDLE_FAILED_AND_RETURN_COIN = 5; // 处理失败并退还金币
     const DRAWBACK_STATUS_ORDER_COMPLETED = 100; // 订单完成
+    const DRAWBACK_STATUS_ORDER_PAYMENT = 29; // 付款中。中间态，假性付款
 
     /**
      * UserBank constructor.

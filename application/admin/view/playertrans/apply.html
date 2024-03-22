@@ -156,15 +156,8 @@
 							return " <a class=\"layui-bg-green\" lay-event=\"info\">" + d.AccountID + "</a>";
 						}
 					},
-                    {if(config('app_name')=='TATUWIN')}
-                        {field: 'RiskLevel', align: 'center', title: "{:lang('风险等级')}", minWidth: 120, templet: function (d) {
-                                return '等级'+d.RiskLevel;
-                            }
-                        },
-                    {/if}
-                    {
-                        field: 'OperatorId', align: 'center', title: "{:lang('渠道ID')}", minWidth: 100
-                    },
+
+                    {field: 'OperatorId', align: 'center', title: "{:lang('渠道ID')}", minWidth: 100},
                     {
                         field: 'cheatLevelDesc', align: 'center', title: "{:lang('异常状态')}", width: 100, templet: function (d) {
                             var url = '{"player/gamelog2"}?roleid=' + d.AccountID;
@@ -250,14 +243,17 @@
 					
 					// {fixed: 'right', title: '操作', align: 'center', minWidth: 230, toolbar: '#msg-bar'},
 					{
-						fixed: 'right', title: '操作', align: 'center', minWidth: 200,height:'auto', templet: function (d) {
+						fixed: 'right', title: '操作', align: 'center', minWidth: 300,height:'auto', templet: function (d) {
 							status = Number(d.status);
 							str = "";
-							if (status == 0) {
+							if (status == 0 || 29) {
 								// str += "<a class=\"layui-btn layui-btn-xs\" lay-event=\"edit\">{:lang('审核通过')}</a>" +
 								// 	"<a class=\"layui-btn layui-btn-xs layui-btn-danger \" lay-event=\"refuse\">{:lang('拒绝')}</a>" +
                                 str += 	"    <a class=\"layui-btn layui-btn-xs layui-btn-warm \" lay-event=\"addremark\">{:lang('添加玩家备注')}</a>";
 								str += "<a class=\"layui-btn layui-btn-xs\" lay-event=\"edit\">{:lang('加入工单')}</a>";
+                                if(status == !29){
+                                    str += "<a class=\"layui-btn layui-btn-xs layui-btn-danger\" lay-event=\"editOrderStatus\">{:lang('修改订单状态')}</a>";
+                                }
 							} else if (status == 1) {
 								str += "<a class=\"layui-btn layui-btn-xs \" lay-event=\"third\">{:lang('提交第三方')}</a>" +
 									"<a class=\"layui-btn layui-btn-xs layui-btn-danger \" lay-event=\"refuse\">{:lang('拒绝')}</a>" +
@@ -401,6 +397,39 @@
                             // alert(value); //得到value
                             // layer.closeAll();
                         });
+                    }else if(obj.event === 'editOrderStatus'){
+                        layer.open({
+                            // formType: 2,
+                            // value: '',
+                            title: "{:lang('请输入备注')}",
+                            content: '是否将订单状态修改为付款中',
+                            btn: ['{:lang("确定")}', '{:lang("取消")}'],
+                            yes: function(index, layero){
+                                //do something
+                                // alert('订单状态已修改'); //得到value
+                                layer.close(index); //如果设定了yes回调，需进行手工关闭
+                                $.ajax({
+                                    type: 'post',
+                                    url: "{:url('Playertrans/editOrderStatus')}",
+                                    data: {
+                                        'order_id': obj.data.OrderNo,
+                                    },
+                                    dataType: 'json',
+                                    success: function (res) {
+                                        if (res.code == 0) {
+                                            layer.msg("{:lang('修改成功')}", {icon: 1, time: 1000}, function () {
+                                                //window.location.reload();
+                                                table.reload("proxylist", {page: {curr: $(".layui-laypage-em").next().html()}});
+                                                layer.closeAll();
+                                            });
+                                        } else {
+                                            layer.msg(res['msg'], {icon: 5});
+                                        }
+                                    }
+                                });
+                            }
+                            // area: ['300px', '100px'] //自定义文本域宽高
+                        })
                     }
 				});
 				//排序
