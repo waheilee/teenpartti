@@ -42,7 +42,7 @@ class Index extends Base
     {
         try {
             $params = request()->param() ?: json_decode(file_get_contents('php://input'),1);
-            // save_log('pggame', '==='.request()->url().'===接口请求数据===' . json_encode($params));
+             save_log('pggame', '==='.request()->url().'===接口请求数据===' . json_encode($params));
             $roleid   = $params['roleid'];
             $gameid   = $params['gameid'];
             $language = $params['language'];
