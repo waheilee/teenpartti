@@ -188,4 +188,127 @@ class Pggame extends Main
         }
         return json(['code'=>0,'msg'=>'操作成功']);
     }
+
+
+
+    /**
+     * 转盘手机号码列表
+     * @return mixed|\think\response\Json
+     * @throws \think\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public function pgWhiteConfigList()
+    {
+        if ($this->request->isAjax()) {
+            $page = input('page');
+            $limit = input('limit');
+            $accountId = input('account_id');
+            $masterDB = new MasterDB();
+            $count = $masterDB->getTableObject('T_PgWhiteConfigList')
+                ->count();
+            $list = $masterDB->getTableObject('T_PgWhiteConfigList')->alias('a')
+                ->field('a.account_id,b.Mobile,b.OperatorId')
+                ->join('[CD_UserDB].[dbo].[View_Accountinfo] b','b.AccountID=a.account_id','LEFT')
+                ->where(function ($q) use ($accountId) {
+                    if ($accountId) {
+                        $q->where('account_id', $accountId);
+                    }
+                })
+                ->page($page, $limit)
+                ->select();
+            $data['count'] = $count;
+            $data['list'] = $list;
+            return $this->apiJson($data);
+        }
+        return $this->fetch();
+    }
+
+    /**
+     * 转盘手机号码列表添加号码
+     * @return mixed
+     * @throws \think\exception\PDOException
+     */
+    public function pgWhiteListAdd()
+    {
+        $accountId = input('account_id');
+        $accountIds = explode(',', $accountId);
+        $masterDB = new MasterDB();
+        try {
+            $masterDB->startTrans();
+            $data = [];
+            foreach ($accountIds as $account) {
+                if (empty($account)) {
+                    continue;
+                }
+                $item = [];
+                $item['account_id'] = $account;
+                $data[] = $item;
+            }
+
+            $add = $masterDB->getTableObject('T_PgWhiteConfigList')
+                ->insertAll($data);
+            // 提交事务
+            $masterDB->commit();
+            if ($add) {
+                return $this->apiReturn(0, '', '操作成功');
+            } else {
+                return $this->apiReturn(1, '', '操作失败');
+            }
+        } catch (\Exception $e) {
+            // 回滚事务
+            $masterDB->rollback();
+            return $this->apiReturn(1, '', '添加操作失败');
+        }
+
+    }
+
+    /**
+     * 转盘手机号码删除号码
+     * @return mixed
+     * @throws \think\Exception
+     * @throws \think\exception\PDOException
+     */
+    public function pgWhiteListDelete()
+    {
+        $id = input('id');
+        $type = input('type');
+        $masterDB = new MasterDB();
+        if ($type == 1) {
+            //单个删除
+            $del = $masterDB->getTableObject('T_PgWhiteConfigList')
+                ->delete($id);
+            if ($del) {
+                return $this->apiReturn(0, '', '操作成功');
+            } else {
+                return $this->apiReturn(1, '', '操作失败');
+            }
+        } elseif($type == 2) {
+            //批量删除
+            $ids = explode(',', $id);
+            try {
+                $masterDB->startTrans();
+                $del = $masterDB->getTableObject('T_PgWhiteConfigList')
+                    ->delete($ids);
+                // 提交事务
+                $masterDB->commit();
+                if ($del) {
+                    return $this->apiReturn(0, '', '操作成功');
+                } else {
+                    return $this->apiReturn(1, '', '操作失败');
+                }
+            } catch (\Exception $e) {
+                // 回滚事务
+                $masterDB->rollback();
+                return $this->apiReturn(1, '', '操作失败');
+            }
+
+        }else{
+
+            $masterDB->getTableObject('T_PgWhiteConfigList')->where('1=1')->delete();
+            return $this->apiReturn(0, '', '操作成功');
+        }
+
+    }
 }

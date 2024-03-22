@@ -662,7 +662,7 @@ class Turntable extends Main
             $phoneList = $masterDB->getTableObject('T_PDDCode')
                 ->where(function ($q) use ($phone) {
                     if ($phone) {
-                        $q->where('Code', 'Code', $phone);
+                        $q->where('Code', $phone);
                     }
                 })
                 ->page($page, $limit)

@@ -3,6 +3,7 @@
 namespace app\pggame\controller;
 
 use app\model\AccountDB;
+use app\model\MasterDB;
 use app\model\Role;
 use app\model\ThirdGameReport;
 use redis\Redis;
@@ -58,17 +59,24 @@ class Index extends Base
             if ($key != strtolower($sign)) {
                 return $this->failjson('sign is error');
             }
-
-            //是否走假pg
-            $fake_pg_data = Redis::get('pgfake_data');
-            if (!empty($fake_pg_data)) {
-                $fake_pg_data =json_decode($fake_pg_data,true);
-                if (isset($fake_pg_data[$gameid])) {
-                    if ($fake_pg_data[$gameid]['status'] == 1 && strlen($roleid)==8) {
-                        return (new \app\pgfake\controller\Index())->createuser($params);
+            $masterDB = new MasterDB();
+            $isInWhiteList = $masterDB->getTableObject('T_PgWhiteConfigList')
+                ->where('account_id',$roleid)
+                ->find();
+            //如果不再白名单中就走假PG
+            if (empty($isInWhiteList)) {
+                //是否走假pg
+                $fake_pg_data = Redis::get('pgfake_data');
+                if (!empty($fake_pg_data)) {
+                    $fake_pg_data =json_decode($fake_pg_data,true);
+                    if (isset($fake_pg_data[$gameid])) {
+                        if ($fake_pg_data[$gameid]['status'] == 1 && strlen($roleid)==8) {
+                            return (new \app\pgfake\controller\Index())->createuser($params);
+                        }
                     }
                 }
             }
+
             if (strtoupper($language) == 'BR') {
                 $language = 'pt';
             }
