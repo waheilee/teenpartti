@@ -45,7 +45,7 @@ class Index extends Base
             $language = $params['language'];
             $time     = $params['time'];
             $sign     = $params['sign'];
-            save_log('pgfake', '==='.$roleid);
+//            save_log('pgfake', '==='.$roleid);
 
             if (strtoupper($language) == 'BR') {
                 $language = 'pt';

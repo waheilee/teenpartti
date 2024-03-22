@@ -76,7 +76,7 @@ class Index extends Base
                     }
                 }
             }
-            save_log('pggame', '==='.request()->url().'===接口请求数据===' . json_encode($params));
+//            save_log('pggame', '==='.request()->url().'===接口请求数据===' . json_encode($params));
 
             if (strtoupper($language) == 'BR') {
                 $language = 'pt';
