@@ -1,0 +1,156 @@
+{extend name="common/base" /}
+{block name="title"}关系列表{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-row layui-col-space20">
+    <div class="layui-col-md6">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('总参与人数')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="data1"
+                                                                 style="color: #009688">0</p></div>
+        </div>
+    </div>
+    <div class="layui-col-md6">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('总消耗')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="data2"
+                                                                 style="color: #009688">0</p></div>
+        </div>
+    </div>
+
+</div>
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('玩家ID')}</label>
+                    <div class="layui-input-inline"><input autocomplete="off" class="layui-input" id="RoleID" lay-verify="number" name="RoleID" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('奖券编码')}</label>
+                    <div class="layui-input-inline"><input autocomplete="off" class="layui-input" id="ActiBonusCode" name="ActiBonusCode" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('期数')}</label>
+                    <div class="layui-input-inline"><input autocomplete="off" class="layui-input" id="ActiNo" name="ActiNo" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang("是否中奖")}</label>
+                    <div class="layui-input-inline"">
+                        <select id="PrizeLabel" name="PrizeLabel">
+                            <option value="">{:lang("全部")}</option>
+                            <option value="0">{:lang("否")}</option>
+                            <option value="1">{:lang("是")}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('参与时间')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="start_date" id="start_date" autocomplete="off" class="layui-input">
+                    </div>
+                    <div class="layui-form-mid"> -
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="end_date" id="end_date" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <a class="layui-btn" data-type="reload" id="search">{:lang('搜索')}</a>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+    
+</div>
+{/block}
+{block name="script"}
+<script src="__js__/cache.js"></script>
+<script src="__js__/Barrett.js"></script>
+<script src="__js__/BigInt.js"></script>
+<script src="__js__/RSA.js"></script>
+<script>
+    url = "{:url('CrazyParty/record')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var table = layui.table;
+        var form  = layui.form;
+        var laydate  = layui.laydate;
+        var $ = layui.$;
+        var element  = layui.element;
+          table.render({
+            elem: '#proxylist'
+            // ,height: 'full-280'
+            ,url: url+'?action=list'//数据接口
+            ,limit:20
+            ,page: true //开启分页
+            ,id:'proxylist'
+            ,autoSort:false
+            ,sort: true
+            ,cols: [[ //表头
+                {field:'ActiBonusCode', title: "{:lang('奖券编码')}",align:'center', minWidth: 150},
+                {field:'RoleId', title: "{:lang('玩家ID')}",align:'center', minWidth: 150, templet: function (d) {
+                        return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.RoleId+ "</a>";
+                    }
+                },
+                {field:'ActiNo', title: "{:lang('参与期数')}",align:'center', minWidth: 200},
+                {field:'SignUpFree', title: "{:lang('消耗')}",align:'center', minWidth: 200},
+                {field:'PartyDiamond', title: "{:lang('剩余')}",align:'center', minWidth: 120},
+                {field:'PrizeLabel', title: '是否中奖',align:'center',minWidth: 120,templet: function(d){
+                    if(d.PrizeLabel ==  0){
+                      return '<span style="color:green"><b>否</b></span>';
+                    } else if(d.PrizeLabel ==1) {
+                      return '<span style="color:red"><b>是</b></span>';
+                    }
+                }},
+                {field:'SignUpTime', title: "{:lang('参与时间')}",align:'center', minWidth: 200}
+            ]]
+            , done: function (res) {
+                $('#data1').html(res.other['total_num']);
+                $('#data2').html(res.other['SignUpFree']);
+            }
+          });
+          laydate.render({elem: '#start_date', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+          laydate.render({elem: '#end_date', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+
+          // 搜索 
+          $("#search").on('click', function(){
+             table.reload('proxylist', {
+              page:{
+                  curr:1 
+              },
+              where: {
+                  RoleID: $('#RoleID').val(),
+                  start_date: $('#start_date').val(),
+                  end_date:$('#end_date').val(),
+                  ActiBonusCode:$('#ActiBonusCode').val(),
+                  ActiNo:$('#ActiNo').val(),
+                  PrizeLabel:$('#PrizeLabel').val()
+              }
+            })
+          });
+        table.on('tool(proxylist)', function (obj) {
+            var data = obj.data //获得当前行数据
+                , layEvent = obj.event; //获得 lay-event 对应的值
+            tr = obj.tr; //获得当前行 tr 的DOM对象
+            if (layEvent === 'detail') {
+                var url = '/admin/player/playerDetail?roleid=' + data.RoleId;
+                x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.8);
+            }
+        });
+    });
+</script>
+{/block}

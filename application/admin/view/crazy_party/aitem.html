@@ -1,0 +1,244 @@
+{extend name="common/base" /}
+{block name="title"}关系列表{/block}
+{block name="css"}
+<style type="text/css">
+  .layui-form-pane .layui-form-label{
+    width: 200px !important;
+  }
+  .layui-form-pane .layui-input-block{
+    margin-left:200px !important;
+  }
+  .layui-table-cell{
+    height: auto !important;
+  }
+</style>
+{/block}
+{block name="content"}
+<div class="layui-card" style="padding: 20px">
+    <div class="layui-card-body">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+              <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('开启时间')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="start_date" id="start_date" autocomplete="off" class="layui-input">
+                    </div>
+                    <div class="layui-form-mid"> -
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="end_date" id="end_date" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                 <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('开奖时间')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="start_date1" id="start_date1" autocomplete="off" class="layui-input">
+                    </div>
+                    <div class="layui-form-mid"> -
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="end_date1" id="end_date1" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('活动期数')}</label>
+                    <div class="layui-input-inline"><input autocomplete="off" class="layui-input" id="ActivNo"  name="ActivNo" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang("活动状态")}</label>
+                    <div class="layui-input-inline"">
+                        <select id="ActiStatus" name="ActiStatus">
+                            <option value="">{:lang("全部")}</option>
+                            <option value="0">{:lang("进行中")}</option>
+                            <option value="1">{:lang("已开奖")}</option>
+                            <option value="2">{:lang("已作废")}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('中奖玩家')}</label>
+                    <div class="layui-input-inline"><input autocomplete="off" class="layui-input" id="RoleID" lay-verify="number" name="RoleID" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <a class="layui-btn" data-type="reload" id="search">{:lang("搜索")}</a>
+                </div>
+            </div>
+        </form>
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+</div>
+<script id="msg-bar" type="text/html">
+    <a class='layui-btn layui-btn-sm layui-btn-normal' lay-event='edit'>{:lang("编辑")}</a>
+    <!-- <a class='layui-btn layui-btn-sm layui-btn-normal layui-bg-red' lay-event='del'>{:lang("删除")}</a> -->
+</script>
+{/block}
+{block name="script"}
+<script src="__js__/cache.js"></script>
+<script src="__js__/Barrett.js"></script>
+<script src="__js__/BigInt.js"></script>
+<script src="__js__/RSA.js"></script>
+<script>
+    url = "{:url('CrazyParty/aitem')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var table = layui.table;
+        var form  = layui.form;
+        var laydate  = layui.laydate;
+        var $ = layui.$;
+        var element  = layui.element;
+          table.render({
+            elem: '#proxylist'
+            ,height: 'full-180'
+            ,url: url+'?action=list'//数据接口
+            ,limit:20
+            ,page: true //开启分页
+            ,id:'proxylist'
+            ,autoSort:false
+            ,cols: [[ //表头
+              {field:'ActivNo', title: "{:lang('活动期数')}",align:'center', minWidth: 150, templet: function (d) {
+                    return " <a class=\"layui-bg-green\" lay-event=\"record\">" + d.ActivNo+ "</a>";
+              }},
+              {field: 'IconDownloadUrl', title: '奖品图标',align:'center',minWidth: 150, templet: function (d) {
+  		            if(d.IconDownloadUrl!=''){
+  		            	return '<img style="width:100px;height:100px" src="' + d.IconDownloadUrl + '"  />';
+  		            }  
+  		        }},
+  		        {field:'ActiTitle', title: "{:lang('标题')}",align:'center', minWidth: 150},
+              {field:'SignUpFree', title: "{:lang('消耗')}",align:'center', minWidth: 120},
+              
+              {field:'AnctiStartThreShold', title: "{:lang('已参与/总份数')}",align:'center', minWidth: 120, templet: function (d) {
+                  return d.AttendPlayers+'/'+d.AnctiStartThreShold
+              }},
+              
+              {field:'ActiStatus', title: "{:lang('状态')}",align:'center', minWidth: 80, templet: function (d) {
+                        if(d.ActiStatus ==  0){
+                          return '<span style="color:green"><b>进行中</b></span>';
+                        } else if(d.ActiStatus ==1) {
+                          return '<span style="color:red"><b>已开奖</b></span>';
+                        } else if(d.ActiStatus ==2) {
+                          return '<span style="color:gray"><b>已作废</b></span>';
+                        }
+                    }
+                },
+                {field:'ActiBonusCode', title: "{:lang('中奖号码')}",align:'center', minWidth: 150},
+                {field:'WinnerId', title: "{:lang('中奖玩家')}",align:'center', minWidth: 120, templet: function (d) {
+                    if ( d.WinnerId > 0) {
+                      return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.WinnerId+ "</a>";
+                    } else {
+                      return 0
+                    }
+                        
+                  }
+                },
+                {field:'ActiBeginTime', title: "{:lang('开启时间')}",align:'center', minWidth: 200},
+                {field:'ActiEndTime', title: "{:lang('开奖时间')}",align:'center', minWidth: 200},
+                {title:'操作',align:'center', minWidth: 100, templet: function(d){
+                    if (d.ActiStatus == 0) {
+                      return  '<a class="layui-btn layui-btn-sm layui-btn-normal" lay-event="del">作废</a>';
+                    } else {
+                      return '';
+                    }
+                    
+                }}
+            ]]
+            , done: function (res) {
+                //表头部分
+                        //动态监听表头高度变化，冻结行跟着改变高度
+                        $(".layui-table-header  tr").resize(function () {
+                            $(".layui-table-header  tr").each(function (index, val) {
+                                $($(".layui-table-fixed .layui-table-header table tr")[index]).height($(val).height());
+                            });
+                        });
+                        //初始化高度，使得冻结行表头高度一致
+                        $(".layui-table-header  tr").each(function (index, val) {
+                            $($(".layui-table-fixed .layui-table-header table tr")[index]).height($(val).height());
+                        });
+
+                        //表体部分
+                        //动态监听表体高度变化，冻结行跟着改变高度
+                        $(".layui-table-body  tr").resize(function () {
+                            $(".layui-table-body  tr").each(function (index, val) {
+                                $($(".layui-table-fixed .layui-table-body table tr")[index]).height($(val).height());
+                            });
+                        });
+                        //初始化高度，使得冻结行表体高度一致
+                        $(".layui-table-body  tr").each(function (index, val) {
+                            $($(".layui-table-fixed .layui-table-body table tr")[index]).height($(val).height());
+                        });
+            }
+          });
+          laydate.render({elem: '#start_date', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+          laydate.render({elem: '#end_date', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+
+          laydate.render({elem: '#start_date1', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+          laydate.render({elem: '#end_date1', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+          // 搜索 
+          $("#search").on('click', function(){
+             table.reload('proxylist', {
+              page:{
+                  curr:1 
+              },
+              where: {
+                  ActivNo: $('#ActivNo').val(),
+                  RoleID: $('#RoleID').val(),
+                  ActiStatus: $('#ActiStatus').val(),
+                  start_date: $('#start_date').val(),
+                  end_date:$('#end_date').val(),
+                  start_date1: $('#start_date1').val(),
+                  end_date1:$('#end_date1').val(),
+              }
+            })
+          });
+
+        //监听工具条
+         table.on('tool(proxylist)', function(obj){
+            var data = obj.data //获得当前行数据
+                , layEvent = obj.event; //获得 lay-event 对应的值
+            tr = obj.tr; //获得当前行 tr 的DOM对象
+            if (layEvent === 'record') {
+                layer.open({
+                type: 2 ,
+                title: '参与列表',   //标题
+                area: ['800px', '600px'],   //宽高
+                shade: 0.4,   //遮罩透明度
+                content: "{:url('CrazyParty/getRecord')}?ActiNo="+data.ActivNo,//支持获取DOM元素
+                // end:function(){
+                //   $(".layui-laypage-btn")[0].click();
+                // }
+                });
+            }
+            if (layEvent === 'detail') {
+                var url = '/admin/player/playerDetail?roleid=' + data.WinnerId;
+                x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.8);
+            }
+            if (layEvent === 'del') {
+                layer.confirm('确定作废？', function(index){
+                    $.ajax({
+                      url:"{:url('CrazyParty/delaitem')}?ActiNo="+data.ActivNo,
+                      type:'GET',
+                      dataType:'json',
+                      success:function(ret){
+                        if(ret.code == 0) {
+                          layer.msg('作废成功');
+                          $(".layui-laypage-btn")[0].click();
+                          setTimeout(function(){layer.closeAll()},1500);
+
+                          // obj.del();
+                        } else {
+                          layer.msg('删除失败');
+                        }
+                      }
+                    });
+                });
+            }
+         });
+    });
+</script>
+{/block}

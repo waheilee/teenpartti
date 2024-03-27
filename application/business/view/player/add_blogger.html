@@ -1,0 +1,92 @@
+{extend name="common/base" /}
+
+{block name="title"}转账{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('business/player/addBlogger')}" method="post" id="addProxy" >
+    <div class="layui-form-item">
+            <label class="layui-form-label">博主ID</label>
+            <div class="layui-input-block">
+                <input type="text" name="roleid" autocomplete="off" class="layui-input" id='roleid' value="">
+            </div>
+        </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >{:lang('保存')}</a>
+            <a  class="layui-btn layui-btn-primary layui-btn-radius" lay-submit="" lay-filter="cancel" id="cancel" >{:lang('取消')}</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery','upload'], function() {
+        var element = layui.element
+            ,layer = layui.layer
+            ,laydate = layui.laydate
+            ,table = layui.table
+            ,upload = layui.upload
+            ,$ = layui.$
+            ,form = layui.form;  
+        var main = {
+            submitForm : function(data) {
+                var roleid = $.trim(data.field.roleid);
+                if(roleid==''){
+                    layer.alert('{:lang("请输入博主ID")}！',{icon:5});
+                    return;
+                }
+               
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'roleid':roleid
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        var index = parent.layer.getFrameIndex(window.name); /* 先得到当前iframe层的索引 */
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.layui.table.reload('proxylist',{page:{curr:$(".layui-laypage-em").next().html()}});   //主要代码
+                                parent.layer.close(index);
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+
+        
+    });
+</script>
+{/block}

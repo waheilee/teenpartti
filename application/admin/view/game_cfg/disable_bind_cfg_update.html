@@ -1,0 +1,92 @@
+{extend name="common/base" /}
+
+{block name="title"}编辑转发地址{/block}
+{block name="css"}
+{/block}
+{block name="content"}
+
+<form class="layui-form" action="{:url('gameCfg/disableBindCfgSave')}" method="post" id="addProxy" >
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('邀请人数')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="InviteCounts" name='InviteCounts'  value="{if(!empty($info))}{$info.InviteCounts}{/if}" lay-verify="required" placeholder="{:lang('请输入邀请人数')}" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('掉绑比例%')}：</label>
+        <div class="layui-input-block">
+            <input type="text" id="DisableBindRate" name='DisableBindRate'  value="{if(!empty($info))}{$info.DisableBindRate}{/if}" lay-verify="required" placeholder="{:lang('掉绑比例')}" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <a style="margin-left: 15%" type="submit" class="layui-btn layui-btn-radius" lay-submit="" lay-filter="addit" id="addit" >{:lang('保存')}</a>
+            <a class="layui-btn layui-btn-primary layui-btn-radius" id="cancel" >{:lang('取消')}</a>
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name="script"}
+
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function() {
+        var layer = layui.layer
+            ,$ = layui.$
+            ,form = layui.form;
+
+        var main = {
+            submitForm : function(data) {
+                var InviteCounts = $.trim(data.field.InviteCounts)
+                    ,DisableBindRate = $.trim(data.field.DisableBindRate);
+                $.ajax({
+                    type:'post',
+                    url:data.form.action,
+                    data:{
+                        'Id':{$info.ID},
+                        'InviteCounts' : InviteCounts,
+                        'DisableBindRate' : DisableBindRate
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            layer.msg(res.msg,{icon:1,time:1000}, function () {
+                                x_admin_close();
+                                parent.location.reload();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon:2});
+                        }
+                    }
+                });
+            },
+
+            bindEvent: function() {
+                form.on('submit(addit)', function(data) {
+                    main.submitForm(data);
+                    return false;
+                });
+
+                $('#cancel').on('click', function(e) {
+                    e.preventDefault();
+                    x_admin_close();
+                })
+            },
+
+            init : function () {
+                main.bindEvent();
+            }
+        };
+
+        main.init();
+    });
+</script>
+{/block}

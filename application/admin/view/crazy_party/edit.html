@@ -1,0 +1,143 @@
+{extend name="common/base" /}
+{block name="style"}
+<style type="text/css">
+  .layui-form-pane .layui-form-label{
+    width: 400px !important;
+  }
+  .layui-form-pane .layui-input-block{
+    margin-left:400px !important;
+  }
+
+</style>
+{/block}
+{block name="content"}
+<div class="layui-fluid">
+<form class="layui-form" id='edit_form' onsubmit="return false">
+  <div class="layui-form-item layui-form-pane">
+        <input type="hidden" name="ActiId" value="{$data.ActiId ?? ''}">
+        <div class="layui-form-item">
+            <label class="layui-form-label">奖品图标</label>
+            <div class="layui-inline" id="iconpic">
+                <img src="{$data.IconDownloadUrl ??''}" height="100">
+            </div>
+        </div>
+        <input type="hidden" name="IconDownloadUrl" id="IconDownloadUrl" value="{$data.IconDownloadUrl ?? ''}" />
+        <div class="layui-form-item">
+            <label class="layui-form-label">{:lang('上传图标')}：</label>
+            <div class="layui-input-block" id="cutpic">
+                <button type="button" class="layui-btn layui-btn-primary" id="headpic"><i class="layui-icon"></i>{:lang('上传图标')}
+                </button>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">标题</label>
+            <div class="layui-input-block">
+                <input type="text" name="ActiTitle" autocomplete="off" class="layui-input" id='ActiTitle'  value="{$data.ActiTitle ?? ''}">
+            </div>
+        </div>
+
+        <div class="layui-form-item" style="{if(config('app_name')!='FOGOSLOTS')}display:none{/if}">
+            <label class="layui-form-label">商品链接</label>
+            <div class="layui-input-block">
+                <input type="text" name="CommodityLink" autocomplete="off" class="layui-input" id='CommodityLink'  value="{$data.CommodityLink ?? ''}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">消耗</label>
+            <div class="layui-input-block">
+                <input type="text" name="SignUpFree" autocomplete="off" class="layui-input" id='SignUpFree'  value="{$data.SignUpFree ?? ''}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">份数</label>
+            <div class="layui-input-block">
+                <input type="text" name="ActiStartThreShold" autocomplete="off" class="layui-input" id='ActiStartThreShold'  value="{$data.ActiStartThreShold ?? ''}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">状态</label>
+            <div class="layui-input-block">
+                <input type="radio" value="1"  title="{:lang('开启')}"  name="ActiStatus" {php} if($data['ActiStatus']==1){echo 'checked';} {/php}>
+                <input type="radio" value="0"  title="{:lang('关闭')}"  name="ActiStatus"  {php} if($data['ActiStatus']==0){echo 'checked';} {/php}>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <button class="layui-btn layui-btn-fluid" onclick="ajax()" lay-filter="formDemo">确定 </button>
+        </div>
+  </div>
+</form>
+</div>  
+{/block}
+{block name="script"}
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'layedit', 'laydate', 'form', 'jquery','upload'], function () {
+        var element = layui.element,
+            layer = layui.layer,
+            laydate = layui.laydate,
+            layedit = layui.layedit,
+            table = layui.table,
+            upload = layui.upload,
+            $ = layui.$,
+            form = layui.form;
+
+
+
+        upload.render({
+            elem: '#headpic'
+            , url: '{:url("CustomerServiceSystem/uploadheadpic")}'
+            , accept: 'file' //普通文件
+            , exts: 'png|jpg|jpeg'
+            ,data : {'id':$('#ID').val()}
+            , before: function (obj) { //obj参数包含的信息，跟 choose回调完全一致，可参见上文。
+            }
+            , done: function (res) {
+                //layer.close(loading);
+                if (res.code == 0) {
+                    $('#IconDownloadUrl').val(res.data.path);
+                    $('#iconpic').html('<img src="' + res.data.path + '" width="100" height="100"/>');
+                    layer.msg(res.msg, {icon: 1});
+                } else {
+                    layer.msg(res.msg, {icon: 2});
+                }
+            }
+        });
+    });
+</script>
+<script type="text/javascript">
+function ajax(){
+    var post_data = $('#edit_form').serialize();
+     // var index = layer.msg('正在拼命处理...' , {
+    //   icon: 16 ,
+    //   shade: 0.6 ,
+    //   time: 0 ,
+    // });
+    $.ajax({
+            url:"{:url('CrazyParty/edit')}",
+            type:"POST",
+            data:post_data,
+            dataType:'json',
+            success:function(ret){
+                if (ret.code == 0) {
+                  layer.msg('操作成功');
+                  setTimeout(function(){parent.layer.closeAll()},1500);
+                  parent.$(".layui-laypage-btn")[0].click();
+                  
+                }
+                if (ret.code == 1) {
+                    layer.msg(ret.msg);
+                }
+            }
+        });
+  }
+
+
+</script> 
+{/block}

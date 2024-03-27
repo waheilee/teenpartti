@@ -1,0 +1,247 @@
+{extend name="common/base" /}
+{block name="title"}关系列表{/block}
+{block name="css"}
+<style type="text/css">
+  .layui-form-pane .layui-form-label{
+    width: 250px !important;
+  }
+  .layui-form-pane .layui-input-block{
+    margin-left:250px !important;
+  }
+
+</style>
+{/block}{/block}
+{block name="content"}
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <a class="layui-btn layui-btn-normal" onclick="add()">{:lang('添加')}</a>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+    
+</div>
+<script type="text/html" id="toolbarDemo">
+    <div class="layui-btn-container">
+
+    </div>
+</script>
+{/block}
+{block name="script"}
+<script src="__js__/cache.js"></script>
+<script src="__js__/Barrett.js"></script>
+<script src="__js__/BigInt.js"></script>
+<script src="__js__/RSA.js"></script>
+<script>
+    url = "{:url('Gamemanage/chargeRandBonusCfg')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var table = layui.table;
+        var form  = layui.form;
+        var laydate  = layui.laydate;
+        var $ = layui.$;
+        var element  = layui.element;
+          table.render({
+            elem: '#proxylist'
+            // ,height: 'full-280'
+            ,url: url+'?action=list'//数据接口
+            ,limit:20
+            ,page: true //开启分页
+            ,id:'proxylist'
+            ,autoSort:false
+            ,sort: true
+            // ,toolbar: '#toolbarDemo'
+            // ,defaultToolbar:[]
+            ,cols: [[ //表头
+                {field:'ID', title: "{:lang('ID')}",align:'center', minWidth: 100},
+                {field:'MinBonusPer2', title: "{:lang('奖励最低百分比')}",align:'center', minWidth: 200},
+                {field:'MaxBonusPer2', title: "{:lang('奖励最高百分比')}",align:'center', minWidth: 200},
+                {field:'RandValue2', title: "{:lang('随机概率')}",align:'center', minWidth: 200},
+                {title:'操作',align:'center', minWidth: 120, templet: function(d){
+                    return  '<a class="layui-btn layui-btn-sm" lay-event="edit">编辑</a>'+
+                          '<a class="layui-btn layui-btn-sm  layui-bg-red" lay-event="del">删除</a>';
+              }}
+            ]]
+            , done: function (res) {
+
+            }
+          });
+          laydate.render({elem: '#start_date', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+          laydate.render({elem: '#end_date', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+
+          // 搜索 
+          $("#search").on('click', function(){
+             table.reload('proxylist', {
+              page:{
+                  curr:1 
+              },
+              where: {
+                  RoleId: $('#RoleId').val()
+              }
+            })
+          });
+        table.on('tool(proxylist)', function (obj) {
+            var data = obj.data //获得当前行数据
+                , layEvent = obj.event; //获得 lay-event 对应的值
+            tr = obj.tr; //获得当前行 tr 的DOM对象
+            if (obj.event === 'edit') {
+                layer.open({
+                  title: '编辑配置'
+                  , btn: ['确定']
+                  , area: ['600px', '400px']
+                  , content:
+                    '<div class="layui-form-item layui-form-pane">'+
+                      '<div class="layui-form-item">'+
+                        '<label class="layui-form-label">奖励最低百分比（%）：</label>'+
+                        '<div class="layui-input-block">'+
+                          '<input type="text" id="MinBonusPer" autocomplete="off" class="layui-input"  value="'+data.MinBonusPer+'">'+
+                        '</div>'+
+                      '</div>'+
+                      '<div class="layui-form-item">'+
+                        '<label class="layui-form-label">奖励最高百分比（%）：</label>'+
+                        '<div class="layui-input-block">'+
+                          '<input type="text" id="MaxBonusPer" autocomplete="off" class="layui-input"  value="'+data.MaxBonusPer+'">'+
+                        '</div>'+
+                      '</div>'+
+                      '<div class="layui-form-item">'+
+                        '<label class="layui-form-label">随机概率（%）：</label>'+
+                        '<div class="layui-input-block">'+
+                          '<input type="text" id="RandValue" autocomplete="off" class="layui-input"  value="'+data.RandValue+'">'+
+                        '</div>'+
+                      '</div>'+
+                    '</div>',
+                  yes: function (index, layero) {
+                    var post_data = {
+                      ID:data.ID,
+                      MinBonusPer:$('#MinBonusPer').val(),
+                      MaxBonusPer:$('#MaxBonusPer').val(),
+                      RandValue:$('#RandValue').val()
+                    };
+                    $.ajax({
+                      url:"{:url('Gamemanage/editChargeRandBonusCfg')}",
+                      type:'POST',
+                      data:post_data,
+                      dataType:'json',
+                      success:function(ret){
+                        if (ret.code == 0) {
+                          layer.msg(ret.msg);
+                          $(".layui-laypage-btn")[0].click();
+                          setTimeout(function(){layer.closeAll()},1500);
+                        } else {
+                          layer.msg(ret.msg);
+                        }
+                      }
+                    }); 
+                  }
+                });
+            }
+            if (layEvent === 'del') {
+                layer.confirm('确定删除？', function(index){
+                    $.ajax({
+                      url:"{:url('Gamemanage/delChargeRandBonusCfg')}?ID="+data.ID,
+                      type:'GET',
+                      dataType:'json',
+                      success:function(ret){
+                        if(ret.code == 0) {
+                          layer.msg('删除成功');
+                          setTimeout(function(){layer.closeAll()},1500);
+                          obj.del();
+                        } else {
+                          layer.msg('删除失败');
+                        }
+                      }
+                    });
+                });
+            }
+        });
+        table.on('toolbar(proxylist)', function (obj) {
+
+        });
+        //排序
+        table.on('sort(proxylist)', function (obj) {
+            //执行重载
+            table.reload('proxylist', {
+                initSort: obj,
+                page: {curr: 1},
+                where: {
+                    OperatorId: $('#OperatorId').val(),
+                    ordertype: obj.type,
+                    orderby: obj.field,
+                },
+                parseData:function(res){
+                  if(res.data.length==0){
+                    return{
+                      'code':'201',
+                      'msg':"{:lang('无数据')}"
+                    };
+                  };
+                }
+            });
+
+        });
+    });
+    function add(){
+            layer.open({
+              title: '新增配置'
+              , btn: ['确定']
+              , area: ['600px', '400px']
+              , content:
+                '<div class="layui-form-item layui-form-pane">'+
+                  '<div class="layui-form-item">'+
+                    '<label class="layui-form-label">奖励最低百分比（%）：</label>'+
+                    '<div class="layui-input-block">'+
+                      '<input type="text" id="MinBonusPer" autocomplete="off" class="layui-input"  value="">'+
+                    '</div>'+
+                  '</div>'+
+                  '<div class="layui-form-item">'+
+                    '<label class="layui-form-label">奖励最高百分比（%）：</label>'+
+                    '<div class="layui-input-block">'+
+                      '<input type="text" id="MaxBonusPer" autocomplete="off" class="layui-input"  value="">'+
+                    '</div>'+
+                  '</div>'+
+                  '<div class="layui-form-item">'+
+                    '<label class="layui-form-label">随机概率（%）：</label>'+
+                    '<div class="layui-input-block">'+
+                      '<input type="text" id="RandValue" autocomplete="off" class="layui-input"  value="">'+
+                    '</div>'+
+                  '</div>'+
+                '</div>',
+              yes: function (index, layero) {
+                var post_data = {
+                  ID:'',
+                  MinBonusPer:$('#MinBonusPer').val(),
+                  MaxBonusPer:$('#MaxBonusPer').val(),
+                  RandValue:$('#RandValue').val()
+                };
+                $.ajax({
+                  url:"{:url('Gamemanage/editChargeRandBonusCfg')}",
+                  type:'POST',
+                  data:post_data,
+                  dataType:'json',
+                  success:function(ret){
+                    if (ret.code == 0) {
+                      layer.msg(ret.msg);
+                      $(".layui-laypage-btn")[0].click();
+                      setTimeout(function(){layer.closeAll()},1500);
+                    } else {
+                      layer.msg(ret.msg);
+                    }
+                  }
+                }); 
+              }
+            });
+        }
+</script>
+{/block}

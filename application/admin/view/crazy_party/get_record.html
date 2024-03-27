@@ -1,0 +1,148 @@
+{extend name="common/base" /}
+{block name="title"}关系列表{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('玩家ID')}</label>
+                    <div class="layui-input-inline"><input autocomplete="off" class="layui-input" id="RoleID" lay-verify="number" name="RoleID" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <a class="layui-btn" data-type="reload" id="search">{:lang('搜索')}</a>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+    
+</div>
+{/block}
+{block name="script"}
+<script src="__js__/cache.js"></script>
+<script src="__js__/Barrett.js"></script>
+<script src="__js__/BigInt.js"></script>
+<script src="__js__/RSA.js"></script>
+<script>
+    url = "{:url('CrazyParty/getRecord')}?ActiNo={$ActiNo}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var table = layui.table;
+        var form  = layui.form;
+        var laydate  = layui.laydate;
+        var $ = layui.$;
+        var element  = layui.element;
+          table.render({
+            elem: '#proxylist'
+            // ,height: 'full-280'
+            ,url: url+'&action=list'//数据接口
+            ,limit:20
+            ,page: true //开启分页
+            ,id:'proxylist'
+            ,autoSort:false
+            ,sort: true
+            ,cols: [[ //表头
+                {field:'ActiBonusCode', title: "{:lang('奖券编码')}",align:'center', minWidth: 150},
+                {field:'RoleId', title: "{:lang('玩家ID')}",align:'center', minWidth: 150, templet: function (d) {
+                        return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.RoleId+ "</a>";
+                    }
+                },
+                {title:'状态',align:'center', minWidth: 160, templet: function(d){
+                    if (d.ActiStatus == 0) {
+                        if (d.PrizeLabel == 1) {
+                            return  '<a class="layui-btn layui-btn-sm layui-btn-normal" lay-event="cancel">取消中奖</a>';
+                        } else{
+                            return  '<a class="layui-btn layui-btn-sm" lay-event="set" style="background-color:red">设定中奖</a>';
+                        }
+                    } else {
+                        if (d.PrizeLabel == 1) {
+                            return '<span style="color:red"><b>中奖</b></span>';
+                        } else {
+                            return '';
+                        }
+                        
+                    }
+                }}
+            ]]
+            , done: function (res) {
+
+            }
+          });
+
+          // 搜索 
+          $("#search").on('click', function(){
+             table.reload('proxylist', {
+              page:{
+                  curr:1 
+              },
+              where: {
+                  RoleID: $('#RoleID').val(),
+                  start_date: $('#start_date').val(),
+                  end_date:$('#end_date').val(),
+                  ActiBonusCode:$('#ActiBonusCode').val(),
+                  ActiNo:$('#ActiNo').val(),
+                  PrizeLabel:$('#PrizeLabel').val()
+              }
+            })
+          });
+        table.on('tool(proxylist)', function (obj) {
+            var data = obj.data //获得当前行数据
+                , layEvent = obj.event; //获得 lay-event 对应的值
+            tr = obj.tr; //获得当前行 tr 的DOM对象
+            if (layEvent === 'detail') {
+                var url = '/admin/player/playerDetail?roleid=' + data.RoleId;
+                x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.8);
+            }
+
+            if (layEvent === 'set') {
+                layer.confirm('确定设定中奖？', function(index){
+                    $.ajax({
+                      url:"{:url('CrazyParty/set')}?ActiNo="+data.ActiNo+'&ActiBonusCode='+data.ActiBonusCode+'&RoleID='+data.RoleId,
+                      type:'GET',
+                      dataType:'json',
+                      success:function(ret){
+                        if(ret.code == 0) {
+                          layer.msg('操作成功');
+                          $(".layui-laypage-btn")[0].click();
+                          parent.$(".layui-laypage-btn")[0].click();
+                        } else {
+                          layer.msg('操作失败');
+                        }
+                      }
+                    });
+                });
+            }
+
+            if (layEvent === 'cancel') {
+                layer.confirm('确定取消中奖？', function(index){
+                    $.ajax({
+                      url:"{:url('CrazyParty/cancel')}?ActiNo="+data.ActiNo+'&ActiBonusCode='+data.ActiBonusCode+'&RoleID='+data.RoleId,
+                      type:'GET',
+                      dataType:'json',
+                      success:function(ret){
+                        if(ret.code == 0) {
+                          layer.msg('操作成功');
+                          $(".layui-laypage-btn")[0].click();
+                          parent.$(".layui-laypage-btn")[0].click();
+                        } else {
+                          layer.msg('操作失败');
+                        }
+                      }
+                    });
+                });
+            }
+        });
+    });
+</script>
+{/block}

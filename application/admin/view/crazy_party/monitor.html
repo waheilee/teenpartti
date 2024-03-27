@@ -1,0 +1,186 @@
+{extend name="common/base" /}
+{block name="title"}关系列表{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-row layui-col-space20">
+    <div class="layui-col-md6">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('总消耗钻石')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="data1"
+                                                                 style="color: #009688">0</p></div>
+        </div>
+    </div>
+    <div class="layui-col-md6">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('总剩余钻石')}</div>
+            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="data2"
+                                                                 style="color: #009688">0</p></div>
+        </div>
+    </div>
+
+</div>
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('玩家ID')}</label>
+                    <div class="layui-input-inline"><input autocomplete="off" class="layui-input" id="RoleID" lay-verify="number" name="RoleID" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <a class="layui-btn" data-type="reload" id="search">{:lang('搜索')}</a>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+    
+</div>
+{/block}
+{block name="script"}
+<script src="__js__/cache.js"></script>
+<script src="__js__/Barrett.js"></script>
+<script src="__js__/BigInt.js"></script>
+<script src="__js__/RSA.js"></script>
+<script>
+    url = "{:url('CrazyParty/monitor')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var table = layui.table;
+        var form  = layui.form;
+        var laydate  = layui.laydate;
+        var $ = layui.$;
+        var element  = layui.element;
+          table.render({
+            elem: '#proxylist'
+            // ,height: 'full-280'
+            ,url: url+'?action=list'//数据接口
+            ,limit:20
+            ,page: true //开启分页
+            ,id:'proxylist'
+            ,autoSort:false
+            ,sort: true
+            ,cols: [[ //表头
+                
+                {field:'RoleId', title: "{:lang('玩家ID')}",align:'center', minWidth: 150, templet: function (d) {
+                        return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.RoleId+ "</a>";
+                    }
+                },
+                {field:'PartyDiamond', title: "{:lang('当前钻石')}",align:'center', minWidth: 150, sort: true},
+                {field:'AllSignUpFree', title: "{:lang('消耗钻石')}",align:'center', minWidth: 150, sort: true},
+                {field:'JoinInActi', title: "{:lang('参与总数')}",align:'center', minWidth: 150, sort: true},
+                {field:'BonusActi', title: "{:lang('中奖总数')}",align:'center', minWidth: 150, sort: true},
+                {title:'操作',align:'center', minWidth: 160, templet: function(d){
+                    return  '<a class="layui-btn layui-btn-sm layui-btn-normal" lay-event="opt">增减钻石</a>';
+                }}
+            ]]
+            , done: function (res) {
+                $('#data1').html(res.other['AllSignUpFree']);
+                $('#data2').html(res.other['PartyDiamond']);
+            }
+          });
+
+          // 搜索 
+          $("#search").on('click', function(){
+             table.reload('proxylist', {
+              page:{
+                  curr:1 
+              },
+              where: {
+                  RoleID: $('#RoleID').val()
+              }
+            })
+          });
+          //排序
+        table.on('sort(proxylist)', function (obj) {
+            //执行重载
+            table.reload('proxylist', {
+                initSort: obj,
+                page: {curr: 1},
+                where: {
+                    RoleID: $('#RoleID').val(),
+                    ordertype: obj.type,
+                    orderby: obj.field,
+                },
+                parseData:function(res){
+                  if(res.data.length==0){
+                    return{
+                      'code':'201',
+                      'msg':"{:lang('无数据')}"
+                    };
+                  };
+                }
+            });
+
+        });
+        table.on('tool(proxylist)', function (obj) {
+            var data = obj.data //获得当前行数据
+                , layEvent = obj.event; //获得 lay-event 对应的值
+            tr = obj.tr; //获得当前行 tr 的DOM对象
+            if (layEvent === 'detail') {
+                var url = '/admin/player/playerDetail?roleid=' + data.RoleId;
+                x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.8);
+            }
+
+            if (layEvent === 'opt') {
+               var content = '<form class="layui-form" action="">' +
+                                    '<div class="layui-form-item"><label class="layui-form-label">{:lang("钻石数量")}</label><div class="layui-input-block"><input type="number" min="0"name="title" lay-verify="title" autocomplete="off" placeholder="{:lang(\'请输入数量\')}" class="layui-input" id="amount" value="0" ></div></div>' +
+                                    '</form>';
+                layer.open({
+                    content: content,
+                    title: '{:lang("转盘次数")}'
+                    , btn: ['{:lang("增加")}', '{:lang("减少")}']
+                    , yes: function (index, layero) {
+                        var amount = $("#amount").val();
+                        if (amount == '') {
+                            layer.msg("{:lang('请输入数量')}");
+                            return;
+                        }
+                        editAmount(data.RoleId,amount, 0);
+                    }
+                    , btn2: function (index, layero) {
+                        var amount = $("#amount").val();
+                        if (amount == '') {
+                            layer.msg("{:lang('请输入数量')}");
+                            return;
+                        }
+                        editAmount(data.RoleId,amount, 1);
+                        return false
+                    }
+                }); 
+            }
+        });
+        function editAmount(id,amount, t) {
+            $.ajax({
+                type: 'post',
+                url: "{:url('CrazyParty/opt')}",
+                data: {
+                    'RoleId': id,
+                    'amount': amount,
+                    'type': t
+                },
+                dataType: 'json',
+                success: function (res) {
+                    if (res.code == 0) {
+                        layer.msg(res['msg'], {icon: 1, time: 1000}, function () {
+                            $(".layui-laypage-btn")[0].click();
+                            // layer.closeAll();
+                        });
+                    } else {
+                        layer.msg(res['msg'], {icon: 5});
+                    }
+                }
+            });
+        }
+    });
+</script>
+{/block}

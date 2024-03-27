@@ -1,0 +1,185 @@
+{extend name="common/base" /}
+{block name="title"}{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('渠道ID')}：</label>
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="OperatorId" name="OperatorId" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('业务员ID')}：</label>
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="ProxyChannelId" name="ProxyChannelId" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('时间')}：</label> 
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="start_date" name="start_date" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('充值范围')}</label>
+                    <div class="layui-input-inline">
+                        <input type="number" name="min_re" id="min_re"  autocomplete="off" class="layui-input">
+                    </div>
+                    <div class="layui-form-mid" > -
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="number" name="max_re" id="max_re" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <a class="layui-btn" data-type="reload" id="search">{:lang('搜索')}</a>
+                        <a class="layui-btn layui-btn-danger" id="output">{:lang('导出记录')}</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist" class="layui-table"></table>
+        </div>
+    </div>
+
+</div>
+
+{/block}
+{block name="script"}
+<script>
+    url = "{:url('merchant/operatorSummaryData')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var table = layui.table;
+        var form = layui.form;
+        var $ = layui.$;
+        var element = layui.element;
+        var laydate = layui.laydate;
+        //日期
+
+        laydate.render({
+            elem: '#start_date',
+            type: 'month',
+            value: '{$thismonth}'
+        });
+
+        $("#calculate").click('on', function () {
+            var totalprofit = $('#calprofit').html();
+            var rate = $('#rate').val();
+            if (rate != '') {
+                totalprofit = totalprofit / parseFloat(rate);
+                $('#retdata').html(totalprofit.toFixed(2));
+            }
+        });
+
+        $("#search").click('on', function () {
+            var date = $("#start_date").val();
+            var ProxyChannelId = $("#ProxyChannelId").val();
+            table.reload('proxylist', {
+                page: {
+                    curr: 1
+                },
+                where: {
+                    date: date,
+                    ProxyChannelId:ProxyChannelId,
+                    OperatorId:$("#OperatorId").val(),
+                    min_re:$("#min_re").val(),
+                    max_re:$("#max_re").val()
+                }
+            })
+        });
+
+        table.render({
+            elem: '#proxylist'
+            , height: 'full-180'
+            , url: 'operatorSummaryData?date='+$("#start_date").val()//数据接口
+            , limit: 15
+            , page: true //开启分页
+            , id: 'proxylist'
+            , autoSort: false
+            , cols: [[ //表头
+                {field: 'OperatorId', title: "{:lang('渠道ID')}", width: 140, align: 'center'},
+                {field: 'OperatorName', title: "{:lang('渠道名称')}", width: 140, align: 'center'},
+                {field: 'ProxyChannelId', title: "{:lang('业务员ID')}", width: 140, align: 'center'},
+                {field: 'ProxyChannelName', title: "{:lang('业务员名称')}", width: 180, align: 'center'},
+                {field: 'totalpayorder', title: "{:lang('总充值')}", width: 180, align: 'center'},
+                {field: 'rechargefee', title: "{:lang('充值手续费')}", width: 150, align: 'center'},
+                {field: 'withdrawfee', title: "{:lang('提现手续费')}", width: 150, align: 'center'},
+                {field: 'apicost', title: "{:lang('API费用')}", width: 140, align: 'center'},
+                {field: 'totalpayout', title: "{:lang('总提现')}", width: 180, align: 'center'},
+                {field: 'totalprofit', title: "{:lang('总利润')}", width: 180, align: 'center'},
+                // {field: 'versionfee', title: "{:lang('版本费')}", width: 180, align: 'center'},
+                // {field: 'channelshare', title: "{:lang('渠道分成')}", width: 180, align: 'center'},
+                // {fixed: 'right',title:"{:lang('操作')}", toolbar: '#toolbar',minWidth: 120,  align: 'center'}
+
+            ]]
+            , done: function (res) {
+            }
+        });
+
+        $('#output').click(function () {
+            var where = {
+                date: $("#start_date").val(),
+                ProxyChannelId: $("#ProxyChannelId").val(),
+                OperatorId:$("#OperatorId").val(),
+                min_re:$("#min_re").val(),
+                max_re:$("#max_re").val(),
+                action: 'output',
+                limit:9999
+            }
+
+            download();
+
+            function download() {
+                var params = Object.keys(where).map(function (key) {
+                    return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
+                }).join("&");
+                url = url + "?" + params;
+                $.ajax({
+                    type: 'POST',
+                    dataType: 'json',
+                    async: true,
+                    url: url, // 生成文件，保存在服务器
+                    success: function (data) {
+                        var result = data;
+                        console.info(data);
+                        switch (result["code"]) {
+                            case 0:
+                                parent.parent.open(url + "&exec=1&outall=true");
+                                break;
+                            case 1:
+                                layer.msg(result["message"]);
+                                break;
+                            case 2:
+                                layer.confirm(result['message'], {
+                                    btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
+                                }, function () {
+                                    parent.parent.open(url + "&exec=1&outall=true");
+                                    layer.msg('', {icon: 6, time: 1000}, function () {
+                                        window.location.reload();
+                                    });
+                                });
+                        }
+                    },
+                    error: function (XMLHttpRequest, textStatus, e) {
+                        console.log("oilDetection.js  method exportOilDetection" + e);
+                    }
+                });
+            }
+        });
+    });
+</script>
+{/block}

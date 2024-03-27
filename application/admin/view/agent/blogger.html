@@ -1,0 +1,155 @@
+{extend name="common/base" /}
+{block name="title"}关系列表{/block}
+{block name="css"}{/block}
+{block name="content"}
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('博主ID')}</label>
+                    <div class="layui-input-inline"><input autocomplete="off" class="layui-input" id="RoleID" lay-verify="number" name="RoleID" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('渠道ID')}</label>
+                    <div class="layui-input-inline"><input autocomplete="off" class="layui-input" id="OperatorId" lay-verify="number" name="OperatorId" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('创建时间')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="start_date" id="start_date" autocomplete="off" class="layui-input">
+                    </div>
+                    <div class="layui-form-mid"> -
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="end_date" id="end_date" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <a class="layui-btn" data-type="reload" id="search">{:lang('搜索')}</a>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
+        </div>
+    </div>
+    
+</div>
+
+{/block}
+{block name="script"}
+<script src="__js__/cache.js"></script>
+<script src="__js__/Barrett.js"></script>
+<script src="__js__/BigInt.js"></script>
+<script src="__js__/RSA.js"></script>
+<script>
+    url = "{:url('agent/blogger')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var table = layui.table;
+        var form  = layui.form;
+        var laydate  = layui.laydate;
+        var $ = layui.$;
+        var element  = layui.element;
+          table.render({
+            elem: '#proxylist'
+            // ,height: 'full-280'
+            ,url: url+'?action=list'//数据接口
+            ,limit:20
+            ,page: true //开启分页
+            ,id:'proxylist'
+            ,autoSort:false
+            ,sort: true
+            ,cols: [[ //表头
+                {field:'BloggerDate', title: "{:lang('创建时间')}",align:'center', minWidth: 180},
+                {field:'OperatorId', title: "{:lang('归属渠道')}",align:'center', minWidth: 100},
+                {field:'AccountID', title: "{:lang('博主ID')}",align:'center', minWidth: 100, templet: function (d) {
+                        return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.AccountID+ "</a>";
+                    }
+                },
+                 {if(config('is_usa') != 1)}
+                    {field:'WeChat', title: "{:lang('别名')}",align:'center', minWidth: 200, edit: 'text'},
+                {/if}
+                {field:'emailAmount', title: "{:lang('邮件赠送金额')}",align:'center', minWidth: 140, sort: true},
+                {
+                    field: '', align: 'center', title: "{:lang('上分（游戏+佣金）')}", minWidth: 200, templet: function (d) {
+                        return d.totalsf+'（'+d.gamesf+'+'+d.commisionsf+'）'
+                    }
+                },
+                {field:'withdrawAmount', title: "{:lang('提款总额')}",align:'center', minWidth: 120, sort: true},
+                {field:'Lv1PersonCount', title: "{:lang('一级人数')}",align:'center', minWidth: 120, sort: true},
+                {field:'Lv1DepositPlayers', title: "{:lang('一级充值人数')}",align:'center', minWidth: 140, sort: true},
+                {field:'Lv1Deposit', title: "{:lang('一级充值总额')}",align:'center', minWidth: 140, sort: true},
+                {field:'Lv1WithdrawAmount', title: "{:lang('一级提现总额')}",align:'center', minWidth: 140, sort: true},
+                {field:'profit', title: "{:lang('利润')}",align:'center', minWidth: 100, sort: true},
+                {field:'emailFristDate', title: "{:lang('第一次邮件时间')}",align:'center', minWidth: 180},
+                {field:'emailLastDate', title: "{:lang('最近一笔邮件时间')}",align:'center', minWidth: 180}
+                // {title:'操作', toolbar: '#toolbar'}
+            ]]
+            , done: function (res) {
+
+            }
+          });
+          laydate.render({elem: '#start_date', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+          laydate.render({elem: '#end_date', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+
+          // 搜索 
+          $("#search").on('click', function(){
+             table.reload('proxylist', {
+              page:{
+                  curr:1 
+              },
+              where: {
+                  RoleID: $('#RoleID').val(),
+                  start_date: $('#start_date').val(),
+                  end_date:$('#end_date').val(),
+                  OperatorId:$('#OperatorId').val(),
+              }
+            })
+          });
+        table.on('tool(proxylist)', function (obj) {
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'detail') {
+                        var url = '/admin/player/playerDetail?roleid=' + data.AccountID;
+                        x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.8);
+                    }
+        });
+          //排序
+        table.on('sort(proxylist)', function (obj) {
+            //执行重载
+            table.reload('proxylist', {
+                initSort: obj,
+                page: {curr: 1},
+                where: {
+                    RoleID: $('#RoleID').val(),
+                    start_date: $('#start_date').val(),
+                    end_date:$('#end_date').val(),
+                    OperatorId:$('#OperatorId').val(),
+                    ordertype: obj.type,
+                    orderby: obj.field,
+                },
+                parseData:function(res){
+                  if(res.data.length==0){
+                    return{
+                      'code':'201',
+                      'msg':"{:lang('无数据')}"
+                    };
+                  };
+                }
+            });
+
+        });
+    });
+</script>
+{/block}

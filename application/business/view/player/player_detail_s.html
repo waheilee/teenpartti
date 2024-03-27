@@ -1,0 +1,978 @@
+{extend name="common/base" /}
+{block name="title"}游戏日志{/block}
+{block name="css"}{/block}
+{block name="content"}
+<style type="text/css">
+    .layui-fluid {
+        padding: 1px;
+    }
+
+    .layui-tab-item .layui-fluid {
+        padding: 10px;
+    }
+
+    .layui-row {
+        line-height: 35px;
+        text-align: left;
+        font-size: larger;
+        /*background-color: #79C48C;*/
+        color: #000000;
+    }
+    .layui-form-switch{
+        margin-top: 0px !important;
+    }
+</style>
+<div class="layui-card">
+    <div class="layui-card-body">
+        <div class="layui-tab layui-tab-brief" lay-filter="test">
+            <ul class="layui-tab-title">
+                <li class="layui-this" lay-id="1">{:lang('基本信息')}</li>
+                <!-- <li class="" lay-id="2">{:lang('银行卡信息')}</li> -->
+                <!-- <li class="" lay-id="2">{:lang('UPI信息')}</li> -->
+                <!-- <li class="" lay-id="3">{:lang('客服')}</li> -->
+                
+                <li class="" lay-id="4" id="c4">{:lang('打码变化')}</li>
+                <li class="" lay-id="4" id="c14">{:lang('打码任务')}</li>
+                <li class="" lay-id="4" id="c9">{:lang('打码量操作日志')}</li>
+
+                <li class="" lay-id="5" id="c5">{:lang('充值记录')}</li>
+                <li class="" lay-id="6" id="c6">{:lang('提现记录')}</li>
+                <li class="" lay-id="7" id="c7">{:lang('登陆日志')}</li>
+                <li class="" lay-id="8" id="c8" style="{if(config('is_sameip_ban')==1)}display:none{/if}">{:lang('同ip查询')}</li>
+                <li class="" lay-id="8" id="c10">{:lang('玩家备注')}</li>
+                <li class="" lay-id="9" id="c11">{:lang('下级数据')}</li>
+                <li class="" lay-id="12" id="c12">{:lang('代理佣金')}</li>
+                <li class="" lay-id="13" id="c13">{:lang('游戏日报')}</li>
+                <li class="" lay-id="14" id="c14">{:lang('金币日志 ')}</li>
+                <li class="" lay-id="15" id="c15">{:lang('推广记录 ')}</li>
+            </ul>
+            <div class="layui-tab-content " >
+                {if(!empty($user))}
+                <!--基本信息-->
+                <div class="layui-tab-item  layui-show ">
+                    <div class="layui-fluid">
+                        <div class="layui-row  layui-col-space5 ">
+                            <div class="layui-col-xs3 layui-col-sm3 layui-col-md3">{:lang('账号状态')}</div>
+                        </div>
+                    </div>
+                    <table class="layui-table">
+                        <colgroup>
+                            <col width="150">
+                            <col width="200">
+                            <col width="150">
+                            <col width="200">
+                            <col width="150">
+                            <col width="200">
+                        </colgroup>
+                        <tbody>
+                        <tr>
+                            <td>{:lang('玩家账号')}:</td>
+                            <td>{$user.AccountName}</td>
+                            <td>{:lang('游戏ID')}:</td>
+                            <td>{$user.AccountID}</td>
+                            <td>{:lang('玩家昵称')}:</td>
+                            <td>{$user.LoginName}</td>
+                        </tr>
+                        <tr>
+                            <td>{:lang('账号状态')}:</td>
+                            <td>{$user.Locked==0?lang('正常'):lang('封号')}</td>
+                            <td>{:lang('VIP等级')}:</td>
+                            <td>VIP{$user.VipLv}&nbsp;&nbsp;&nbsp;[<a href="#" id="editlevel" >{:lang('修改')}</a>]</td>
+                            <td>{:lang('上级ID')}:</td>
+                            {if condition="(($user.parentId)>0)"}
+                                <td><a href="#" style="color: blue" onclick="todetail({$user.parentId})">{$user.parentId}</a></td>
+                            {else /} 
+                                <td>{$user.parentId}</td>
+                            {/if}
+                        </tr>
+                        <tr>
+                            <td>{:lang('手机号')}:</td>
+                            <td>{$user.Mobile}</td>
+                            <td>{:lang('所属推广')}:</td>
+                            <td>{$user.proxyName}</td>
+                            <td>{:lang('所属渠道')}:</td>
+                            <td>{$user.ChannelName}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div class="layui-fluid">
+                        <div class="layui-row  layui-col-space5 ">
+                            <div class="layui-col-xs3 layui-col-sm3 layui-col-md3">{:lang('金币信息')}</div>
+                        </div>
+                    </div>
+
+                    <table class="layui-table">
+                        <colgroup>
+                            <col width="150">
+                            <col width="200">
+                            <col width="150">
+                            <col width="200">
+                            <col width="150">
+                            <col width="200">
+                        </colgroup>
+                        <tbody>
+                        <tr>
+                            <td>{:lang('玩家盈亏')}:</td>
+                            {if condition="(($user.TotalRollOut-$user.TotalDeposit)>0)"}
+                            <td style="color: red">{$user.TotalRollOut-$user.TotalDeposit}</td>
+                            {elseif condition="(($user.TotalRollOut-$user.TotalDeposit)==0)"/}
+                            <td>{$user.TotalRollOut-$user.TotalDeposit}</td>
+                            {else /}
+                            <td style="color: green">{$user.TotalRollOut-$user.TotalDeposit}</td>
+                            {/if}
+                            <td>{:lang('总充值金额')}:</td>
+                            <td>{$user.TotalDeposit}</td>
+                            <td>{:lang('充值次数')}:</td>
+                            <td>{$paytimes}</td>
+
+                        </tr>
+                        <tr>
+                            <td>{:lang('携带金币')}:</td>
+                            <td>{$user.Money}</td>
+                            <td>{:lang('总提现金额')}:</td>
+                            <td>{$user.TotalRollOut}</td>
+                            <td>{:lang('提现次数')}:</td>
+                            <td>{$drawcount}</td>
+                        </tr>
+                        <tr>
+                            <td>{:lang('代理账号余额')}:</td>
+                            <td>{$user.ProxyBonus}</td>
+                            <td>{:lang('历史佣金')}:</td>
+                            <td>{$proxyinfo.TotalProfit}</td>
+                            <td>{:lang('可领佣金')}:</td>
+                            <td>{$proxyinfo.AbleProfit}
+                                <div class="layui-inline layui-form">
+                                    {if($proxyinfo.ProxySwitch == 1)}
+                                    <input type="checkbox" RoleID="{$proxyinfo.RoleID}" name="switch" lay-skin="switch" lay-text="{:lang('开')}|{:lang('关')}" lay-filter='Disable' checked>
+                                    {else/}
+                                    <input type="checkbox" RoleID="{$proxyinfo.RoleID}" name="switch" lay-skin="switch" lay-text="{:lang('开')}|{:lang('关')}" lay-filter='Disable'>
+                                    {/if}
+                                </div>
+                            </td>
+                            <td>{:lang('赠送金币金额')}:</td>
+                            <td>{$user.zscoin}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div class="layui-fluid">
+                        <div class="layui-row  layui-col-space5 ">
+                            <div class="layui-col-xs3 layui-col-sm3 layui-col-md3">{:lang('IP信息')}</div>
+                        </div>
+                    </div>
+
+                    <table class="layui-table">
+                        <colgroup>
+                            <col width="150">
+                            <col width="200">
+                            <col width="150">
+                            <col width="200">
+                            <col width="150">
+                            <col width="200">
+                        </colgroup>
+                        <tbody>
+                        <tr>
+                            <td>{:lang('注册IP')}:</td>
+                            <td>{$user.RegIP}</td>
+                            <td>{:lang('注册时间')}</td>
+                            <td>{$user.RegisterTime|substr=###,0,-4}</td>
+                            <td>{:lang('最后登录时间')}:</td>
+                            <td>{$user.LastLoginTime|substr=###,0,-4}</td>
+                        </tr>
+                        <tr>
+                            <td>{:lang('最后登录IP')}:</td>
+                            <td>{$user.LastLoginIP}</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+
+
+                {/if}
+
+                <!--   打码量需求    -->
+                <div class="layui-tab-item">
+                    <table id="Table0" lay-filter="Table0"></table>
+
+                </div>
+                <!--   打码任务    -->
+                <div class="layui-tab-item">
+                    <table id="Table10" lay-filter="Table10"></table>
+
+                </div>
+                <div class="layui-tab-item">
+                    <table id="Table5" lay-filter="Table5"></table>
+
+                </div>
+
+                <!--   充值记录    -->
+                <div class="layui-tab-item">
+                    <table id="Table1" lay-filter="Table1"></table>
+                </div>
+
+                <!--   提现记录    -->
+                <div class="layui-tab-item">
+                    <table id="Table2" lay-filter="Table2"></table>
+                </div>
+
+                <!--   登陆日志    -->
+                <div class="layui-tab-item">
+                    <table id="Table3" lay-filter="Table3"></table>
+                </div>
+
+                <!--   同ip查询    -->
+                <div class="layui-tab-item">
+                    <table id="Table4" lay-filter="Table4"></table>
+                </div>
+
+                <!--   备注查询    -->
+                <div class="layui-tab-item">
+                    <table id="Table6" lay-filter="Table4"></table>
+                </div>
+
+                <div class="layui-tab-item">
+                    <table id="Table7" lay-filter="Table7"></table>
+                </div>
+
+
+                <div class="layui-tab-item">
+                    <div class="layui-inline" id='register_date1'>
+                        <label class="layui-form-label">{:lang('时间段')}：</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="startdate1" id="startdate1" autocomplete="off" value="{:date('Y-m-d').' 00:00:00'}"
+                                   class="layui-input" >
+                        </div>
+                        <div class="layui-input-inline">
+                            <input type="text" name="enddate1" id="enddate1" autocomplete="off" value="{:date('Y-m-d').' 23:59:59'}"
+                                   class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <a class="layui-btn" id="search2" data-type="reload">{:lang('搜索')}</a>
+                    </div>
+                    <table id="Table8" style="margin-top: 10px;" lay-filter="Table8"></table>
+                </div>
+
+
+                <div class="layui-tab-item">
+                    <div class="layui-inline" id='register_date'>
+                        <label class="layui-form-label">{:lang('时间段')}：</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="startdate" id="startdate" autocomplete="off" value="{:date('Y-m-d').' 00:00:00'}"
+                                   class="layui-input">
+                        </div>
+                        <div class="layui-input-inline">
+                            <input type="text" name="enddate" value="{:date('Y-m-d').' 23:59:59'}" id="enddate" autocomplete="off"
+                                   class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <a class="layui-btn" id="search1" data-type="reload">{:lang('搜索')}</a>
+                    </div>
+                    <table id="Table9" lay-filter="Table9" style="margin-top: 10px;"></table>
+                </div>
+
+
+                <div class="layui-tab-item">
+                    <div class="layui-inline" id='register_date2'>
+                        <label class="layui-form-label">{:lang('时间段')}：</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="startdate2" id="startdate2" autocomplete="off" value="{:date('Y-m-d').' 00:00:00'}"
+                                   class="layui-input">
+                        </div>
+                        <div class="layui-input-inline">
+                            <input type="text" name="enddate2" value="{:date('Y-m-d').' 23:59:59'}" id="enddate2" autocomplete="off"
+                                   class="layui-input">
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">{:lang('类型')}</label>
+                            <div class="layui-input-inline">
+                                <select id="changetype" name="changetype"   lay-search class="layui-input">
+                                    <option value="0">{:lang('所有')}</option>
+                                    {foreach $changeType as $k => $v}
+                                    <option value='{$k}'>{:lang(trim($v))}</option>
+                                    {/foreach}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <a class="layui-btn" id="search3" data-type="reload">{:lang('搜索')}</a>
+                    </div>
+                    <table id="Table11" lay-filter="Table11" style="margin-top: 10px;"></table>
+                </div>
+
+               <div class="layui-tab-item">
+                    <table id="Table12" lay-filter="Table12" style="margin-top: 10px;"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script>
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+
+    }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
+        var tb0 = 'Table0', tb1 = 'Table1', tb2 = 'Table2', tb3 = 'Table3', tb4 = 'Table4', tb5 = 'Table5', tb6 = 'Table6',tb7 = 'Table7',tb8 = 'Table8',tb9 = 'Table9',tb10 = 'Table10',tb11 = 'Table11',tb12 = 'Table12';
+        var element = layui.element, layer = layui.layer, laydate = layui.laydate, util = layui.util,
+            table = layui.table, $ = layui.$, form = layui.form;
+        //增加页签  闭包增加 TabxxxxEvn
+        //闭包   表格 排序 编辑
+        Wheres = [
+            {action: 'list', type: 1},
+            {action: 'list', type: 2},
+            {action: 'list', type: 3},
+            {action: 'list', type: 4},
+            {action: 'list', type: 5},
+            {action: 'list', type: 6},
+            {action: 'list', type: 7},
+            {action: 'list', type: 8},
+            {action: 'list', type: 9},
+            {action: 'list', type: 10},
+            {action: 'list', type: 11}
+        ]
+        var cols0 = [ //表头
+                      {field: 'WageFinishWay', title: "{:lang('打码完成方式')}", align: 'center',minWidth: 100, templet: function (d) {
+                              if(d.WageFinishWay==1){
+                                  return '正常打码完成';
+                              }else if(d.WageFinishWay==2){
+                                  return '系统自动打码清零';
+                              }
+                              else{
+                                  return '未知';
+                              }
+                          }
+                      }
+                    , {field: 'ChangeMoney', title: "{:lang('需打码的金币')}", align: 'center', minWidth: 120}
+                    , {field: 'NeedWageRequire', title: "{:lang('需要的打码量')}", align: 'center', minWidth: 120}
+                    , {field: 'CurWageRequire', title: "{:lang('当前达到的量')}", align: 'center', minWidth: 120}
+                    , {field: 'difference', title: "{:lang('差额')}", minWidth: 120}
+                    , {field: 'FreezonMoney', title: "{:lang('冻结金额')}", minWidth: 120}
+                    , {field: 'EnableWithdrawMoney', title: "{:lang('可提金额')}", minWidth: 120}
+                    , {field: 'AddTime', title: "{:lang('添加时间')}", minWidth: 160}
+                    , {
+                        field: 'Status', title: "{:lang('状态')}", minWidth: 120, templet: function (d) {
+                            var myid = d.Id;
+                            if (d.Status == 0) {
+                                return "{:lang('未达到')}";
+                            } else {
+                                return "{:lang('已达成')}";
+                    }
+                }
+            }
+        ];
+
+        var cols1 = [ //表头
+            {field: 'Id', align: 'center', title: "{:lang('序号')}", minWidth: 120}
+            , {
+                field: 'Status', align: 'center', title: "{:lang('订单状态')}", minWidth: 150, templet: function (d) {
+                    str = `<span style="color:`;
+                    switch (Number(d.oStatus)) {
+                        case  0:
+                            str += 'red';
+                            break;
+                        case  1:
+                            str += 'green';
+                            break;
+                    }
+                    var strReturn='';
+                    if(d.isReturn==1){
+                        strReturn='({:lang(\'补发\')})';
+                    }
+                    return str += `">` + d.Status + strReturn+ `</span>`;
+                }
+            }
+            , {field: 'OrderId', align: 'center', title: "{:lang('平台订单号')}", minWidth: 250}
+            , {
+                field: 'AddTime', align: 'center', title: "{:lang('订单时间')}", minWidth: 200, templet: function (d) {
+                    return d.AddTime.substr(0, 19);
+                }
+            }
+            , {
+                field: 'PayTime', align: 'center', title: "{:lang('支付时间')}", minWidth: 200, templet: function (d) {
+                    return d.PayTime.substr(0, 19);
+                }
+            }
+            , {field: 'RealMoney', align: 'center', title: "{:lang('充值金额')}", minWidth: 150}
+            , {field: 'BaseGoodsValue', align: 'center', title: "{:lang('到账金币')}", minWidth: 150}
+            , {field: 'ChannelName', align: 'center', title: "{:lang('通道名称')}", minWidth: 150}
+            , {field: 'PayType', align: 'center', title:"{:lang('充值类型')}", minWidth: 150}
+            // , {field: 'AccountName', title: '账号', minWidth: 120}
+            , {field: 'MachineCode', align: 'center', title: "{:lang('玩家设备ID')}", minWidth: 120}
+            // , {fixed: 'right', title: '操作', align: 'center', minWidth: 150, toolbar: '#msg-bar'}
+
+        ];
+
+        var cols2 = [ //表头
+
+            {field: 'iMoney', align: 'center', title: "{:lang('总提现')}", minWidth: 150},
+            {field: 'Tax', align: 'center', title: "{:lang('税收')}", minWidth: 150, templet: function (d) { return Math.floor(d.Tax * 100) / 100; }},
+            {field: 'RealPay', align: 'center', title: "{:lang('打款金额')}", minWidth: 120},
+            {field: 'EamilMoney', align: 'center', title: "{:lang('邮件补偿')}", minWidth: 200},
+            {
+                field: 'status', align: 'center', title: "{:lang('订单状态')}", minWidth: 200, templet: function (d) {
+                    switch (Number(d.status)) {
+                        case 0:
+                            return '<span style="color: blue">'+d.orderType+'</span>';
+                        case 1:
+                            return '<span style="color:darkviolet">'+d.orderType+'</span>';
+                        case 100:
+                            return '<span style="color: green">'+d.orderType+'</span>';
+                        default:
+                            return '<span style="color: red">'+d.orderType+'</span>';
+                    }
+                }
+            },
+            {field: 'OrderNo', align: 'center', title: "{:lang('订单号')}", minWidth: 200},
+            {field: 'ChannelName', align: 'center', title: "{:lang('支出通道')}", minWidth: 150},
+            {field: 'checkUser', align: 'center', title: "{:lang('操作人员')}", minWidth: 200},
+            {field: 'AddTime', align: 'center', title: "{:lang('申请时间')}", minWidth: 200},
+            {field: 'checkTime', align: 'center', title: "{:lang('审核时间')}", minWidth: 200},
+            {field: 'BankName', align: 'center', title: "{:lang('银行名称')}", minWidth: 150},
+            {field: 'CardNo', align: 'center', title: "{:lang('银行卡号')}", minWidth: 200}
+        ];
+        var cols3 = [
+            {field: 'ClientIP', title: "{:lang('登陆IP')}", minWidth: 200,align: 'center'}
+            , {field: 'AddTime', title: "{:lang('登陆时间')}", minWidth: 200,align: 'center'}
+        ];
+        var cols4 = [
+            {field: 'AccountID', title: "{:lang('会员ID')}", minWidth: 120,align: 'center', templet: function (d) {
+                    return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.AccountID + "</a>";
+                }
+            }
+            , {field: 'AccountName', title: "{:lang('会员账号')}", minWidth: 150,align: 'center'}
+            // , {field: 'CurWageRequire', title: "{:lang('昵称')}", minWidth: 120}
+            , {field: 'RegIP', title: "{:lang('注册IP')}", minWidth: 160,align: 'center'}
+            , {field: 'RegisterTime', title: "{:lang('注册时间')}", minWidth: 200,align: 'center'}
+            , {field: 'LastLoginIP', title: "{:lang('登陆IP')}", minWidth: 160,align: 'center'}
+            , {field: 'LastLoginTime', title: "{:lang('登陆时间')}", minWidth: 200,align: 'center'}
+        ];
+        var cols5 = [
+            {field: 'admin_name', title: "{:lang('操作人员')}", minWidth: 200,align: 'center'}
+            , {field: 'opt_time', title: "{:lang('操作时间')}", minWidth: 200,align: 'center'}
+            , {field: 'comment', title: "{:lang('备注')}", minWidth: 300,align: 'center'}
+        ];
+
+        var cols6 = [
+            {field: 'admin_name', title: "{:lang('操作人员')}", minWidth: 200,align: 'center'}
+            , {field: 'opt_time', title: "{:lang('操作时间')}", minWidth: 200,align: 'center'}
+            , {field: 'comment', title: "{:lang('备注')}", minWidth: 300,align: 'center'}
+        ];
+
+        var cols7 = [
+            {field: 'level', title: "{:lang('等级')}", minWidth: 200,align: 'center'}
+            , {field: 'person', title: "{:lang('人数')}", minWidth: 200,align: 'center'}
+            , {field: 'ValidInviteCount', title: "{:lang('有效邀请人数')}", minWidth: 200,align: 'center'}
+            , {field: 'chargenum', title: "{:lang('充值人数')}", minWidth: 300,align: 'center'}
+            , {field: 'amount', title: "{:lang('充值金额')}", minWidth: 300,align: 'center'}
+            , {field: 'avarage', title: "{:lang('平均充值')}", minWidth: 300,align: 'center'}
+            , {field: 'withdrawCount', title: "{:lang('总提现人数')}", minWidth: 300,align: 'center'}
+            , {field: 'withdrawAmount', title: "{:lang('总提现金额')}", minWidth: 300,align: 'center'}
+        ];
+        var cols8 = [
+            {field: 'AddTime', align: 'center', title: "{:lang('领取日期')}", width: 180},
+            {field: 'RunningBonus', align: 'center', title: "{:lang('代理流水返利')}", width: 180},
+            {field: 'InviteBonus', align: 'center', title: "{:lang('代理邀请奖励')}",width: 180,},
+            {field: 'FirstChargeBonus', align: 'center', title: "{:lang('代理首充奖励')}", width: 180},
+            {field: 'TotalProfit', align: 'center', title: "{:lang('总收益')}", width: 180},
+        ];
+        var cols9 = [
+            {field: 'proxyId', align: 'center', title: "{if(config('is_portrait')==1)}{:lang('推广ID')}{else/}{:lang('渠道ID')}{/if}", minWidth: 110}
+            ,{field: 'AddTime', align: 'center', title: "{:lang('日期')}", minWidth: 110}
+            , {field: 'RoomName', align: 'center', title: "{:lang('房间')}", minWidth: 200}
+            , {field: 'GameRoundRunning', align: 'center', title: "{:lang('流水')}", minWidth: 200, templet: function (d) {return d.GameRoundRunning/ bl }}
+            , {field: '', align: 'center', title: "{:lang('税收')}", minWidth: 200,templet: function (d) {return d.Tax/ bl }}
+            , {field: 'TotalWin', align: 'center', title: "{:lang('游戏盈亏')}", minWidth: 200,  templet: function (d) {return d.TotalWin/bl}}
+        ];
+        var cols10 = [
+            {
+                field: 'iGameWealth', align: 'center', title: "{:lang('携带金币')}", width: 180, sort: true, templet: function (d) {
+                    return d.iGameWealth != 0 ? d.iGameWealth : '0.00';
+                }
+            },
+            {
+                field: 'iGameWealth', align: 'center', title: "{:lang('总和')}", width: 180,  templet: function (d) {
+                    return d.iGameWealth != 0 ? d.iGameWealth : '0.00';
+                }
+            },
+            {field: 'TotalDeposit', align: 'center', title: "{:lang('总充值')}", width: 150},
+            {field: 'TotalRollOut', align: 'center', title: "{:lang('总提现')}", width: 150},
+            {
+                field: 'iFreezonMoney', align: 'center', title: "{:lang('冻结金额')}", width: 180, templet: function (d) {
+                    return d.iFreezonMoney != 0 ? d.iFreezonMoney : '0.00';
+                }
+            },
+            {
+                field: 'CashAble', align: 'center', title: "{:lang('可提金额')}", width: 150,  templet: function (d) {
+                    return d.CashAble != 0 ? d.CashAble : '0.00';
+                }
+            }
+            ,
+            {
+                field: 'iCurWaged', align: 'center', title: "{:lang('当前完成打码')}", width: 150, templet: function (d) {
+                    return d.iCurWaged != 0 ? d.iCurWaged : '0.00';
+                }
+            },
+            {
+                field: 'iNeedWaged', align: 'center', title: "{:lang('打码任务')}", width: 150, templet: function (d) {
+                    return d.iNeedWaged != 0 ? d.iNeedWaged : '0.00';
+                }
+            },
+            {field: 'WagedFinishTime', align: 'center', title: "{:lang('完成时间')}", width: 180},
+        ];
+        var cols11 = [
+            {field: 'ChangeName', align: 'center', title: "{:lang('类型')}", minWidth: 180,},
+            {field: '', align: 'center', title: "{:lang('操作金币')}", minWidth: 150, templet: function (d) { return "<span style='color:" + (d.Money > 0 ? "red'>+" : "green'>") + d.Money + "</span>" }},
+            {field: 'Tax', align: 'center', title: "{:lang('税收')}", minWidth: 150},
+            {field: 'LastMoney', align: 'center', title: "{:lang('操作后金币数')}", minWidth: 150},
+            {field: 'AddTime', align: 'center', title: "{:lang('时间')}", minWidth: 180},
+            {field: 'RoomName', align: 'center', title: "{:lang('房间名')}", minWidth: 250},
+            {field: 'MachineCode', align: 'center', title: "{:lang('机器码')}", minWidth: 170},
+        ];
+        var cols12 = [ //表头
+                {field:'ParentID', title: "{:lang('邀请人ID')}",align:'center', minWidth: 100},
+                // {field:'ParentName', title: "{:lang('邀请人昵称')}",align:'center', minWidth: 300},
+                {field:'RoleID', title: "{:lang('受邀人ID')}",align:'center', minWidth: 100},
+                // {field:'RoleName', title: "{:lang('受邀人昵称')}",align:'center', minWidth: 300},
+                {field:'TotalDeposit', title: "{:lang('总充值')}",align:'center', minWidth: 100, sort: true},
+                
+                {field:'TransMoney', title: "{:lang('首充金额')}",align:'center', minWidth: 100, sort: true},
+                {field:'firtczTime', title: "{:lang('首充时间')}",align:'center', minWidth: 200, sort: true},
+                {field:'TotalRollOut', title: "{:lang('总提现')}",align:'center', minWidth: 100, sort: true},
+                {field:'Totalyk', title: "{:lang('总盈亏')}",align:'center', minWidth: 100, sort: true},
+                // {field:'TotalTax', title: "{:lang('总税收')}",align:'center', minWidth: 100, sort: true},
+                {field:'RegIP', title: "{:lang('注册ip')}",align:'center', minWidth: 100},
+                {field:'RegisterTime', title: "{:lang('注册时间')}",align:'center', minWidth: 100, sort: true},
+                {field:'LastLoginTime', title: "{:lang('最后登陆时间')}",align:'center', minWidth: 100, sort: true}
+                // {title:'操作', toolbar: '#toolbar'}
+        ];
+        laydate.render({elem: '#startdate', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+        laydate.render({elem: '#enddate', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+
+        laydate.render({elem: '#startdate1', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+        laydate.render({elem: '#enddate1', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+
+        laydate.render({elem: '#startdate2', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+        laydate.render({elem: '#enddate2', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+        laydate.render({elem: '#register_date3', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+        laydate.render({elem: '#register_date4', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+        laydate.render({elem: '#login_date1', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+        laydate.render({elem: '#login_date2', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+        Tabs = {
+            tab0Evn: function () { table.render({elem: '#' + tb0, where: Wheres[0], url: "{:url('player/getRoleWage',['roleid'=>$user.AccountID])}", page: true, cols: [cols0], autoSort: false,});},
+            tab1Evn: function () { table.render({elem: '#' + tb1, where: Wheres[1], url: "{:url('charge/channelpayorder',['roleid'=>$user.AccountID,'Action'=>'list'])}?strartdate=&enddate=&tranNO=&payChannel=-1&payType=-1&amount=&Status=1&isReturn=-1", page: true, cols: [cols1], autoSort: false,});},
+            tab2Evn: function () { table.render({elem: '#' + tb2, where: Wheres[2], url: "{:url('playertrans/record',['roleid'=>$user.AccountID,'Action'=>'list'])}?classid=&start=&end=&amount=&payType=0&tranNO=&payChannel=-1&payway=&checkUser=0", page: true, cols: [cols2], autoSort: false,});},
+            tab3Evn: function () { table.render({elem: '#' + tb3, where: Wheres[3], url: "{:url('player/getloginLog',['roleid'=>$user.AccountID])}", page: true, cols: [cols3], autoSort: false,});},
+            tab4Evn: function () { table.render({elem: '#' + tb4, where: Wheres[4], url: "{:url('player/getSameIp',['roleid'=>$user.AccountID])}", page: true, cols: [cols4], autoSort: false,});},
+            tab5Evn: function () { table.render({elem: '#' + tb5, where: Wheres[5], url: "{:url('player/getCommentList',['roleid'=>$user.AccountID,'type'=>2])}", page: true, cols: [cols5], autoSort: false,});},
+
+            tab6Evn: function () { table.render({elem: '#' + tb6, where: Wheres[6], url: "{:url('player/getCommentList',['roleid'=>$user.AccountID,'type'=>1])}", page: true, cols: [cols6], autoSort: false,});},
+
+            tab7Evn: function () { table.render({elem: '#' + tb7, where: Wheres[7], url: "{:url('player/getProxyLvData',['roleid'=>$user.AccountID,'type'=>1])}", page: true, cols: [cols7], autoSort: false,});},
+            
+            tab8Evn: function () { table.render({elem: '#' + tb8, where:{start:$('#startdate1').val(),end:$('#enddate1').val()}, url: "{:url('agent/agentcoinapply',['roleid'=>$user.AccountID,'action'=>'list'])}", page: true, cols: [cols8], autoSort: false,});},
+
+            tab9Evn: function () { table.render({elem: '#' + tb9, where: {start:$('#startdate').val(),end:$('#enddate').val()}, url: "{:url('player/gamedailyreport',['roleid'=>$user.AccountID,'Action'=>'list'])}", page: true, cols: [cols9], autoSort: false,});},
+
+            tab10Evn: function () { table.render({elem: '#' + tb10, where: [], url: "{:url('ranke/coin',['roleid'=>$user.AccountID,'Action'=>'list','from'=>'playerdetail'])}", page: true, cols: [cols10], autoSort: false,});},
+
+            tab11Evn: function () { table.render({elem: '#' + tb11, where: {strartdate:$('#startdate2').val(),enddate:$('#enddate2').val(),changetype:$('#changetype').val()}, url: "{:url('player/coinlog2',['roleid'=>$user.AccountID,'Action'=>'list'])}", page: true, cols: [cols11], autoSort: false,});},
+            tab12Evn: function () { table.render({elem: '#' + tb12, where: {}, url: "{:url('agent/relation',['parentid'=>$user.AccountID,'action'=>'list'])}", page: true, cols: [cols12], autoSort: false,});}
+
+        };
+        TabReload = {
+            tab0: function () {table.reload(tb0, {page: {curr: 1}});},
+            tab1: function () {table.reload(tb1, {page: {curr: 1}});},
+            tab2: function () {table.reload(tb2, {page: {curr: 1}});},
+            tab3: function () {table.reload(tb3, {page: {curr: 1}});},
+            tab4: function () {table.reload(tb4, {page: {curr: 1}});},
+            tab5: function () {table.reload(tb5, {page: {curr: 1}});},
+            tab6: function () {table.reload(tb6, {page: {curr: 1}});},
+            tab7: function () {table.reload(tb7, {page: {curr: 1}});},
+            tab8: function () {table.reload(tb8, {page: {curr: 1}});},
+            tab9: function () {table.reload(tb9, {page: {curr: 1}});},
+            tab10: function () {table.reload(tb10, {page: {curr: 1}});},
+            tab11: function () {table.reload(tb11, {page: {curr: 1}});},
+            tab12: function () {table.reload(tb12, {page: {curr: 1}});}
+        }
+        TBinit = {
+            searchEvn: function () {
+
+                var where = {
+
+                }
+                //执行重载
+                table.reload(tb0, {page: {curr: 1},where: where});
+                table.reload(tb1, {page: {curr: 1},where: where});
+                table.reload(tb2, {page: {curr: 1},where: where});
+                table.reload(tb3, {page: {curr: 1},where: where});
+                table.reload(tb4, {page: {curr: 1},where: where});
+                table.reload(tb5, {page: {curr: 1},where: where});
+                table.reload(tb6, {page: {curr: 1},where: where});
+                table.reload(tb7, {page: {curr: 1},where: where});
+                table.reload(tb8, {page: {curr: 1},where: where});
+                table.reload(tb9, {page: {curr: 1},where: where});
+                table.reload(tb10, {page: {curr: 1},where: where});
+                table.reload(tb11, {page: {curr: 1},where: where});
+                table.reload(tb12, {page: {curr: 1},where: where});
+            },
+            sortEvn: function () {
+            },
+            editEvn: function () {
+                console.log(1)
+                table.on('tool(Table4)', function (obj) {
+                    console.log(2)
+                    var data = obj.data //获得当前行数据
+                        , layEvent = obj.event; //获得 lay-event 对应的值
+                    tr = obj.tr; //获得当前行 tr 的DOM对象
+                    if (layEvent === 'detail') {
+                        console.log(3)
+                        var url = 'playerDetail?roleid=' + data.AccountID;
+                        x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.7);
+                    }
+                });
+            },
+            //页签 切换事件
+            TabEvn: function () {
+                element.on('tab(test)', function (data) {
+                    switch (data.index) {
+                        case 0:
+                            return Tabs.tab0Evn();
+                        case 1:
+                            return Tabs.tab1Evn();
+                        case 2:
+                            return Tabs.tab2Evn();
+                        case 3:
+                            return Tabs.tab3Evn();
+                        case 4:
+                            return Tabs.tab4Evn();
+                        case 5:
+                            return Tabs.tab5Evn();
+                        case 6:
+                            return Tabs.tab6Evn();
+                        case 7:
+                            return Tabs.tab7Evn();
+                        case 8:
+                            return Tabs.tab8Evn();
+                        case 9:
+                            return Tabs.tab9Evn();
+                        case 10:
+                            return Tabs.tab10Evn();
+                        case 11:
+                            return Tabs.tab11Evn();
+
+                    }
+                });
+            },
+            SwitchEvn: function () {
+
+            },
+            bindEvent: function () {
+
+                //客服
+                $('#SaveInfo').on('click', function (e) {
+                    var Account = $('#txtAccount').val();
+                    var Password = $('#txtPassword').val();
+                    var roleid = {$usreid};
+                    if (Password.length > 3 && Account.length > 3) {
+                        $.ajax({
+                            type: 'post',
+                            url: "{:url('CustomerServiceSystem/BindAccount')}",
+                            data: {
+                                'Action': 'all',
+                                'roleid': roleid,
+                                'Password': Password,
+                                'Account': Account
+                            },
+                            dataType: 'json',
+                            success: function (res) {
+                                console.log(res);
+                                if (res.code === 0) layer.msg(res.msg, {icon: 2});
+                                else if (res.code === 1) layer.msg(res.msg, {icon: 1});
+                            }
+                        });
+                        return;
+                    }
+                    if (Password.length > 3) {
+                        $.ajax({
+                            type: 'post',
+                            url: "{:url('CustomerServiceSystem/BindAccount')}",
+                            data: {
+                                'Action': 'pwd',
+                                'roleid': roleid,
+                                'Password': Password
+                            },
+                            dataType: 'json',
+                            success: function (res) {
+                                console.log(res);
+                                if (res.code === 0) layer.msg(res.msg, {icon: 2});
+                                else if (res.code === 1) layer.msg(res.msg, {icon: 1});
+                            }
+                        });
+                    }
+
+                    if (Account.length > 3) {
+                        $.ajax({
+                            type: 'post',
+                            url: "{:url('CustomerServiceSystem/BindAccount')}",
+                            data: {
+                                'Action': 'bind',
+                                'roleid': roleid,
+                                'Account': Account
+                            },
+                            dataType: 'json',
+                            success: function (res) {
+                                console.log(res);
+                                if (res.code === 0) layer.msg(res.msg, {icon: 2});
+                                else if (res.code === 1) layer.msg(res.msg, {icon: 1});
+
+                            }
+                        });
+                    }
+
+
+                });
+
+                //监听开关
+                form.on('switch(autoplay)', function () {
+                    ins3.reload({
+                        autoplay: this.checked
+                    });
+                });
+
+                element.on('tab(test)', function (data) {
+
+                });
+                form.on('switch(switchTest)', function (data) {
+                    var roleid = $('#roleid').val();
+                    //设置开关
+                    $.ajax({
+                        url: "{:url('player/updateRoleStatus')}",
+                        type: 'post',
+                        data: {
+//
+                            'roleid': roleid
+                        },
+                        success: function (res) {
+                            if (res.code === 0) {
+//                                layer.msg(res.msg, {icon: 6});
+                                layer.msg("{:lang('修改成功')}", {icon: 6});
+                            } else {
+//                                layer.msg(res.msg, {icon: 5});
+                                layer.msg("{:lang('修改失败')}", {icon: 5});
+//
+                            }
+                            form.render();
+                        }
+                    })
+
+                });
+                $('#search1').on('click', function (e) {
+                    Tabs.tab9Evn();
+
+                });
+                $('#search2').on('click', function (e) {
+                    Tabs.tab8Evn();
+
+                });
+                $('#search3').on('click', function (e) {
+                    Tabs.tab11Evn();
+
+                });
+                $('#search4').on('click', function (e) {
+                    Tabs.tab12Evn();
+
+                });
+            },
+            init: function () {
+                Tabs.tab0Evn();
+                Tabs.tab1Evn();
+                Tabs.tab2Evn();
+                Tabs.tab3Evn();
+                Tabs.tab4Evn();
+                Tabs.tab5Evn();
+                Tabs.tab6Evn();
+                Tabs.tab7Evn();
+                Tabs.tab8Evn();
+                Tabs.tab9Evn();
+                Tabs.tab10Evn();
+                Tabs.tab11Evn();
+                Tabs.tab12Evn();
+                this.sortEvn();
+                this.editEvn();
+                this.TabEvn();
+                this.bindEvent();
+                this.SwitchEvn();
+                $('#search').on('click', function (e) {
+                    e.preventDefault();
+                    TBinit.searchEvn();
+                });
+            }
+        }
+        //监听单元格switch
+        form.on('switch(Disable)', function (data) {
+            // alert(2);
+            var RoleID = data.elem.attributes['RoleID'].nodeValue;
+            var swtype = data.elem.checked;
+            var type = 0;
+            if (swtype) type = 1;
+            else type = 0;
+            // layer.msg(data);
+            //设置开关
+            $.ajax({
+                url: "{:url('setProxySwitch')}",
+                type: 'post',
+                data: {'RoleID': RoleID, type: type},
+                success: function (res) {
+                    if (res.code === 0) {
+                        // $(".layui-laypage-btn")[0].click();
+                        layer.msg("{:lang('修改成功')}", {icon: 6});
+                        //window.location.reload();
+
+                    } else {
+                        // $(".layui-laypage-btn")[0].click();
+                        layer.msg("{:lang('修改失败')}", {icon: 5});
+                        //window.location.reload();
+                    }
+                    form.render();
+                }
+            })
+
+        });
+        TBinit.init();
+    });
+
+    $('#SaveUserBank').click(function(){
+        var BankCardNo = $.trim($("#BankCardNo").val()),
+            UserName = $.trim($("#UserName").val()),
+            BankName = $.trim($("#BankName").val()),
+            Mail = $.trim($("#Mail").val()),
+            IFSCCode = $.trim($("#IFSCCode").val());
+
+        $.ajax({
+            type: 'post',
+            url: '{:url("player/updateSocketBank",["RoleID"=>$user.AccountID])}',
+            data: {
+                'BankCardNo': BankCardNo,
+                'PayWayType':2,
+                'UserName': UserName,
+                'BankName': BankName,
+                'Mail': Mail,
+                'IFSCCode': IFSCCode,
+            },
+            dataType: 'json',
+            success: function (res) {
+                if (res.code == 0) {
+                    layer.msg(res.msg, {icon: 6}, function () {
+                        //x_admin_close();
+                    });
+                } else {
+                    layer.msg(res.msg, {icon: 5});
+                }
+            }
+        });
+    });
+
+    $('#SaveUserPix').click(function(){
+        var BankCardNo = $.trim($("#BankCardNo").val()),
+            UserName = $.trim($("#UserName").val()),
+            BankName = $.trim($("#BankName").val()),
+            Mail = $.trim($("#Mail").val()),
+            IFSCCode = $.trim($("#IFSCCode").val());
+
+        $.ajax({
+            type: 'post',
+            url: '{:url("player/updateSocketBank",["RoleID"=>$user.AccountID])}',
+            data: {
+                'BankCardNo': BankCardNo,
+                'PayWayType':3,
+                'UserName': UserName,
+                'BankName': BankName,
+                'Mail': Mail,
+                'IFSCCode': IFSCCode,
+            },
+            dataType: 'json',
+            success: function (res) {
+                if (res.code == 0) {
+                    layer.msg(res.msg, {icon: 6}, function () {
+                        //x_admin_close();
+                    });
+                } else {
+                    layer.msg(res.msg, {icon: 5});
+                }
+            }
+        });
+    });
+
+    $('#SaveUserUPI').click(function(){
+        var BankCardNo = $.trim($("#BankCardNo1").val()),
+            UserName = $.trim($("#UserName1").val()),
+            Mail = $.trim($("#Mail1").val())
+
+        $.ajax({
+            type: 'post',
+            url: '{:url("player/updateSocketBank",["RoleID"=>$user.AccountID])}',
+            data: {
+                'BankCardNo': BankCardNo,
+                'PayWayType':1,
+                'UserName': UserName,
+                'BankName': '',
+                'Mail': Mail,
+                'IFSCCode': '',
+            },
+            dataType: 'json',
+            success: function (res) {
+                if (res.code == 0) {
+                    layer.msg(res.msg, {icon: 6}, function () {
+                        //x_admin_close();
+                    });
+                } else {
+                    layer.msg(res.msg, {icon: 5});
+                }
+            }
+        });
+    });
+
+    function unbincUserBank(el){
+        $.ajax({
+            type: 'post',
+            url: '{:url("player/unbindSocketBank",["RoleID"=>$user.AccountID])}',
+            data: {
+                PayWayType:el
+            },
+            dataType: 'json',
+            success: function (res) {
+                if (res.code == 0) {
+                    layer.msg(res.msg, {icon: 6}, function () {
+                        window.location.reload();
+                    });
+                } else {
+                    layer.msg(res.msg, {icon: 5});
+                }
+            }
+        });
+    }
+    function todetail(e){
+        var url = 'playerDetail?roleid=' + e;
+        x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.8);
+    }
+    $('#editlevel').click(function(){
+
+        var url ='{:url("player/setVipRate",["RoleID"=>$user.AccountID])}?rate={$user.VipLv}';
+        x_admin_show("{:lang('修改vip等级')}", url, 500,450);
+    });
+
+
+</script>
+{/block}
