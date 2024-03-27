@@ -4328,15 +4328,15 @@ class Player extends Main
                     $where .= ' and a.RoleID=' . $roleid;
                     $where_total .= ' and RoleID=' . $roleid;
                 }
-                $where .= ' and a.AddTime>=\'' . $start . '\' and a.AddTime<=\'' . $end . '\'';
+                $where .= 'and a.AddTime>=\'' . $start . '\' and a.AddTime<=\'' . $end . '\'';
                 $where_total .= " and AddTime>=''$start'' and AddTime<=''$end''";
 
                 $db = new GameOCDB();
                 $userProxyInfo = new UserProxyInfo();
                 $ProxyChannelConfig = (new GameOCDB())->getTableObject('T_ProxyChannelConfig')->column('*', 'ProxyChannelId');
-                $field = 'a.RoleId,b.ParentID ,ServerID,CONVERT(varchar(30),AddTime,112) as AddTime,sum(tax) as Tax,sum(GameRoundRunning) as GameRoundRunning,sum(Money) as TotalWin';
+                $field = 'a.RoleId,b.ParentID ,ServerID,CONVERT(varchar(30),addtime,112) as AddTime,sum(tax) as Tax,sum(GameRoundRunning) as GameRoundRunning,sum(Money) as TotalWin';
                 $join = 'left join [CD_UserDB].[dbo].[T_UserProxyInfo] as b on a.RoleID=b.RoleID';
-                $group = ' ServerID,CONVERT(varchar(30),AddTime,112),a.RoleID,b.ParentID';
+                $group = ' ServerID,CONVERT(varchar(30),addtime,112),a.RoleID,b.ParentID';
                 $startdate = date('Y-m-d', strtotime($start));
                 $enddate = date('Y-m-d', strtotime($end));
                 $order = 'AddTime desc';
