@@ -10,6 +10,10 @@ use app\model\GameOCDB;
 use app\model\HttpUrlBase;
 use app\model\MailConfig;
 use app\model\MasterDB;
+use app\model\ProxyValidInviteSecBonus;
+use app\model\DisableBindCfg;
+use app\model\AccuDepositGradientBonusCfg;
+use app\model\WeekSalaryCfg;
 use app\model\UpgradeVerConfig;
 use app\model\UserDB;
 use redis\Redis;
@@ -784,14 +788,44 @@ class GameCfg extends Main
     public function upgradeversion(){
         $page = intval(input('page')) ? intval(input('page')) : 1;
         $limit = intval(input('limit')) ? intval(input('limit')) : 10;
-        $upgrade =new UpgradeVerConfig();
+        $upgrade =new ProxyValidInviteSecBonus();
         $where=[];
-        $list =$upgrade->getList($where,$page,$limit,'*','id desc');
+        $list =$upgrade->getList($where,$page,$limit,'*','id ');
         $count =$upgrade->getCount($where);
         return $this->apiReturn(0,$list,'',$count);
     }
 
+    public function disableBindCfg(){
+        $page = intval(input('page')) ? intval(input('page')) : 1;
+        $limit = intval(input('limit')) ? intval(input('limit')) : 10;
+        $upgrade =new DisableBindCfg();
+        $where=[];
+        $list =$upgrade->getList($where,$page,$limit,'*','id ');
+        $count =$upgrade->getCount($where);
+        return $this->apiReturn(0,$list,'',$count);
+    }
 
+    //充值梯度奖励
+    public function rechargeGradientCfg(){
+        $page = intval(input('page')) ? intval(input('page')) : 1;
+        $limit = intval(input('limit')) ? intval(input('limit')) : 10;
+        $upgrade =new AccuDepositGradientBonusCfg();
+        $where=[];
+        $list =$upgrade->getList($where,$page,$limit,'*','id ');
+        $count =$upgrade->getCount($where);
+        return $this->apiReturn(0,$list,'',$count);
+    }
+
+    //周薪奖励配置
+    public function weekRewardCfg(){
+        $page = intval(input('page')) ? intval(input('page')) : 1;
+        $limit = intval(input('limit')) ? intval(input('limit')) : 10;
+        $upgrade =new WeekSalaryCfg();
+        $where=[];
+        $list =$upgrade->getList($where,$page,$limit,'*','id ');
+        $count =$upgrade->getCount($where);
+        return $this->apiReturn(0,$list,'',$count);
+    }
     public function upgradeConfigEdit(){
         $Version = input('Version','');
         $downurl =input('DownUrl','');
@@ -870,4 +904,229 @@ class GameCfg extends Main
         }
     }
 
+    ///梯度邀请奖励更新
+    /// array(4) { ["ID"]=> string(1) "1" ["ValidCounts"]=> string(1) "1" ["Bonus"]=> string(5) "10000" ["ROW_NUMBER"]=> string(1) "1" }
+    public function  inviteBounsUpdate(){
+        $id = input('ID');
+        $entry=[
+            'ID' => 0,
+            'ValidCounts'=>0,
+            'Bonus' => 0
+        ];
+        if($id>0){
+            $invite_validate = new ProxyValidInviteSecBonus();
+            $entry = $invite_validate->getRowById($id);
+            $entry['Bonus'] = bcdiv($entry['Bonus'],bl,0);
+
+        }
+        $this->assign('info',$entry);
+        return $this->fetch();
+    }
+
+    public function inviteBounsSave(){
+        $id = input('Id');
+        $ValidCounts = input('ValidCounts');
+        $Bonus = input('Bonus');
+
+        if($ValidCounts==0 || $Bonus==0){
+            return $this->failJSON('参数不正确');
+        }
+        $invite_validate = new ProxyValidInviteSecBonus();
+        $count = $invite_validate->getDataRow(['ValidCounts'=>$ValidCounts]);
+
+        
+
+        if($id>0){
+            if($count && $count['ID'] != $id){
+                return $this->failJSON('该梯度人数已经存在');
+            }
+            $data=[
+                'ValidCounts'=>$ValidCounts,
+                'Bonus' => $Bonus*bl
+            ];
+            $invite_validate->updateById($id,$data);
+            return $this->successJSON('','更新成功');
+        }
+        else{
+            if($count){
+                return $this->failJSON('该梯度人数已经存在');
+            }
+            $data=[
+                'ValidCounts'=>$ValidCounts,
+                'Bonus' => $Bonus*bl
+            ];
+            $invite_validate->add($data);
+            return $this->successJSON('','添加成功');
+        }
+
+    }
+
+    //区间掉绑比例
+    public function  disableBindCfgUpdate(){
+        $id = input('ID');
+        $entry=[
+            'ID' => 0,
+            'InviteCounts'=>0,
+            'DisableBindRate' => 0
+        ];
+        if($id>0){
+            $invite_validate = new DisableBindCfg();
+            $entry = $invite_validate->getRowById($id);
+        }
+        $this->assign('info',$entry);
+        return $this->fetch();
+    }
+
+    public function disableBindCfgSave(){
+        $id = input('Id');
+        $InviteCounts = input('InviteCounts');
+        $DisableBindRate = input('DisableBindRate');
+
+        if($DisableBindRate<0 || $DisableBindRate>100){
+            return $this->failJSON('参数不正确');
+        }
+        $invite_validate = new DisableBindCfg();
+        $count = $invite_validate->getDataRow(['InviteCounts'=>$InviteCounts]);
+
+        
+        if($id>0){
+            if($count && $count['ID'] != $id){
+                return $this->failJSON('该区间人数已经存在');
+            }
+            $data=[
+                'InviteCounts'=>$InviteCounts,
+                'DisableBindRate' => $DisableBindRate
+            ];
+            $invite_validate->updateById($id,$data);
+            return $this->successJSON('','更新成功');
+        }
+        else{
+            if($count){
+                return $this->failJSON('该区间人数已经存在');
+            }
+            $data=[
+                'InviteCounts'=>$InviteCounts,
+                'DisableBindRate' => $DisableBindRate
+            ];
+            $invite_validate->add($data);
+            return $this->successJSON('','添加成功');
+        }
+
+    }
+
+    //充值梯度奖励配置
+    public function  rechargeGradientCfgUpdate(){
+        $id = input('ID');
+        $entry=[
+            'ID' => 0,
+            'AccuDepositAmount'=>0,
+            'Bonus' => 0
+        ];
+        if($id>0){
+            $invite_validate = new AccuDepositGradientBonusCfg();
+            $entry = $invite_validate->getRowById($id);
+            $entry['Bonus'] = bcdiv($entry['Bonus'],bl,0);
+        }
+        $this->assign('info',$entry);
+        return $this->fetch();
+    }
+
+    public function rechargeGradientCfgSave(){
+        $id = input('Id');
+        $AccuDepositAmount = input('AccuDepositAmount');
+        $Bonus = input('Bonus');
+
+        if($Bonus<=0 || $AccuDepositAmount<=0){
+            return $this->failJSON('参数不正确');
+        }
+        $invite_validate = new AccuDepositGradientBonusCfg();
+        $count = $invite_validate->getDataRow(['AccuDepositAmount'=>$AccuDepositAmount]);
+
+        
+        if($id>0){
+            if($count && $count['ID'] != $id){
+                return $this->failJSON('该充值配置已经存在');
+            }
+            $data=[
+                'AccuDepositAmount'=>$AccuDepositAmount,
+                'Bonus' => $Bonus*bl
+            ];
+            $invite_validate->updateById($id,$data);
+            return $this->successJSON('','更新成功');
+        }
+        else{
+            if($count){
+                return $this->failJSON('该充值配置已经存在');
+            }
+            $data=[
+                'AccuDepositAmount'=>$AccuDepositAmount,
+                'Bonus' => $Bonus*bl
+            ];
+            $invite_validate->add($data);
+            return $this->successJSON('','添加成功');
+        }
+    }
+
+
+    //周薪奖励配置
+    public function  weekSalaryCfgUpdate(){
+        $id = input('ID');
+        $entry=[
+            'ID' => 0,
+            'Running'=>0,
+            'BaseWeekSalary' => 0,
+            'Lv1Rate' => 0,
+            'Lv2Rate' => 0
+        ];
+        if($id>0){
+            $invite_validate = new WeekSalaryCfg();
+            $entry = $invite_validate->getRowById($id);
+            $entry['Running'] = bcdiv($entry['Running'],bl,0);
+            $entry['BaseWeekSalary'] = bcdiv($entry['BaseWeekSalary'],bl,0);
+        }
+        $this->assign('info',$entry);
+        return $this->fetch();
+    }
+
+    public function weekSalaryCfgSave(){
+        $id = input('Id');
+        $Running = input('Running');
+        $BaseWeekSalary = input('BaseWeekSalary');
+        $Lv1Rate = input('Lv1Rate');
+        $Lv2Rate = input('Lv2Rate');
+
+        if($Running<0){
+            return $this->failJSON('参数不正确');
+        }
+        $invite_validate = new WeekSalaryCfg();
+        $count = $invite_validate->getDataRow(['Running'=>$Running]);
+
+        
+        if($id>0){
+            if($count && $count['ID'] != $id){
+                return $this->failJSON('该充值配置已经存在');
+            }
+            $data=[
+                'Running'=>$Running*bl,
+                'BaseWeekSalary' => $BaseWeekSalary*bl,
+                'Lv1Rate'=>$Lv1Rate,
+                'Lv2Rate'=>$Lv2Rate,
+            ];
+            $invite_validate->updateById($id,$data);
+            return $this->successJSON('','更新成功');
+        }
+        else{
+            if($count){
+                return $this->failJSON('该充值配置已经存在');
+            }
+            $data=[
+                'Running'=>$Running*bl,
+                'BaseWeekSalary' => $BaseWeekSalary*bl,
+                'Lv1Rate'=>$Lv1Rate,
+                'Lv2Rate'=>$Lv2Rate,
+            ];
+            $invite_validate->add($data);
+            return $this->successJSON('','添加成功');
+        }
+    }
 }

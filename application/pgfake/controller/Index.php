@@ -86,8 +86,13 @@ class Index extends Base
             
             
             //设置玩家返奖率
-            if (Redis::has('pgfake_rtp_data')) {
-                $rtp = Redis::get('pgfake_rtp_data');
+            if (Redis::has('pgfake_rtp_data') || Redis::has('pgfake_rtp_data_'.$roleid)) {
+                if (Redis::has('pgfake_rtp_data_'.$roleid)) {
+                    $rtp = Redis::get('pgfake_rtp_data_'.$roleid);
+                } else {
+                    $rtp = Redis::get('pgfake_rtp_data');
+                }
+                
                 if ($rtp >= 0) {
                     $post_params = [
                         'operator_token'=>$this->Operator_Token,

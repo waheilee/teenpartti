@@ -43,7 +43,8 @@ class Gamectrl extends Main
 
             $res = $this->socket->getProfitPercent($roomId);
             $db = new MasterDB();
-            $sql ='SELECT RoomID,LuckyEggTaxRate/10 as mingtax,SysMaxLoseMoneyPerRound/'.bl.' as goldmoney  FROM   T_GameRoomInfo  where Nullity=0 order by SortID';
+            $sql ='SELECT b.RoomID,b.LuckyEggTaxRate/10 as mingtax,b.SysMaxLoseMoneyPerRound/'.bl.' as goldmoney  FROM 
+ [OM_GameOC].[dbo].[T_GameRoomSort] as a left join T_GameRoomInfo as b on a.RoomID=b.RoomID where Nullity=0 order by b.SortID';
             $his = $db->getTableQuery($sql);
 //
             $pankong = $db->getTableQuery('select RoomId,ISNULL(CurRoomWaterIn,0) As CurRoomWaterIn,ISNULL(CurRoomWaterOut,0) As CurRoomWaterOut from T_RoomRunningCtrlData');
@@ -108,8 +109,8 @@ class Gamectrl extends Main
                         $v['lTotalBlackTax'] /= bl;
                         $v['lMinStorage'] /= bl;
                         $v['lMaxStorage'] /= bl;
-                        $v['nCtrlValue'] = intval($v['nCtrlValue']/2);
-                        $v['nOldRoomCtrlValue'] = intval($v['nOldRoomCtrlValue']/2);
+                        $v['nCtrlValue'] = intval($v['nCtrlValue']);
+                        $v['nOldRoomCtrlValue'] = intval($v['nOldRoomCtrlValue']);
 
 //                        $v['currentget'] = $v['lTotalTax'] + $v['lTotalProfit'];
 //                        $v['totalget'] = $v['lHistorySumTax'] + $v['lHistorySumProfile'];
@@ -421,7 +422,7 @@ class Gamectrl extends Main
             $curstorage =$curstorage*bl;
             $ajustvalue =$ajustvalue*bl;
 
-            $res = $this->socket->setProfitPercent($type, $setrange, $id, $percent, $ajustvalue,$roomctrl*2, $curstorage, $minstorage, $maxstorage);
+            $res = $this->socket->setProfitPercent($type, $setrange, $id, $percent, $ajustvalue,$roomctrl, $curstorage, $minstorage, $maxstorage);
             $code = $res['iResult'];
             GameLog::logData(__METHOD__, $this->request->request(), ($code == 0) ? 1 : 0, $res);
             return $this->apiReturn($code);
@@ -477,7 +478,7 @@ class Gamectrl extends Main
             $maxstorage = $maxstorage*bl;
             $curstorage =$curstorage*bl;
 
-            $res = $this->socket->setProfitPercent($type, $setrange, $id, $percent, $ajustvalue,$roomctrl*2, $curstorage, $minstorage, $maxstorage);
+            $res = $this->socket->setProfitPercent($type, $setrange, $id, $percent, $ajustvalue,$roomctrl, $curstorage, $minstorage, $maxstorage);
             $code = $res['iResult'];
             GameLog::logData(__METHOD__, $this->request->request(), ($code == 0) ? 1 : 0, $res);
             return $this->apiReturn($code);
@@ -749,22 +750,6 @@ class Gamectrl extends Main
         GameLog::logData(__METHOD__, $this->request->request());
         return $this->apiReturn(0, [], '设置成功');
     }
-
-    /**
-     * 批量结束控制(停止使用)
-     * @return void
-     */
-//    public function multiCancelControl()
-//    {
-//        $accountId = $this->request->param('roleid/a');
-//        foreach ($accountId as $k => $v) {
-//            $socket = new QuerySocket();
-//            $socket->setRoleRate($v, 100, 0, 0);
-//            ob_clean();
-//        }
-//        GameLog::logData(__METHOD__, $this->request->request());
-//        return $this->apiReturn(0, [], '设置成功');
-//    }
 
 
     public function getRoomListTiger()

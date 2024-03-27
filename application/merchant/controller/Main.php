@@ -239,32 +239,72 @@ class Main extends Controller
     public function GetRoomList()
     {
         $key = &$this->roomListKey;
-        if (Cache::has($key)) {
+        if (true) {
             $db = new model\MasterDB();
-            $sql ="select b.RoomID,RoomName+'-('+CONVERT(VARCHAR,b.RoomID)+')' RoomName  from [OM_GameOC].[dbo].[T_GameRoomSort] as a left join  T_GameRoomInfo as b on a.RoomID=b.RoomID  where b.Nullity=0 order by a.sortID";
+            $sql = "
+SELECT  TypeId as RoomID,NodeName+'-('+CONVERT(VARCHAR,TypeId)+')' RoomName
+  FROM [dbo].[T_GameType]  WHERE Nullity=0 AND NodeType=5 and   ParentId in (SELECT TypeID FROM  [dbo].[T_GameType]  WHERE Nullity=0 AND NodeType=3)";
             $rsult = $db->getTableQuery($sql);
             //列出禁用的KindID 加以屏蔽
-            $treeList = $db->getTableQuery("SELECT KindID,NodeName,ParentId,Nullity FROM T_GameType  WHERE  Nullity=1");
-            $dellist =[];// [2200, 3000, 3100, 3200, 3300, 3400];
-
-            foreach ($treeList as $index => &$item) {
-                if ($item['KindID'] > 0 && intval($item['Nullity']) == 1) {
-                    array_push($dellist, (int)$item['KindID']);
-                }
-            }
-            unset($item);
-            foreach ($rsult as $index => &$item) {
-                $roomID = (int)($item['RoomID'] / 10) * 10;
-                if (in_array($roomID, $dellist)) {
-                    unset($rsult[$index]);
-                }
-            }
-            $apiroom=[
-                ['RoomID'=>36000,'RoomName'=>'PG-(36000)'],
-                ['RoomID'=>37000,'RoomName'=>'EvoLive-(37000)'],
-                ['RoomID'=>38000,'RoomName'=>'PP-(38000)']
+//            $treeList = $db->getTableQuery("SELECT KindID,typeid,NodeName,ParentId,Nullity FROM T_GameType  WHERE  Nullity=1 and kindid not in(3600,3700,20900,21000,23600,23700,23800,20800,20700)");
+//            $dellist = [27200,27300];// [2200, 3000, 3100, 3200, 3300, 3400];
+//
+//            foreach ($treeList as $index => &$item) {
+//                if ($item['KindID'] > 0 && intval($item['Nullity']) == 1) {
+//                    array_push($dellist, (int)$item['KindID']);
+//                }
+//            }
+//            unset($item);
+//            foreach ($rsult as $index => &$item) {
+//                $roomID = (int)($item['RoomID'] / 10) * 10;
+//                if (in_array($roomID, $dellist)) {
+//                    unset($rsult[$index]);
+//                }
+//                if (strpos($item['RoomName'], '训练场') !== false) {
+//                    unset($rsult[$index]);
+//                }
+//            }
+            $apiroom = [
+                ['RoomID' => 36000, 'RoomName' => 'PG-(36000)'],
+                ['RoomID' => 37000, 'RoomName' => 'EvoLive-(37000)'],
+                ['RoomID' => 38000, 'RoomName' => 'PP-(38000)'],
+                // ['RoomID' => 39400, 'RoomName' => 'Spribe-(39400)'],
+                // ['RoomID' => 40000, 'RoomName' => 'HaBa-(40000)']
             ];
-            $rsult=array_merge($rsult,$apiroom);
+
+            if (config('has_jili') == 1) {
+                $apiroom[] = ['RoomID' => 39000, 'RoomName' => 'JILI-(39000)'];
+            }
+
+            if (config('has_spr') == 1) {
+                $apiroom[] = ['RoomID' => 39400, 'RoomName' => 'JDB-(39400)'];
+            }
+            if (config('has_haba') == 1) {
+                $apiroom[] = ['RoomID' => 40000, 'RoomName' => 'HaBa-(40000)'];
+            }
+            if (config('has_hacksaw') == 1) {
+                $apiroom[] = ['RoomID' => 41000, 'RoomName' => 'HackSaw-(41000)'];
+            }
+
+            if (config('has_yesbingo') == 1) {
+                $apiroom[] = ['RoomID' => 42000, 'RoomName' => 'YESBINGO-(42000)'];
+            }
+
+            if (config('has_fcgame') == 1) {
+                $apiroom[] = ['RoomID' => 44000, 'RoomName' => 'FCGame-(44000)'];
+            }
+
+            if (config('has_tadagame') == 1) {
+                $apiroom[] = ['RoomID' => 45000, 'RoomName' => 'TaDa-(45000)'];
+            }
+            $apiroom[] = ['RoomID' => 46000, 'RoomName' => 'PPLive-(46000)'];
+
+            if (config('has_pgggame') == 1) {
+                $apiroom[] = ['RoomID' => 47000, 'RoomName' => 'PGGame-(47000)'];
+            }
+
+            $rsult = array_merge($rsult, $apiroom);
+            unset($item);
             Cache::set($key, $rsult, 86400);
             return $rsult;
         }

@@ -2,13 +2,13 @@
 
 namespace app\admin\controller;
 
-use app\admin\controller\Export\AllUserInfoExport;
 use app\admin\controller\traits\getSocketRoom;
 use app\admin\controller\traits\search;
 use app\common\Api;
 use app\common\GameLog;
 use app\model;
 use app\model\AccountDB;
+use app\model\MasterDB;
 use app\model\DataChangelogsDB;
 use app\model\AreaMsgRightSwitch;
 use app\model\GameOCDB;
@@ -628,18 +628,36 @@ class Player extends Main
             $user['proxyName'] = $proxy['AccountName'] ?? 'None';
             $user['ChannelName'] = $channeldata['OperatorName'] ?? 'None';
             if (!empty($user['Mobile'])) {
-                $user['Mobile'] = substr_replace($user['Mobile'], '**', -2);
+                if (config('is_usa') != 1) {
+                    $user['Mobile'] = substr_replace($user['Mobile'], '**', -2);
+                }
             }
-            $user['AccountName'] = substr_replace($user['AccountName'], '**', -4);
+            if (config('is_usa') != 1) {
+                $user['AccountName'] = substr_replace($user['AccountName'], '**', -4);
+            }
+
+            //佣金上分
+            $commisionsf = $gameOCDB->getTableObject('T_GMSendMoney')->where('RoleId',$roleId)->where('status',1)->where('OperateType','in','3')->sum('Money')?:0;
+
+            //佣金
+            // $commision = (new UserDB())->getTableObject('T_ProxyCollectData')->alias('b')->where('ProxyId', $roleId)->field('(b.Lv1Running*'.config('agent_running_parent_rate')[1].'+b.Lv2Running*'.config('agent_running_parent_rate')[2].'+b.Lv3Running*'.config('agent_running_parent_rate')[3].') as runningProfit,(b.Lv1Tax*0.3+b.Lv2Tax*0.09+b.Lv3Tax*0.027) as taxProfit')->find();
+            // if (app_name == 'runing') {
+            //     $TotalProfit = $commision['runningProfit'] ?: 0;
+            // }
+            // if (app_name == 'tax') {
+            //     $TotalProfit = $commision['taxProfit'] ?: 0;
+            // }
+            // 
+            $TotalProfit = (new DataChangelogsDB())->getTableObject('T_ProxyBonusLog')->where('RoleID',$roleId)->where('BonusType','in','3,4,5,8')->sum('BonusAmount')?:0;
+            ConVerMoney($TotalProfit);
+            $TotalProfit = bcadd($commisionsf, $TotalProfit,2);
+
             ConVerMoney($user['Money']);
             ConVerMoney($user['PayOut']);
             ConVerMoney($user['PayOutAll']);
             ConVerMoney($user['TotalWin']);
             ConVerMoney($user['TotalRunning']);
             ConVerMoney($user['ProxyBonus']);
-            ConVerMoney($user['ColorFirstCharge']);
-            ConVerMoney($user['ColorHand']);
-            ConVerMoney($user['LockColorMoney']);
 
             //gm上分统计
             $user['addgm'] = $gameOCDB->getTableObject('T_GMSendMoney')->where('RoleId',$roleId)->where('status',1)->where('operatetype',1)->sum('Money')?:0;
@@ -666,6 +684,9 @@ class Player extends Main
                 $proxyinfo['TotalProfit'] = 0;
                 $proxyinfo['RoleID'] = $roleId;
             }
+
+            $proxyinfo['TotalProfit'] = $TotalProfit;
+            
             $proxy_switech = 1;
             if (isset($proxyinfo['ProxySwitch'])) {
                 $proxy_switech = $proxyinfo['ProxySwitch'];
@@ -870,7 +891,34 @@ class Player extends Main
         } else {
             return ['code' => 1];
         }
+    }
 
+    public function ThirdgameSwitch()
+    {
+        $RoleID = input('RoleID', 0);
+        $ProxySwitch = input('type', 0);
+
+        //服务端
+        $data = $this->sendGameMessage('CMD_MD_JOB_USER_INFO', [$RoleID, 17,$ProxySwitch], "DC", 'returnComm');
+        if ($data['iResult'] == 1) {
+            return ['code' => 0];
+        } else {
+            return ['code' => 1];
+        }
+    }
+
+    public function WinthdrawSwitch()
+    {
+        $RoleID = input('RoleID', 0);
+        $ProxySwitch = input('type', 0);
+
+        //服务端
+        $data = $this->sendGameMessage('CMD_MD_JOB_USER_INFO', [$RoleID, 18,$ProxySwitch], "DC", 'returnComm');
+        if ($data['iResult'] == 1) {
+            return ['code' => 0];
+        } else {
+            return ['code' => 1];
+        }
     }
 
     public function updateupiway()
@@ -924,6 +972,23 @@ class Player extends Main
         }
     }
 
+    public function setrtp(){
+        $rtp = (int)request()->param('pgrtp');
+        $uid = (int)request()->param('roleid');
+        $api_config_ip = (new MasterDB)->getTableObject('T_HttpUrlBase')->where('Id',2)->value('UrlBase');
+        $redis = new \Redis();
+        $redis->connect($api_config_ip, 6379);
+        $redis->auth('wf123520');
+
+        if ($rtp>=0) {
+            $res = $redis->set('pgfake_rtp_data_'.$uid,$rtp);
+            if ($res) {
+                return json(['code'=>0,'msg'=>'操作成功']);
+            }
+        } 
+        return json(['code'=>1,'msg'=>'操作失败']);
+    }
+
     /**
      * 所有玩家
      */
@@ -956,6 +1021,9 @@ class Player extends Main
             $maxrecharge = input('maxrecharge', '');
             $VipLv = input('VipLv', '');
             $isrecharge = input('isrecharge', '');
+            
+            $isungame = input('isungame', '');
+            $isunwith = input('isunwith', '');
 
             $where = '';
 
@@ -1019,6 +1087,13 @@ class Player extends Main
                     $where .= " and TotalDeposit=0 ";
                 }
             }
+
+            if ($isungame !=='') {
+                $where .= ' and AccountID in(select RoleID from [CD_UserDB].[dbo].[T_Job_UserInfo] where job_key=17 and value=1)';
+            }
+            if ($isunwith !== '') {
+                 $where .= ' and AccountID in(select RoleID from [CD_UserDB].[dbo].[T_Job_UserInfo] where job_key=18 and value=1)';
+            }
             if ($VipLv != '') {
                 if ($VipLv == 0) {
                     $where .= " and (VipLv='$VipLv' or VipLv='') ";
@@ -1069,11 +1144,7 @@ class Player extends Main
                 }
             }
         }
-        $ItemVal = "";
-        if (config('app_name') == 'ayllabet'){
-            $ItemVal = ",ItemVal";
-        }
-        $field = "AccountID ID,MachineCode,Mobile,countryCode,AccountName,Locked,LoginName,GmType,RegisterTime,LastLoginIP,LastLoginTime,TotalDeposit,TotalRollOut,Money,RegIP,VipLv,SystemRight,ParentIds,ParentID,OperatorId,ISNULL(ProxyBonus,0) as ProxyBonus,ProxyCommiSwitch,ColorFirstCharge,ColorHand".$ItemVal;
+        $field = "AccountID ID,MachineCode,Mobile,countryCode,AccountName,Locked,LoginName,GmType,RegisterTime,LastLoginIP,LastLoginTime,TotalDeposit,TotalRollOut,Money,RegIP,VipLv,SystemRight,ParentIds,ParentID,OperatorId,ISNULL(ProxyBonus,0) as ProxyBonus,ProxyCommiSwitch";
         $file_roleid = 'RoleId';
         if (config('is_portrait') == 1) {
             $field .= ',ProxyChannelId';
@@ -1091,32 +1162,20 @@ class Player extends Main
         switch (input('Action')) {
             case 'list':
                 $result = $db->TViewAccount()->GetPage($where, "$orderby $ordertype", $field);
+                $api_config_ip = (new MasterDB)->getTableObject('T_HttpUrlBase')->where('Id',2)->value('UrlBase');
+                $redis = new \Redis();
+                $redis->connect($api_config_ip, 6379);
+                $redis->auth('wf123520');
+
                 foreach ($result['list'] as &$item) {
-                    if (isset($item['ItemVal'])){
-                        if($item['ItemVal']){
-                            $item['ItemVal'] = $item['ItemVal'] / bl;
-                        }else{
-                            $item['ItemVal'] = 0;
-                        }
-                    }
-                    if (config('lookPhone') == 1){
-                        if (!in_array($this->getGroupId(session('userid')),[1,2,3])){
-                            $item['AccountName'] = substr_replace($item['AccountName'], '**', -4);
-                        }
-                    }else{
+                    if (config('is_usa') != 1) {
                         $item['AccountName'] = substr_replace($item['AccountName'], '**', -4);
                     }
-
+                    
                     if (!empty($item['Mobile'])) {
-                        if(config('lookPhone') == 1){
-                            if (!in_array($this->getGroupId(session('userid')),[1,2,3])){
-                                $item['Mobile'] = substr_replace($item['Mobile'], '**', -2);
-                            }
-                        }else{
+                        if (config('is_usa') != 1) {
                             $item['Mobile'] = substr_replace($item['Mobile'], '**', -2);
                         }
-
-
                         if (substr($item['Mobile'], 0, 2) == '91') {
                             $item['quhao'] = '91';
                             $item['phone'] = substr($item['Mobile'], 2);
@@ -1149,16 +1208,24 @@ class Player extends Main
                     //是否在线
                     $item['is_oline'] = $this->sendGameMessage('CMD_MD_USER_STATE', [$item['ID']], "DC", 'returnComm')['iResult'] ?? 0;
 
-
+                    
                     ConVerMoney($item['Money']);
                     ConVerMoney($item['ProxyBonus']);
-                    ConVerMoney($item['ColorFirstCharge']);
-                    ConVerMoney($item['ColorHand']);
 
                     //获取pg链接
                     $gameidkey = rand(0,9);
                     $gameid = $pggameid[$gameidkey];
                     $item['pg_link'] = config('pggame.GAME_URL').'/'.$gameid.'/index.html?btt=1&ot='.config('pggame.Operator_Token').'&l=en&ops='.$this->encry(config('platform_name').'_'.$item['ID']);
+
+                    //获取假pgrtp
+                    $item['pg_rtp'] = -1;
+                    if ($redis->exists('pgfake_rtp_data') || $redis->exists('pgfake_rtp_data_'.$item['ID'])) {
+                        if ($redis->exists('pgfake_rtp_data_'.$item['ID'])) {
+                            $item['pg_rtp'] = $redis->get('pgfake_rtp_data_'.$item['ID']);
+                        } else {
+                            $item['pg_rtp']= $redis->get('pgfake_rtp_data');
+                        }
+                    }
                 }
                 //save_log('ceshi_all', explode(' ', microtime())[1]);
                 return $this->apiJson($result);
@@ -1168,52 +1235,49 @@ class Player extends Main
                 return $this->apiJson(['list' => $this->GetOnlineUserlist2()['total']]);
                 break;
             case 'exec':
-                $field = "AccountID ID,AccountName,LoginName,RegisterTime,LastLoginIP,TotalDeposit,TotalRollOut,Money,ProxyBonus,ColorFirstCharge,ColorHand";
+                $field = "AccountID ID,MachineCode,AccountName,LoginName,RegisterTime,LastLoginIP,TotalDeposit,TotalRollOut,Money,ProxyBonus";
                 $result = $db->TViewAccount()->GetPage($where, "$orderby $ordertype", $field);
-                (new AllUserInfoExport())->export($result['list']);
-//                foreach ($result['list'] as &$item) {
-//                    ConVerMoney($item['Money']);
-//                    if (!empty($item['Mobile'])) {
-//                        $item['Mobile'] = substr_replace($item['Mobile'], '**', -2);
-//                    }
-//                    if (config('accountName') == 1){
-//                        $item['AccountName'] = substr_replace($item['AccountName'], '**', -4);
-//                    }
-////                    ConVerMoney($item['TotalRollOut']);
-////                    ConVerMoney($item['TotalDeposit']);
-//                }
-//
-//                $outAll = input('outall', false);
-//                if ((int)input('exec', 0) == 0) {
-//                    if ($result['count'] == 0) {
-//                        $result = ["count" => 0, "code" => 1, 'msg' => lang("没有找到任何数据,换个姿势再试试?")];
-//                    }
-//                    if ($result['count'] >= 5000 && $outAll == false) {
-//                        $result = ["code" => 2, 'msg' => lang("数据超过5000行是否全部导出?<br>数据越多速度越慢<br>当前数据一共有") . $result['count'] . lang("行")];
-//                    }
-//                    unset($result['list']);
-//                    return $this->apiJson($result);
-//                }
-//                //导出表格
-//                if ((int)input('exec', 0) == 1 && $outAll = true) {
-//                    $header_types = [
-//                        lang('ID') => 'integer',//ID
-//                        //lang('机器码') => 'string',//MachineCode
-//                        // lang('手机号') => 'string',//AccountName
-//                        lang('账号') => 'string',//AccountName
-////                        '是否禁用' => "string",//Locked
-//                        lang('昵称') => 'string',//LoginName
-////                        '登陆类型' => "string",//GmType
-//                        lang('注册时间') => "datetime",//RegisterTime
-//                        lang('最后登录IP') => "string",//LastLoginIP
-//                        lang('总充值') => "0.00",//TotalDeposit
-//                        lang('总转出') => '0.00',//TotalRollOut
-//                        lang('剩余金币') => '0.00',//Money
-//                        lang('代理账户') => '0.00'//Money
-//                    ];
-//                    $filename = lang('用户记录') . '-' . date('YmdHis');
-//                    $this->GetExcel($filename, $header_types, $result['list']);
-//                }
+                foreach ($result['list'] as &$item) {
+                    ConVerMoney($item['Money']);
+                    if (!empty($item['Mobile'])) {
+                        if (config('is_usa') != 1) {
+                            $item['Mobile'] = substr_replace($item['Mobile'], '**', -2);
+                        }
+                    }
+//                    ConVerMoney($item['TotalRollOut']);
+//                    ConVerMoney($item['TotalDeposit']);
+                }
+                $outAll = input('outall', false);
+                if ((int)input('exec', 0) == 0) {
+                    if ($result['count'] == 0) {
+                        $result = ["count" => 0, "code" => 1, 'msg' => lang("没有找到任何数据,换个姿势再试试?")];
+                    }
+                    if ($result['count'] >= 5000 && $outAll == false) {
+                        $result = ["code" => 2, 'msg' => lang("数据超过5000行是否全部导出?<br>数据越多速度越慢<br>当前数据一共有") . $result['count'] . lang("行")];
+                    }
+                    unset($result['list']);
+                    return $this->apiJson($result);
+                }
+                //导出表格
+                if ((int)input('exec', 0) == 1 && $outAll = true) {
+                    $header_types = [
+                        lang('ID') => 'integer',//ID
+                        lang('机器码') => 'string',//MachineCode
+                        // lang('手机号') => 'string',//AccountName
+                        lang('账号') => 'string',//AccountName
+//                        '是否禁用' => "string",//Locked
+                        lang('昵称') => 'string',//LoginName
+//                        '登陆类型' => "string",//GmType
+                        lang('注册时间') => "datetime",//RegisterTime
+                        lang('最后登录IP') => "string",//LastLoginIP
+                        lang('总充值') => "0.00",//TotalDeposit
+                        lang('总转出') => '0.00',//TotalRollOut
+                        lang('剩余金币') => '0.00',//Money
+                        lang('代理账户') => '0.00'//Money
+                    ];
+                    $filename = lang('用户记录') . '-' . date('YmdHis');
+                    $this->GetExcel($filename, $header_types, $result['list']);
+                }
                 break;
         }
 
@@ -1235,6 +1299,33 @@ class Player extends Main
             $this->assign('wipe_dm_auth', '1');
         }
         return $this->fetch();
+    }
+
+    //退出pg
+    public function outpg(){
+        $roleid = input('roleid');
+        $roleid = config('platform_name').'_'.$roleid;
+        $url    = config('trans_url').'/index/index/outpg?roleid='.$roleid;
+        //初始化
+        $curl = curl_init();
+        //设置抓取的url
+        curl_setopt($curl, CURLOPT_URL, $url);
+        //设置头文件的信息作为数据流输出
+        curl_setopt($curl, CURLOPT_HEADER, 0);
+        //设置获取的信息以文件流的形式返回，而不是直接输出。
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        //https
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+        //执行命令
+        $data = curl_exec($curl);
+        curl_close($curl);
+        $data = json_decode($data,true);
+        if ($data['data']['action_result'] == 1) {
+            return json(['code'=>0]);
+        } else {
+            return json(['code'=>1,'msg'=>$data['error']]);
+        }  
     }
 
     public function getdmrateset(){
@@ -1309,7 +1400,7 @@ class Player extends Main
                 $result['other'] = [];//$sumdata;
                 return $this->apiJson($result);
             case 'exec':
-                //权限验证
+                //权限验证 
                 $auth_ids = $this->getAuthIds();
                 if (!in_array(10008, $auth_ids)) {
                     return $this->apiJson(["code" => 1, "msg" => "没有权限"]);
@@ -1849,14 +1940,15 @@ class Player extends Main
     /**Gm充值管理*/
     public function TransferManager()
     {
+        $is_merchant = input('is_merchant')?:0;
         switch (input('Action')) {
             case 'list':
                 $db = new  GameOCDB('',true);
-                return $this->apiJson($db->GMSendMoney());
+                return $this->apiJson($db->GMSendMoney($is_merchant));
                 break;
             case  'add':
                 if (request()->isAjax()) {
-                    //权限验证
+                    //权限验证 
                     $auth_ids = $this->getAuthIds();
                     if (!in_array(10001, $auth_ids)) {
                         return $this->apiReturn(2, [], '没有权限');
@@ -1904,42 +1996,86 @@ class Player extends Main
                 break;
             case 'send':
                 if (request()->isAjax()) {
-                    $id = input('ID');
-                    if (isset($id)){
-                        $this->GmTransferSend($id);
-                    }else{
-                        $ids = explode(',', input('Ids'));
-                        foreach($ids as $id){
-                            $this->GmTransferSend($id);
-                        }
-                        $this->success("审核成功");
+                    $gmid = input('ID');
+                    $lock_ley = 'lock_transfer_' . $gmid;
 
+                    $lockstatus = Redis::lock($lock_ley);
+                    if (!$lockstatus) {
+                        return $this->error('请勿重复提交!');
+                    }
+                    $db = new  GameOCDB('',true);
+                    $data = $db->TGMSendMoney()->GetRow("ID=" . $gmid);
+                    if ($data['OperateType'] == 1) {
+                        try {
+                            $res = $this->sendGameMessage('CMD_WD_BUY_HAPPYBEAN', [$data['RoleId'], $data['Money']]);
+                            $res = unpack('Lcode/', $res);
+                        } catch (Exception $exception) {
+                            return $this->error('连接服务器失败,请稍后重试!');
+                        }
+                        if ($res['code'] == 0) {
+                            $row = $db->TGMSendMoney()->UPData(["status" => 1, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . $data['ID']);
+                            if ($row > 0) return $this->success("审核成功");
+                        }
+                        return $this->error('审核失败');
+                    } else if ($data['OperateType'] == 2) {
+                        try {
+                            $res = $this->sendGameMessage('CMD_MD_ADD_ROLE_MONERY', [$data['RoleId'], $data['Money'] * bl, 1, 0, getClientIP()]);
+                            $res = unpack('Lcode/', $res);
+                        } catch (Exception $exception) {
+                            return $this->error('连接服务器失败,请稍后重试!');
+                        }
+                        if ($res['code'] == 0) {
+                            $row = $db->TGMSendMoney()->UPData(["status" => 1, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . $data['ID']);
+                            if ($row > 0) return $this->success("审核成功");
+                        }
+                        return $this->error('审核失败');
+                    } else if ($data['OperateType'] == 3) {
+                        try {
+
+                            $res = $this->sendGameMessage('CMD_MD_GM_ADD_PROXY_COMMISSION', [$data['RoleId'], $data['Money'] * bl, 0]);
+                            $res = unpack('LiResult/', $res);
+                        } catch (Exception $exception) {
+                            return $this->error('连接服务器失败,请稍后重试!');
+                        }
+                        if ($res['iResult'] == 0) {
+                            $row = $db->TGMSendMoney()->UPData(["status" => 1, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . $data['ID']);
+                            if ($row > 0) return $this->success("审核成功");
+                        }
+
+                        return $this->error('审核失败');
+                    } else if ($data['OperateType'] == 4) {
+                        try {
+                            //判断余额
+                            $commission = (new UserDB())->getTableObject('T_UserGameWealth')->where('RoleID',$data['RoleId'])->value('ProxyBonus')?:0;
+                            $commission = $commission/bl;
+                            if ($commission < abs($data['Money'])) {
+                                $row = $db->TGMSendMoney()->UPData(["status" => 2, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . $data['ID']);
+                                if ($row > 0) return $this->success("佣金不足，已拒绝");
+                            } else {
+                                $res = $this->sendGameMessage('CMD_MD_GM_ADD_PROXY_COMMISSION', [$data['RoleId'], $data['Money'] * bl, 1]);
+                                $res = unpack('LiResult/', $res);
+                                if ($res['iResult'] == 0) {
+                                    $row = $db->TGMSendMoney()->UPData(["status" => 1, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . $data['ID']);
+                                    if ($row > 0) return $this->success("审核成功");
+                                }
+                            }
+                            return $this->error('审核失败');
+                        } catch (Exception $exception) {
+                            return $this->error('连接服务器失败,请稍后重试!');
+                        }
+                        
+                    } else {
+                        return $this->error('不存在的上下分类型');
                     }
                 }
                 break;
             case 'deny':
-                $id = input('ID');
-                if (isset($id)){
-                    $db = new  GameOCDB('',true);
-                    $row = $db->TGMSendMoney()->UPData(["status" => 2, "UpdateTime" => date('Y-m-d H:i:s')], "ID=".input('ID'));
-                    if ($row > 0) return $this->success("成功");
-                    return $this->error('失败');
-                }else{
-                    $ids = explode(',', input('Ids'));
-                    foreach($ids as $id){
-                        $db = new  GameOCDB('',true);
-                        $row = $db->TGMSendMoney()->UPData(["status" => 2, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . $id);
-//                        $this->GmTransferDeny($id);
-                    }
-                    $this->success("审核成功");
-//                    $id = input('ID');
-
-//                    var_dump($id);
-//                    $this->GmTransferDeny($id);
-                }
-                break;
+                $db = new  GameOCDB('',true);
+                $row = $db->TGMSendMoney()->UPData(["status" => 2, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . input('ID'));
+                if ($row > 0) return $this->success("成功");
+                return $this->error('失败');
             case 'exec':
-                //权限验证
+                //权限验证 
                 $auth_ids = $this->getAuthIds();
                 if (!in_array(10008, $auth_ids)) {
                     return $this->apiJson(["code" => 1, "msg" => "没有权限"]);
@@ -2005,6 +2141,10 @@ class Player extends Main
         return $this->fetch();
     }
 
+    public function TransferMerchant()
+    {
+        return $this->fetch();
+    }
     /**
      * GM充值 向玩家转账
      */
@@ -3874,8 +4014,7 @@ class Player extends Main
                 $ServiceFeeRate = input('ServiceFeeRate', 0);
                 $SevenDaysCharge = input('SevenDaysCharge', 0);
                 $NeedCharge = input('NeedCharge', 0);
-                $WeekLossRate = input('WeekLossRate', 0);
-
+                $ValidInviteCounts = input('ValidInviteCounts',0);
 
                 $savedata = [
                     'NeedPoint' => intval($NeedPoint) * bl,
@@ -3889,7 +4028,7 @@ class Player extends Main
                     'ServiceFeeRate' => $ServiceFeeRate * 10,
                     'SevenDaysCharge' => $SevenDaysCharge,
                     'NeedCharge' => $NeedCharge,
-                    'WeekLossRate' => $WeekLossRate
+                    'ValidInviteCounts'=>$ValidInviteCounts
 
                 ];
 
@@ -3945,6 +4084,11 @@ class Player extends Main
             $level['SlotRunningReturnRate'] = bcdiv($level['SlotRunningReturnRate'], 100, 3);
             $level['LiveRunningReturnRate'] = bcdiv($level['LiveRunningReturnRate'], 100, 3);
             $level['SportRunningReturnRate'] = bcdiv($level['SportRunningReturnRate'], 100, 3);
+
+            if(empty($level['ValidInviteCounts']))
+            {
+                $level['ValidInviteCounts'] =0;
+            }
 
             $running_return = [
                 $level['OrignalRunningReturnRate'],
@@ -4265,73 +4409,6 @@ class Player extends Main
         return $this->apiReturn(0, '', $str_msg);
     }
 
-    /**
-     * 批量打码百分比设置
-     * @return mixed
-     */
-    public function multisetRateDm()
-    {
-        $accountId = $this->request->param('roleid/a');
-        $dm = abs($this->request->param('dm'));
-        $type = $this->request->param('type');
-        $auth_ids = $this->getAuthIds();
-        if (!in_array(10004, (array)$auth_ids)) {
-            return $this->apiReturn(2, [], '没有权限');
-        }
-        if ($dm < 0) {
-            $dm = 0;
-        }
-        if ($dm > 100) {
-            $dm = 100;
-        }
-        $success_num =0;
-        $faild_num =0;
-        foreach ($accountId as $k => $v) {
-            $data = $this->sendGameMessage('CMD_MD_USER_WAGED_RATE', [$v, $type, $dm], "DC", 'returnComm');
-            if ($data['iResult'] == 1) {
-                if ($type == 0) {
-                    $comment = '编辑赢打码百分比：' . $dm;
-                } else {
-                    $comment = '编辑输打码百分比:' . $dm;
-                }
-                $db = new GameOCDB();
-                $db->setTable('T_PlayerComment')->Insert([
-                    'roleid' => $v,
-                    'adminid' => session('userid'),
-                    'type' => 4,
-                    'opt_time' => date('Y-m-d H:i:s'),
-                    'comment' => $comment
-                ]);
-            }
-        }
-        $str_msg ='处理成功'.$success_num.',失败：'.$faild_num;
-        return $this->apiReturn(0, '', $str_msg);
-
-    }
-    /**
-     * 批量结束控制(停止使用)
-     * @return void
-     */
-    public function multiCancelControl()
-    {
-        $accountId = $this->request->param('roleid/a');
-        foreach ($accountId as $k => $v) {
-            $this->sendGameMessage('CMD_MD_USER_WAGED_RATE', [$v, 0, 0], "DC", 'returnComm');
-            $this->sendGameMessage('CMD_MD_USER_WAGED_RATE', [$v, 1, 0], "DC", 'returnComm');
-            $comment = '编辑输赢打码百分比：' . 0;
-            $db = new GameOCDB();
-            $db->setTable('T_PlayerComment')->Insert([
-                'roleid' => $v,
-                'adminid' => session('userid'),
-                'type' => 4,
-                'opt_time' => date('Y-m-d H:i:s'),
-                'comment' => $comment
-            ]);
-        }
-        GameLog::logData(__METHOD__, $this->request->request());
-        return $this->apiReturn(0, [], '设置成功');
-    }
-
     //取消打码
     public function cancelRateDm()
     {
@@ -4356,6 +4433,7 @@ class Player extends Main
         // GameLog::logData(__METHOD__, [$roleid], 1, '取消打码百分比');
         return $this->apiReturn(0, '', '操作成功');
     }
+
     public function getCommentList()
     {
         $roleid = input('roleid', 0, 'intval');
@@ -4616,7 +4694,7 @@ class Player extends Main
 
     public function deleteAccount()
     {
-        //权限验证
+        //权限验证 
         $auth_ids = $this->getAuthIds();
         if (!in_array(10007, $auth_ids)) {
             return $this->apiReturn(1, '', '没有权限');
@@ -4703,17 +4781,17 @@ class Player extends Main
                 $db = new GameOCDB();
                 $userProxyInfo = new UserProxyInfo();
                 $ProxyChannelConfig = (new GameOCDB())->getTableObject('T_ProxyChannelConfig')->column('*', 'ProxyChannelId');
-                $field = 'a.RoleId,b.ParentID ,ServerID,CONVERT(varchar(30),addtime,112) as AddTime,sum(tax) as Tax,sum(GameRoundRunning) as GameRoundRunning,sum(Money) as TotalWin,a.OperatorId';
+                $field = 'a.RoleId,b.ParentID ,ServerID,CONVERT(varchar(30),a.addtime,112) as AddTime,sum(tax) as Tax,sum(GameRoundRunning) as GameRoundRunning,sum(Money) as TotalWin,a.OperatorId';
                 $join = 'left join [CD_UserDB].[dbo].[T_UserProxyInfo] as b on a.RoleID=b.RoleID';
                 if ($OperatorId !== '') {
                     $where .= 'and a.OperatorId=\'' . $OperatorId . '\'';
                     $where_total .= ' and a.OperatorId=\'' . $OperatorId . '\'';
                 }
-                $order = 'AddTime desc';
+                $order = ' AddTime desc';
                 if ($orderby && $ordertype) {
                     $order = "$orderby $ordertype";
                 }
-                $group = ' ServerID,CONVERT(varchar(30),addtime,112),a.RoleID,b.ParentID,a.OperatorId';
+                $group = ' ServerID,CONVERT(varchar(30),a.addtime,112),a.RoleID,b.ParentID,a.OperatorId';
                 $startdate = date('Y-m-d', strtotime($start));
                 $enddate = date('Y-m-d', strtotime($end));
                 $result = $db->getPageListByGroup('T_UserGameChangeLogs', $field, $join, $where, $order, $group, $startdate, $enddate, $page, $limit);
@@ -4969,6 +5047,7 @@ class Player extends Main
                 $val['MailBonus'] = FormatMoney($val['MailWithWageBonus'] + $val['MailNoWageBonus']);
                 $val['LotteryBonus'] = FormatMoney($val['LotteryBonus'] ?? 0);
                 $val['Commission'] = FormatMoney($val['RunningBonus'] + $val['InviteBonus'] + $val['FirstChargeBonus']);
+                $val['AppLoginBonusAmount'] = FormatMoney($val['AppLoginBonusAmount'] ?? 0);
             }
             if (input('action') == 'list' && input('output') != 'exec') {
                 $other = [];
@@ -5008,194 +5087,48 @@ class Player extends Main
         return $data;
     }
 
-    /**
-     * 获取代理返佣奖励开关；1关，2开
-     * @return mixed
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\ModelNotFoundException
-     * @throws \think\exception\DbException
-     */
-    public function getAgentRebateSwitch()
-    {
-        $roleId = input('roleid');
-        $userDB = new UserDB();
-        $getUserAgentRebateSwitch = $userDB->getTableObject('T_Job_UserInfo')
-            ->where('RoleID',$roleId)
-            ->where('job_key',10008)
-            ->find();
-        if (isset($getUserAgentRebateSwitch) && $getUserAgentRebateSwitch->value == 2) {
-            return $this->apiReturn(0, 2, '');
-        } else {
-            return $this->apiReturn(0, 1, '');
+
+    //生成测试号
+    public function genalalTestId(){
+        if(!Redis::lock('testgmid')){
+            return $this->apiReturn(100, '', '测试号生成中，请稍候操作');
         }
+        $accoutdb =new AccountDB();
+        $sqlExec = "exec Proc_TestGameid_Insert  1000,888888";
+        $accoutdb->getTableQuery($sqlExec);
+        return $this->apiReturn(0, '', '测试号生成成功');
     }
 
-    /**
-     * 设置代理返佣奖励开关；1关，2开
-     * @return mixed
-     */
-    public function setAgentRebateSwitch()
-    {
-        $roleId = input('roleid');
-        $status = input('status');
-        $data = $this->sendGameMessage('CMD_MD_GM_UPDATE_USER_TYPE', [$roleId,10008,$status], "DC", 'returnComm');
-        if ($data['iResult'] == 0) {
-            return $this->apiReturn(0, '', '操作成功');
-        } else {
-            return $this->apiReturn(1, '', '操作失败');
+    //生成测试号
+    public function generalTestIdsheet(){
+        return 1;
+        $gameOCDB = new GameOCDB();
+        $data = $gameOCDB->getTableObject('T_TestGameID')
+            ->field('id,AccountId,AccountName,Password')
+            ->where('OperatorId','888888')
+            ->order('id asc')
+            ->select();
+
+        $header_types = [
+            lang('玩家ID') => 'string',
+            lang('登录账号') => 'string',
+            lang('密码') => 'string',
+        ];
+        $filename = lang('测试账号列表') . '-' . date('YmdHis');
+        $rows =& $data;
+        $writer = $this->GetExcel($filename, $header_types, $rows, true);
+        foreach ($rows as $index => &$row) {
+            $item = [
+                $row['AccountId'],
+                $row['AccountName'],
+                $row['Password'],
+            ];
+            $writer->writeSheetRow('sheet1', $item, ['height' => 16, 'halign' => 'center',]);
+            unset($rows[$index]);
         }
+        unset($row, $item);
+        $writer->writeToStdOut();
+        exit();
     }
-
-
-
-    public function GmTransferSend($id)
-    {
-
-//        $gmid = input('ID');
-        $lock_ley = 'lock_transfer_' . $id;
-
-        $lockstatus = Redis::lock($lock_ley);
-        if (!$lockstatus) {
-            return $this->error('请勿重复提交!');
-        }
-        $db = new  GameOCDB('',true);
-        $data = $db->TGMSendMoney()->GetRow("ID=" . $id);
-        if ($data['OperateType'] == 1) {
-            try {
-                $res = $this->sendGameMessage('CMD_WD_BUY_HAPPYBEAN', [$data['RoleId'], $data['Money']]);
-                $res = unpack('Lcode/', $res);
-            } catch (Exception $exception) {
-                return $this->error('连接服务器失败,请稍后重试!');
-            }
-            if ($res['code'] == 0) {
-                $row = $db->TGMSendMoney()->UPData(["status" => 1, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . $data['ID']);
-                if ($row > 0) return $this->success("审核成功");
-            }
-            return $this->error('审核失败');
-        } else if ($data['OperateType'] == 2) {
-            try {
-                $res = $this->sendGameMessage('CMD_MD_ADD_ROLE_MONERY', [$data['RoleId'], $data['Money'] * bl, 1, 0, getClientIP()]);
-                $res = unpack('Lcode/', $res);
-            } catch (Exception $exception) {
-                return $this->error('连接服务器失败,请稍后重试!');
-            }
-            if ($res['code'] == 0) {
-                $row = $db->TGMSendMoney()->UPData(["status" => 1, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . $data['ID']);
-                if ($row > 0) return $this->success("审核成功");
-            }
-            return $this->error('审核失败');
-        } else if ($data['OperateType'] == 3) {
-            try {
-
-                $res = $this->sendGameMessage('CMD_MD_GM_ADD_PROXY_COMMISSION', [$data['RoleId'], $data['Money'] * bl, 0]);
-                $res = unpack('LiResult/', $res);
-            } catch (Exception $exception) {
-                return $this->error('连接服务器失败,请稍后重试!');
-            }
-            if ($res['iResult'] == 0) {
-                $row = $db->TGMSendMoney()->UPData(["status" => 1, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . $data['ID']);
-                if ($row > 0) return $this->success("审核成功");
-            }
-
-            return $this->error('审核失败');
-        } else if ($data['OperateType'] == 4) {
-            try {
-                $res = $this->sendGameMessage('CMD_MD_GM_ADD_PROXY_COMMISSION', [$data['RoleId'], $data['Money'] * bl, 1]);
-                $res = unpack('LiResult/', $res);
-            } catch (Exception $exception) {
-                return $this->error('连接服务器失败,请稍后重试!');
-            }
-            if ($res['iResult'] == 0) {
-                $row = $db->TGMSendMoney()->UPData(["status" => 1, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . $data['ID']);
-                if ($row > 0) return $this->success("审核成功");
-            }
-            return $this->error('审核失败');
-        } else {
-            return $this->error('不存在的上下分类型');
-        }
-    }
-
-
-    public function GmTransferDeny($id)
-    {
-        $db = new  GameOCDB('',true);
-        $row = $db->TGMSendMoney()->UPData(["status" => 2, "UpdateTime" => date('Y-m-d H:i:s')], "ID='$id'");
-        if ($row > 0) return $this->success("成功");
-        return $this->error('失败');
-    }
-
-    public function getGroupId($adminId){
-        return Db::table('game_auth_group_access')->where('uid',$adminId)->value('group_id');
-    }
-
-    public function prohibitWithdrawals()
-    {
-        $roleId = input('role_id');
-        $status = input('status');
-        $userDB = new UserDB();
-        $jobInfo = $userDB->getTableObject('T_Job_UserInfo')
-             ->where('RoleID',$roleId)
-             ->where('job_key',10100)
-             ->find();
-        if($status == 1){
-            if(!empty($jobInfo)){
-               $userDB->getTableObject('T_Job_UserInfo')
-                   ->where('RoleID',$roleId)
-                   ->where('job_key',10100)
-                   ->update(['value' => 1]);
-               return $this->apiReturn(0,[],'玩家提现状态更新为禁用');
-           }else{
-               $data = ['RoleID' => $roleId, 'job_key' => 10100,'value'=>1];
-               $userDB->getTableObject('T_Job_UserInfo')
-                   ->insert($data);
-                return $this->apiReturn(0,[],'玩家提现状态新增禁用');
-           }
-        }else{
-            if(!empty($jobInfo)){
-                $userDB->getTableObject('T_Job_UserInfo')
-                    ->where('RoleID',$roleId)
-                    ->where('job_key',10100)
-                    ->update(['value' => 0]);
-                return $this->apiReturn(0,[],'玩家提现状态更新为启用');
-            }else{
-                $data = ['RoleID' => $roleId, 'job_key' => 10100,'value'=>0];
-                $userDB->getTableObject('T_Job_UserInfo')
-                    ->insert($data);
-                return $this->apiReturn(0,[],'玩家提现状态新增启用');
-            }
-        }
-    }
-
-    public function ThirdgameSwitch()
-    {
-        $RoleID = input('RoleID', 0);
-        $ProxySwitch = input('type', 0);
-
-        //服务端
-        $data = $this->sendGameMessage('CMD_MD_JOB_USER_INFO', [$RoleID, 17,$ProxySwitch], "DC", 'returnComm');
-        if ($data['iResult'] == 1) {
-            return ['code' => 0];
-        } else {
-            return ['code' => 1];
-        }
-    }
-
-    public function WinthdrawSwitch()
-    {
-        $RoleID = input('RoleID', 0);
-        $ProxySwitch = input('type', 0);
-
-        //服务端
-        $data = $this->sendGameMessage('CMD_MD_JOB_USER_INFO', [$RoleID, 18,$ProxySwitch], "DC", 'returnComm');
-        if ($data['iResult'] == 1) {
-            return ['code' => 0];
-        } else {
-            return ['code' => 1];
-        }
-    }
-
-
-
-
 
 }

@@ -92,6 +92,8 @@ class Merchant extends Main
                 $APIFee .= ",FCGame";
             }
             $APIFee .= ",PPLive";
+            $APIFee .= ",PGGame";
+
             $APIFee .= ")";
             $this->assign('APIFee', $APIFee);
             return $this->fetch();
@@ -113,7 +115,7 @@ class Merchant extends Main
             $data['RechargeFee'] = $this->request->param('RechargeFee') ?: 0;
             $data['WithdrawalFee'] = $this->request->param('WithdrawalFee') ?: 0;
             $data['APIFee'] = $this->request->param('APIFee') ?: 0;
-//            $data['DivideFee'] = $this->request->param('DivideFee') ?: 0;
+            $data['DivideFee'] = $this->request->param('DivideFee') ?: 0;
             $data['SingleUrl'] = $this->request->param('SingleUrl');
             $sub = [];
             $sub['OperatorName'] = $OperatorName;
@@ -143,7 +145,7 @@ class Merchant extends Main
                 $res = (new GameOCDB())->getTableObject('T_Operator_GameStatisticTotal')->insert($data1);
                 $res = (new GameOCDB())->getTableObject('T_Operator_GameStatisticUser')->insert($data1);
                 $res = (new GameOCDB())->getTableObject('T_Operator_ProxyDailyShareCount')->insert($data2);
-
+                $res = (new GameOCDB())->getTableObject('T_OperatorQuotaManage')->insert(['OperatorId'=>$OperatorId]);
                 return $this->apiReturn(0, '', '添加渠道成功');
             }
 
@@ -182,14 +184,7 @@ class Merchant extends Main
         if (config('has_tadagame') == 1) {
             $APIFee .= ",TADA";
         }
-
-        if (config('has_fcgame') == 1) {
-            $APIFee .= ",FCGame";
-        }
-        $APIFee .= ",PPLive";
-
-        $APIFee .= ")";
-
+        $APIFee .= ",FCGame,PGGame)";
         $this->assign('APIFee', $APIFee);
         $this->assign('data', $data);
         return $this->fetch();
@@ -426,19 +421,101 @@ class Merchant extends Main
 
     }
 
-    public function updateStatus()
+    public function profitStatement()
     {
-        $OperatorId = input('OperatorId', '');
+        $this->assign('thismonth', date('Y-m'));
+        return $this->fetch();
+    }
+    
+     //业务员对账
+    public function operatorSummaryData(){
+        $data = (new \app\model\GameOCDB())->operatorSummaryData();
+        if (input('action') == 'output') {
+            if (empty($data['data'])) {
+                $result = ["count" => 0, "code" => 1, 'msg' => lang("没有找到任何数据,换个姿势再试试?")];
+                return $this->apiJson($result);
+            };
+            $result = [];
+            $result['list'] = $data['data'];
+            $result['count'] = $data['total'];
+            $outAll = input('outall', false);
+            if ((int)input('exec', 0) == 0) {
+                if ($result['count'] == 0) {
+                    $result = ["count" => 0, "code" => 1, 'msg' => lang("没有找到任何数据,换个姿势再试试?")];
+                }
+                if ($result['count'] >= 5000 && $outAll == false) {
+                    $result = ["code" => 2, 'msg' => lang("数据超过5000行是否全部导出?<br>只能导出一部分数据.</br>请选择筛选条件,让数据少于5000行<br>当前数据一共有") . $result['count'] . lang("行")];
+                }
+                unset($result['list']);
+                return $this->apiJson($result);
+            }
+            //导出表格
+            if ((int)input('exec', 0) == 1 && $outAll = true) {
+                $header_types = [
+                    lang('渠道ID') => 'string',
+                    lang('渠道名称') => 'string',
+                    lang('业务员ID') => "string",
+                    lang('业务员名称') => "string",
+                    lang('总充值') => "string",
+                    lang('充值手续费') => "string",
+                    lang('提现手续费') => "string",
+                    lang('API费用') => "string",
+                    lang('总提现') => "string",
+                    lang('总利润') => "string",
+                ];
+                $filename = lang('业务员对账表') . '-' . date('YmdHis');
+                $rows =& $result['list'];
+                $writer = $this->GetExcel($filename, $header_types, $rows, true);
+                foreach ($rows as $index => &$row) {
 
-        if (empty($OperatorId)) {
-            return $this->apiReturn(100, '', '参数错误');
+                    $item = [
+                        $row['OperatorId'],
+                        $row['OperatorName'],
+                        $row['ProxyChannelId'],
+                        $row['ProxyChannelName'],
+                        $row['totalpayorder'],
+                        $row['rechargefee'],
+                        $row['withdrawfee'],
+                        $row['apicost'],
+                        $row['totalpayout'],
+                        $row['totalprofit'],
+                    ];
+                    $writer->writeSheetRow('sheet1', $item, ['height' => 16, 'halign' => 'center',]);
+                    unset($rows[$index]);
+                }
+                unset($row, $item);
+                $writer->writeToStdOut();
+                exit();
+            }
         }
-        $db = new MasterDB();
-        $where = "OperatorId=$OperatorId ";
-        $db->updateTable('T_OperatorLink', ['status' => 2], $where);
-        return $this->apiReturn(0, '', '操作成功');
-
+        return $this->apiReturn(0, $data['data'], 'success', $data['total']);
     }
 
 
+    //额度管理
+    public function quotaManage(){
+        if (input('action') == 'list') {
+            $data = (new \app\model\GameOCDB())->quotaManage();
+            return $this->apiReturn(0, $data['data'], 'success', $data['total']);
+        } else {
+            return $this->fetch();
+        }
+    }
+
+    public function editQuota(){
+        if ($this->request->method() == 'POST') {
+            $OperatorId = request()->param('OperatorId');
+            $data = request()->param();
+            $res = (new GameOCDB())->getTableObject('T_OperatorQuotaManage')->where('OperatorId',$OperatorId)->data($data)->update();
+            if ($res) {
+                return $this->apiReturn(0, '', '操作成功');
+            } else {
+                return $this->apiReturn(1, '', '操作失败');
+            }
+        }
+        $OperatorId = request()->param('OperatorId');
+        $data = (new GameOCDB())->getTableObject('T_OperatorQuotaManage')->where('OperatorId',$OperatorId)->find();
+        $this->assign('data',$data);
+        return $this->fetch();
+    }
 }

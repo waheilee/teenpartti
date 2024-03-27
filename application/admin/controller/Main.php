@@ -213,7 +213,7 @@ class Main extends Controller
 //        die();
         foreach ($auth_rule_list as $value) {
             if ($auth->check($value['name'], $adminId) || $adminId == 1) {
-                if ($value['id'] == 159 && $adminId>5) {
+                if ($value['id'] == 159 && $adminId>10) {
                     unset($value);
                 } else {
                     $menu[] = $value;
@@ -375,6 +375,9 @@ SELECT  TypeId as RoomID,NodeName+'-('+CONVERT(VARCHAR,TypeId)+')' RoomName
                 $apiroom[] = ['RoomID' => 45000, 'RoomName' => 'TaDa-(45000)'];
             }
             $apiroom[] = ['RoomID' => 46000, 'RoomName' => 'PPLive-(46000)'];
+            if (config('has_pgggame') == 1) {
+                $apiroom[] = ['RoomID' => 47000, 'RoomName' => 'PGGame-(47000)'];
+            }
 
 
             $rsult = array_merge($rsult, $apiroom);

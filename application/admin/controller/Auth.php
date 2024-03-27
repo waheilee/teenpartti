@@ -375,6 +375,11 @@ class auth extends Main
                 'pid'=>10000,
                 'title'=>'编辑渠道额度',
             ];
+            $auth_rule_list[] = [
+                'id'=>10013,
+                'pid'=>10000,
+                'title'=>'设置打码百分比',
+            ];
         } else {
             $auth_ids = $this->getAuthIds();
             $auth_rule_list = Db::name('auth_rule')->field('id,pid,title')->where('id','in',$auth_ids)->select();
@@ -461,6 +466,13 @@ class auth extends Main
                     'id'=>10012,
                     'pid'=>10000,
                     'title'=>'编辑渠道额度',
+                ];
+            }
+            if (in_array(10013, $auth_ids)) {
+                $auth_rule_list[] = [
+                    'id'=>10013,
+                    'pid'=>10000,
+                    'title'=>'设置打码百分比',
                 ];
             }
         }

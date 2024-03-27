@@ -17,7 +17,7 @@ class Index extends Base
     public function __construct()
     {
         parent::__construct();
-
+        
         header('Access-Control-Allow-Origin:*');
 //允许的请求头信息
         header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authorization");
@@ -27,7 +27,7 @@ class Index extends Base
         header('Access-Control-Allow-Credentials:true');
         $this->params = request()->param() ?: json_decode(file_get_contents('php://input'),1);
         save_log('hacksaw', '==='.request()->url().'===接口请求数据===' . json_encode($this->params));
-
+        
     }
 
     //游戏对外接口创建玩家
@@ -47,12 +47,12 @@ class Index extends Base
             $test_uidarr = config('test_uidarr') ?: [];
 
             if (config('trans_url_hacksaw')) {
-                config('trans_url_other',config('trans_url_hacksaw'));
+                config('trans_url_other',config('trans_url_hacksaw')); 
             }
             if ((strlen($roleid)==7) || in_array($roleid, $test_uidarr)) {
-                $this->config = config('hacksaw_test');
-                config('trans_url_other',config('test_trans_url'));
-
+                 $this->config = config('hacksaw_test');
+                 config('trans_url_other',config('test_trans_url'));
+                 
             }
             $language = $param['language'] ?: $this->config['language'];
             if (strtoupper($language) == 'BR') {
@@ -73,7 +73,7 @@ class Index extends Base
                 'language'     =>$language,
                 'channel'      =>'mobile',
                 'country_code' =>$this->config['country'],
-            ];
+            ]; 
             $header = [
                 'content-type:application/json'
             ];
@@ -91,7 +91,7 @@ class Index extends Base
                 $gameURL = '';
             }
             return $this->succjson($gameURL);
-
+            
         } catch (Exception $ex) {
             save_log('hacksaw_error', '==='.$ex->getMessage() . $ex->getTraceAsString() . $ex->getLine());
             return $this->failjson('api error');
@@ -105,7 +105,7 @@ class Index extends Base
             $hash      = $params['sign'];
             $token     = $params['token'];
             $brand_uid = $params['brand_uid'];
-
+            
 
             $check_hash = strtoupper(md5($this->config['Merchant_ID'].$token.$this->config['Secret_Key']));
             if ($check_hash != $hash) {
@@ -150,12 +150,12 @@ class Index extends Base
             $round_id   = $params['round_id'];
             $bet_id     = $params['wager_id'];
             $is_endround = $params['is_endround'];
-
+            
             $check_hash = strtoupper(md5($this->config['Merchant_ID'].$bet_id.$this->config['Secret_Key']));
             if ($check_hash != $hash) {
                 return $this->apiReturn(5000,'Sign error.');
             }
-
+            
             $token_user_id = explode('abc',$token);
             if (!isset($token_user_id[1])) {
                 return $this->apiReturn(5013,'Not logged in.');
@@ -177,7 +177,7 @@ class Index extends Base
             if (Redis::has('hacksaw_is_exec_bet_'.$round_id.'_'.$bet_id)) {
                 return $this->apiReturn(5043,'Bet record duplicate.',$data);
             }
-
+            
 
             if ($balance < $amount) {
                 return $this->apiReturn(5003,'Balance insufficient.',$data);
@@ -226,12 +226,12 @@ class Index extends Base
             $round_id   = $params['round_id'];
             $bet_id     = $params['wager_id'];
             $is_endround = $params['is_endround'];
-
+            
             $check_hash = strtoupper(md5($this->config['Merchant_ID'].$bet_id.$this->config['Secret_Key']));
             if ($check_hash != $hash) {
                 return $this->apiReturn(5000,'Sign error.');
             }
-
+            
             $user_id = explode('abc',$brand_uid);
             if (!isset($user_id[1])) {
                 return $this->apiReturn(5009,'Player not exist.');
@@ -246,24 +246,24 @@ class Index extends Base
             if (Redis::has('hacksaw_is_exec_result_'.$round_id.'_'.$bet_id)) {
                 return $this->apiReturn(5043,'Bet record duplicate.',$data);
             }
-
+            
 
             //是否下注
             if (!Redis::has('hacksaw_amount_bet_'.$user_id.'_'.$round_id)) {
                 return $this->apiReturn(5042,'Bet record does not exist.',$data);
             }
             $gamemoney = bcmul($amount,bl,0);
-            //记录订单是否执行，防止重复
+             //记录订单是否执行，防止重复
             Redis::set('hacksaw_is_exec_result_'.$round_id.'_'.$bet_id,$gamemoney,3600);
 
             $socket    = new QuerySocket();
-
+            
             $gamemoney2 = Redis::get('hacksaw_amount_bet_'.$user_id.'_'.$round_id);
             $state = $socket->UpScore2($user_id, $gamemoney, $bet_id,41000,$gamemoney2);
             if ($state['iResult']!=0) {
                 return $this->apiReturn(1001,'System error.');
             }
-
+           
             // //记录结算数量
             // Redis::set('hacksaw_amount_result_'.$round_id.'_'.$bet_id,$gamemoney);
 
@@ -293,7 +293,7 @@ class Index extends Base
             $bet_id     = $params['wager_id'];
             $is_endround = $params['is_endround'];
             $wager_type  = $params['wager_type'];
-
+            
             $check_hash = strtoupper(md5($this->config['Merchant_ID'].$bet_id.$this->config['Secret_Key']));
             if ($check_hash != $hash) {
                 return $this->apiReturn(5000,'Sign error.');
@@ -312,7 +312,7 @@ class Index extends Base
             if (Redis::has('hacksaw_is_exec_cancelWager_'.$round_id.'_'.$bet_id)) {
                 return $this->apiReturn(5043,'Bet record duplicate.',$data);
             }
-
+            
 
             $socket = new QuerySocket();
             if ($wager_type == 1) {
@@ -339,13 +339,13 @@ class Index extends Base
                 }
                 //记录订单是否执行，防止重复
                 Redis::set('hacksaw_is_exec_cancelWager_'.$round_id.'_'.$bet_id,1,3600);
-
+                
                 $state = $socket->downScore($user_id, $gamemoney, $bet_id,41000);
                 if ($state['iResult']!=0) {
                     return $this->apiReturn(1001,'System error.');
                 }
             }
-
+            
             if ($is_endround == true) {
                 $this->clearData($user_id,$round_id);
             }
@@ -370,7 +370,7 @@ class Index extends Base
             $round_id   = $params['round_id'];
             $bet_id     = $params['wager_id'];
             $is_endround = $params['is_endround'];
-
+            
             $check_hash = strtoupper(md5($this->config['Merchant_ID'].$bet_id.$this->config['Secret_Key']));
             if ($check_hash != $hash) {
                 return $this->apiReturn(5000,'Sign error.');
@@ -390,7 +390,7 @@ class Index extends Base
             if (Redis::get('hacksaw_is_exec_appendWager_'.$round_id.'_'.$bet_id)) {
                 return $this->apiReturn(5043,'Bet record duplicate.',$data);
             }
-
+            
 
             //记录订单是否执行，防止重复
             Redis::set('hacksaw_is_exec_appendWager_'.$round_id.'_'.$bet_id,1,3600);
@@ -427,13 +427,13 @@ class Index extends Base
             $round_id   = $params['round_id'];
             $bet_id     = $params['wager_id'];
             $is_endround = $params['is_endround'];
-
-
+            
+            
             $check_hash = strtoupper(md5($this->config['Merchant_ID'].$bet_id.$this->config['Secret_Key']));
             if ($check_hash != $hash) {
                 return $this->apiReturn(5000,'Sign error.');
             }
-
+            
             $user_id = explode('abc',$brand_uid);
             if (!isset($user_id[1])) {
                 return $this->apiReturn(5009,'Player not exist.');
@@ -484,7 +484,7 @@ class Index extends Base
             $promotion_id    = $params['promotion_id'];
             $round_id   = $params['trans_id'];
             $bet_id     = $params['trans_id'];
-
+            
             $check_hash = strtoupper(md5($this->config['Merchant_ID'].$promotion_id.$bet_id.$this->config['Secret_Key']));
             if ($check_hash != $hash) {
                 return $this->apiReturn(5000,'Sign error.');
@@ -504,7 +504,7 @@ class Index extends Base
             if (Redis::get('hacksaw_is_exec_promoPayout_'.$round_id.'_'.$bet_id)) {
                 return $this->apiReturn(5043,'Bet record duplicate.',$data);
             }
-
+            
 
             //记录订单是否执行，防止重复
             Redis::set('hacksaw_is_exec_promoPayout_'.$round_id.'_'.$bet_id,1,3600);
@@ -534,12 +534,12 @@ class Index extends Base
             $token     = $params['token'];
             $brand_uid  = $params['brand_uid'];
             $token      = $params['token'];
-
+            
             $check_hash = strtoupper(md5($this->config['Merchant_ID'].$token.$this->config['Secret_Key']));
             if ($check_hash != $hash) {
                 return $this->apiReturn(5000,'Sign error.');
             }
-
+            
             $token_user_id = explode('abc',$token);
             if (!isset($token_user_id[1])) {
                 return $this->apiReturn(5013,'Not logged in.');
@@ -558,8 +558,8 @@ class Index extends Base
                 'currency'  =>$this->config['Currency'],
                 'balance'   =>$balance
             ];
-
-
+            
+            
             return $this->apiReturn(1000,'Success.',$data);
         } catch (Exception $ex) {
             save_log('hacksaw_error', '==='.$ex->getMessage() . $ex->getTraceAsString() . $ex->getLine());
@@ -644,7 +644,7 @@ class Index extends Base
                 } else {
                     $md5str = $key.'='.$val;
                 }
-
+                
             }
         }
         $str = $md5str.$Md5key;

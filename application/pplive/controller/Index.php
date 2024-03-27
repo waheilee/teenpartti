@@ -43,6 +43,13 @@ class Index extends Base
             }
             $roleid = $param['roleid'];
 
+           $has = (new \app\model\MasterDB)->getTableObject('T_GameConfig')->where('CfgType',3000)->find();
+            if (empty($has)) {
+                $min_amount = (new \app\model\MasterDB)->getTableObject('T_GameConfig')->where('CfgType',300)->value('CfgValue') ?: 0;
+            } else {
+               $min_amount = $has['CfgValue'];
+            }
+            
             $gameid = $param['gameid'] ?: 1;
             switch ($gameid) {
                 case '1':

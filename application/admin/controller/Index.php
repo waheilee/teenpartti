@@ -72,7 +72,9 @@ class Index extends Main
 
             foreach ($list as $key => &$v) {
                 if (strpos($v['mobile'], '@') == false) {
-                    $v['mobile'] = substr_replace($v['mobile'],'**',-2);
+                    if (config('is_usa') != 1) {
+                        $v['mobile'] = substr_replace($v['mobile'],'**',-2);
+                    }
                 }
                 
             }

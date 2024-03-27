@@ -14,9 +14,7 @@ use socket\sendQuery;
  * 支付通道
  */
 class Ranke extends Main
-{
-
-
+{ 
     /**
      *  金币排行
      * @return View |    Json
@@ -26,22 +24,23 @@ class Ranke extends Main
         switch (input('Action')) {
             case 'list':
                 $db = new UserDB();
-                $data = $db->GetGoldRanklist();
+                $data =$db->GetGoldRanklist();
                 $socket = new QuerySocket();
-                foreach ($data['list'] as $k => &$v) {
+                foreach ($data['list'] as $k=>&$v){
                     $userbanlance = $socket->DSQueryRoleBalance($v['AccountID']);
-                    $v['CashAble'] = 0;
-                    if (!empty($userbanlance)) {
+                    $v['CashAble'] =0;
+                    if(!empty($userbanlance)){
                         $v['iGameWealth'] = $userbanlance['iGameWealth'];
                         $v['iFreezonMoney'] = $userbanlance['iFreezonMoney'];
                         $v['iNeedWaged'] = $userbanlance['iNeedWaged'];
                         $v['iCurWaged'] = $userbanlance['iCurWaged'];
-                        $v['CashAble'] = bcsub($v['iGameWealth'], $v['iFreezonMoney'], 2);
-                    } else {
-                        $v['iGameWealth'] = 0;
-                        $v['iFreezonMoney'] = 0;
-                        $v['iNeedWaged'] = 0;
-                        $v['iCurWaged'] = 0;
+                        $v['CashAble'] = bcsub($v['iGameWealth'],$v['iFreezonMoney'],2);
+                    }
+                    else{
+                        $v['iGameWealth'] =0;
+                        $v['iFreezonMoney']=0;
+                        $v['iNeedWaged'] =0;
+                        $v['iCurWaged']=0;
                     }
                     ConVerMoney($v['CashAble']);
                     ConVerMoney($v['TotalWeath']);
@@ -56,7 +55,7 @@ class Ranke extends Main
                 //权限验证 
                 $auth_ids = $this->getAuthIds();
                 if (!in_array(10008, $auth_ids)) {
-                    return $this->apiJson(["code" => 1, "msg" => "没有权限"]);
+                    return $this->apiJson(["code"=>1,"msg"=>"没有权限"]);
                 }
                 $db = new UserDB();
                 $result = $db->GetGoldRanklist();
@@ -95,17 +94,18 @@ class Ranke extends Main
                     foreach ($rows as $index => &$row) {
                         $v = &$row;
                         $userbanlance = $socket->DSQueryRoleBalance($v['AccountID']);
-                        $v['CashAble'] = 0;
-                        if (!empty($userbanlance)) {
+                        $v['CashAble'] =0;
+                        if(!empty($userbanlance)){
                             $v['iGameWealth'] = $userbanlance['iGameWealth'];
                             $v['iFreezonMoney'] = $userbanlance['iFreezonMoney'];
                             $v['iNeedWaged'] = $userbanlance['iNeedWaged'];
                             $v['iCurWaged'] = $userbanlance['iCurWaged'];
-                            $v['CashAble'] = bcsub($v['iGameWealth'], $v['iFreezonMoney'], 2);
-                        } else {
-                            $v['iGameWealth'] = 0;
-                            $v['iFreezonMoney'] = 0;
-                            $v['iNeedWaged'] = 0;
+                            $v['CashAble'] = bcsub($v['iGameWealth'],$v['iFreezonMoney'],2);
+                        }
+                        else{
+                            $v['iGameWealth'] =0;
+                            $v['iFreezonMoney']=0;
+                            $v['iNeedWaged'] =0;
                             $v['iCurWaged'];
                         }
                         ConVerMoney($v['CashAble']);
@@ -146,37 +146,55 @@ class Ranke extends Main
         switch (input('Action')) {
             case 'list':
                 $db = new UserDB();
-                $data = $db->GetGoldRanklist();
-                $socket = new QuerySocket();
-                foreach ($data['list'] as $k => &$v) {
-                    $userbanlance = $socket->DSQueryRoleBalance($v['AccountID']);
-                    $v['CashAble'] = 0;
-                    if (!empty($userbanlance)) {
-                        $v['iGameWealth'] = $userbanlance['iGameWealth'];
-                        $v['iFreezonMoney'] = $userbanlance['iFreezonMoney'];
-                        $v['iNeedWaged'] = $userbanlance['iNeedWaged'];
-                        $v['iCurWaged'] = $userbanlance['iCurWaged'];
-                        $v['CashAble'] = bcsub($v['iGameWealth'], $v['iFreezonMoney'], 2);
-                    } else {
-                        $v['iGameWealth'] = 0;
-                        $v['iFreezonMoney'] = 0;
-                        $v['iNeedWaged'] = 0;
-                        $v['iCurWaged'] = 0;
-                    }
-                    ConVerMoney($v['CashAble']);
-                    ConVerMoney($v['TotalWeath']);
-                    ConVerMoney($v['iGameWealth']);
-                    ConVerMoney($v['iFreezonMoney']);
-                    ConVerMoney($v['iNeedWaged']); //打码任务
-                    ConVerMoney($v['iCurWaged']);//当前打码量
-                    $number = number_format($v['percentage'],4,'.','');
-                    $v['percentage'] = bcmul($number, 100, 2) . '%';
 
-//                    if ($v['iCurWaged'] == 0 || $v['iNeedWaged'] == 0){
-//                        $v['percentage'] = '0%';
-//                    }else{
-//                        $v['percentage'] = bcmul(bcdiv( $v['iCurWaged'] , $v['iNeedWaged'],6),100,2).'%';
-//                    }
+                $isonline = (int)input('isonline', 1);
+                if ($isonline  == 1 && config('is_dm_online')==1) {
+                    $data = $this->sendGameMessage('CMD_MD_ONLINE_WAGED_MANAGE', [], "DC",'QueryOnlineWaged');
+                    $data =$db->GetGoldRanklist_new($data);
+                } else {
+                    $data =$db->GetGoldRanklist();
+                    $socket = new QuerySocket();
+                }
+                
+
+                $pggameid = [
+                    60,65,74,87,89,48,53,54,71,75
+                ];
+                foreach ($data['list'] as $k=>&$v){
+                    if ($isonline  ==  2 || config('is_dm_online')!=1) {
+                        $userbanlance =$socket->DSQueryRoleBalance($v['AccountID']);
+                        $v['CashAble'] =0;
+                        if(!empty($userbanlance)){
+                            $v['iGameWealth'] = $userbanlance['iGameWealth'];
+                            $v['iFreezonMoney'] = $userbanlance['iFreezonMoney'];
+                            $v['iNeedWaged'] = $userbanlance['iNeedWaged'];
+                            $v['iCurWaged'] = $userbanlance['iCurWaged'];
+                            $v['CashAble'] = bcsub($v['iGameWealth'],$v['iFreezonMoney'],2);
+                        }
+                        else{
+                            $v['iGameWealth'] =0;
+                            $v['iFreezonMoney']=0;
+                            $v['iNeedWaged'] =0;
+                            $v['iCurWaged']=0;
+                        }
+                        ConVerMoney($v['CashAble']);
+                        ConVerMoney($v['TotalWeath']);
+                        ConVerMoney($v['iGameWealth']);
+                        ConVerMoney($v['iFreezonMoney']);
+                        ConVerMoney($v['iNeedWaged']);
+                        ConVerMoney($v['iCurWaged']);
+
+                        $v['percentage'] = $v['percentage']*100 .'%';
+                        if ($v['iCurWaged'] == 0 || $v['iNeedWaged'] == 0){
+                            $v['percentage'] = '0%';
+                        }else{
+                            $v['percentage'] = bcmul(bcdiv( $v['iCurWaged'] , $v['iNeedWaged'],6),100,2).'%';
+                        }
+                    }
+                    //获取pg链接
+                    $gameidkey = rand(0,9);
+                    $gameid = $pggameid[$gameidkey];
+                    $v['pg_link'] = config('pggame.GAME_URL').'/'.$gameid.'/index.html?btt=1&ot='.config('pggame.Operator_Token').'&l=en&ops='.$this->encry(config('platform_name').'_'.$v['AccountID']);
                     unset($v);
                 }
                 return $this->apiJson($data);
@@ -184,7 +202,7 @@ class Ranke extends Main
                 //权限验证
                 $auth_ids = $this->getAuthIds();
                 if (!in_array(10008, $auth_ids)) {
-                    return $this->apiJson(["code" => 1, "msg" => "没有权限"]);
+                    return $this->apiJson(["code"=>1,"msg"=>"没有权限"]);
                 }
                 $db = new UserDB();
                 $result = $db->GetGoldRanklist();
@@ -223,17 +241,18 @@ class Ranke extends Main
                     foreach ($rows as $index => &$row) {
                         $v = &$row;
                         $userbanlance = $socket->DSQueryRoleBalance($v['AccountID']);
-                        $v['CashAble'] = 0;
-                        if (!empty($userbanlance)) {
+                        $v['CashAble'] =0;
+                        if(!empty($userbanlance)){
                             $v['iGameWealth'] = $userbanlance['iGameWealth'];
                             $v['iFreezonMoney'] = $userbanlance['iFreezonMoney'];
                             $v['iNeedWaged'] = $userbanlance['iNeedWaged'];
                             $v['iCurWaged'] = $userbanlance['iCurWaged'];
-                            $v['CashAble'] = bcsub($v['iGameWealth'], $v['iFreezonMoney'], 2);
-                        } else {
-                            $v['iGameWealth'] = 0;
-                            $v['iFreezonMoney'] = 0;
-                            $v['iNeedWaged'] = 0;
+                            $v['CashAble'] = bcsub($v['iGameWealth'],$v['iFreezonMoney'],2);
+                        }
+                        else{
+                            $v['iGameWealth'] =0;
+                            $v['iFreezonMoney']=0;
+                            $v['iNeedWaged'] =0;
                             $v['iCurWaged'];
                         }
                         ConVerMoney($v['CashAble']);
@@ -318,7 +337,7 @@ class Ranke extends Main
                 //权限验证 
                 $auth_ids = $this->getAuthIds();
                 if (!in_array(10008, $auth_ids)) {
-                    return $this->apiJson(["code" => 1, "msg" => "没有权限"]);
+                    return $this->apiJson(["code"=>1,"msg"=>"没有权限"]);
                 }
                 $db = new UserDB();
                 $result = $db->GetWinScoreRankList();
@@ -342,7 +361,7 @@ class Ranke extends Main
                         lang('总转出') => '0.00',
                         lang('战绩') => '0.00',
                     ];
-                    $filename = lang('战绩排行') . '-' . date('YmdHis');
+                    $filename = lang('战绩排行').'-' . date('YmdHis');
                     $rows =& $result['list'];
                     $writer = $this->GetExcel($filename, $header_types, $rows, true);
                     foreach ($rows as $index => &$row) {
@@ -365,6 +384,19 @@ class Ranke extends Main
         $selectData = $this->getRoomList();
         $this->assign('selectData', $selectData);
         return $this->fetch();
+    }
+
+
+    //加密
+    private function encry($str,$key='pggme'){
+        $str = trim($str);
+        return think_encrypt($str,$key);
+        if (!$key) {
+            return $str;
+        }
+        $data = openssl_encrypt($str, 'AES-128-ECB', $key, OPENSSL_RAW_DATA);
+        $data = base64_encode($data);
+        return $data;
     }
 
 }

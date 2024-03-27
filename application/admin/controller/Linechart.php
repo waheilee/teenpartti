@@ -37,10 +37,8 @@ class Linechart extends Main
         $result['other']['total_addmailsend'] = bcdiv($result['other']['total_addmailsend'], bl,3);
 
         $result['other']['total_zscoin'] = bcadd($result['other']['total_addgm'], $result['other']['total_addmailsend'],2);
-
-        $result['other']['totalbalance'] = $db->getTableObject('T_UserGameWealth')
-            ->where('RoleId', '>','9999999')
-            ->sum('Money')?:0;
+        
+        $result['other']['totalbalance'] = $db->getTableObject('T_UserGameWealth')->where('RoleID','>',9999999)->sum('Money')?:0;
         $result['other']['totalbalance'] = bcdiv($result['other']['totalbalance'], bl,3);
         //  顶部数据  第0行
 //        $result['list'][0]["online"] = count($this->GetOnlineUserlist());
@@ -51,8 +49,7 @@ class Linechart extends Main
         // ConVerMoney($result['list'][0]["tax"]);
         // ConVerMoney( $result['other']["total_tax"]);
         // $this->assign('online',$online);
-        $list = $result['list'][0]??[];
-        $this->assign('info', $list);
+        $this->assign('info', $result['list'][0]);
         $this->assign('Total', $result['other']);
         return $this->fetch();
     }

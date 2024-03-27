@@ -1127,9 +1127,23 @@ class Activity extends Main
                         break;
                     case 3:
                         $arrFunc = [
-                            1=>'VIP',2=>'REFER',3=>'BETBONUS',
-                            4=>'ACCOUNT',6=>'ALLPROMORION',21=>'SHOP',
-                            22=>'WITHDRAW',23=>'CHANGEINFO',24=>'REDEEMCODE'
+                            1=>'VIP',
+                            2=>'REFER',
+                            3=>'BETBONUS',
+                            4=>'ACCOUNT',
+                            5=>'PROMORION',
+                            6=>'ALLPROMORION',
+                            7=>'PROTOCOL',
+                            8=>'BONUS',
+                            9=>'MENUPAGE',
+                            10=>'SALARY',
+                            11=>'TURNTABLE',
+                            12 => 'RECARGA',
+                            21=>'SHOP',
+                            22=>'WITHDRAW',
+                            23=>'CHANGEINFO',
+                            24=>'REDEEMCODE',
+                            25=>'TURNTABLEPDD'
                         ];
                         $v['AdvShareUrl'] = $arrFunc[$v['AdvShareUrl']];
                         break;
@@ -1286,9 +1300,23 @@ class Activity extends Main
                         break;
                     case 3:
                         $arrFunc = [
-                            1=>'VIP',2=>'REFER',3=>'BETBONUS',
-                            4=>'ACCOUNT',6=>'ALLPROMORION',21=>'SHOP',
-                            22=>'WITHDRAW',23=>'CHANGEINFO',24=>'REDEEMCODE'
+                            1=>'VIP',
+                            2=>'REFER',
+                            3=>'BETBONUS',
+                            4=>'ACCOUNT',
+                            5=>'PROMORION',
+                            6=>'ALLPROMORION',
+                            7=>'PROTOCOL',
+                            8=>'BONUS',
+                            9=>'MENUPAGE',
+                            10=>'SALARY',
+                            11=>'TURNTABLE',
+                            12 => 'RECARGA',
+                            21=>'SHOP',
+                            22=>'WITHDRAW',
+                            23=>'CHANGEINFO',
+                            24=>'REDEEMCODE',
+                            25=>'TURNTABLEPDD'
                         ];
                         $v['AnnouShareUrl'] = $arrFunc[$v['AnnouShareUrl']];
                         break;
@@ -1598,13 +1626,10 @@ class Activity extends Main
             $info['StartTime'] = $info['StartTime'] ? date('Y-m-d H:i:s', strtotime($info['StartTime'])) : '';
             $info['EndTime'] = $info['EndTime'] ? date('Y-m-d H:i:s', strtotime($info['EndTime'])) : '';
             $NeedCharge = $info['NeedCharge'];
-            $todayNeedCharge = $info['TodayNeedCharge'] ?? 0;
             $this->assign('info', $info);
             $this->assign('NeedCharge', $NeedCharge);
-            $this->assign('TodayNeedCharge', $todayNeedCharge);
         } else {
             $this->assign('NeedCharge', 0);
-            $this->assign('TodayNeedCharge', 0);
         }
         return $this->fetch();
     }
@@ -1689,7 +1714,9 @@ class Activity extends Main
             foreach ($list as $k => &$v) {
                 $v['Amount'] = FormatMoney($v['Amount']);
                 $v['AddTime'] = date('Y-m-d H:i:s', strtotime($v['AddTime']));
-                $v['Phone'] = substr_replace($v['Phone'], '**', -2);
+                if (config('is_usa') != 1) {
+                    $v['Phone'] = substr_replace($v['Phone'], '**', -2);
+                }
                 
             }
             return $this->apiReturn(0, $list, '', $count);

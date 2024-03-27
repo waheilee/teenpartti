@@ -11,7 +11,7 @@
         <label class="layui-form-label">{:lang('提现通道')}</label>
         <div class="layui-input-block">
             <select name="channelid" id="channelid" lay-filter="activityfilter">
-                <option value="">{:lang('请选择')}</option>
+                <option value="-1">{:lang('请选择')}</option>
                 {foreach $list as $k => $v}
                     <option value="{$v.ChannelId}" >{$v.ChannelName}[{$v.ChannelId}]</option>
                 {/foreach}
@@ -43,9 +43,6 @@
 
         var main = {
             submitForm : function(data) {
-                var index = layer.load(2, {
-                    shade: [0.1,'#fff'] //0.1透明度的白色背景
-                });
                 var orderNo = $.trim(data.field.orderno);
                 var channelId =$.trim(data.field.channelid);
 
@@ -59,19 +56,17 @@
                     dataType:'json',
                     success: function(res) {
                         if (res['code']===0) {
-                            layer.close(index);
-                            layer.msg(res['msg'],{icon:1}, function () {
-                                parent.location.reload();
+                            layer.msg(res['msg'],{icon:1,time:1000}, function () {
                                 x_admin_close();
+                                parent.location.reload();
                             });
                         } else {
-                            layer.close(index);
-                            layer.msg(res['msg'],{icon:2}, function () {
+
+                            layer.msg(res['msg'],{icon:2,time:5000}, function () {
                                 x_admin_close();
                             });
 //                            x_admin_close();
                         }
-
                     }
                 });
             },

@@ -37,8 +37,12 @@
                     <div class="layui-input-inline" style="width: 90px">
                         <select id="operatetype" name="operatetype">
                             <option value="-1">{:lang('全部')}</option>
-                            <option value="1">{:lang('上分')}</option>
-                            <option value="2">{:lang('下分')}</option>
+                            <option value="1">{:lang('游戏上分')}</option>
+                             {if(config('is_usa') == 1)}
+                            	<option value="2">{:lang('游戏下分')}</option>
+                            {else/}
+                            	<option value="3">{:lang('佣金上分')}</option>
+                            {/if}
                         </select>
                     </div>
                 </div>
@@ -82,7 +86,7 @@
 
 <script>
     var main;
-	url = "{:url('Player/transferManager')}?adminType=business";
+	url = "{:url('Player/transferManager')}";
 	layui.config({base: '__layui__/'}).extend({index: 'lib/index'}).use(['table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
 		var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
 		main = {
@@ -98,10 +102,14 @@
                             switch (Number(d.OperateType)) {
                                 case 0:
                                     return str += "red'></span>"
+                                case 1:
+                                    return str += "green'>{:lang('游戏上分')}" + "</span>"
+                                case 2:
+                                    return str += "red'>{:lang('游戏下分')}" + "</span>"
                                 case 3:
                                     return str += "green'>{:lang('佣金上分')}" + "</span>"
                                 case 4:
-                                    return str += "red'>{:lang('佣金下分')}" + "</span>"
+                                    return str += "red'>{:lang('佣金下分')}" + "</span>"  
                             }
 
                         }
@@ -238,8 +246,8 @@
 					}
 
 					 if (layEvent === 'detail') {
-                         var url = 'playerDetail?roleid=' + data.RoleId;
-                         x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.8);
+                            var url = '/business/player/playerDetail?roleid=' + data.RoleId;
+                            x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.6);
                         }
 				});
 			},

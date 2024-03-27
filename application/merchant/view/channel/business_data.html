@@ -59,17 +59,6 @@
     <div class="layui-col-md3">
         <div class="layui-card">
             <div class="layui-card-header">
-                <span class="layui-badge layui-bg-blue ">{:lang('首充金额')}</span>
-                <a class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>
-            </div>
-            <div class="layui-card-body layuiadmin-card-list">
-                <p class="layuiadmin-big-font" id="FirstDepositMoney" style="color: #009688">0</p>
-            </div>
-        </div>
-    </div>
-    <div class="layui-col-md3">
-        <div class="layui-card">
-            <div class="layui-card-header">
                 <span class="layui-badge layui-bg-blue ">{:lang('总提现')}</span>
                 <a class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>
             </div>
@@ -236,7 +225,6 @@
 						data = res.other;
 						$('#PersonCount').html(data.PersonCount);
 						$('#FirstRechargeCount').html(data.FirstRechargeCount);
-						$('#FirstDepositMoney').html(data.FirstDepositMoney);
 						$('#TotalRecharge').html(data.TotalRecharge);
 						$('#TotalDrawMoney').html(data.TotalDrawMoney);
 						$('#Profit').html(data.Profit);

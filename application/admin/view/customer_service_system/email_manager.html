@@ -20,7 +20,7 @@
             <div class="layui-form-item">
                 <div class="layui-inline">
                     <input autocomplete="off" class="layui-input" id="RoleId" lay-verify="number" name="RoleId"
-                           style="width:120px;"   placeholder="{:lang('邮件接收人的ID')}" type="text">
+                        style="width:120px;"   placeholder="{:lang('邮件接收人的ID')}" type="text">
                 </div>
 
                 <div class="layui-inline">
@@ -71,7 +71,7 @@
                         <select id="ExtraType" name="ExtraType">
                             <option value="-1">{:lang("全部")}</option>
                             {volist name='extratype' id='vo' }
-                            <option value="{$key}">{$key}-{:lang($vo)}</option>
+                                <option value="{$key}">{$key}-{:lang($vo)}</option>
                             {/volist}
                         </select>
                     </div>
@@ -84,7 +84,7 @@
                         <select id="payorder" name="payorder">
                             <option value="-1">{:lang("全部")}</option>
                             {volist name='mailtype' id='vo' }
-                            <option value="{$key}">{:lang($vo)}</option>
+                                <option value="{$key}">{:lang($vo)}</option>
                             {/volist}
                         </select>
                     </div>
@@ -92,8 +92,8 @@
 
                 <div class="layui-inline">
                     <!-- <div class="layui-input-inline"> -->
-                    <a class="layui-btn" data-type="reload" id="search">{:lang("搜索")}</a>
-                    <a class="layui-btn" id="output">{:lang("导出记录")}</a>
+                        <a class="layui-btn" data-type="reload" id="search">{:lang("搜索")}</a>
+                        <a class="layui-btn" id="output">{:lang("导出记录")}</a>
                     <!-- </div> -->
                 </div>
             </div>

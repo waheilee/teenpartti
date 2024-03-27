@@ -10,7 +10,7 @@ use app\model\GamePayChannel;
 use socket\QuerySocket;
 use think\Controller;
 use app\model\UserDrawBack;
-use tgpay\PaySdk as TgPay;
+use peakpay\PaySdk as TgPay;
 use socket\sendQuery;
 
 class BatchOrder extends Controller
@@ -25,12 +25,6 @@ class BatchOrder extends Controller
         //{"status":"success","msg":"%E8%AF%B7%E6%B1%82%E6%88%90%E5%8A%9F","memberid":"10020","out_trade_no":"202206011359527020148","amount":"150.0000","transaction_id":"DD0601633877244316","refCode":"1","refMsg":"%E6%88%90%E5%8A%9F","success_time":"2022-06-01 14:06:35","sign":"CDFD7CD75CDB0FBF406633765406B49E"}
         $paychannel = new GamePayChannel();
         $tgpay = new TgPay();
-//        $merchantjson = $paychannel->getDataRow(['ChannelId' => 1110]);
-//        $config = json_decode($merchantjson['MerchantDetail'], true);
-//        $result = $tgpay->queryorder($config, '202206011359527020148');
-
-
-
         $db = new BankDB();
         $where = ['status' => 5];
         $page = 1;
@@ -44,7 +38,7 @@ class BatchOrder extends Controller
                 $config = json_decode($merchantjson['MerchantDetail'], true);
                 $result = $tgpay->queryorder($config, $v['OrderNo']);
                 var_dump('order status:=============='.$result['refCode']);
-                if($result['refCode']=='1'){
+                if($result['orderStatus']=='07'){
 
                     //$coin =$v['iMoney'];
                     //$money = bcdiv($coin,bl,2);

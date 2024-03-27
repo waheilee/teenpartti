@@ -15,7 +15,7 @@ class Index extends Base
     public function __construct()
     {
         parent::__construct();
-
+        
         header('Access-Control-Allow-Origin:*');
 //允许的请求头信息
         header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authorization");
@@ -44,8 +44,8 @@ class Index extends Base
             $roleid = $param['roleid'];
             $test_uidarr = config('test_uidarr') ?: [];
             if ((strlen($roleid)==7) || in_array($roleid, $test_uidarr)) {
-                $this->config = config('habagame_test');
-                // config('trans_url_other',config('test_trans_url'));
+                 $this->config = config('habagame_test');
+                 // config('trans_url_other',config('test_trans_url'));
             }
             $language = $param['language']?:$this->config['language'];
             if (strtoupper($language) == 'BR') {
@@ -53,7 +53,7 @@ class Index extends Base
             }
 
             $gameid = $param['gameid'];
-
+            
             $gameURL = $this->config['GAME_URL'].'brandid='.$this->config['Merchant_ID'].'&keyname='.$gameid.'&token='.$this->encry(config('platform_name').'_'.$roleid).'&Mode=real&Locale='.$language;
 
             return $this->succjson($gameURL);
@@ -112,7 +112,7 @@ class Index extends Base
             }
 
             $balance = $this->getSocketBalance($user_id);
-
+            
             $user_id = config('platform_name').'_'.$user_id;
 
             $respons = [
@@ -205,7 +205,7 @@ class Index extends Base
                 save_log('habagame', '==='.request()->url().'===响应成功数据===' . json_encode($respons));
                 return json($respons);
             }
-
+            
             $token = $fundtransferrequest['accountid'];
             // $user_id = explode('_',$this->decry($token))[1] ?? 0;
             $user_id = explode('_',$token)[1] ?? 0;
@@ -224,8 +224,8 @@ class Index extends Base
                 return json($respons);
             }
             // $transaction_id = $fundtransferrequest['gameinstanceid'];
-
-
+            
+            
             $game_id        = $fundtransferrequest['gamedetails']['brandgameid'];
             $is_end_round   = false;
             $balance = $this->getSocketBalance($user_id);
@@ -262,10 +262,10 @@ class Index extends Base
                 if ($fundtransferrequest['funds']['debitandcredit']) {
                     $bet_amount = abs($fundtransferrequest['funds']['fundinfo'][0]['amount']) ?? 0;
                     $transaction_id = $fundtransferrequest['funds']['fundinfo'][0]['transferid'];
-
+                    
                     $win_amount  = $fundtransferrequest['funds']['fundinfo'][1]['amount'] ?? 0;
                     $transaction_id2 = $fundtransferrequest['funds']['fundinfo'][1]['transferid'];
-
+                    
                     $gamestatemode = $fundtransferrequest['funds']['fundinfo'][0]['gamestatemode'];
                     if ($gamestatemode == 2 || $gamestatemode == 3) {
                         $is_end_round   = true;
@@ -274,7 +274,7 @@ class Index extends Base
                     if ($gamestatemode == 2 || $gamestatemode == 3) {
                         $is_end_round   = true;
                     }
-
+    
                 } else {
                     $amount = $fundtransferrequest['funds']['fundinfo'][0]['amount'] ?? 0;
                     $transaction_id = $fundtransferrequest['funds']['fundinfo'][0]['transferid'];
@@ -291,7 +291,7 @@ class Index extends Base
                     }
                 }
             }
-
+            
             if (Redis::get('habagame_is_exec_tx_'.$transaction_id)) {
                 if($fundtransferrequest['isrecredit']){
                     $respons = [
@@ -304,7 +304,7 @@ class Index extends Base
                         ]
                     ];
                 } else {
-                    $respons = [
+                   $respons = [
                         "fundtransferresponse"=>[
                             "status"=>[
                                 "success"=>false,
@@ -313,9 +313,9 @@ class Index extends Base
                                 "successcredit"=>false,
                             ]
                         ]
-                    ];
+                    ]; 
                 }
-
+                
                 save_log('habagame', '==='.request()->url().'===响应成功数据===' . json_encode($respons));
                 return json($respons);
             }
@@ -333,10 +333,10 @@ class Index extends Base
                     ];
                     save_log('habagame', '==='.request()->url().'===响应成功数据===' . json_encode($respons));
                     return json($respons);
-                }
+                } 
             }
 
-
+            
             if ($balance < $bet_amount) {
                 $respons = [
                     "fundtransferresponse"=>[
@@ -494,7 +494,7 @@ class Index extends Base
                 } else {
                     $md5str = $key.'='.$val;
                 }
-
+                
             }
         }
         $str = $md5str.$Md5key;

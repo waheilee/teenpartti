@@ -9,6 +9,7 @@ use app\common\GameLog;
 use app\model;
 use app\model\AccountDB;
 use app\model\AreaMsgRightSwitch;
+use app\model\DataChangelogsDB;
 use app\model\GameOCDB;
 use app\model\UserDB;
 use app\model\Viplevel;
@@ -66,7 +67,7 @@ class Player extends Main
             $proxyId      = input('proxyId', '');
             $isControll   = input('iscontroll', '');
             $isbind       = input('isbind',-1);
-
+            
             $minrecharge  = input('minrecharge', '');
             $maxrecharge  = input('maxrecharge', '');
             $VipLv        = input('VipLv', '');
@@ -151,13 +152,13 @@ class Player extends Main
                 $default_ProxyId = $default_Proxy['ProxyChannelId'];
                 if (!empty($proxyId)) {
                     if ($default_Proxy['ProxyChannelId'] == $proxyId) {
-                        $where .= " and (ProxyChannelId=0 or ProxyChannelId='$proxyId')";
+                       $where .= " and (ProxyChannelId=0 or ProxyChannelId='$proxyId')";
                     } else {
                         $where .= " and ProxyChannelId='$proxyId'";
                     }
                 }
             } else{
-
+                
                 $default_ProxyId = $gameOCDB->getTableObject('T_ProxyChannelConfig')->where('isDefault', 1)->value('ProxyId') ?: '';
 
                 if (!empty($proxyId)) {
@@ -234,7 +235,7 @@ class Player extends Main
                             $item['proxyId'] = $default_ProxyId;
                         }
                     }
-
+                    
                     ConVerMoney($item['Money']);
                     ConVerMoney($item['ProxyBonus']);
                     //是否在线
@@ -354,7 +355,7 @@ class Player extends Main
 
     }
 
-    //玩家强退
+     //玩家强退
     public function forceQuit()
     {
         if ($this->request->isAjax()) {
@@ -378,7 +379,7 @@ class Player extends Main
     }
 
 
-    /**
+     /**
      * 玩家详情(玩家列表点击)
      */
     public function playerDetail()
@@ -404,7 +405,7 @@ class Player extends Main
             $gameOCDB = new GameOCDB();
             $ParentIds = array_filter(explode(',', $proxyinfo['ParentIds']));
             $proxy = [];
-
+            
             if(config('is_portrait')==1){
                 if ($user['ProxyChannelId']) {
                     $proxy = $gameOCDB->getProxyChannelConfig()->GetRow(['ProxyChannelId' => $user['ProxyChannelId']], '*', 'ProxyChannelId desc') ?: [];
@@ -431,13 +432,34 @@ class Player extends Main
             if (!empty($user['Mobile'])) {
                 $user['Mobile'] = substr_replace($user['Mobile'], '**', -2);
             }
+
+            //佣金上分
+            $commisionsf = $gameOCDB->getTableObject('T_GMSendMoney')->where('RoleId',$roleId)->where('status',1)->where('OperateType','in','3')->sum('Money')?:0;
+
+            //佣金
+            // $commision = (new UserDB())->getTableObject('T_ProxyCollectData')->alias('b')->where('ProxyId', $roleId)->field('(b.Lv1Running*'.config('agent_running_parent_rate')[1].'+b.Lv2Running*'.config('agent_running_parent_rate')[2].'+b.Lv3Running*'.config('agent_running_parent_rate')[3].') as runningProfit,(b.Lv1Tax*0.3+b.Lv2Tax*0.09+b.Lv3Tax*0.027) as taxProfit')->find();
+            // if (app_name == 'runing') {
+            //     $TotalProfit = $commision['runningProfit'] ?: 0;
+            // }
+            // if (app_name == 'tax') {
+            //     $TotalProfit = $commision['taxProfit'] ?: 0;
+            // }
+            $TotalProfit = (new DataChangelogsDB())->getTableObject('T_ProxyBonusLog')->where('RoleID',$roleId)->where('BonusType','in','3,4,5,8')->sum('BonusAmount')?:0;
+            ConVerMoney($TotalProfit);
+            $TotalProfit = bcadd($commisionsf, $TotalProfit,2);
+
             ConVerMoney($user['Money']);
             ConVerMoney($user['PayOut']);
             ConVerMoney($user['PayOutAll']);
             ConVerMoney($user['TotalWin']);
             ConVerMoney($user['TotalRunning']);
             ConVerMoney($user['ProxyBonus']);
-
+            //gm上分统计
+            $user['addgm'] = $gameOCDB->getTableObject('T_GMSendMoney')->where('RoleId',$roleId)->where('status',1)->where('operatetype',1)->sum('Money')?:0;
+            //邮件赠送统计
+            $user['addmailsend'] = (new DataChangelogsDB())->getTableObject('T_ProxyMsgLog')->where('RoleId',$roleId)->where('VerifyState',1)->sum('Amount')?:0;
+            $user['addmailsend'] = bcdiv($user['addmailsend'], bl,3);
+            $user['zscoin'] = bcadd($user['addgm'], $user['addmailsend'],2);
             if ($user['VipLv'] == null || $user['VipLv'] == '') {
                 $user['VipLv'] = 0;
             }
@@ -456,6 +478,7 @@ class Player extends Main
                 $proxyinfo['TotalProfit'] = 0;
                 $proxyinfo['RoleID'] = $roleId;
             }
+            $proxyinfo['TotalProfit'] = $TotalProfit;
             $proxy_switech = 1;
             if (isset($proxyinfo['ProxySwitch'])) {
                 $proxy_switech = $proxyinfo['ProxySwitch'];
@@ -487,12 +510,12 @@ class Player extends Main
             ];
         } else if(config('app_type') == 3){
             $banklist=[
-
+                
             ];
         } else {
             $banklist = $bankcode->getListAll();
         }
-
+        
         $this->assign('bind_auth', '0');
 
 
@@ -514,12 +537,12 @@ class Player extends Main
         $this->assign('banklist', $banklist);
         $this->assign('pixway',$pixway);
 
-
-        if (config('app_name') == 'UWPLAY' || config('app_name') == 'evgwin') {
-            return $this->fetch('player_detail_s');
-        } else {
-            return $this->fetch();
-        }
+        return $this->fetch('player_detail_s');
+        // if (config('app_name') == 'UWPLAY' || config('app_name') == 'evgwin') {
+        //     return $this->fetch('player_detail_s');
+        // } else {
+        //     return $this->fetch();
+        // }
     }
 
     public function getRoleWage()
@@ -530,14 +553,14 @@ class Player extends Main
             $limit = intval(input('limit')) ? intval(input('limit')) : 15;
             if ($roleid > 0) {
                 $UserWageRequire = new model\UserWageRequire();
-                $list = $UserWageRequire->getList(['roleid' => $roleid], $page, $limit, '', 'Id desc');
+                $list = $UserWageRequire->getList(['roleid' => $roleid], $page, $limit, '*', 'Id desc');
                 foreach ($list as $k => &$v) {
                     $v['ChangeMoney'] = FormatMoney($v['ChangeMoney']);
                     $v['NeedWageRequire'] = FormatMoney($v['NeedWageRequire']);
                     $v['CurWageRequire'] = FormatMoney($v['CurWageRequire']);
-                    $v['EnableWithdrawMoney'] = FormatMoney($v['EnableWithdrawMoney']??0);
-                    $v['FreezonMoney'] = FormatMoney($v['FreezonMoney']??0);
-                    $v['difference'] =bcsub($v['NeedWageRequire'], $v['CurWageRequire'],2);
+                    $v['EnableWithdrawMoney'] = FormatMoney($v['EnableWithdrawMoney'] ?? 0);
+                    $v['FreezonMoney'] = FormatMoney($v['FreezonMoney'] ?? 0);
+                    $v['difference'] = bcsub($v['NeedWageRequire'], $v['CurWageRequire'], 2);
                     $v['AddTime'] = date('Y-m-d H:i:s', strtotime($v['AddTime']));
                 }
                 unset($v);
@@ -658,13 +681,13 @@ class Player extends Main
     }
 
     //玩家等级数据
-    public function getProxyLvData()
+     public function getProxyLvData()
     {
         $roleId = intval(input('roleid')) ? intval(input('roleid')) : 0;
         $data = [];
         if ($roleId > 0) {
             $db = new UserDB();
-            $field = 'ProxyId,Lv1PersonCount,Lv1Deposit,Lv1DepositPlayers,Lv2PersonCount,Lv2Deposit,Lv2DepositPlayers,Lv3PersonCount,Lv3Deposit,Lv3DepositPlayers,Lv1WithdrawAmount,Lv2WithdrawAmount,Lv3WithdrawAmount,Lv1WithdrawCount,Lv2WithdrawCount,Lv3WithdrawCount';
+            $field = 'ProxyId,Lv1PersonCount,Lv1Deposit,Lv1DepositPlayers,Lv2PersonCount,Lv2Deposit,Lv2DepositPlayers,Lv3PersonCount,Lv3Deposit,Lv3DepositPlayers,Lv1WithdrawAmount,Lv2WithdrawAmount,Lv3WithdrawAmount,Lv1WithdrawCount,Lv2WithdrawCount,Lv3WithdrawCount,ValidInviteCount,Lv2ValidInviteCount,Lv3ValidInviteCount';
             $row = $db->getTableRow('T_ProxyCollectData', 'ProxyId=' . $roleId, $field);
 
             $avarage1 = 0;
@@ -682,6 +705,7 @@ class Player extends Main
                 'avarage' => $avarage1,
                 'withdrawCount' => $row['Lv1WithdrawCount'],
                 'withdrawAmount' => $row['Lv1WithdrawAmount'] / bl,
+                'ValidInviteCount' => $row['ValidInviteCount'],
             ];
             if ($row['Lv2DepositPlayers'] > 0) {
                 $avarage2 = bcdiv($row['Lv2Deposit'], $row['Lv2DepositPlayers'], 2);
@@ -694,6 +718,7 @@ class Player extends Main
                 'avarage' => $avarage2,
                 'withdrawCount' => $row['Lv2WithdrawCount'],
                 'withdrawAmount' => $row['Lv2WithdrawAmount'] / bl,
+                'ValidInviteCount' => $row['Lv2ValidInviteCount'],
             ];
             if ($row['Lv3DepositPlayers'] > 0) {
                 $avarage3 = bcdiv($row['Lv3Deposit'], $row['Lv3DepositPlayers'], 2);
@@ -706,6 +731,7 @@ class Player extends Main
                 'avarage' => $avarage3,
                 'withdrawCount' => $row['Lv3WithdrawCount'],
                 'withdrawAmount' => $row['Lv3WithdrawAmount'] / bl,
+                'ValidInviteCount' => $row['Lv3ValidInviteCount'],
             ];
             array_push($data, $levle1);
             array_push($data, $levle2);
@@ -800,7 +826,7 @@ class Player extends Main
         $this->assign('RoomList', json_encode($this->GetRoomList()));
         return $this->fetch();
     }
-
+    
 
     /**
      * Notes: 游戏日志（单独菜单）
@@ -903,7 +929,7 @@ class Player extends Main
                 $where .= ' and a.AddTime>=\'' . $start . '\' and a.AddTime<=\'' . $end . '\'';
                 $where_total .= " and AddTime>=''$start'' and AddTime<=''$end''";
 
-
+                
                 $db = new GameOCDB();
                 $userProxyInfo = new UserProxyInfo();
                 $ProxyChannelConfig = (new GameOCDB())->getTableObject('T_ProxyChannelConfig')->column('*', 'ProxyChannelId');
@@ -985,9 +1011,34 @@ class Player extends Main
         return $this->fetch();
     }
 
+    public function setVipRate()
+    {
+        $rate = input('rate');
+        $roleid = input('RoleID');
+        if ($this->request->isAjax()) {
+            if (empty($roleid)) {
+                return $this->failJSON('参数错误');
+            }
+            $iResult = $this->socket->SetRoleVipLevel($roleid, $rate);
+            return $this->successJSON('');
+        }
+        $viplevel = [];
+        for ($i = 0; $i <= 20; $i++) {
+            array_push($viplevel, $i);
+        }
+        $this->assign('viplevel', $viplevel);
+        $this->assign('rate', $rate);
+        $this->assign('roleid', $roleid);
+        return $this->fetch();
+    }
+
     /**Gm充值管理*/
     public function TransferManager()
     {
+        
+        $business = (new GameOCDB())->getTableObject('T_ProxyChannelConfig')->where('ProxyChannelId',session('business_ProxyChannelId'))->find();
+        $merchant_OperatorId = $business['OperatorId'];
+
         switch (input('Action')) {
             case 'list':
                 $db = new  GameOCDB();
@@ -995,19 +1046,11 @@ class Player extends Main
                 break;
             case  'add':
                 if (request()->isAjax()) {
-                    //权限验证
-//                    $auth_ids = $this->getAuthIds();
-//                    if (!in_array(10001, $auth_ids)) {
-//                        return $this->apiReturn(2, [], '没有权限');
-//                    }
-                    $username = session('business_LoginAccount');
+                    //权限验证 
                     $password = input('password');
-                    $userInfo = (new \app\model\GameOCDB)
-                        ->getTableObject('T_ProxyChannelConfig')
-                        ->where('LoginAccount',$username)
-                        ->find();
-                    if (md5($password) !== $userInfo['PassWord']) {
-                        return json(['code' => 3, 'msg' => lang('密码错误')]);
+                   
+                    if (md5($password) != $business['PassWord']) {
+                        return $this->error('密码错误!');
                     }
 
                     $money = (int)input('Money');
@@ -1015,76 +1058,78 @@ class Player extends Main
                     $operatetype = input('operatetype');
                     $descript = input('descript');
 
-                    if ($money <= 0)
-                        $this->error('金额不能为0或者负数!');
+                    $userinfo = (new AccountDB())->getTableObject('T_Accounts')->where(['AccountID'=>$roleID,'ProxyChannelId'=>session('business_ProxyChannelId')])->find();
+                    if (!$userinfo) {
+                        return $this->error('玩家不存在或非本业务员玩家!');
+                    }
 
+                    if ($money <= 0){
+                        return $this->error('金额不能为0或者负数!');
+                    }
+                    if (config('is_usa') == 1) {
+                        if ($operatetype != 1 && $operatetype != 2) {
+                            return $this->error('类型有误!');
+                        }
+                    } else {
+                        if ($operatetype != 1 && $operatetype != 3) {
+                            return $this->error('类型有误!');
+                        }
+                    }
+
+                    //额度
+                    $ed = (new GameOCDB())->getTableObject('T_OperatorQuotaManage')->where('OperatorId',$merchant_OperatorId)->find()?:[];
+                    //测试
+                    if (strlen($roleID) == 7) {
+                        if ($operatetype == 3) {
+                            return $this->error('测试号禁止佣金上分!');
+                        }
+                        $total_ed = $ed['TestMemberQuota'] ?? 0;
+                        $used_ed  = $ed['TestMemberUsed'] ?? 0;
+                        $used_ed_name = 'TestMemberUsed';
+                    }
+                    //正式
+                    if (strlen($roleID) == 8) {
+                        if ($operatetype == 1 || $operatetype == 2) {
+                            $total_ed = $ed['BalanceQuota'] ?? 0;
+                            $used_ed  = $ed['BalanceUsed'] ?? 0;
+                            $used_ed_name = 'BalanceUsed';
+                        }
+                        if ($operatetype == 3 || $operatetype == 4) {
+                            $total_ed = $ed['CommissionQuota'] ?? 0;
+                            $used_ed  = $ed['CommissionUsed'] ?? 0;
+                            $used_ed_name = 'CommissionUsed';
+                        }
+                    }
+                    if (($used_ed + $money) > $total_ed) {
+                        return $this->error('额度不足!');
+                    }
                     if ($money > 0 && $operatetype == 2) {
                         $money = 0 - $money;
                     }
                     if ($money > 0 && $operatetype == 4) {
                         $money = 0 - $money;
                     }
-                    $db = new  GameOCDB();
-                    $row = $db->GMSendMoneyAdd(['RoleId' => $roleID, 'Money' => $money, 'status' => 0, 'Note' => $descript, 'checkUser' => session('business_LoginAccount'), 'OperateType' => $operatetype]);
+                    $db = new  GameOCDB('',true);
+                    $res = (new GameOCDB())->getTableObject('T_OperatorQuotaManage')->where('OperatorId',$merchant_OperatorId)->data([$used_ed_name=>($used_ed + abs($money))])->update();
+                    $row = $db->GMSendMoneyAdd(['RoleId' => $roleID, 'Money' => $money, 'status' => 0, 'Note' => $descript, 'checkUser' => "operator:".$merchant_OperatorId.'-'.session('business_ProxyChannelId'), 'OperateType' => $operatetype]);
                     if ($row > 0) {
-                        $res = $db->setTable('T_PlayerComment')->Insert([
-                            'roleid' => $roleID,
-                            'adminid' => session('userid'),
-                            'type' => 1,
-                            'opt_time' => date('Y-m-d H:i:s'),
-                            'comment' => $descript
-                        ]);
+
+                        // $res = $db->setTable('T_PlayerComment')->Insert([
+                        //     'roleid' => $roleID,
+                        //     'adminid' => session('userid'),
+                        //     'type' => 1,
+                        //     'opt_time' => date('Y-m-d H:i:s'),
+                        //     'comment' => $descript
+                        // ]);
                         return $this->success("添加扣款成功,进入审核状态");
                     }
                     return $this->error('添加失败');
                 }
                 return $this->fetch('transfer_item');
                 break;
-            case 'send':
-                if (request()->isAjax()) {
-                    $db = new  GameOCDB();
-                    $data = $db->TGMSendMoney()->GetRow("ID=" . input('ID'));
-                    if ($data['OperateType'] == 1) {
-                        try {
-                            $res = $this->sendGameMessage('CMD_WD_BUY_HAPPYBEAN', [$data['RoleId'], $data['Money']]);
-                            $res = unpack('Lcode/', $res);
-                        } catch (Exception $exception) {
-                            return $this->error('连接服务器失败,请稍后重试!');
-                        }
-                        if ($res['code'] == 0) {
-                            $row = $db->TGMSendMoney()->UPData(["status" => 1, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . $data['ID']);
-                            if ($row > 0) return $this->success("审核成功");
-                        }
-                        return $this->error('审核失败');
-                    } else if ($data['OperateType'] == 2) {
-                        try {
-                            $res = $this->sendGameMessage('CMD_MD_ADD_ROLE_MONERY', [$data['RoleId'], $data['Money'] * bl, 1, 0, getClientIP()]);
-                            $res = unpack('Lcode/', $res);
-                        } catch (Exception $exception) {
-                            return $this->error('连接服务器失败,请稍后重试!');
-                        }
-                        if ($res['code'] == 0) {
-                            $row = $db->TGMSendMoney()->UPData(["status" => 1, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . $data['ID']);
-                            if ($row > 0) return $this->success("审核成功");
-                        }
-                        return $this->error('审核失败');
-                    } else {
-                        return $this->error('不存在的上下分类型');
-                    }
-                }
-                break;
-            case 'deny':
-                $db = new  GameOCDB();
-                $row = $db->TGMSendMoney()->UPData(["status" => 2, "UpdateTime" => date('Y-m-d H:i:s')], "ID=" . input('ID'));
-                if ($row > 0) return $this->success("成功");
-                return $this->error('失败');
             case 'exec':
-                //权限验证
-                // $auth_ids = $this->getAuthIds();
-                // if (!in_array(10008, $auth_ids)) {
-                //     return $this->apiJson(["code"=>1,"msg"=>"没有权限"]);
-                // }
-                $db = new  GameOCDB();
+                //权限验证 
+                $db = new  GameOCDB('',true);
                 $result = $db->GMSendMoney();
                 $outAll = input('outall', false);
                 if ((int)input('exec', 0) == 0) {
@@ -1137,27 +1182,6 @@ class Player extends Main
 
 
         }
-        return $this->fetch();
-    }
-
-    public function setVipRate()
-    {
-        $rate = input('rate');
-        $roleid = input('RoleID');
-        if ($this->request->isAjax()) {
-            if (empty($roleid)) {
-                return $this->failJSON('参数错误');
-            }
-            $iResult = $this->socket->SetRoleVipLevel($roleid, $rate);
-            return $this->successJSON('');
-        }
-        $viplevel = [];
-        for ($i = 0; $i <= 20; $i++) {
-            array_push($viplevel, $i);
-        }
-        $this->assign('viplevel', $viplevel);
-        $this->assign('rate', $rate);
-        $this->assign('roleid', $roleid);
         return $this->fetch();
     }
 }

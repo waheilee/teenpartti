@@ -24,12 +24,7 @@
 <script>
     url= "{:url('activity/getGiftReceive')}?id={$id}";//数据接口
     var cols = [ //表头
-        // {field: 'RoleId',align:"center" , title: "{:lang('游戏ID')}", width: 120},
-        {
-            field: 'RoleId', title: "{:lang('游戏ID')}", width: 120,fixed:true, templet: function (d) {
-                return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.RoleId+ "</a>";
-            }
-        },
+        {field: 'RoleId',align:"center" , title: "{:lang('游戏ID')}", width: 120},
         {field: 'Phone',align:"center", title: "{:lang('手机号')}", width: 150},
         {field: 'Amount',align:"center", title: "{:lang('领取金额')}", width: 150},
         {field: 'Wage',align:"center", title: "{:lang('打码量')}", width: 150},
@@ -116,7 +111,7 @@
                         , layEvent = obj.event; //获得 lay-event 对应的值
                     tr = obj.tr; //获得当前行 tr 的DOM对象
                     if (layEvent === 'detail') {
-                        var url = '/admin/player/playerDetail?roleid=' + data.RoleId;
+                        var url = '/admin/player/playerDetail?roleid=' + data.AccountID;
                         x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.6);
                     }
                 });

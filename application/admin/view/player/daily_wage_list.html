@@ -12,6 +12,16 @@
         </div>
 
     </div>
+
+    <div class="layui-col-md3" style="{if(config('is_bj_dm')!='1')}display:none{/if}">
+        <div class="layui-card">
+            <div class="layui-card-header"> {:lang('总爆奖打码')}</div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" style="color: #009688" id="total4">0</p>
+            </div>
+        </div>
+
+    </div>
     <div class="layui-col-md3">
         <div class="layui-card">
             <div class="layui-card-header"> {:lang('总充值')}</div>
@@ -89,6 +99,10 @@
             , cols: [[ //表头
                 {field: 'mydate', title: "{:lang('日期')}", width: 200, align: 'center'},
                 {field: 'TotalWater', title: "{:lang('累计打码')}", width: 180, align: 'center'},
+                {if(config('is_bj_dm')=='1')}
+                    {field: 'bj_dm', title: "{:lang('爆奖打码')}", width: 180, align: 'center'},
+                {/if}
+                
                 {field: 'totalpayuser', title: "{:lang('充值')}", width: 180, align: 'center'},
                 {field: 'totalpayout', title: "{:lang('提现')}", width: 180, align: 'center'},
                 {fixed: 'right',title:"{:lang('操作')}", toolbar: '#toolbar',width: 120,  align: 'center'}
@@ -99,6 +113,7 @@
                 $('#total1').html(data.wagedata.TotalWage);
                 $('#total2').html(data.wagedata.TotalPay);
                 $('#total3').html(data.wagedata.TotalOut);
+                $('#total4').html(data.wagedata.bj_dm);
             }
         });
         // 搜索

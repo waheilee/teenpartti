@@ -77,6 +77,16 @@
                         </select>
                     </div>
                 </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('出款来源')}</label>
+                    <div class="layui-input-inline"  style="width: 100px">
+                        <select name="DrawBackWay" id="DrawBackWay" name="DrawBackWay">
+                            <option value="" selected>{:lang('全部')}</option>
+                            <option value="1">余额提款</option>
+                            <option value="2">佣金提款</option>
+                        </select>
+                    </div>
+                </div>
                 <!-- <div class="layui-inline">
                     <label class="layui-form-label">{:lang('支付通道')}</label>
                     <div class="layui-input-inline">
@@ -168,13 +178,12 @@
                         },
                     {/if}
                     {
-                        field: 'cheatLevelDesc', align: 'center', title: "{:lang('异常状态')}", width: 100, templet: function (d) {
-                            var url = '{"player/gamelog2"}?roleid=' + d.AccountID;
-                            if (d.cheatLevelDesc != '') {
-                                return "<a  class=\"layui-btn layui-btn-xs layui-bg-red\" lay-event=\"gamelog\">" + d.cheatLevelDesc + "</a>";
+                        field: 'DrawBackWay', align: 'center', title: "{:lang('出款来源')}", width: 100, templet: function (d) {
+                            if (d.DrawBackWay == 1) {
+                                return "余额提款";
                             }
                             else {
-                                return '<span style="color:green">{:lang(\'未标记\')}</span>';
+                                return "佣金提款";
                             }
                         }
                     },
@@ -329,6 +338,7 @@
                 var end = $.trim($('#LAY-component-form-group-date2').val());
                 var payChannel = $.trim($('#payChannel').val());
                 var payWay = $.trim($('#payWay').val());
+                var DrawBackWay = $.trim($('#DrawBackWay').val());
                 var checkUser = $.trim($('#checkUser').val());
                 //执行重载
                 table.reload('proxylist', {
@@ -340,6 +350,7 @@
                         'start': start, //AddTime
                         'end': end,
                         'payWay':payWay,
+                        'DrawBackWay':DrawBackWay,
                         'payChannel': payChannel,//支付方式
                         'checkUser': checkUser,
                     }

@@ -17,6 +17,15 @@
     <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="edit">{:lang('编辑')}</a>
 </script>
 
+<script id="msg-bar2" type="text/html">
+    <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="edit">{:lang('编辑')}</a>
+</script>
+<script id="msg-bar3" type="text/html">
+    <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="edit">{:lang('编辑')}</a>
+</script>
+<script id="msg-bar4" type="text/html">
+    <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="edit">{:lang('编辑')}</a>
+</script>
 <div class="layui-card">
 
     <div class="layui-tab layui-tab-brief" lay-filter="test">
@@ -43,12 +52,13 @@
         	<li class="">{:lang('新手保护')}</li>
             <li class="">{:lang('开关配置项目')}</li>
             <li class="">{:lang('国家开关')}</li>
-            <li class="">{:lang('强制升级配置')}</li>
+            <li class="">{:lang('邀请奖励配置')}</li>
             <li class="">{:lang('版本开关')}</li>
             <li class="">{:lang('客户端配置')}</li>
+            <li class="" style="{if(config('is_dbrateconfig')!='1')}display:none{/if}">{:lang('掉绑比例区间设置')}</li>
+            <li class="" style="{if(config('is_cztdconfig')!='1')}display:none{/if}">{:lang('充值梯度奖励设置')}</li>
+            <li class="" style="{if(config('is_weeksalaryconfig')!='1')}display:none{/if}">{:lang('周薪奖励配置')}</li>
             <li class="">{:lang('未分类配置')}</li>
-            
-            
             
         </ul>
         <div class="layui-tab-content" id="TabItem" style="background-color: #f2f2f2">
@@ -60,7 +70,7 @@
 {/block}
 {block name="script"}
 <script>
-	var tabitem = 11, html = ""; //页签数量
+	var tabitem = 14, html = ""; //页签数量
 	layui.use(['jquery'], function () {
 		var $ = layui.jquery;
 		for (var i = 0; i <= tabitem; i++) {
@@ -166,11 +176,43 @@
 	];
 
 	var upgradeVersion =[
-        {field: 'Version', align: "center", title: '{:lang("版本号")}', sort: false, width: 200},
-        {field: 'DownUrl', title: '{:lang("包下载地址")}', sort: false, width: 800},
-        {fixed: 'right', title: "{:lang('操作')}", align: 'center', width: 250, toolbar: '#msg-bar1'}
+        {field: 'ValidCounts', align: "center", title: '{:lang("人数")}', sort: false, width: 200},
+        {field: '', title: '{:lang("奖励")}', sort: false, width: 200,templet: function (d) {
+            return formatDecimal(d.Bonus / bl, 0)}
+        },
+        {fixed: 'right', title: "{:lang('操作')}", align: 'center', width: 180, toolbar: '#msg-bar1'}
     ];
-
+    var disableBindCfg =[
+        {field: 'InviteCounts', align: "center", title: '{:lang("邀请人数")}', sort: false, width: 200},
+        {field: 'DisableBindRate', title: '{:lang("掉绑比例")}', sort: false, width: 200,templet: function (d) {
+            return d.DisableBindRate+'%'}
+        },
+        {fixed: 'right', title: "{:lang('操作')}", align: 'center', width: 180, toolbar: '#msg-bar2'}
+    ];
+    var rechargeGradientCfg =[
+     	{field: 'ID', align: "center", title: '{:lang("序号")}', sort: false, width: 200},
+        {field: 'AccuDepositAmount', align: "center", title: '{:lang("累计充值")}', sort: false, width: 200},
+        {field: '', title: '{:lang("奖金")}', sort: false, width: 200,templet: function (d) {
+            return formatDecimal(d.Bonus / bl, 0)}
+        },
+        {fixed: 'right', title: "{:lang('操作')}", align: 'center', width: 180, toolbar: '#msg-bar3'}
+    ];
+    var weekSalaryCfg =[
+        {field: 'ID', align: "center", title: '{:lang("序号")}', sort: false, width: 200},
+        {field: '', title: '{:lang("流水")}', sort: false, width: 200,templet: function (d) {
+            return formatDecimal(d.Running / bl, 0)}
+        },
+        {field: '', title: '{:lang("基础周薪")}', sort: false, width: 200,templet: function (d) {
+            return formatDecimal(d.BaseWeekSalary / bl, 0)}
+        },
+        {field: '', title: '{:lang("一级比例（千分比）")}', sort: false, width: 200,templet: function (d) {
+            return d.Lv1Rate + '‰'}
+        },
+        {field: '', title: '{:lang("二级比例（千分比）")}', sort: false, width: 200,templet: function (d) {
+            return d.Lv2Rate + '‰'}
+        },
+        {fixed: 'right', title: "{:lang('操作')}", align: 'center', width: 180, toolbar: '#msg-bar4'}
+    ];
 	layui.config({
 		base: '__layui__/' //静态资源所在路径
 	}).extend({
@@ -178,7 +220,7 @@
 	}).use(['table', 'layer', 'element', 'laydate', 'form', 'jquery', 'util'], function () {
 		// ID=table0
 		//每个页签的独立变量 增加页签的时候 手动增加
-		var tb0 = 'Table0', tb1 = 'Table1', tb2 = 'Table2', tb3 = 'Table3', tb4 = 'Table4',tb5 = 'Table5',tb6 = 'Table6',tb7 = 'Table7',tb8 = 'Table8',tb9 = 'Table9',tb10 = 'Table10',tb11 = 'Table11';
+		var tb0 = 'Table0', tb1 = 'Table1', tb2 = 'Table2', tb3 = 'Table3', tb4 = 'Table4',tb5 = 'Table5',tb6 = 'Table6',tb7 = 'Table7',tb8 = 'Table8',tb9 = 'Table9',tb10 = 'Table10',tb11 = 'Table11',tb12 = 'Table12',tb13 = 'Table13',tb14 = 'Table14';
 		var element = layui.element, layer = layui.layer, laydate = layui.laydate, util = layui.util,
 			table = layui.table, $ = layui.$, form = layui.form;
 		//增加页签  闭包增加 TabxxxxEvn
@@ -195,6 +237,9 @@
 			{},
 			{Action: 'version',},
 			{Action: 'list', Type: 1, Switch: 0},
+			{},
+			{},
+            {},
 			{Action: 'list', Type: 0, Switch: 0},
 		]
 		Tabs = {
@@ -242,6 +287,7 @@
                     elem: '#' + tb8,
                     where: Wheres[8],
                     url: "{:url('game_cfg/upgradeVersion')}",
+                    toolbar: '#toolbar',
                     page: true,
                     cols: [upgradeVersion]
                     , autoSort: false,
@@ -259,7 +305,49 @@
                         tzTbale();
                     }}); 
         	},
-            tab11Evn: function () { table.render({elem: '#' + tb11, where: Wheres[11], url: "{:url('game_cfg/functionSwitch')}", page: true, cols: [cols], autoSort: false,done: function (res) {
+        	tab11Evn: function () {
+                table.render({
+                    elem: '#' + tb11,
+                    where: Wheres[11],
+                    url: "{:url('game_cfg/disableBindCfg')}",
+                    toolbar: '#toolbar',
+                    page: true,
+                    cols: [disableBindCfg]
+                    , autoSort: false,
+                    done: function (res) {
+                        tzTbale();
+                    }
+                });
+            },
+            tab12Evn: function () {
+                table.render({
+                    elem: '#' + tb12,
+                    where: Wheres[12],
+                    url: "{:url('game_cfg/rechargeGradientCfg')}",
+                    toolbar: '#toolbar',
+                    page: true,
+                    cols: [rechargeGradientCfg]
+                    , autoSort: false,
+                    done: function (res) {
+                        tzTbale();
+                    }
+                });
+            },
+            tab13Evn: function () {
+                table.render({
+                    elem: '#' + tb13,
+                    where: Wheres[13],
+                    url: "{:url('game_cfg/weekRewardCfg')}",
+                    toolbar: '#toolbar',
+                    page: true,
+                    cols: [weekSalaryCfg]
+                    , autoSort: false,
+                    done: function (res) {
+                        tzTbale();
+                    }
+                });
+            },
+            tab14Evn: function () { table.render({elem: '#' + tb14, where: Wheres[14], url: "{:url('game_cfg/functionSwitch')}", page: true, cols: [cols], autoSort: false,done: function (res) {
                         tzTbale();
                     }}); 
         	}
@@ -276,7 +364,10 @@
 			tab8: function () {table.reload(tb8, {page: {curr: 1}});},
 			tab9: function () {table.reload(tb9, {page: {curr: 1}});},
 			tab10: function () {table.reload(tb10, {page: {curr: 1}});},
-			tab11: function () {table.reload(tb11, {page: {curr: 1}});}
+			tab11: function () {table.reload(tb11, {page: {curr: 1}});},
+			tab12: function () {table.reload(tb12, {page: {curr: 1}});},
+			tab13: function () {table.reload(tb13, {page: {curr: 1}});},
+            tab14: function () {table.reload(tb14, {page: {curr: 1}});}
 		}
 		TBinit = {
 			searchEvn: function () {
@@ -295,7 +386,10 @@
 				table.on('sort(' + tb8 + ')', function (obj) { table.reload(tb8, {initSort: obj, page: {curr: 1}, where: {orderfield: obj.field /*排序字段*/, ordertype: obj.type /*排序方式*/}}); });
 				table.on('sort(' + tb9 + ')', function (obj) { table.reload(tb9, {initSort: obj, page: {curr: 1}, where: {orderfield: obj.field /*排序字段*/, ordertype: obj.type /*排序方式*/}}); });
 				table.on('sort(' + tb10 + ')', function (obj) { table.reload(tb10, {initSort: obj, page: {curr: 1}, where: {orderfield: obj.field /*排序字段*/, ordertype: obj.type /*排序方式*/}}); });
-				table.on('sort(' + tb11+ ')', function (obj) { table.reload(tb11, {initSort: obj, page: {curr: 1}, where: {orderfield: obj.field /*排序字段*/, ordertype: obj.type /*排序方式*/}}); });
+				table.on('sort(' + tb11 + ')', function (obj) { table.reload(tb11, {initSort: obj, page: {curr: 1}, where: {orderfield: obj.field /*排序字段*/, ordertype: obj.type /*排序方式*/}}); });
+			     table.on('sort(' + tb12 + ')', function (obj) { table.reload(tb12, {initSort: obj, page: {curr: 1}, where: {orderfield: obj.field /*排序字段*/, ordertype: obj.type /*排序方式*/}}); });
+                table.on('sort(' + tb13 + ')', function (obj) { table.reload(tb13, {initSort: obj, page: {curr: 1}, where: {orderfield: obj.field /*排序字段*/, ordertype: obj.type /*排序方式*/}}); });
+				table.on('sort(' + tb14+ ')', function (obj) { table.reload(tb14, {initSort: obj, page: {curr: 1}, where: {orderfield: obj.field /*排序字段*/, ordertype: obj.type /*排序方式*/}}); });
 			},
 			editEvn: function () {
 				table.on('tool(' + tb0 + ')', function (obj) {
@@ -406,6 +500,31 @@
 						edit(url, 500, 500, TabReload.tab4);
 					}
 				});
+
+                table.on('toolbar(' + tb8 + ')', function (obj) {
+                    if (obj.event === 'additem') {
+                        var url = "{:url('GameCfg/inviteBounsUpdate')}?Action=add";
+                        x_admin_show('version', url, $(window).width() * 0.4, $(window).height() * 0.35);
+                    }
+                });
+                table.on('toolbar(' + tb11 + ')', function (obj) {
+                    if (obj.event === 'additem') {
+                        var url = "{:url('GameCfg/disableBindCfgUpdate')}?Action=add";
+                        x_admin_show('version', url, $(window).width() * 0.4, $(window).height() * 0.35);
+                    }
+                });
+                table.on('toolbar(' + tb12 + ')', function (obj) {
+                    if (obj.event === 'additem') {
+                        var url = "{:url('GameCfg/rechargeGradientCfgUpdate')}?Action=add";
+                        x_admin_show('充值梯度奖励', url, $(window).width() * 0.4, $(window).height() * 0.35);
+                    }
+                });
+                table.on('toolbar(' + tb13 + ')', function (obj) {
+                    if (obj.event === 'additem') {
+                        var url = "{:url('GameCfg/weekSalaryCfgUpdate')}?Action=add";
+                        x_admin_show('周薪奖励', url, $(window).width() * 0.4, $(window).height() * 0.7);
+                    }
+                });
 				//顶部工具
 				//版本号开关 add
 				table.on('toolbar(' + tb9 + ')', function (obj) {
@@ -446,11 +565,12 @@
 					}
 				});
 
+
                 //升级配置开关
                 table.on('tool(' + tb5 + ')', function (obj) {
                     if (obj.event === 'edit') {
                         data = obj.data;
-                        url = "{:url('game_cfg/upgradeConfigEdit')}?Version=" +data.Version+ "&DownUrl=" +encodeURI(data.DownUrl);
+                        url = "{:url('game_cfg/FunctionItemEdit')}?Version=" +data.Version+ "&DownUrl=" +encodeURI(data.DownUrl);
                         // console.info(url);
                         x_admin_show('升级配置修改',url, 500, 400);
                     }
@@ -470,10 +590,28 @@
 				});
 				table.on('tool(' + tb8 + ')', function (obj) {
 					if (obj.event === 'edit') {
-						var url = "{:url('game_cfg/FunctionItemEdit')}?ID=" + obj.data.CfgType + "&Value=" + obj.data.CfgValue +'&Rate='+ obj.data.Rate + "&Msg=" + obj.data.Description + '&ttype='+ obj.data.Type;
-						x_admin_show("{:lang('编辑')}", url, $(window).width() * 0.5, $(window).height() * 0.6);
+						var url = "{:url('game_cfg/inviteBounsUpdate')}?ID=" + obj.data.ID + "&validcounts=" + obj.data.ValidCounts +'&bonus='+ obj.data.Bonus;
+						x_admin_show("{:lang('编辑')}", url, $(window).width() * 0.4, $(window).height() * 0.3);
 					}
 				});
+				table.on('tool(' + tb11 + ')', function (obj) {
+					if (obj.event === 'edit') {
+						var url = "{:url('game_cfg/disableBindCfgUpdate')}?ID=" + obj.data.ID + "&InviteCounts=" + obj.data.InviteCounts +'&DisableBindRate='+ obj.data.DisableBindRate;
+						x_admin_show("{:lang('编辑')}", url, $(window).width() * 0.4, $(window).height() * 0.3);
+					}
+				});
+				table.on('tool(' + tb12 + ')', function (obj) {
+					if (obj.event === 'edit') {
+						var url = "{:url('game_cfg/rechargeGradientCfgUpdate')}?ID=" + obj.data.ID + "&AccuDepositAmount=" + obj.data.AccuDepositAmount +'&Bonus='+ obj.data.Bonus;
+						x_admin_show("{:lang('编辑')}", url, $(window).width() * 0.4, $(window).height() * 0.3);
+					}
+				});
+                table.on('tool(' + tb13 + ')', function (obj) {
+                    if (obj.event === 'edit') {
+                        var url = "{:url('game_cfg/weekSalaryCfgUpdate')}?ID=" + obj.data.ID;
+                        x_admin_show("{:lang('编辑')}", url, $(window).width() * 0.4, $(window).height() * 0.7);
+                    }
+                });
 				table.on('tool(' + tb3 + ')', function (obj) {
 					if (obj.event === 'edit') {
 						var url = "{:url('game_cfg/FunctionItemEdit')}?ID=" + obj.data.CfgType + "&Value=" + obj.data.CfgValue +'&Rate='+ obj.data.Rate + "&Msg=" + obj.data.Description + '&ttype='+ obj.data.Type;
@@ -486,7 +624,7 @@
 						x_admin_show("{:lang('编辑')}", url, $(window).width() * 0.5, $(window).height() * 0.6);
 					}
 				});
-				table.on('tool(' + tb11 + ')', function (obj) {
+				table.on('tool(' + tb14 + ')', function (obj) {
 					if (obj.event === 'edit') {
 						var url = "{:url('game_cfg/FunctionItemEdit')}?ID=" + obj.data.CfgType + "&Value=" + obj.data.CfgValue +'&Rate='+ obj.data.Rate + "&Msg=" + obj.data.Description + '&ttype='+ obj.data.Type;
 						x_admin_show("{:lang('编辑')}", url, $(window).width() * 0.5, $(window).height() * 0.6);
@@ -521,6 +659,12 @@
                             return Tabs.tab10Evn();
                         case 11:
                             return Tabs.tab11Evn();
+                        case 12:
+                            return Tabs.tab12Evn();
+                        case 13:
+                            return Tabs.tab13Evn();
+                        case 14:
+                            return Tabs.tab14Evn();
 					}
 				});
 			},

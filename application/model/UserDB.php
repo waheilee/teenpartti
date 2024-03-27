@@ -52,20 +52,49 @@ class UserDB extends BaseModel
     public function GetIndexData()
     {
         $this->table = $this->TViewIndex;
-        $where = null;
+        $where = '';
         $StartTime = input('strartdate', 0);
         $EndTime = input('enddate');
-        if ($StartTime && $EndTime) $where = " AND mydate BETWEEN '$StartTime' AND '$EndTime' ";
+
+        if ($StartTime) {
+            $where .= " AND mydate>='$StartTime'";
+        }
+        if ($EndTime) {
+            $where .= " AND mydate<='$EndTime'";
+        }
+        // if ($StartTime && $EndTime) $where = " AND mydate BETWEEN '$StartTime' AND '$EndTime' ";
         $Filed = "mydate,regnew,highroom,highonline,highroom+highonline as ALLOnline,activenum,totalpayuser,totalpayout,totalpayorder"
             . ",Isnull(DailyRunning,0*1.0) DailyRunning,ISNULL(WinScore,0)totalyk,totaLoginUser,totaLoginCount"
-            . ",(totaluserpaynum)TotalPayNumber,totalpayoutnum,GameRate,EmailAmount,GCount,ISNULL(GameUser,0) GameUser,ISNULL(TotalBet,0) RoundBets,TotalWater";
+            . ",(totaluserpaynum)TotalPayNumber,totalpayoutnum,GameRate,EmailAmount,GCount,ISNULL(GameUser,0) GameUser,ISNULL(TotalBet,0) RoundBets,TotalWater,GMIn,GMOut";
 
         $result = $this->GetPage($where, "Mydate desc", $Filed);
 
         //加首充人数
         $where2 = '1=1';
-        if ($StartTime && $EndTime) $where = " AND mydate BETWEEN '$StartTime' AND '$EndTime' ";
-        $recharge_num = (new \app\model\GameOCDB())->getTableObject('T_GameStatisticPay')->where($where2)->column('first_chargenum', 'mydate');
+        if ($StartTime) {
+            $where2 .= " AND mydate>='$StartTime'";
+        }
+        if ($EndTime) {
+            $where2 .= " AND mydate<='$EndTime'";
+        }
+        $recharge_num = (new \app\model\GameOCDB())->getTableObject('T_GameStatisticPay')->where($where2)->column('first_chargenum','mydate');
+
+        //加爆奖打码
+        $where3 = '1=1';
+        if ($StartTime) {
+            $where3 .= " AND AddTime>='$StartTime'";
+        }
+        if ($EndTime) {
+            $where3 .= " AND AddTime<='$EndTime'";
+        }
+        if (config('is_bj_dm') == 1) {
+            $bjdm_sql = "(SELECT CONVERT(varchar(10),AddTime,120) as AddTime,sum(MegaAddWaged) ChangeMoney from [OM_GameOC].[dbo].[T_ProxyDailyBonus](NOLOCK) where ".$where3." group by CONVERT(varchar(10),AddTime,120)) as bj";
+            $bjdm = (new \app\model\GameOCDB())->getTableObject($bjdm_sql)->column('ChangeMoney','AddTime');
+        } else {
+            $bjdm = [];
+        }
+        
+                
 
         foreach ($result['list'] as &$v) {
             $v['GameRate'] = sprintf("%.2f", $v['GameRate']) . "%";
@@ -75,7 +104,12 @@ class UserDB extends BaseModel
             ConVerMoney($v['totalpayout']);
             ConVerMoney($v['EmailAmount']);
             ConVerMoney($v['TotalWater']);
+            if($v['GMOut']<0){
+                $v['GMOut'] = -$v['GMOut'];
+            }
             $v['first_chargenum'] = $recharge_num[$v['mydate']]['first_chargenum'] ?? 0;
+            $v['bj_dm'] = $bjdm[$v['mydate']]['ChangeMoney'] ?? 0;
+            ConVerMoney($v['bj_dm']);
         }
         unset($v);
         //合计数据 TotalReg注册,TotalWater流水,TotalActive活跃,ToalPU充值营收,TotalPay总充值,TotolPayNumber充值人数,TotalOut总提现,TotalOutNum提现人数
@@ -96,7 +130,7 @@ class UserDB extends BaseModel
 
 
         $other = $this->GetRow('', $Filed);
-        $other_wage = $this->GetRow(' 1=1 ' . $where, $Filed);
+        $other_wage = $this->GetRow(' 1=1 '.$where, $Filed);
         ConVerMoney($other['TotalWater']);
         ConVerMoney($other['TotalBet']);
         ConVerMoney($other['Totalyk']);
@@ -104,10 +138,21 @@ class UserDB extends BaseModel
         $other['TotalGameRate'] = sprintf("%.2f", $other['TotalGameRate']) . "%";
         ConVerMoney($other['TotalOut']);
         ConVerMoney($other_wage['TotalOut']);
-        $other['wagedata'] = $other_wage;
+
+        if (config('is_bj_dm') == 1) {
+            $other_wage['bj_dm'] = (new \app\model\GameOCDB())->getTableObject('T_ProxyDailyBonus(NOLOCK)')
+                    ->where($where3)
+                    ->sum('MegaAddWaged')?:0;
+        } else {
+            $other_wage['bj_dm'] = 0;
+        }
+        
+        ConVerMoney($other_wage['bj_dm']);
+        $other['wagedata'] =$other_wage;
         $result['other'] = $other;
         return $result;
     }
+
 
 
     /**渠道首页数据*/
@@ -115,15 +160,27 @@ class UserDB extends BaseModel
     {
         $this->table = $this->TOperatorViewIndex;
         $operatorid = session('merchant_OperatorId');
-        $where = ' AND OperatorId=' . $operatorid;
+        $where = ' AND OperatorId='.$operatorid;
         $StartTime = input('strartdate', 0);
         $EndTime = input('enddate');
         if ($StartTime && $EndTime) $where .= " AND mydate BETWEEN '$StartTime' AND '$EndTime' ";
         $Filed = "mydate,regnew,highroom,highonline,highroom+highonline as ALLOnline,activenum,totalpayuser,totalpayout,totalpayorder"
             . ",Isnull(DailyRunning,0*1.0) DailyRunning,ISNULL(WinScore,0)totalyk,totaLoginUser,totaLoginCount"
-            . ",(totaluserpaynum)TotalPayNumber,totalpayoutnum,GameRate,EmailAmount,GCount,ISNULL(GameUser,0) GameUser,ISNULL(TotalBet,0) RoundBets";
+            . ",(totaluserpaynum)TotalPayNumber,totalpayoutnum,GameRate,EmailAmount,GCount,ISNULL(GameUser,0) GameUser,ISNULL(TotalBet,0) RoundBets,GMIn,GMOut";
 
         $result = $this->GetPage($where, "Mydate desc", $Filed);
+
+        //加首充人数
+        $where2 = '1=1';
+        if ($StartTime) {
+            $where2 .= " AND mydate>='$StartTime'";
+        }
+        if ($EndTime) {
+            $where2 .= " AND mydate<='$EndTime'";
+        }
+        $where2 .=' AND OperatorId='.$operatorid;
+        $recharge_num = (new \app\model\GameOCDB())->getTableObject('T_Operator_GameStatisticPay')->where($where2)->column('first_chargenum','mydate');
+
         foreach ($result['list'] as &$v) {
             $v['GameRate'] = sprintf("%.2f", $v['GameRate']) . "%";
             ConVerMoney($v['DailyRunning']);
@@ -131,6 +188,7 @@ class UserDB extends BaseModel
             ConVerMoney($v['totalpayout']);
             ConVerMoney($v['EmailAmount']);
             ConVerMoney($v['RoundBets']);
+            $v['first_chargenum'] = $recharge_num[$v['mydate']]['first_chargenum'] ?? 0;
         }
         unset($v);
         //合计数据 TotalReg注册,TotalWater流水,TotalActive活跃,ToalPU充值营收,TotalPay总充值,TotolPayNumber充值人数,TotalOut总提现,TotalOutNum提现人数
@@ -149,7 +207,7 @@ class UserDB extends BaseModel
             . "SUM(TotalBet) TotalBet";
 
 
-        $other = $this->GetRow(' OperatorId=' . $operatorid, $Filed);
+        $other = $this->GetRow(' OperatorId='.$operatorid, $Filed);
         ConVerMoney($other['TotalWater']);
         ConVerMoney($other['Totalyk']);
         ConVerMoney($other['TotalBet']);
@@ -187,7 +245,7 @@ class UserDB extends BaseModel
         $ordertype = input('ordertype', 'desc');
         $limit = (int)input('limit', 20);
         $from = input('from','');
-
+        
         $OperatorId = input('OperatorId') ?: '';
         $roleid = input('roleid') ?: '';
         $where = " GMTYPE<>0 ";
@@ -204,7 +262,7 @@ class UserDB extends BaseModel
         $avg_max = input('avg_max','');
 
         if (session('merchant_OperatorId') && request()->module() == 'merchant') {
-            $OperatorId = session('merchant_OperatorId');
+            $OperatorId = session('merchant_OperatorId');     
         }
 
         if (session('business_ProxyChannelId') && request()->module() == 'business') {
@@ -268,32 +326,25 @@ class UserDB extends BaseModel
                 ->join('(SELECT * FROM [T_UserWageRequire] where id in(select max(Id) from  [T_UserWageRequire] group by roleid )) b','a.AccountID=b.roleid','left')
                 ->join('[CD_UserDB].[dbo].[T_Job_UserInfo] c','c.RoleID=a.AccountID and c.job_key=3','left')
                 ->join('[CD_UserDB].[dbo].[T_Job_UserInfo] d','d.RoleID=a.AccountID and d.job_key=4','left')
-                ->join('(SELECT * FROM [T_UserWage]) e','a.AccountID=e.RoleId','left')
                 ->where($where)
-                ->field('AccountID,Money,OperatorId,TotalDeposit,TotalRollOut,RegisterTime,b.FreezonMoney as iFreezonMoney,CASE WHEN CAST(e.NeedWageRequire AS FLOAT) <> 0 THEN CAST(e.CurWageRequire AS FLOAT) / CAST(e.NeedWageRequire AS FLOAT) ELSE 0 END as percentage,ISNULL(c.value,0) as win_dmrateset,ISNULL(d.value,0) as lose_dmrateset')
-
                 ->order("$orderby $ordertype")
+                ->field('AccountID,Money,OperatorId,TotalDeposit,TotalRollOut,RegisterTime,b.FreezonMoney as iFreezonMoney,(case when b.NeedWageRequire>0 then b.CurWageRequire/CAST(b.NeedWageRequire as FLOAT) else 0 end) as percentage,ISNULL(c.value,0) as win_dmrateset,ISNULL(d.value,0) as lose_dmrateset')
                 ->fetchSql(0)
                 ->paginate($limit)
                 ->toArray();
-
-            //  CASE
-            //cast(CASE WHEN b.CurWageRequire=0 OR b.NeedWageRequire=0 THEN 0 Else b.CurWageRequire/b.NeedWageRequire END as percentage)
-            //    WHEN A = 0 OR B = 0 THEN 0
-            //    ELSE A / B
-            //  END AS C b.CurWageRequire as percentage_aa,b.NeedWageRequire as percentage,
         } else {
+            
             $result = $this->getTableObject('[View_Accountinfo](NOLOCK)')->alias('a')
                 ->join('(SELECT * FROM [T_UserWageRequire] where id in(select max(Id) from  [T_UserWageRequire] group by roleid )) b','a.AccountID=b.roleid','left')
                 ->where($where)
-                ->field('AccountID,Money,OperatorId,TotalDeposit,TotalRollOut,RegisterTime,b.FreezonMoney as iFreezonMoney,b.CurWageRequire/CAST(b.NeedWageRequire as FLOAT) as percentage')
                 ->order("$orderby $ordertype")
+                ->field('AccountID,Money,OperatorId,TotalDeposit,TotalRollOut,RegisterTime,b.FreezonMoney as iFreezonMoney,(case when b.NeedWageRequire>0 then b.CurWageRequire/CAST(b.NeedWageRequire as FLOAT) else 0 end) as percentage')
                 ->fetchSql(0)
                 ->paginate($limit)
                 ->toArray();
         }
-
-
+        
+        
         $result['list'] = $result['data'];
         $result['count'] = $result['total'];
         // $result = $this->GetPage($where, "$orderby $ordertype", 'RoleID AccountID,Money');
@@ -301,7 +352,125 @@ class UserDB extends BaseModel
         return $result;
     }
 
+    /** 金币排行*/
+    public function GetGoldRanklist_new($data=[]): array
+    {
+        $page = (int)input('page', 1);
+        $limit = (int)input('limit', 20);
+        
+        $orderby = input('orderby', "Money");
+        $ordertype = input('ordertype', 'desc');
 
+        $from = input('from','');
+        $OperatorId = input('OperatorId') ?: '';
+        $roleid = input('roleid') ?: '';
+
+        $start_date = input('start_date') ?: '';
+        $end_date = input('end_date') ?: '';
+
+        $amount_min = input('amount_min','');
+        $amount_max = input('amount_max','');
+
+        $wage_min = input('wage_min','');
+        $wage_max = input('wage_max','');
+
+        $avg_min = input('avg_min','');
+        $avg_max = input('avg_max','');
+
+
+        $AccountIDs = array_column($data, 'nRoleId');
+        //提现数据
+        $subQuery  ="(SELECT sum(iMoney) iMoney,AccountID FROM [OM_BankDB].[dbo].[UserDrawBack](NOLOCK) WHERE status=100 AND AccountID in(" . implode(',',$AccountIDs) . ") GROUP BY AccountID) as sb";
+        $TotalRollOut = (new \app\model\BankDB())->getTableObject($subQuery)->column('iMoney','AccountID');
+        //渠道数据
+        $userData = (new \app\model\AccountDB())->getTableObject('T_Accounts')->where('AccountID','in',$AccountIDs)->column('OperatorId,ProxyChannelId,RegisterTime','AccountID');
+        $new_data = [];
+        foreach ($data as $key => &$val) {
+            if(!isset($userData[$val['nRoleId']])){
+                continue;
+            }
+            
+            $temp_data['AccountID']   = $val['nRoleId'];
+            $temp_data['Money'] = FormatMoney($val['iMoney']);
+            $temp_data['iFreezonMoney'] = FormatMoney($val['iFreezonMoney']);
+            $temp_data['iNeedWaged'] = FormatMoney($val['lNeedWaged']);
+            $temp_data['iCurWaged'] = FormatMoney($val['lCurWaged']);
+            $temp_data['TotalDeposit'] = $val['iTotalDeposit'];
+            $temp_data['win_dmrateset'] = $val['nWinWagedCtrlValue'];
+            $temp_data['lose_dmrateset'] = $val['nLoseWagedCtrlValue'];
+            $temp_data['TotalRollOut'] = $TotalRollOut[$temp_data['AccountID']]['iMoney'] ?? 0;
+            $temp_data['TotalRollOut'] = FormatMoney($temp_data['TotalRollOut']);
+            $temp_data['OperatorId'] = $userData[$temp_data['AccountID']]['OperatorId'];
+            $temp_data['CashAble'] = bcsub($temp_data['Money'],$temp_data['iFreezonMoney'],2);
+            if ($temp_data['iCurWaged'] == 0 || $temp_data['iNeedWaged'] == 0){
+                $temp_data['percentage'] = 0;
+            }else{
+                $temp_data['percentage'] = bcmul(bcdiv( $temp_data['iCurWaged'] , $temp_data['iNeedWaged'],6),100,2);
+            }
+            $new_data[$key] = $temp_data;
+
+            //处理查询条件
+            if ($OperatorId && ($temp_data['OperatorId'] != $OperatorId)) {
+                unset($new_data[$key]);
+            }
+            
+            if ($roleid && ($temp_data['AccountID'] != $roleid)) {
+                unset($new_data[$key]);
+            }
+           
+            if ($start_date && (strtotime($userData[$temp_data['AccountID']]['RegisterTime'])<strtotime($start_date)) ) {
+                unset($new_data[$key]);
+            }
+            if ($end_date && (strtotime($userData[$temp_data['AccountID']]['RegisterTime'])>strtotime($end_date)) ) {
+                unset($new_data[$key]);
+            }
+            if ($amount_min && ($temp_data['Money']<$amount_min)) {
+                unset($new_data[$key]);
+            } 
+            if ($amount_max && ($temp_data['Money']>$amount_max)) {
+                unset($new_data[$key]);
+            }
+            if ($wage_min && ($temp_data['iNeedWaged']<$wage_min)) {
+                unset($new_data[$key]);
+            }
+            if ($wage_max && ($temp_data['iNeedWaged']>$wage_max)) {
+                unset($new_data[$key]);
+            }
+            if ($avg_min && ($temp_data['percentage']<$avg_min)) {
+                unset($new_data[$key]);
+            }
+            if ($avg_max && ($temp_data['percentage']>$avg_max)) {
+                unset($new_data[$key]);
+            }
+            
+        }
+        
+        array_merge($new_data);
+    
+        //处理排序
+        switch ($ordertype) {
+            case 'asc':
+                array_multisort(array_column($new_data, $orderby),SORT_ASC,$new_data);
+                break;
+            case 'desc':
+                array_multisort(array_column($new_data, $orderby),SORT_DESC,$new_data);
+                break;
+            default:
+                # code...
+                break;
+        }
+
+        //处理分页
+        $page = ($page-1)*$limit;
+        $result_data = array_slice($new_data,$page,$limit);
+        
+        
+        $result = [];
+        $result['list'] = $result_data;
+        $result['count'] = count($new_data);
+        // $result = $this->GetPage($where, "$orderby $ordertype", 'RoleID AccountID,Money');
+        return $result;
+    }
     /**
      *  战绩排行
      */
@@ -327,7 +496,7 @@ class UserDB extends BaseModel
         $this->table = 'T_UserTransactionChannel';
         $where = '1=1';
         if (session('merchant_OperatorId') && request()->module() == 'merchant') {
-            $where = 'OperatorId=' . session('merchant_OperatorId');
+            $where = 'OperatorId='.session('merchant_OperatorId');
         }
         return $this->GetRow($where, 'SUM(RealMoney) TotalPay')['TotalPay'];
     }
@@ -460,15 +629,15 @@ class UserDB extends BaseModel
                         $j = 30;
                     }
                     if ($j <= $ddif) {
-                        $remainday = $item['day' . $i];
+                        $remainday =$item['day' . $i];
                         $remaintotal = $item['TotalReg'];
-                        $remain_rate = bcdiv($remainday, $remaintotal, 4);
-                        if ($switchcfg && $remain_rate > 0) {
-                            $remain_rate = $remain_rate + ($switchcfg / 100);
-                            $remainday = intval($remaintotal * $remain_rate);
+                        $remain_rate = bcdiv($remainday,$remaintotal,4);
+                        if($switchcfg && $remain_rate>0){
+                            $remain_rate = $remain_rate+($switchcfg/100);
+                            $remainday = intval($remaintotal*$remain_rate);
                         }
-                        $remain_rate = sprintf('%.2f', ($remain_rate * 100));
-                        $item['day' . $i] = $remainday . ' / ' . $remain_rate . '%';
+                        $remain_rate = sprintf('%.2f',($remain_rate*100));
+                        $item['day' . $i] = $remainday . ' / ' .$remain_rate.'%';
                     } else {
                         $item['day' . $i] = "";
                     }
@@ -523,7 +692,8 @@ class UserDB extends BaseModel
                     }
                 }
                 continue;
-            } else {
+            }
+            else {
                 for ($i = 1; $i <= 9; $i++) {
                     $item['TotalPay'] = 0;
                     $j = $i;
@@ -544,6 +714,8 @@ class UserDB extends BaseModel
         unset($item);
         return $result;
     }
+
+
 
 
     //渠道首充留存
@@ -621,9 +793,9 @@ class UserDB extends BaseModel
             if (request()->has('strartdate')) {
                 $strartdate = input('strartdate') ?: config('record_start_time');
             } else {
-                $strartdate = input('strartdate') ? input('strartdate') : date("Y-m-d") . ' 00:00:00';
+                $strartdate = input('strartdate') ? input('strartdate') : date("Y-m-d").' 00:00:00';
             }
-            $enddate = input('enddate') ? input('enddate') : date("Y-m-d") . ' 23:59:59';
+            $enddate = input('enddate') ? input('enddate') : date("Y-m-d").' 23:59:59';
             $payChannel = (int)input('payChannel', -1);
             $payType = (int)input('payType', -1);
             $amount = input('amount', 0);
@@ -655,16 +827,16 @@ class UserDB extends BaseModel
             if ($isreturn > -1) $where .= " AND isReturn=$isreturn";
         }
         if (session('merchant_OperatorId') && request()->module() == 'merchant') {
-            $where .= ' AND OperatorId=' . session('merchant_OperatorId');
+            $where .= ' AND OperatorId='.session('merchant_OperatorId');
         }
         $result = $this->GetPage($where, "ID desc");
         $result['other'] = $this->GetRow("1=1 $where", "ISNULL(Sum(1),0)totalCount,ISNULL(Sum(RealMoney),0)totalMoney");
-        $payorder = $this->GetRow("1=1 $where and Status in(1,100)", "ISNULL(Sum(1),0) paytotalCount,ISNULL(Sum(RealMoney),0) paytotalMoney");
+        $payorder= $this->GetRow("1=1 $where and Status in(1,100)", "ISNULL(Sum(1),0) paytotalCount,ISNULL(Sum(RealMoney),0) paytotalMoney");
         $result['other']['paytotalCount'] = $payorder['paytotalCount'];
         $result['other']['paytotalMoney'] = $payorder['paytotalMoney'];
         $result['other']['success_rate'] = 0;
         if ($result['other']['totalCount'] > 0) {
-            $result['other']['success_rate'] = bcdiv($result['other']['paytotalCount'] * 100, $result['other']['totalCount'], 2) . '%';
+            $result['other']['success_rate'] = bcdiv($result['other']['paytotalCount']*100, $result['other']['totalCount'],2).'%';
         }
         if (isset($result['list'])) {
             foreach ($result['list'] as &$item) {
@@ -736,14 +908,14 @@ class UserDB extends BaseModel
         $where = " AND AccountType=3 AND Mobile !=''";
         if ($roleid > 0) $where .= " AND AccountID=$roleid";
         if (session('merchant_OperatorId') && request()->module() == 'merchant') {
-            $where .= " and OperatorId=" . session('merchant_OperatorId');
+            $where .= " and OperatorId=".session('merchant_OperatorId');
         }
         $data = $this->GetPage($where, "BindPhoneTime desc"
             , "AccountID,Mobile,LoginName,BindPhoneTime,TotalDeposit,TotalRollOut");
         foreach ($data['list'] as &$item) {
             if (!empty($item['Mobile'])) {
                 // $item['Mobile'] = substr_replace($item['Mobile'], '**', -2);
-            }
+            } 
         }
         return $data;
     }
@@ -775,79 +947,99 @@ class UserDB extends BaseModel
             $amount = input('amount', 0);
             $max_amount = input('max_amount', 0);
             // $start = input('start')?: config('record_start_time');
-            $start = input('start') ?: config('record_start_time') . ' 00:00:00';
-            $end = input('end') ?: date('Y-m-d') . ' 23:59:59';
+            $start = input('start')?:  config('record_start_time').' 00:00:00';
+            $end = input('end')?:date('Y-m-d').' 23:59:59';
             $payChannel = input('payChannel', -1);
             $payWay = input('payWay', -1);
+            $DrawBackWay = input('DrawBackWay', -1);
             $payType = (int)input('payType', 0);
-            $orderby = input('orderby', '');
-            $ordertype = input('ordertype', '');
-            $cpf = input('cpf', '');
-            $operatorId = input('OperatorId', '');
+            $orderby =input('orderby','');
+            $ordertype =input('ordertype','');
+            $cpf =input('cpf','');
+            $operatorId = input('OperatorId','');
             if (strtotime($start) < strtotime(config('record_start_time'))) {
                 $start = config('record_start_time');
             }
             $order = "AddTime desc";
             if (!empty($ordertype) && !empty($orderby)) {
-                $order = $orderby . ' ' . $ordertype;
+                $order = $orderby.' '.$ordertype;
             }
             $limit = (int)input('limit', 20);
             //拼接 Where;
             $where = "";
             if ($status != 0) {
                 $checkUser = input('checkUser', session('username'));
-                if ($checkUser != '0') $where .= " and checkUser like '$checkUser'";
+                if ($checkUser != '0')$where .= " and checkUser like '$checkUser'";
             }
             if (!empty($account)) $roleid = $this->GetUserIDByAccount($account);
             if ($roleid > 0) $where .= " and AccountID=$roleid";
             if ($status >= 0) $where .= " and status = $status";
             if ($tranNO != 0) $where .= " and OrderNo='$tranNO'";
             if ($amount > 0) {
-                $min_amount = $amount * bl;
-                $where .= " and iMoney>=" . $min_amount;
+                $min_amount =  $amount * bl;
+                $where .= " and iMoney>=".$min_amount;
             }
             if ($max_amount > 0) {
-                $max_amount = $max_amount * bl;
-                $where .= " and iMoney<=" . $max_amount;
+                $max_amount =  $max_amount * bl;
+                $where .= " and iMoney<=".$max_amount;
             }
             // if (!empty($start)) $where .= " and UpdateTime Between '$start 00:00:00' and '$end 23:59:59'";
-            $where .= " and UpdateTime>='" . $start . "' and UpdateTime<='" . $end . "'";
+            $where.=" and UpdateTime>='".$start."' and UpdateTime<='".$end."'";
             if ($payChannel > 0) $where .= " and ChannelId=$payChannel";
             if ($payWay > 0) $where .= " and PayWay=$payWay";
+            if ($DrawBackWay > 0) $where .= " and DrawBackWay=$DrawBackWay";
             if ($payType == 1) $where .= " AND totalPay>0";
             if ($payType == 2) $where .= " AND totalPay=0 AND EamilMoney=0";
-            if (!empty($cpf)) $where .= " AND Province like '%{$cpf}%'";
+            if(!empty($cpf)) $where .= " AND Province like '%{$cpf}%'";
 
         }
         // var_dump($where);die();
-        $feild = "iMoney,Tax,OrderNo,AccountID,PayWay,RealName,CardNo,IsDrawback,BankName,status,checkTime,AddTime,UpdateTime,TransactionNo,ChannelId,checkUser,totalPay,TotalDS,EamilMoney,cheatLevel,Province,Descript,City,OperatorId,DrawBackWay";
-        if (config('app_name') == 'TATUWIN') {
+        $feild = "iMoney,Tax,OrderNo,AccountID,PayWay,RealName,CardNo,IsDrawback,BankName,status,checkTime,AddTime,UpdateTime,TransactionNo,ChannelId,checkUser,totalPay,TotalDS,EamilMoney,cheatLevel,Province,Descript,City,OperatorId,DrawBackWay,ProxyChannelId";
+        if (config('app_name')=='TATUWIN') {
             $feild .= ',RiskLevel';
         }
         if (session('merchant_OperatorId') && request()->module() == 'merchant') {
-            $where .= ' AND OperatorId=' . session('merchant_OperatorId');
-        } else {
-            if (!empty($operatorId)) {
-                $where .= ' AND OperatorId=' . $operatorId;
+            $where .= ' AND OperatorId='.session('merchant_OperatorId');
+        }
+        else
+        {
+            if(!empty($operatorId)){
+                $where .= ' AND OperatorId='.$operatorId;
             }
         }
+        $GameOCDB = new \app\model\GameOCDB();
+
+        $Operators = $GameOCDB->getTableObject('T_OperatorSubAccount')->where('1=1')->column('*','OperatorId');//OperatorName
+        $business  = $GameOCDB->getTableObject('T_ProxyChannelConfig')->where('1=1')->column('*','ProxyChannelId');//AccountName
         // $result = $this->GetPage($where, "$order", $feild);
         $data = (new BankDB())->getTableObject('View_UserDrawBack')->alias('a')
-            ->join('[CD_UserDB].[dbo].[T_UserGameWealth](NOLOCK) b', 'b.RoleID=a.AccountID', 'left')
-            ->join('[CD_UserDB].[dbo].[T_UserWage](NOLOCK) c', 'c.RoleID=a.AccountID', 'left')
-            ->field('a.*,b.Money,c.CurWageRequire')
-            ->where('1=1 ' . $where)
-            ->order($order)
-            ->paginate($limit)
-            ->toArray();
+                        ->join('[CD_UserDB].[dbo].[T_UserGameWealth](NOLOCK) b','b.RoleID=a.AccountID','left')
+                        ->field('a.*,b.Money')
+                        ->where('1=1 '.$where)
+                        ->order($order)
+                        ->paginate($limit)
+                        ->toArray();
         $result = [];
         $result['list'] = $data['data'];
         $result['count'] = $data['total'];
         unset($data);
-        $comments = (new \app\model\GameOCDB)->getTableObject("[OM_GameOC].[dbo].[T_PlayerComment]")->where('type', 1)->select();
         foreach ($result['list'] as &$item) {
             $item['ChannelName'] = "";
             foreach ($Channel as &$p) if ($p['ChannelId'] == $item['ChannelId']) $item['ChannelName'] = $p['ChannelName'];
+
+            if ($item['OperatorId']>0) {
+                $item['OperatorName'] = $Operators[$item['OperatorId']]['OperatorName'];
+            } else {
+                $item['OperatorName'] = '';
+            }
+            if ($item['ProxyChannelId']>0) {
+                $item['ProxyChannelName'] = $business[$item['ProxyChannelId']]['AccountName'];
+            } else {
+                $item['ProxyChannelName'] = '';
+            }
+            $item['gamesf'] = $GameOCDB->getTableObject('T_GMSendMoney')->where('RoleId',$item['AccountID'])->where('status',1)->where('OperateType','in','1,2')->sum('Money')?:0;
+            $item['commisionsf'] = $GameOCDB->getTableObject('T_GMSendMoney')->where('RoleId',$item['AccountID'])->where('status',1)->where('OperateType','in','3,4')->sum('Money')?:0;
+            $item['totalsf'] = bcadd($item['gamesf'], $item['commisionsf'],2)/1;
             ConVerMoney($item['iMoney']);
             ConVerMoney($item['Tax']);
             ConVerMoney($item['EamilMoney']);
@@ -855,10 +1047,10 @@ class UserDB extends BaseModel
             $item['Money'] = $item['Money'] ?? 0;
             ConVerMoney($item['Money']);
             $item['RealPay'] = $item['iMoney'] - $item['Tax'];//实际金额  提交-税
-            if ($item['checkTime'])
+            if($item['checkTime'])
                 $item['checkTime'] = date('Y-m-d H:i:s', strtotime($item['checkTime']));
             else
-                $item['checkTime'] = '';
+                $item['checkTime'] ='';
             $item['UpdateTime'] = date('Y-m-d H:i:s', strtotime($item['UpdateTime']));
             $item['AddTime'] = date('Y-m-d H:i:s', strtotime($item['AddTime']));
             $str = "";
@@ -916,18 +1108,16 @@ class UserDB extends BaseModel
             }
             $item['cheatLevelDesc'] = $strcheat;
             if (empty($item['Descript'])) {
-//                ->where('roleid', $item['AccountID'])->order('opt_time desc')->find();
-                foreach($comments as $comment){
-                    if ($comment['roleid'] == $item['AccountID']){
-                        $item['Descript'] = $comment['comment'];
-                    }
+                $comment = (new \app\model\GameOCDB)->getTableObject("[OM_GameOC].[dbo].[T_PlayerComment]")->where('type',1)->where('roleid',$item['AccountID'])->order('opt_time desc')->find();
+                if ($comment) {
+                    $item['Descript'] = $comment['comment'];
                 }
             }
-            $item['DrawWayName'] = '';
-            if ($item['DrawBackWay'] == 1) {
-                $item['DrawWayName'] = lang('余额提现');
-            } else if ($item['DrawBackWay'] == 2) {
-                $item['DrawWayName'] = lang('活动奖励提现');
+            $item['DrawWayName'] ='';
+            if($item['DrawBackWay']==1){
+                $item['DrawWayName'] =lang('余额提现');
+            }else if($item['DrawBackWay']==2){
+                $item['DrawWayName'] =lang('活动奖励提现');
             }
 
         }
@@ -1020,16 +1210,160 @@ class UserDB extends BaseModel
         return $this;
     }
 
-    public function getXbusiness($ProxyChannelIds)
-    {
+    public function getXbusiness($ProxyChannelIds){
         static $result = [];
-        $xChannelIds = (new \app\model\GameOCDB())->getTableObject('T_ProxyChannelConfig')->where('pid', 'in', $ProxyChannelIds)->field('ProxyChannelId')->select();
+        $xChannelIds = (new \app\model\GameOCDB())->getTableObject('T_ProxyChannelConfig')->where('pid','in',$ProxyChannelIds)->field('ProxyChannelId')->select();
         if (empty($xChannelIds)) {
             return $result;
         } else {
             $xChannelIds = array_column($xChannelIds, 'ProxyChannelId');
-            $result = array_unique(array_merge($result, $xChannelIds));
+            $result = array_unique(array_merge($result,$xChannelIds));
             return $this->getXbusiness($xChannelIds);
         }
+    }
+
+    public function getBloggerData(){
+        $limit          = request()->param('limit') ?: 15;
+        $RoleID         = request()->param('RoleID');
+        $OperatorId     = request()->param('OperatorId');
+        $ProxyChannelId = request()->param('ProxyChannelId');
+        $start_date     = request()->param('start_date');
+        $end_date       = request()->param('end_date');
+        $orderby        = request()->param('orderby');
+        $ordertype      = request()->param('ordertype');
+
+        $where = 'A.IsBlogger=1';
+        if (session('merchant_OperatorId') && request()->module() == 'merchant') {
+            $where .= ' and A.OperatorId='.session('merchant_OperatorId');  
+        }
+
+        if (session('business_ProxyChannelId') && request()->module() == 'business') {
+            $where .= ' and A.ProxyChannelId='.session('business_ProxyChannelId');  
+        }
+
+        if ($RoleID != '') {
+            $where .= ' and A.AccountID=' . $RoleID;
+        }
+        if ($OperatorId != '') {
+            $where .= ' and A.OperatorId=' . $OperatorId;
+        }
+        if ($ProxyChannelId != '') {
+            $where .= ' and A.ProxyChannelId=' . $ProxyChannelId;
+        }
+        if ($start_date != '') {
+            $where .= ' and A.BloggerDate>=\'' . $start_date . '\'';
+        }
+        if ($end_date != '') {
+            $where .= ' and A.BloggerDate<\'' . $end_date . '\'';
+        }
+        if (empty($orderby) || empty($ordertype)) {
+            $orderby = 'BloggerDate';
+            $ordertype = 'desc';
+        }
+        $field = 'A.AccountID,A.BloggerDate,A.WeChat,A.OperatorId,A.ProxyChannelId,ISNULL(B.Lv1PersonCount,0) AS Lv1PersonCount,ISNULL(B.Lv1Deposit,0) AS Lv1Deposit,ISNULL(B.Lv1DepositPlayers,0) AS Lv1DepositPlayers,ISNULL(B.Lv1WithdrawCount,0) AS Lv1WithdrawCount,ISNULL(B.Lv1WithdrawAmount,0) AS Lv1WithdrawAmount,ValidInviteCount,C.emailAmount,D.withdrawAmount,(ISNULL(B.Lv1Deposit,0)*1000-ISNULL(B.Lv1WithdrawAmount,0)-ISNULL(D.withdrawAmount,0)) as profit,ISNULL(E.gmmoney,0) gmmoney';
+
+        $mail_sql = "(select RoleId as AccountID,sum(Amount) emailAmount from [CD_DataChangelogsDB].[dbo].[T_ProxyMsgLog](NOLOCK) where RecordType=8 and Amount>0  and VerifyState=1 group by RoleId) as C";
+        
+        $withdraw_sql  ="(SELECT sum(iMoney) withdrawAmount,AccountID FROM [OM_BankDB].[dbo].[UserDrawBack](NOLOCK) WHERE status=100 GROUP BY AccountID) as D";
+        
+        $gm_sql  ="(select RoleId,sum(Money) gmmoney from [OM_GameOC].[dbo].[T_GMSendMoney] where operatetype in(1,3) and status=1 group by RoleId) as E";
+
+        $data =  (new \app\model\AccountDB())->getTableObject('T_Accounts(NOLOCK)')
+                ->alias('A')
+                ->join('[CD_UserDB].[dbo].[T_ProxyCollectData](NOLOCK) B', 'B.ProxyId=A.AccountID', 'LEFT')
+                ->join($mail_sql,'C.AccountID=A.AccountID', 'LEFT')
+                ->join($withdraw_sql,'D.AccountID=A.AccountID', 'LEFT')
+                ->join($gm_sql,'E.RoleId=A.AccountID', 'LEFT')
+                ->where($where)
+                ->field($field)
+                ->order("$orderby $ordertype")
+                ->paginate($limit)
+                ->toArray();
+
+        $AccountIDs = array_column($data['data'], 'AccountID');
+        $AccountIDs = implode(',',$AccountIDs);
+
+        $sql1 = "(select RoleId as AccountID,addtime,Amount from T_ProxyMsgLog where id in(select min(id) from T_ProxyMsgLog where RoleId in(".$AccountIDs.") and RecordType=8 and Amount>0 and VerifyState=1 group by RoleId)) as sql1";
+        if ($AccountIDs) {
+            $mail_first_time = (new \app\model\DataChangelogsDB())->getTableObject($sql1)->column('addtime,Amount','AccountID');
+        } else {
+            $mail_first_time = [];
+        }
+        
+
+        $sql2 = "(select RoleId as AccountID,addtime,Amount from T_ProxyMsgLog where id in(select max(id) from T_ProxyMsgLog where RoleId in(".$AccountIDs.") and RecordType=8 and Amount>0 and VerifyState=1 group by RoleId)) as sql2";
+        if ($AccountIDs) {
+            $mail_last_time = (new \app\model\DataChangelogsDB())->getTableObject($sql2)->column('addtime,Amount','AccountID');
+        } else {
+            $mail_last_time = [];
+        }
+        $GameOCDB = new \app\model\GameOCDB();
+        foreach ($data['data'] as $key => &$val) {
+            $AccountID = $val['AccountID'];
+            $val['emailFristDate'] = $mail_first_time[$AccountID]['addtime'] ?? '';
+            $val['emailLastDate'] = $mail_last_time[$AccountID]['addtime'] ?? '';
+
+            $val['emailAmount'] = FormatMoney($val['emailAmount']);
+            $val['withdrawAmount'] = FormatMoney($val['withdrawAmount']);
+            $val['Lv1WithdrawAmount'] = FormatMoney($val['Lv1WithdrawAmount']);
+            $val['profit'] = FormatMoney($val['profit']);
+
+            $val['gamesf'] = $GameOCDB->getTableObject('T_GMSendMoney')->where('RoleId',$AccountID)->where('status',1)->where('OperateType','in','1,2')->sum('Money')?:0;
+            $val['commisionsf'] = $GameOCDB->getTableObject('T_GMSendMoney')->where('RoleId',$AccountID)->where('status',1)->where('OperateType','in','3,4')->sum('Money')?:0;
+            $val['totalsf'] = bcadd($val['gamesf'], $val['commisionsf'],2)/1;
+        }
+        return $data;
+    }
+
+    //掉绑记录
+    public function unbindRecord(){
+        $limit          = request()->param('limit') ?: 15;
+        $RoleID         = request()->param('RoleID');
+        $DisableBindParentId  = request()->param('DisableBindParentId');
+        $OperatorId     = request()->param('OperatorId');
+        $ProxyChannelId = request()->param('ProxyChannelId');
+        $start_date     = request()->param('start_date');
+        $end_date       = request()->param('end_date');
+
+        $where = 'a.DisableBindParentId<>0';
+        if (session('merchant_OperatorId') && request()->module() == 'merchant') {
+            $where .= ' and c.OperatorId='.session('merchant_OperatorId');  
+        }
+
+        if (session('business_ProxyChannelId') && request()->module() == 'business') {
+            $where .= ' and c.ProxyChannelId='.session('business_ProxyChannelId');  
+        }
+
+        if ($RoleID != '') {
+            $where .= ' and a.RoleID=' . $RoleID;
+        }
+        if ($DisableBindParentId != '') {
+            $where .= ' and a.DisableBindParentId=' . $DisableBindParentId;
+        }
+        if ($OperatorId != '') {
+            $where .= ' and c.OperatorId=' . $OperatorId;
+        }
+        if ($ProxyChannelId != '') {
+            $where .= ' and c.ProxyChannelId=' . $ProxyChannelId;
+        }
+        if ($start_date != '') {
+            $where .= ' and c.RegisterTime>=\'' . $start_date . '\'';
+        }
+        if ($end_date != '') {
+            $where .= ' and c.RegisterTime<\'' . $end_date . '\'';
+        }
+        $data = (new \app\model\UserDB())->getTableObject('T_UserProxyInfo')->alias('a')
+            ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) c', 'c.AccountID=a.RoleID', 'left')
+            ->join('[CD_UserDB].[dbo].[T_UserCollectData](NOLOCK) d', 'd.RoleID=a.RoleID', 'left')
+            ->where($where)
+            ->field('a.RoleID as AccountID,a.ParentID,a.DisableBindParentId,c.RegisterTime,c.OperatorId,c.ProxyChannelId,c.RegIP,c.LastLoginTime,d.TotalDeposit,d.TotalRollOut')
+            ->paginate($limit)
+            ->toArray();
+        foreach ($data['data'] as $key => &$val) {
+            $val['RegisterTime'] = date('Y-m-d H:i:s', strtotime($val['RegisterTime']));
+            $val['TotalDeposit'] = bcdiv($val['TotalDeposit'] ?: 0, 1, 3) / 1;
+            $val['TotalRollOut'] = bcdiv($val['TotalRollOut'] ?: 0, 1, 3) / 1;
+        }
+        return $data;
     }
 }

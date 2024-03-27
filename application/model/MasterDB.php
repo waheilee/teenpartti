@@ -205,4 +205,153 @@ class MasterDB extends BaseModel
         return $this;
     }
 
+    public function taxFreeUser(){
+        $limit          = request()->param('limit') ?: 15;
+        $OperatorId     = request()->param('OperatorId');
+        $RoleId     = request()->param('RoleId');
+        $OpenChildTaxFree    = request()->param('OpenChildTaxFree');
+        $where = '1=1';
+        if (session('merchant_OperatorId') && request()->module() == 'merchant') {
+            $where .= ' and b.OperatorId='.session('merchant_OperatorId');  
+        }
+        if ($RoleId != '') {
+            $where .= ' and a.RoleId='.$RoleId;
+        }
+        if ($OpenChildTaxFree != '') {
+            $where .= ' and a.OpenChildTaxFree='.$OpenChildTaxFree;
+        }
+        if ($OperatorId != '') {
+            $where .= ' and b.OperatorId='.$OperatorId;
+        }
+        $data = $this->getTableObject('T_TaxFreeUserList(NOLOCK)')->alias('a')
+            ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) b', 'b.AccountID=a.RoleId', 'left')
+            ->where($where)
+            ->field('a.*')
+            ->paginate($limit)
+            ->toArray();
+        // foreach ($data['data'] as $key => &$val) {
+            
+        // }
+        return $data;
+    }
+
+    public function disableBindWhiteList(){
+        $limit          = request()->param('limit') ?: 15;
+        $OperatorId     = request()->param('OperatorId');
+        $RoleId     = request()->param('RoleId');
+        $where = '1=1';
+        if (session('merchant_OperatorId') && request()->module() == 'merchant') {
+            $where .= ' and b.OperatorId='.session('merchant_OperatorId');  
+        }
+        if ($RoleId != '') {
+            $where .= ' and a.RoleId='.$RoleId;
+        }
+        if ($OperatorId != '') {
+            $where .= ' and b.OperatorId='.$OperatorId;
+        }
+        $data = $this->getTableObject('T_DisableBindWhiteList(NOLOCK)')->alias('a')
+            ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) b', 'b.AccountID=a.RoleId', 'left')
+            ->where($where)
+            ->field('a.*')
+            ->paginate($limit)
+            ->toArray();
+        // foreach ($data['data'] as $key => &$val) {
+            
+        // }
+        return $data;
+    }
+
+    public function editDisableBindWhiteList(){
+        $RoleID      = input('RoleID', 0);
+        $ProxySwitch = input('type', 0);
+
+        if (session('merchant_OperatorId') && request()->module() == 'merchant') {
+            $RoleInfo    = (new \app\model\AccountDB())->getTableObject('T_Accounts')->where(['AccountID'=>$RoleID,'OperatorId'=>session('merchant_OperatorId')])->find();
+            if(empty($RoleInfo)){
+                return ['code' => 1,'msg'=>'权限不足'];
+            }
+        }
+
+        $has = (new \app\model\MasterDB())->getTableObject('T_DisableBindWhiteList')->where('RoleId',$RoleID)->find();
+        if ($ProxySwitch == 1) {
+            if ($has) {
+                return ['code' => 1,'msg'=>'已添加'];
+            } else {
+                $res = (new \app\model\MasterDB())->getTableObject('T_DisableBindWhiteList')->insert(['RoleId'=>$RoleID,'AddTime'=>date('Y-m-d H:i:s')]);
+            }
+        } 
+        if ($ProxySwitch == 2) {
+            if ($has) {
+                $res = (new \app\model\MasterDB())->getTableObject('T_DisableBindWhiteList')->where('RoleId',$RoleID)->delete();
+            } else {
+                return ['code' => 1,'msg'=>'已移除'];
+            }
+        }
+        if ($res) {
+            return ['code' => 0,'msg'=>'操作成功'];
+        } else {
+            return ['code' => 1,'msg'=>'操作失败'];
+        }
+    }
+
+
+    public function wageFreeWhiteList(){
+        $limit          = request()->param('limit') ?: 15;
+        $OperatorId     = request()->param('OperatorId');
+        $RoleId     = request()->param('RoleId');
+        $where = '1=1';
+        if (session('merchant_OperatorId') && request()->module() == 'merchant') {
+            $where .= ' and b.OperatorId='.session('merchant_OperatorId');  
+        }
+        if ($RoleId != '') {
+            $where .= ' and a.RoleId='.$RoleId;
+        }
+        if ($OperatorId != '') {
+            $where .= ' and b.OperatorId='.$OperatorId;
+        }
+        $data = $this->getTableObject('T_WageFreeWhiteList(NOLOCK)')->alias('a')
+            ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) b', 'b.AccountID=a.RoleId', 'left')
+            ->where($where)
+            ->field('a.*')
+            ->paginate($limit)
+            ->toArray();
+        // foreach ($data['data'] as $key => &$val) {
+            
+        // }
+        return $data;
+    }
+
+
+    public function editWageFreeWhiteList(){
+        $RoleID      = input('RoleID', 0);
+        $ProxySwitch = input('type', 0);
+
+        if (session('merchant_OperatorId') && request()->module() == 'merchant') {
+            $RoleInfo    = (new \app\model\AccountDB())->getTableObject('T_Accounts')->where(['AccountID'=>$RoleID,'OperatorId'=>session('merchant_OperatorId')])->find();
+            if(empty($RoleInfo)){
+                return ['code' => 1,'msg'=>'权限不足'];
+            }
+        }
+
+        $has = (new \app\model\MasterDB())->getTableObject('T_WageFreeWhiteList')->where('RoleId',$RoleID)->find();
+        if ($ProxySwitch == 1) {
+            if ($has) {
+                return ['code' => 1,'msg'=>'已添加'];
+            } else {
+                $res = (new \app\model\MasterDB())->getTableObject('T_WageFreeWhiteList')->insert(['RoleId'=>$RoleID]);
+            }
+        } 
+        if ($ProxySwitch == 2) {
+            if ($has) {
+                $res = (new \app\model\MasterDB())->getTableObject('T_WageFreeWhiteList')->where('RoleId',$RoleID)->delete();
+            } else {
+                return ['code' => 1,'msg'=>'已移除'];
+            }
+        }
+        if ($res) {
+            return ['code' => 0,'msg'=>'操作成功'];
+        } else {
+            return ['code' => 1,'msg'=>'操作失败'];
+        }
+    }
 }

@@ -125,7 +125,7 @@ class User extends Controller
             }
         }
         if ($isshow) {
-            $qrCodeUrl = $ga->getQRCodeGoogleUrl(config('app_name').'_' . $username, $secret, 'googleVerify', ['width' => 100, 'height' => 100]);
+            $qrCodeUrl = $ga->getQRCodeGoogleUrl('gameoc_' . $username, $secret, 'googleVerify', ['width' => 100, 'height' => 100]);
             return json(['code' => 0, 'msg' => '', 'data' => $qrCodeUrl, 'isshow' => 1, 'secret' => $secret]);
         } else {
             return json(['code' => 0, 'msg' => '', 'isshow' => 0]);

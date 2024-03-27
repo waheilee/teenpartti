@@ -44,8 +44,6 @@ class DailyStatistics extends BaseController {
             $list = $m->getDataList($this->getPageIndex(), $this->getPageLimit(), $filter, '', "day desc");
             foreach ($list as $key => &$val) {
                 $val['recharge_num'] = $recharge_num[$val['day']]['totaluserpaynum'] ?? 0;
-                $val['withdrawal_first_recharge'] = FormatMoney($val['withdrawal_first_recharge']);//首充提现金额
-                $val['withdrawal_num_first_recharge'] = intval($val['withdrawal_num_first_recharge']);//首充提现人数
             }
             return $this->toDataGrid($count, $list);
         }
@@ -353,27 +351,5 @@ class DailyStatistics extends BaseController {
                 'platform_rtp'=>$platform_rtp
             ]);
         }
-    }
-
-    public function getSumData()
-    {
-        $startDate = input('start', '');
-        $endDate = input('end', '');
-
-        $data = DB::table('game_daily_statistics')
-            ->where(function ($q) use($startDate,$endDate){
-                if (!empty($startDate) && !empty($endDate)){
-                    $q->where(  'day','BETWEEN',[$startDate,$endDate]);
-                }
-            })
-            ->field('sum(first_charge_amount) as first_charge_amount,sum(withdrawal_first_recharge) as withdrawal_first_recharge, sum(withdrawal_num_first_recharge) as withdrawal_num_first_recharge')
-            ->find();
-        ConVerMoney($data['first_charge_amount']);
-        ConVerMoney($data['withdrawal_first_recharge']);
-        $data['withdrawal_num_first_recharge'] = intval($data['withdrawal_num_first_recharge']);
-        $result['list'] = $data;
-        return $this->apiJson($result);
-
-
     }
 }

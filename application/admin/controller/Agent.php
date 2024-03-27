@@ -2,7 +2,6 @@
 
 namespace app\admin\controller;
 
-use app\admin\controller\Export\AgentWaterDailyExport;
 use app\model\AccountDB;
 use app\model\BankDB;
 use app\model\DataChangelogsDB;
@@ -15,7 +14,6 @@ use app\model\UserDB;
 use app\model\UserProxyDailyData;
 use app\model\UserProxyInfo;
 use app\model\UserTeamLog;
-use think\Db;
 use think\Exception;
 use think\exception\PDOException;
 use think\response\Json;
@@ -185,7 +183,7 @@ class Agent extends Main
                 //权限验证 
                 $auth_ids = $this->getAuthIds();
                 if (!in_array(10008, $auth_ids)) {
-                    return $this->apiJson(["code" => 1, "msg" => "没有权限"]);
+                    return $this->apiJson(["code"=>1,"msg"=>"没有权限"]);
                 }
                 $db = new GameOCDB();
                 $data = $db->GetAgentTotal();
@@ -339,25 +337,10 @@ class Agent extends Main
             if (!empty($orderby)) {
                 $order = " $orderby $orderytpe";
             }
-
-            $userDB = new UserDB();
-            $query = "IF OBJECT_ID('T_ProxyUnBind', 'U') IS NOT NULL
-                        SELECT 1 AS tableExists
-                      ELSE
-                        SELECT 0 AS tableExists";
-            $isUnBindTable = $userDB->DBOriginQuery($query);
-            if ($isUnBindTable[0]['tableExists'] == 1) {
-                $unBindCount = ',C.UnBindCount';
-                $leftJoin = ' left join (SELECT ParentId, COUNT(ParentId) as UnBindCount FROM [CD_UserDB].[dbo].[T_ProxyUnBind]  group by ParentId) as C on A.RoleID=C.ParentId';
-            } else {
-                $leftJoin = '';
-                $unBindCount = '';
-            }
-
-            $field = 'A.ParentID,A.RoleId as ProxyId,ISNULL(B.ReceivedIncome,0) As ReceivedIncome,ISNULL(B.TotalDeposit,0) AS TotalDeposit,ISNULL(B.TotalTax,0) AS TotalTax,ISNULL(B.TotalRunning,0) AS TotalRunning,ISNULL(B.Lv1PersonCount,0) AS Lv1PersonCount,ISNULL(B.Lv1Deposit,0) AS Lv1Deposit,ISNULL(B.Lv1DepositPlayers,0) AS Lv1DepositPlayers,ISNULL(B.Lv1Tax,0) AS Lv1Tax,ISNULL(B.Lv1Running,0) AS Lv1Running,ISNULL(B.Lv2PersonCount,0) AS Lv2PersonCount,ISNULL(B.Lv2Deposit,0) AS Lv2Deposit,ISNULL(B.Lv2DepositPlayers,0) AS Lv2DepositPlayers,ISNULL(B.Lv2Tax,0) AS Lv2Tax,ISNULL(B.Lv2Running,0) AS Lv2Running,ISNULL(B.Lv3PersonCount,0) AS Lv3PersonCount,ISNULL(B.Lv3Deposit,0) AS Lv3Deposit,ISNULL(B.Lv3DepositPlayers,0) AS Lv3DepositPlayers,ISNULL(B.Lv3Tax,0) AS Lv3Tax,ISNULL(B.Lv3Running,0) AS Lv3Running,A.MobileBackgroundSwitch'.$unBindCount;
+            $field = 'A.ParentID,A.RoleId as ProxyId,ISNULL(B.ReceivedIncome,0) As ReceivedIncome,ISNULL(B.TotalDeposit,0) AS TotalDeposit,ISNULL(B.TotalTax,0) AS TotalTax,ISNULL(B.TotalRunning,0) AS TotalRunning,ISNULL(B.Lv1PersonCount,0) AS Lv1PersonCount,ISNULL(B.Lv1Deposit,0) AS Lv1Deposit,ISNULL(B.Lv1DepositPlayers,0) AS Lv1DepositPlayers,ISNULL(B.Lv1Tax,0) AS Lv1Tax,ISNULL(B.Lv1Running,0) AS Lv1Running,ISNULL(B.Lv2PersonCount,0) AS Lv2PersonCount,ISNULL(B.Lv2Deposit,0) AS Lv2Deposit,ISNULL(B.Lv2DepositPlayers,0) AS Lv2DepositPlayers,ISNULL(B.Lv2Tax,0) AS Lv2Tax,ISNULL(B.Lv2Running,0) AS Lv2Running,ISNULL(B.Lv3PersonCount,0) AS Lv3PersonCount,ISNULL(B.Lv3Deposit,0) AS Lv3Deposit,ISNULL(B.Lv3DepositPlayers,0) AS Lv3DepositPlayers,ISNULL(B.Lv3Tax,0) AS Lv3Tax,ISNULL(B.Lv3Running,0) AS Lv3Running,A.MobileBackgroundSwitch';
             $proxyinfo = new UserProxyInfo();
             //$table = 'T_UserProxyInfo';
-            $table = '(select ' . $field . '  FROM   CD_UserDB.dbo.T_UserProxyInfo(nolock) as A  left join [CD_UserDB].[dbo].[T_ProxyCollectData](nolock) as B on A.RoleID=B.ProxyId '.$leftJoin.') as t ';
+            $table = '(select ' . $field . '  FROM   CD_UserDB.dbo.T_UserProxyInfo(nolock) as A  left join [CD_UserDB].[dbo].[T_ProxyCollectData](nolock) as B on A.RoleID=B.ProxyId) as t ';
             // $table='[CD_UserDB].[dbo].[T_ProxyCollectData] (NOLOCK) ';
             $data = $proxyinfo->getProcPageList($table, '*', $filter, $order, $page, $limit);
             $list = [];
@@ -390,9 +373,9 @@ class Agent extends Main
                         $Lv1Reward = bcmul($v['Lv1Running'], $lv1rate, 4);
                         $Lv2Reward = bcmul($v['Lv2Running'], $lv2rate, 4);
                         $Lv3Reward = bcmul($v['Lv3Running'], $lv3rate, 4);
-                        $rewar_amount = bcadd($Lv1Reward, $Lv2Reward, 4);
-                        $rewar_amount = bcadd($rewar_amount, $Lv3Reward, 2);
-                        $v['ReceivedIncome'] = 0;
+                        $rewar_amount = bcadd($Lv1Reward , $Lv2Reward,4);
+                        $rewar_amount = bcadd($rewar_amount, $Lv3Reward,2);
+                        $v['ReceivedIncome'] =  $rewar_amount;
                     }
                 }
                 unset($v);
@@ -405,7 +388,7 @@ class Agent extends Main
                 //权限验证 
                 $auth_ids = $this->getAuthIds();
                 if (!in_array(10008, $auth_ids)) {
-                    return $this->apiJson(["code" => 1, "msg" => "没有权限"]);
+                    return $this->apiJson(["code"=>1,"msg"=>"没有权限"]);
                 }
                 if (empty($list)) {
                     $result = ["count" => 0, "code" => 1, 'msg' => lang("没有找到任何数据,换个姿势再试试?")];
@@ -455,9 +438,9 @@ class Agent extends Main
                         $Lv1Reward = bcmul($row['Lv1Running'], $lv1rate, 4);
                         $Lv2Reward = bcmul($row['Lv2Running'], $lv2rate, 4);
                         $Lv3Reward = bcmul($row['Lv3Running'], $lv3rate, 4);
-                        $rewar_amount = bcadd($Lv1Reward, $Lv2Reward, 4);
-                        $rewar_amount = bcadd($rewar_amount, $Lv3Reward, 2);
-                        $row['ReceivedIncome'] = $rewar_amount;
+                        $rewar_amount = bcadd($Lv1Reward , $Lv2Reward,4);
+                        $rewar_amount = bcadd($rewar_amount, $Lv3Reward,2);
+                        $row['ReceivedIncome'] =  $rewar_amount;
 
                         $item = [
                             $row['ProxyId'],
@@ -502,12 +485,10 @@ class Agent extends Main
         return $this->fetch();
     }
 
-
-    public function updateMobileBackgroundSwitch()
-    {
+    public function updateMobileBackgroundSwitch(){
         $RoleId = input('roleid');
-        $MobileBackgroundSwitch = input('type') ?: 0;
-        $res = (new \app\model\UserDB())->getTableObject('T_UserProxyInfo')->where('RoleId=' . $RoleId)->data(['MobileBackgroundSwitch' => $MobileBackgroundSwitch])->update();
+        $MobileBackgroundSwitch = input('type')?:0;
+        $res = (new \app\model\UserDB())->getTableObject('T_UserProxyInfo')->where('RoleId='.$RoleId)->data(['MobileBackgroundSwitch'=>$MobileBackgroundSwitch])->update();
         if ($res) {
             return $this->apiReturn(0, [], '操作成功');
         } else {
@@ -526,16 +507,94 @@ class Agent extends Main
             case 'list':
                 $db = new GameOCDB();
                 $result = $db->GetAgentRecord(true);
-//                $sumdata = $db->GetAgentRecordSum(true);
-//                $result['other'] = $sumdata;
+                $sumdata = $db->GetAgentRecordSum(true);
+                $result['other'] = $sumdata;
                 $result['other']['startdate'] = $result['startdate'];
                 $result['other']['enddate'] = $result['enddate'];
                 return $this->apiJson($result);
             case 'exec':
+                $db = new  GameOCDB();
+                $result = $db->GetAgentRecord(true);
+                $outAll = input('outall', false);
+                if ((int)input('exec', 0) == 0) {
+                    if ($result['count'] == 0) {
+                        $result = ["count" => 0, "code" => 1, 'msg' => lang("没有找到任何数据,换个姿势再试试?")];
+                    }
+                    if ($result['count'] >= 5000 && $outAll == false) {
+                        $result = ["code" => 2, 'msg' => lang("数据超过5000行是否全部导出?<br>只能导出一部分数据.</br>请选择筛选条件,让数据少于5000行<br>当前数据一共有") . $result['count'] . lang("行")];
+                    }
+                    unset($result['list']);
+                    return $this->apiJson($result);
+                }
+                //导出表格
+                if ((int)input('exec') == 1 && $outAll = true) {
+                    //权限验证 
+                    $auth_ids = $this->getAuthIds();
+                    if (!in_array(10008, $auth_ids)) {
+                        return $this->apiReturn(1, '', '没有权限');
+                    }
+                    $header_types = [
+                        lang('日期') => 'string',
+                        lang('代理ID') => 'string',
+                        lang('1+2级打码') => 'string',
+                        lang('个人总收益') => 'string',
+                        lang('个人充值') => "string",
+                        lang('个人流水') => 'string',
+                        lang('一级人数') => 'string',
+                        lang('一级充值') => 'string',
+                        lang('一级流水') => 'string',
+                        lang('二级人数') => 'string',
+                        lang('二级充值') => 'string',
+                        lang('二级流水') => 'string',
+                        lang('三级人数') => 'string',
+                        lang('三级充值') => 'string',
+                        lang('三级流水') => 'string',
+                    ];
+                    $filename = lang('代理明细') . '-' . date('YmdHis');
+                    $rows =& $result['list'];
+//                    halt($rows[0]);
+                    $writer = $this->GetExcel($filename, $header_types, $rows, true);
+                    foreach ($rows as $index => &$row) {
+                        $lv1rate = bcdiv(10, 1000, 4);
+                        $lv2rate = bcdiv(5, 1000, 4);
+                        $lv3rate = bcdiv(2.5, 1000, 4);
+                        $Lv1Reward = bcmul($row['Lv1Running'], $lv1rate, 4);
+                        $Lv2Reward = bcmul($row['Lv2Running'], $lv2rate, 4);
+                        $Lv3Reward = bcmul($row['Lv3Running'], $lv3rate, 4);
+                        $rewar_amount = bcadd($Lv1Reward , $Lv2Reward,4);
+                        $rewar_amount = bcadd($rewar_amount, $Lv3Reward,2);
+                        $row['ReceivedIncome'] = $rewar_amount;
 
-                $AgentWaterDailyExport = new AgentWaterDailyExport();
-                $AgentWaterDailyExport->export();
+                        $item = [
+                            $row['AddTime'],
+                            $row['ProxyId'],
+                            $row['dm'],
+                            $row['ReceivedIncome'],
+                            $row['DailyDeposit'],
+                            $row['DailyRunning'],
+                            $row['Lv1PersonCount'],
+                            $row['Lv1Deposit'],
+                            $row['Lv1Running'],
 
+                            $row['Lv2PersonCount'],
+                            $row['Lv2Deposit'],
+                            $row['Lv2Running'],
+
+                            $row['Lv3PersonCount'],
+                            $row['Lv3Deposit'],
+                            $row['Lv3Running'],
+
+
+                        ];
+                        $writer->writeSheetRow('sheet1', $item, ['height' => 16, 'halign' => 'center',]);
+                        unset($rows[$index]);
+                    }
+                    unset($row, $item);
+                    $writer->writeToStdOut();
+                    exit();
+                }
+
+                break;
         }
 
         $this->assign('parentid', $parentid);
@@ -543,19 +602,6 @@ class Agent extends Main
         $this->assign('startdate', $startdate);
         $this->assign('enddate', $enddate);
         return $this->fetch();
-    }
-
-    public function AgentWaterDailySumData()
-    {
-        $roleid = input('roleid');
-        $parentid = input('parentid', 0);
-        $startdate = input('startdate', '');
-        $enddate = input('enddate', '');
-        $db = new GameOCDB();
-        $sumdata = $db->GetAgentRecordSum(true);
-
-        $result['other'] = $sumdata;
-        return $this->apiJson($result);
     }
 
 
@@ -739,7 +785,7 @@ class Agent extends Main
                 //权限验证 
                 $auth_ids = $this->getAuthIds();
                 if (!in_array(10008, $auth_ids)) {
-                    return $this->apiJson(["code" => 1, "msg" => "没有权限"]);
+                    return $this->apiJson(["code"=>1,"msg"=>"没有权限"]);
                 }
                 $db = new  GameOCDB();
                 $result = $db->GetAgentRecord();
@@ -1228,7 +1274,7 @@ class Agent extends Main
                     'opt_time' => date('Y-m-d H:i:s'),
                     'comment' => $comment
                 ]);
-//                $db->updateProxyOldData($roleid,$parentid);
+                // $db->updateProxyOldData($roleid,$parentid);
                 return $this->apiReturn(0, '', '操作成功');
             } else {
                 $remark = '操作失败';
@@ -1352,7 +1398,7 @@ class Agent extends Main
             $result['count'] = count($data);
             $outAll = input('outall', false);
             if ((int)input('exec', 0) == 0) {
-                //权限验证
+                //权限验证 
                 $auth_ids = $this->getAuthIds();
                 if (!in_array(10008, $auth_ids)) {
                     return $this->apiJson(["code"=>1,"msg"=>"没有权限"]);
@@ -1373,7 +1419,7 @@ class Agent extends Main
                     lang('邀请人ID') => 'string',
                     // lang('邀请人昵称') => 'string',
                     lang('受邀人ID') => "string",
-                    // lang('受邀人昵称') => 'string',
+                    // lang('受邀人昵称') => 'string', 
                     lang('总充值') => "string",
                     lang('总提现') => "string",
                     lang('总盈亏') => "string",
@@ -1415,19 +1461,19 @@ class Agent extends Main
     public function receive()
     {
         $activity_arr = [
-            '5' => lang('邀请奖励'),
-            '4' => lang('邀请成就'),
-            '3' => lang('投注返利'),
+            '5' => lang('代理邀请奖励'),
+            '4' => lang('邀请梯度奖励'),
+            '3' => lang('代理投注返佣'),
+            '8' => lang('邮件佣金'),
             '2' => lang('佣金转账'),
             '1' => lang('佣金提现'),
             '6' => lang('佣金提现失败返还'),
-            '7' => lang('GM发奖励'),
-            '10001' => lang('投注返利'),
+            '7' => lang('佣金上下分'),
         ];
         $action = $this->request->param('action');
         if ($action == 'list') {
             $limit = $this->request->param('limit') ?: 20;
-            $page = $this->request->param('page') ?: 1;
+            $page =$this->request->param('page') ?: 1;
             $roleid = $this->request->param('roleid');
             $start_date = $this->request->param('start_date') ?: date('Y-m-d');
             $end_date = $this->request->param('end_date') ?: date('Y-m-d');
@@ -1454,21 +1500,34 @@ class Agent extends Main
             if ($end_date != '') {
                 $where .= ' and AddTime<\'' . $end_date . '\'';
             }
+            
             if ($hd_name != '') {
-                $where .= ' and BonusType in(' . $hd_name . ')';
+                if ($hd_name == '71') {
+                    $where .= ' and BonusAmount>0 and BonusType=7';
+                } else if ($hd_name == '72') {
+                    $where .= ' and BonusAmount<0 and BonusType=7';
+                } else {
+                    $where .= ' and BonusType in(' . $hd_name . ')';
+                }
             }
 
-            $data = $db->getTableList('T_ProxyBonusLog', $where, $page, $limit, '*', $order);
+            $data = $db->getTableList('T_ProxyBonusLog',$where, $page,$limit, '*',$order);
             foreach ($data['list'] as $key => &$val) {
-                $val['hd_name'] = $activity_arr[$val['BonusType']] ?? $val['BonusType'];
+                if ($val['BonusType'] == 7 && $val['BonusAmount'] > 0) {
+                    $val['hd_name'] = lang('佣金上分');
+                } elseif ($val['BonusType'] == 7 && $val['BonusAmount'] < 0) {
+                    $val['hd_name'] = lang('佣金下分');
+                } else {
+                    $val['hd_name'] = $activity_arr[$val['BonusType']] ?? lang('--');
+                }
+                
                 $val['BonusAmount'] = FormatMoney($val['BonusAmount']);
                 $val['LastProxyBonus'] = FormatMoney($val['LastProxyBonus']);
             }
 
             if (input('action') == 'list' && input('output') != 'exec') {
-//                $fields='count(distinct(RoleID)) as total_count,sum(BonusAmount) as BonusAmount,sum(LastProxyBonus) as LastProxyBonus';
-                $fields = 'CAST(count(distinct(RoleID)) AS BIGINT) as total_count, CAST(sum(BonusAmount) AS BIGINT) as BonusAmount, CAST(sum(LastProxyBonus) AS BIGINT) as LastProxyBonus';
-                $sumdata = $db->getTableRow('T_ProxyBonusLog', $where, $fields);
+                $fields='count(distinct(RoleID)) as total_count,sum(BonusAmount) as BonusAmount,sum(LastProxyBonus) as LastProxyBonus';
+                $sumdata =$db->getTableRow('T_ProxyBonusLog',$where,$fields);
                 $data['other'] = [];
                 $data['other']['total_count'] = $sumdata['total_count'] ?? 0;
                 $data['other']['BonusAmount'] = FormatMoney($sumdata['BonusAmount'] ?? 0);
@@ -1479,7 +1538,7 @@ class Agent extends Main
                 //权限验证 
                 $auth_ids = $this->getAuthIds();
                 if (!in_array(10008, $auth_ids)) {
-                    return $this->apiJson(["code" => 1, "msg" => "没有权限"]);
+                    return $this->apiJson(["code"=>1,"msg"=>"没有权限"]);
                 }
                 if (empty($data['list'])) {
                     $result = ["count" => 0, "code" => 1, 'msg' => lang("没有找到任何数据,换个姿势再试试?")];
@@ -1514,7 +1573,7 @@ class Agent extends Main
                     foreach ($rows as $index => &$row) {
 
                         $item = [
-                            $row['AddTime'], $row['RoleId'], $row['BonusAmount'], $row['hd_name'], $row['LastProxyBonus']
+                            $row['AddTime'],$row['RoleId'], $row['BonusAmount'], $row['hd_name'],$row['LastProxyBonus']
                         ];
                         $writer->writeSheetRow('sheet1', $item, ['height' => 16, 'halign' => 'center',]);
                         unset($rows[$index]);
@@ -1525,6 +1584,9 @@ class Agent extends Main
                 }
             }
         } else {
+            unset($activity_arr["7"]);
+            $activity_arr['71'] = lang('佣金上分');
+            $activity_arr['72'] = lang('佣金下分');
             $this->assign('activity_arr', $activity_arr);
             return $this->fetch();
         }
@@ -1632,8 +1694,8 @@ class Agent extends Main
 //                ->paginate($limit)
 //                ->toArray();
 
-            if ($data['count'] > 0) {
-                foreach ($data['list'] as $key => &$val) {
+            if($data['count']>0){
+                foreach ($data['list']  as $key => &$val) {
                     $lv1rate = bcdiv(7, 1000, 3);
                     $val['DailyTax'] = bcmul($val['DailyRunning'], $lv1rate, 3);
                 }
@@ -1646,7 +1708,7 @@ class Agent extends Main
                 //权限验证 
                 $auth_ids = $this->getAuthIds();
                 if (!in_array(10008, $auth_ids)) {
-                    return $this->apiJson(["code" => 1, "msg" => "没有权限"]);
+                    return $this->apiJson(["code"=>1,"msg"=>"没有权限"]);
                 }
                 if (empty($data['list'])) {
                     $result = ["count" => 0, "code" => 1, 'msg' => lang("没有找到任何数据,换个姿势再试试?")];
@@ -1712,21 +1774,30 @@ class Agent extends Main
             $end_date = date('Y-m-d', strtotime($end_date) + 86400);
             $db = new GameOCDB();
             $where = '1=1';
+            $where_other = '';
+            $data_other=[];
             if (config('is_portrait') == 1) {
                 if ($start_date != '') {
                     $where .= ' and AddTime>=\'' . $start_date . '\'';
+                    $where_other.= ' and AddTime>=\'' . date('Y-m-d',strtotime("$start_date -1 day")) . '\'';
                 }
                 if ($end_date != '') {
                     $where .= ' and AddTime<\'' . $end_date . '\'';
+                    $where_other.= ' and AddTime<\'' . date('Y-m-d',strtotime("$end_date -1 day")) . '\'';
                 }
                 if (session('merchant_OperatorId') && request()->module() == 'merchant') {
-                    $where .= ' and OperatorId=' . session('merchant_OperatorId');
+                    $where .= ' and OperatorId='.session('merchant_OperatorId');
+                    $where_other .= ' and OperatorId='.session('merchant_OperatorId');
                 }
-
-                $subQuery = "(SELECT AddTime,sum(RunningBonus) RunningBonus,sum(InviteBonus) InviteBonus,sum(FirstChargeBonus) FirstChargeBonus FROM [OM_GameOC].[dbo].[T_ProxyDailyBonus](NOLOCK) WHERE " . $where . " GROUP BY [AddTime])";
+                $gamecfg = (new MasterDB())->getTableObject('T_GameConfig(nolock)')->where('CfgType=143')->find();
+                $invitebonus = $gamecfg['CfgValue'] ?? 25;
+                $subQuery = "(SELECT AddTime,sum(RunningBonus) RunningBonus,ISNULL(sum(InviteBonus),0) InviteBonus,sum(FirstChargeBonus) FirstChargeBonus,sum(CommiMailAmount) CommiMailAmount FROM 
+                [OM_GameOC].[dbo].[T_ProxyDailyBonus](NOLOCK) WHERE " . $where . " GROUP BY [AddTime])";
                 $data = $db->getTableObject($subQuery)->alias('a')
+                    ->join('(SELECT convert(date,dateadd(d,1,addtime),112) as date,isnull(count(distinct(RoleID)),0) as validateuser  FROM [CD_DataChangelogsDB].[dbo].[T_UserTransactionLogs](NOLOCK)
+where IfFirstCharge=1 and ChangeMoney>='.$invitebonus*bl.'  group by  convert(date,dateadd(d,1,addtime),112)) as b','a.AddTime=b.date','left')
                     ->order('AddTime desc')
-                    // ->fetchSql(true)
+                    //  ->fetchSql(true)
                     // ->select();
                     ->paginate($limit)
                     ->toArray();
@@ -1735,8 +1806,22 @@ class Agent extends Main
                     $val['RunningBonus'] = FormatMoney($val['RunningBonus'] ?: 0);
                     $val['InviteBonus'] = FormatMoney($val['InviteBonus'] ?: 0);
                     $val['FirstChargeBonus'] = FormatMoney($val['FirstChargeBonus'] ?: 0);
+                    $val['CommiMailAmount'] = FormatMoney($val['CommiMailAmount'] ?: 0);
                     $val['total'] = round(($val['RunningBonus'] + $val['InviteBonus'] + $val['FirstChargeBonus']), 2);
                 }
+                $subQuery = "(SELECT sum(RunningBonus) RunningBonus,ISNULL(sum(InviteBonus),0) InviteBonus,sum(FirstChargeBonus) FirstChargeBonus,sum(CommiMailAmount) CommiMailAmount
+                FROM [OM_GameOC].[dbo].[T_ProxyDailyBonus](NOLOCK) WHERE " . $where . ") as a ";
+                $subQuery_validate ='(SELECT isnull(count(distinct(RoleID)),0) as validateuser  
+                    FROM [CD_DataChangelogsDB].[dbo].[T_UserTransactionLogs](NOLOCK) where IfFirstCharge=1 and ChangeMoney>='.$invitebonus*bl.$where_other.') as b';
+                $data_other = $db->getTableObject($subQuery)->find();
+                $validate_user= $db->getTableObject($subQuery_validate)->find();
+                $data_other['validateuser'] =$validate_user['validateuser']??0;
+                $data_other['FirstChargeBonus'] =bcdiv($data_other['FirstChargeBonus'],bl,2);
+                $data_other['CommiMailAmount'] =bcdiv($data_other['CommiMailAmount'],bl,2);
+                $data_other['avarge'] =0;
+                if($data_other['validateuser'] >0)
+                    $data_other['avarge'] = bcdiv($data_other['FirstChargeBonus'],$data_other['validateuser'],2);
+
             } else {
 
                 if ($start_date != '') {
@@ -1767,13 +1852,13 @@ class Agent extends Main
 
 
             if (input('action') == 'list' && input('output') != 'exec') {
-                return $this->apiReturn(0, $data['data'], 'success', $data['total']);
+                return $this->apiReturn(0, $data['data'], 'success', $data['total'],$data_other);
             }
             if (input('output') == 'exec') {
-                //权限验证 
+                //权限验证
                 $auth_ids = $this->getAuthIds();
                 if (!in_array(10008, $auth_ids)) {
-                    return $this->apiJson(["code" => 1, "msg" => "没有权限"]);
+                    return $this->apiJson(["code"=>1,"msg"=>"没有权限"]);
                 }
                 if (empty($data['data'])) {
                     $result = ["count" => 0, "code" => 1, 'msg' => lang("没有找到任何数据,换个姿势再试试?")];
@@ -1803,7 +1888,7 @@ class Agent extends Main
                             lang('代理周额外奖励') => "string",
                             lang('统计') => "string",
                         ];
-                    } else {
+                    }else {
                         $header_types = [
                             lang('时间') => 'string',
                             lang('代理税收返利') => 'string',
@@ -1825,7 +1910,7 @@ class Agent extends Main
                                 $row['FirstChargeBonus'],
                                 $row['total'],
                             ];
-                        } else {
+                        }else {
                             $item = [
                                 $row['adddate'],
                                 $row['amt65'],
@@ -1846,7 +1931,7 @@ class Agent extends Main
         } else {
             if (config('is_portrait') == 1) {
                 return $this->fetch('agent_reward_statistical_s');
-            } else {
+            }else {
                 return $this->fetch();
             }
 
@@ -1886,7 +1971,7 @@ class Agent extends Main
                     ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) c', 'c.AccountID=a.RoleID', 'left')
                     ->join('[OM_GameOC].[dbo].[T_ProxyDailyCollectData_' . $ymd . '](NOLOCK) d', 'd.ProxyId=a.RoleID', 'left')
                     ->where($where)
-                    ->field('a.RoleID,a.InviteCode,c.RegisterTime,c.Mobile,b.Lv1PersonCount,b.Lv2PersonCount,b.Lv3PersonCount,a.ReceiveProfit,(b.Lv1Running*' . config('agent_running_parent_rate')[1] . '+b.Lv2Running*' . config('agent_running_parent_rate')[2] . '+b.Lv3Running*' . config('agent_running_parent_rate')[3] . ') as runningProfit,(b.Lv1Tax*0.3+b.Lv2Tax*0.09+b.Lv3Tax*0.027) as taxProfit,(d.Lv1Running*' . config('agent_running_parent_rate')[1] . '+d.Lv2Running*' . config('agent_running_parent_rate')[2] . '+d.Lv3Running*' . config('agent_running_parent_rate')[3] . ') as yesRunningProfit,(d.Lv1Tax*0.3+d.Lv2Tax*0.09+d.Lv3Tax*0.027) as yesTaxProfit,b.ReceivedIncome')
+                    ->field('a.RoleID,a.InviteCode,c.RegisterTime,c.Mobile,b.Lv1PersonCount,b.Lv2PersonCount,b.Lv3PersonCount,a.ReceiveProfit,(b.Lv1Running*'.config('agent_running_parent_rate')[1].'+b.Lv2Running*'.config('agent_running_parent_rate')[2].'+b.Lv3Running*'.config('agent_running_parent_rate')[3].') as runningProfit,(b.Lv1Tax*0.3+b.Lv2Tax*0.09+b.Lv3Tax*0.027) as taxProfit,(d.Lv1Running*'.config('agent_running_parent_rate')[1].'+d.Lv2Running*'.config('agent_running_parent_rate')[2].'+d.Lv3Running*'.config('agent_running_parent_rate')[3].') as yesRunningProfit,(d.Lv1Tax*0.3+d.Lv2Tax*0.09+d.Lv3Tax*0.027) as yesTaxProfit,b.ReceivedIncome')
                     ->order($order)
                     ->paginate($limit)
                     ->toArray();
@@ -1901,7 +1986,7 @@ class Agent extends Main
                     ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) c', 'c.AccountID=a.RoleID', 'left')
                     ->join('[OM_GameOC].[dbo].[T_ProxyDailyCollectData_' . $ymd . '](NOLOCK) d', 'd.ProxyId=a.RoleID', 'left')
                     ->where($where)
-                    ->field('a.RoleID,a.InviteCode,c.RegisterTime,c.Mobile,b.Lv1PersonCount,b.Lv2PersonCount,b.Lv3PersonCount,a.ReceiveProfit,(b.Lv1Running*' . config('agent_running_parent_rate')[1] . '+b.Lv2Running*' . config('agent_running_parent_rate')[2] . '+b.Lv3Running*' . config('agent_running_parent_rate')[3] . ') as runningProfit,(b.Lv1Tax*0.3+b.Lv2Tax*0.09+b.Lv3Tax*0.027) as taxProfit,(d.Lv1Running*' . config('agent_running_parent_rate')[1] . '+d.Lv2Running*' . config('agent_running_parent_rate')[2] . '+d.Lv3Running*' . config('agent_running_parent_rate')[3] . ') as yesRunningProfit,(d.Lv1Tax*0.3+d.Lv2Tax*0.09+d.Lv3Tax*0.027) as yesTaxProfit,b.ReceivedIncome')
+                    ->field('a.RoleID,a.InviteCode,c.RegisterTime,c.Mobile,b.Lv1PersonCount,b.Lv2PersonCount,b.Lv3PersonCount,a.ReceiveProfit,(b.Lv1Running*'.config('agent_running_parent_rate')[1].'+b.Lv2Running*'.config('agent_running_parent_rate')[2].'+b.Lv3Running*'.config('agent_running_parent_rate')[3].') as runningProfit,(b.Lv1Tax*0.3+b.Lv2Tax*0.09+b.Lv3Tax*0.027) as taxProfit,(d.Lv1Running*'.config('agent_running_parent_rate')[1].'+d.Lv2Running*'.config('agent_running_parent_rate')[2].'+d.Lv3Running*'.config('agent_running_parent_rate')[3].') as yesRunningProfit,(d.Lv1Tax*0.3+d.Lv2Tax*0.09+d.Lv3Tax*0.027) as yesTaxProfit,b.ReceivedIncome')
                     ->order($order)
                     ->select();
             }
@@ -1924,8 +2009,8 @@ class Agent extends Main
                     $val['TotalIncome'] = FormatMoney($val['TotalIncome']);
                     $val['unIncome'] = bcsub($val['TotalIncome'], $val['ReceivedIncome'], 2);
 
-                    $val['RegisterTime'] = substr($val['RegisterTime'], 0, 19);
-                    $val['Mobile'] = '******';
+                    $val['RegisterTime'] = substr($val['RegisterTime'],0,19);
+                    $val['Mobile'] ='******';
                 }
             }
 
@@ -1942,7 +2027,7 @@ class Agent extends Main
                 $result['count'] = 1;
                 $outAll = input('outall', false);
                 if ((int)input('exec', 0) == 0) {
-                    //权限验证 
+                    //权限验证
                     $auth_ids = $this->getAuthIds();
                     if (!in_array(10008, $auth_ids)) {
                         return $this->apiReturn(1, '', '没有权限');
@@ -2021,18 +2106,18 @@ class Agent extends Main
                     $RechargeNum_rate = round($val['RechargeNum'] / $val['RegisterNum'], 2);
                 }
 
-                $val['GameNum'] = $val['GameNum'] . '(' . $GameNum_rate * 100 . '%)';
-                $val['RechargeNum'] = $val['RechargeNum'] . '(' . $RechargeNum_rate * 100 . '%)';
+                $val['GameNum'] = $val['GameNum'] . '(' . $GameNum_rate*100 . '%)';
+                $val['RechargeNum'] = $val['RechargeNum'] . '(' . $RechargeNum_rate*100 . '%)';
             }
             if (input('action') == 'list' && input('output') != 'exec') {
                 return $this->apiReturn(0, $data['data'], 'success', $data['total']);
             }
 
             if (input('output') == 'exec') {
-                //权限验证 
+                //权限验证
                 $auth_ids = $this->getAuthIds();
                 if (!in_array(10008, $auth_ids)) {
-                    return $this->apiJson(["code" => 1, "msg" => "没有权限"]);
+                    return $this->apiJson(["code"=>1,"msg"=>"没有权限"]);
                 }
                 if (empty($data['data'])) {
                     $result = ["count" => 0, "code" => 1, 'msg' => lang("没有找到任何数据,换个姿势再试试?")];
@@ -2090,11 +2175,10 @@ class Agent extends Main
     }
 
 
-    public function agentDayStatistical()
-    {
+    public function agentDayStatistical(){
         $action = $this->request->param('Action');
         if ($action == 'list') {
-            $uid = $this->request->param('roleid');
+            $uid    = $this->request->param('roleid');
             $tab = $this->request->param('tab') ?: 'total';
             if (empty($uid)) {
                 return $this->apiReturn(0, [], 'success', 1);
@@ -2105,36 +2189,36 @@ class Agent extends Main
                     break;
                 case 'today':
                     $now_date = date('Y-m-d H:i:s');
-                    $data = $this->getIndexData($uid, date('Y-m-d') . ' 00:00:00', $now_date);
+                    $data = $this->getIndexData($uid,date('Y-m-d').' 00:00:00',$now_date);
                     break;
                 case 'yestoday':
-                    $data = $this->getIndexData($uid, date('Y-m-d', strtotime('-1 days')) . ' 00:00:00', date('Y-m-d', strtotime('-1 days')) . ' 23:59:59');
+                    $data = $this->getIndexData($uid,date('Y-m-d',strtotime('-1 days')).' 00:00:00',date('Y-m-d',strtotime('-1 days')).' 23:59:59');
                     break;
                 case 'month':
                     $now_date = date('Y-m-d H:i:s');
-                    $data = $this->getIndexData($uid, date('Y-m') . '-01 00:00:00', $now_date);
+                    $data = $this->getIndexData($uid,date('Y-m').'-01 00:00:00',$now_date);
                     break;
                 case 'lastmonth':
-                    $start_date = date('Y-m-01 00:00:00', strtotime('-1 month'));
-                    $data = $this->getIndexData($uid, $start_date, date('Y-m') . '-01 00:00:00');
+                    $start_date = date('Y-m-01 00:00:00',strtotime('-1 month'));
+                    $data = $this->getIndexData($uid,$start_date,date('Y-m').'-01 00:00:00');
                     break;
                 case 'week':
                     $w = date('w');
                     if ($w == 0) {
                         $w = 7;
                     }
-                    $w = mktime(0, 0, 0, date('m'), date('d') - $w + 1, date('y'));
+                    $w = mktime(0,0,0,date('m'),date('d')-$w+1,date('y'));
                     $now_date = date('Y-m-d H:i:s');
-                    $data = $this->getIndexData($uid, date('Y-m-d', $w) . ' 00:00:00', $now_date);
+                    $data = $this->getIndexData($uid,date('Y-m-d',$w).' 00:00:00',$now_date);
                     break;
                 case 'lastweek':
                     $w = date('w');
                     if ($w == 0) {
                         $w = 7;
                     }
-                    $w = mktime(0, 0, 0, date('m'), date('d') - $w + 1, date('y'));
-                    $start_date = date('Y-m-d  00:00:00', $w - 7 * 86400);
-                    $data = $this->getIndexData($uid, $start_date, date('Y-m-d', $w) . ' 00:00:00');
+                    $w = mktime(0,0,0,date('m'),date('d')-$w+1,date('y'));
+                    $start_date = date('Y-m-d  00:00:00',$w-7*86400);
+                    $data = $this->getIndexData($uid,$start_date,date('Y-m-d',$w).' 00:00:00');
                     break;
                 default:
                     $data = $this->getTotalData($uid);
@@ -2147,15 +2231,14 @@ class Agent extends Main
         return $this->fetch();
     }
 
-    private function getIndexData($uid, $date, $end_date)
-    {
+    private function getIndexData($uid,$date,$end_date){
         $table = 'dbo.T_ProxyDailyCollectData';
 
         $where = "";
-        $where .= " and ProxyId=" . $uid;
+        $where .= " and ProxyId=".$uid;
 
-        $begin = substr($date, 0, 10);
-        $end = substr($end_date, 0, 10);
+        $begin = substr($date,0,10);
+        $end   = substr($end_date,0,10);
         $field = 'ISNULL(sum(Lv1PersonCount),0) as Lv1PersonCount,ISNULL(sum(Lv1Deposit),0) as Lv1Deposit,ISNULL(sum(Lv1Running),0) as Lv1Running,ISNULL(sum(Lv1RechargeCount),0) as Lv1RechargeCount,ISNULL(sum(Lv2PersonCount),0) as Lv2PersonCount,ISNULL(sum(Lv2Deposit),0) as Lv2Deposit,ISNULL(sum(Lv2Running),0) as Lv2Running,ISNULL(sum(Lv2RechargeCount),0) as Lv2RechargeCount,ISNULL(sum(Lv3PersonCount),0) as Lv3PersonCount,ISNULL(sum(Lv3Deposit),0) as Lv3Deposit,ISNULL(sum(Lv3Running),0) as Lv3Running,ISNULL(sum(Lv3RechargeCount),0) as Lv3RechargeCount';
         if (config('is_show_under4') == 1) {
             $field .= ',ISNULL(sum(UnderLv4PersonCount),0) AS UnderLv4PersonCount,ISNULL(sum(UnderLv4Deposit),0) AS UnderLv4Deposit,ISNULL(sum(UnderLv4Running),0) AS UnderLv4Running,ISNULL(sum(Lv4RechargeCount),0) as Lv4RechargeCount';
@@ -2173,59 +2256,58 @@ class Agent extends Main
 
         $result = $res[0][0];
 
-        $result['Lv1Running'] = FormatMoney($result['Lv1Running'] ?? 0) / 1;
+        $result['Lv1Running'] = FormatMoney($result['Lv1Running'] ?? 0)/1;
 
-        $result['Lv2Running'] = FormatMoney($result['Lv2Running'] ?? 0) / 1;
+        $result['Lv2Running'] = FormatMoney($result['Lv2Running'] ?? 0)/1;
 
-        $result['Lv3Running'] = FormatMoney($result['Lv3Running'] ?? 0) / 1;
+        $result['Lv3Running'] = FormatMoney($result['Lv3Running'] ?? 0)/1;
 
         if (config('is_show_under4') == 1) {
-            $result['UnderLv4Running'] = FormatMoney($result['UnderLv4Running'] ?? 0) / 1;
+            $result['UnderLv4Running'] = FormatMoney($result['UnderLv4Running'] ?? 0)/1;
         }
         return $result;
     }
 
 
-    private function getTotalData($uid)
-    {
+    private function getTotalData($uid){
         $field = 'ISNULL(ReceivedIncome,0) As ReceivedIncome,ISNULL(TotalDeposit,0) AS TotalDeposit,ISNULL(TotalTax,0) AS TotalTax,ISNULL(TotalRunning,0) AS TotalRunning,ISNULL(Lv1PersonCount,0) AS Lv1PersonCount,ISNULL(Lv1Deposit,0) AS Lv1Deposit,ISNULL(Lv1Tax,0) AS Lv1Tax,ISNULL(Lv1Running,0) AS Lv1Running,ISNULL(Lv2PersonCount,0) AS Lv2PersonCount,ISNULL(Lv2Deposit,0) AS Lv2Deposit,ISNULL(Lv2Tax,0) AS Lv2Tax,ISNULL(Lv2Running,0) AS Lv2Running,ISNULL(Lv3PersonCount,0) AS Lv3PersonCount,ISNULL(Lv3Deposit,0) AS Lv3Deposit,ISNULL(Lv3Tax,0) AS Lv3Tax,ISNULL(Lv3Running,0) AS Lv3Running,Lv1DepositPlayers as Lv1RechargeCount,Lv2DepositPlayers as Lv2RechargeCount,Lv3DepositPlayers as Lv3RechargeCount';
         if (config('is_show_under4') == 1) {
             $field .= ',ISNULL(UnderLv4PersonCount,0) AS UnderLv4PersonCount,ISNULL(UnderLv4Deposit,0) AS UnderLv4Deposit,ISNULL(UnderLv4Running,0) AS UnderLv4Running,UnderLv4DepositPlayers as Lv4RechargeCount';
         }
 
-        $proxy = (new \app\model\UserDB())->getTableObject('T_ProxyCollectData(nolock)')->where('ProxyId', $uid)->field($field)->find();
+        $proxy = (new \app\model\UserDB())->getTableObject('T_ProxyCollectData(nolock)')->where('ProxyId',$uid)->field($field)->find();
 
         $proxy['TotalTax'] = FormatMoney($proxy['TotalTax']);
         // $proxy['TotalDeposit'] = FormatMoney($proxy['TotalDeposit'])/1;
-        $proxy['TotalRunning'] = FormatMoney($proxy['TotalRunning']) / 1;
+        $proxy['TotalRunning'] = FormatMoney($proxy['TotalRunning'])/1;
 
         $proxy['Lv1Tax'] = FormatMoney($proxy['Lv1Tax']);
-        $proxy['Lv1Running'] = FormatMoney($proxy['Lv1Running']) / 1;
+        $proxy['Lv1Running'] = FormatMoney($proxy['Lv1Running'])/1;
 
         $proxy['Lv2Tax'] = FormatMoney($proxy['Lv2Tax']);
-        $proxy['Lv2Running'] = FormatMoney($proxy['Lv2Running']) / 1;
+        $proxy['Lv2Running'] = FormatMoney($proxy['Lv2Running'])/1;
 
         $proxy['Lv3Tax'] = FormatMoney($proxy['Lv3Tax']);
-        $proxy['Lv3Running'] = FormatMoney($proxy['Lv3Running']) / 1;
+        $proxy['Lv3Running'] = FormatMoney($proxy['Lv3Running'])/1;
 
         if (config('is_show_under4') == 1) {
-            $proxy['UnderLv4Running'] = FormatMoney($proxy['UnderLv4Running']) / 1;
+            $proxy['UnderLv4Running'] = FormatMoney($proxy['UnderLv4Running'])/1;
         }
         $Lv1Reward = bcmul($proxy['Lv1Running'], config('agent_running_parent_rate')[1], 4);
         $Lv2Reward = bcmul($proxy['Lv2Running'], config('agent_running_parent_rate')[2], 4);
         $Lv3Reward = bcmul($proxy['Lv3Running'], config('agent_running_parent_rate')[3], 4);
-        $rewar_amount = bcadd($Lv1Reward, $Lv2Reward, 4);
-        $rewar_amount = bcadd($rewar_amount, $Lv3Reward, 4);
-        $proxy['ReceivedIncome'] = round($rewar_amount, 2) / 1;
-        $proxy['TotalDeposit'] = round($proxy['TotalDeposit'], 2) / 1;
-        $proxy['TotalRunning'] = round($proxy['TotalRunning'], 2) / 1;
+        $rewar_amount = bcadd($Lv1Reward , $Lv2Reward,4);
+        $rewar_amount = bcadd($rewar_amount, $Lv3Reward,4);
+        $proxy['ReceivedIncome'] =  round($rewar_amount,2)/1;
+        $proxy['TotalDeposit'] =  round($proxy['TotalDeposit'],2)/1;
+        $proxy['TotalRunning'] =  round($proxy['TotalRunning'],2)/1;
         return $proxy;
     }
 
 
+
     ///代理线批量封号
-    public function lockParent()
-    {
+    public function lockParent(){
         $parentId = input('parentid');
         $password = input('password');
         $user_controller = new \app\admin\controller\User();
@@ -2238,26 +2320,28 @@ class Agent extends Main
         if (md5($userInfo['salt'] . $pwd) !== $userInfo['password']) {
             return $this->apiReturn(1, '', '密码有误，请重新输入');
         }
-        $userdb = new UserDB();
-        $accountdb = new AccountDB();
-        $result = $userdb->getTableObject('T_UserProxyInfo')->field('RoleId')->where('ParentIds like \'%' . $parentId . '%\'')->select();
-        if (empty($result)) {
+        $userdb=new UserDB();
+        $accountdb =new AccountDB();
+        $result = $userdb->getTableObject('T_UserProxyInfo')->field('RoleId')->where('ParentIds like \'%'.$parentId.'%\'')->select();
+
+        if(empty($result)){
             return $this->apiReturn(1, '', '下级没有任务玩家，无法操作');
         }
         $array_roleid = [];
-        foreach ($result as $k => $v) {
-            array_push($array_roleid, $v['RoleId']);
+        foreach ($result as $k=>$v){
+            array_push($array_roleid,$v['RoleId']);
         }
-        $str_roleid = implode(',', $array_roleid);
-        $where = " AccountID in($str_roleid)";
-        $accountdb->updateTable('T_Accounts', ['Locked' => 1, 'LockedDays' => 300, 'LockStatTime' => date('Y-m-d H:i:s')], $where);
+        $str_roleid = implode(',',$array_roleid);
+        $where =" AccountID in($str_roleid)";
+        $accountdb->updateTable('T_Accounts',['Locked'=>1,'LockedDays'=>300,'LockStatTime'=>date('Y-m-d H:i:s')],$where);
         return $this->apiReturn(0, [], 'success', 1);
     }
 
 
+
+
     //设置代理佣金额外提现额度
-    public function setExtraEd()
-    {
+    public function setExtraEd(){
         $roleid = $this->request->param('roleid');
         $amount = $this->request->param('amount');
         $amount = floatval($amount);
@@ -2270,153 +2354,58 @@ class Agent extends Main
         }
     }
 
-
-    /**
-     * 代理汇总列表批量备注
-     * @return mixed
-     */
-    public function addRemark()
-    {
-        $roleid = input('roleid', 0, 'intval');
-        $type = input('type', 1, 'intval');
-        $comment = input('comment');
-        if (empty($comment)) {
-            return $this->apiReturn(1, '', '备注不能为空');
-        }
-        $db = new GameOCDB();
-
-        $filter = 'ProxyId>0 ';
-        $filter .= ' and ParentID =' . $roleid;
-        $order = 'ProxyId desc';
-        $field = 'A.ParentID,A.RoleId as ProxyId';
-        $proxyinfo = new UserProxyInfo();
-
-        $table = '(select ' . $field . '  FROM   CD_UserDB.dbo.T_UserProxyInfo(nolock) as A  left join [CD_UserDB].[dbo].[T_ProxyCollectData](nolock) as B on A.RoleID=B.ProxyId) as t ';
-
-        $data = $proxyinfo->getProcPageList($table, '*', $filter, $order, 1, 999);
-        try {
-            Db::startTrans();
-            if ($data && $data['count'] > 0) {
-                foreach ($data['list'] as $item => $v) {
-                    $db->setTable('T_PlayerComment')->Insert([
-                        'roleid' => $v['ProxyId'],
-                        'adminid' => session('userid'),
-                        'type' => 1,
-                        'opt_time' => date('Y-m-d H:i:s'),
-                        'comment' => $comment
-                    ]);
-                }
-            }
-            $res = $db->setTable('T_PlayerComment')->Insert([
-                'roleid' => $roleid,
-                'adminid' => session('userid'),
-                'type' => 1,
-                'opt_time' => date('Y-m-d H:i:s'),
-                'comment' => $comment
-            ]);
-            Db::commit();
-            if ($res) {
-                GameLog::logData(__METHOD__, [$roleid, $type, $comment], 1, '操作成功');
-                return $this->apiReturn(0, '', '操作成功');
-            } else {
-                GameLog::logData(__METHOD__, [$roleid, $type, $comment], 1, '操作失败');
-                return $this->apiReturn(1, '', '操作失败');
-            }
-        } catch (Exception $ex) {
-            Db::rollback();
-            GameLog::logData(__METHOD__, [$roleid, $type, $comment], 1, '操作失败');
-            return $this->apiReturn(1, '', '操作失败');
-        }
-
-    }
-
-    public function temReward()
-    {
-        $roleid = $this->request->param('roleid');
-        $amount = $this->request->param('reward');
-        $amount = floatval($amount);
-        $amount = $amount * bl;
-        try {
-
-            $res = $this->sendGameMessage('CMD_MD_GM_ADD_PROXY_COMMISSION', [$roleid, $amount, 10001]);
-            $res = unpack('LiResult/', $res);
-        } catch (Exception $exception) {
-            return $this->error('连接服务器失败,请稍后重试!');
-        }
-        if ($res['iResult'] == 0) {
-            return $this->apiReturn(0, '', '操作成功');
+    public function blogger(){
+        if (input('action') == 'list') {
+            $data = (new \app\model\UserDB())->getBloggerData();
+            return $this->apiReturn(0, $data['data'], 'success', $data['total']);
         } else {
-            return $this->apiReturn(1, '', '操作失败');
+            return $this->fetch();
         }
     }
 
-    /**
-     * 代理复充留存
-     * @return mixed|Json
-     * @throws PDOException
-     */
-    public function userRegRate()
-    {
-        $roleId = input('role_id');
-        $startTime = input('start_time');
-        $endTime = input('ent_time');
-        if($this->request->isajax()){
-
-            if(strtotime($startTime) > strtotime($endTime)){
-                $data['msg'] = '开始时间不能大于结束时间';
-                $data['code'] = 0;
-                $data['list'] = [];
-                return $this->apiJson($data);
-            }
-            if (empty($roleId)){
-                $data['msg'] = '玩家ID不能为空';
-                $data['code'] = 0;
-                $data['list'] = [];
-                return $this->apiJson($data);
-            }
-            if (empty($startTime)){
-                $data['msg'] = '搜索开始时间不能为空';
-                $data['code'] = 0;
-                $data['list'] = [];
-                return $this->apiJson($data);
-            }
-            if (empty($endTime)){
-                $data['msg'] = '搜索结束时间不能为空';
-                $data['code'] = 0;
-                $data['list'] = [];
-                return $this->apiJson($data);
-            }
-
-            $gameOC = new GameOCDB();
-            $sqlExec = "exec P_Proc_PayFee '$roleId','$startTime','$endTime'";
-
-                $result = $gameOC->getTableQuery($sqlExec);
-
-                $data = [];
-                foreach($result[0] as $k => $value){
-                    $item = [];
-                    $item['mydate'] = $value['StatDay'];
-                    $item['TotalReg'] = $value['RegisterPay'];
-                    $item['day1'] = $value['day1'];
-                    $item['day2'] = $value['day2'];
-                    $item['day3'] = $value['day3'];
-                    $item['day4'] = $value['day4'];
-                    $item['day5'] = $value['day5'];
-                    $item['day6'] = $value['day6'];
-                    $item['day7'] = $value['day7'];
-                    $item['day15'] = $value['day15'];
-                    $item['day30'] = $value['day30'];
-                    $data[] = $item;
-                }
-
-                $temp['list'] = $data;
-                return $this->apiJson($temp);
-
-
+    //掉绑比例
+    public function unbindRecord(){
+        if (input('action') == 'list') {
+            $data = (new \app\model\UserDB())->unbindRecord();
+            return $this->apiReturn(0, $data['data'], 'success', $data['total']);
+        } else {
+            return $this->fetch();
         }
+    }
 
+
+    public function leveluserReset(){
+        $proxyid = input('proxyid','');
+        $this->assign('proxyid',$proxyid);
+        if($this->request->isAjax()){
+            $date =  $this->request->param('date');
+            $start_time = strtotime($date);
+            $days =intval(abs((time()-$start_time ) / 86400));
+            if(empty($proxyid) || strlen($proxyid)<8){
+                return $this->failJSON('代理ID错误，操作失败');
+            }
+            if($days<=1)
+            {
+                if($days==1){
+                    $db = new MasterDB();
+                    $config_hour = $db->getTableObject('T_GameConfig')->where('CfgType','265')->value('CfgValue');
+                    $curr_hour = date('H');
+                    if($curr_hour<$config_hour){
+                        return $this->failJSON('当前日期时间还未过任务时间，操作失败');
+                    }
+                }
+                else{
+                    return $this->failData('当天日期无效，操作失败');
+                }
+            }
+            $db = new UserDB();
+            $db->getTableObject('T_NickName')->query("SET NOCOUNT ON;exec P_RecoverDisableBind $proxyid,'$date' ");
+            GameLog::logData(__METHOD__, [$proxyid,$date], 1, 1);
+            return $this->successData('','操作成功');
+        }
         return $this->fetch();
     }
+
 
     //周薪
     public function weekBonusLog(){
@@ -2445,6 +2434,5 @@ class Agent extends Main
         } else {
             return ['code' => 1,'msg'=>'操作失败'];
         }
-    }
-
+    } 
 }

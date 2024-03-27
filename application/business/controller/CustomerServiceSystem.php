@@ -357,7 +357,7 @@ class CustomerServiceSystem extends Main
                         // 执行统计
                         $gameocdb = new GameOCDB();
                         $strtoday = date('Y-m-d', time());
-                        $gameocdb->runSystemDaySum($strtoday);
+                        // $gameocdb->runSystemDaySum($strtoday);
                         return $this->success('审核成功');
                     } else {
                         return $this->error('审核失败');

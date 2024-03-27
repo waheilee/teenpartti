@@ -1500,18 +1500,6 @@ class Gamemanage extends Main
                 if ($kingid == 40000) {
                     $where = ' KindID>40000 and KindID<41000 ';
                 }
-                if ($kingid == 42000) {
-                    $where = ' KindID>42000 and KindID<43000 ';
-                }
-                if ($kingid == 44000) {
-                    $where = ' KindID>43000 and KindID<44000 ';
-                }
-                if ($kingid == 45000) {
-                    $where = ' KindID>44000 and KindID<45000 ';
-                }
-                if ($kingid == 46000) {
-                    $where = ' KindID>45000 and KindID<46000 ';
-                }
                 $status = $db->updateTable('T_GameType', ['Maintain' => $status], $where);
                 $this->synconfig();
                 return $this->apiReturn(0, '', '设置成功');
@@ -1537,6 +1525,61 @@ class Gamemanage extends Main
         $OpenTax = input('OpenTax');
 
         $res = (new \app\model\MasterDB())->getTableObject('T_ThirdGameCfg')->where('KindId',$id)->data(['OpenTax'=>$OpenTax])->update();
+        if ($res) {
+            return json(['code'=>0,'msg'=>'操作成功']);
+        } else {
+            return json(['code'=>1,'msg'=>'操作失败']);
+        }
+    }
+
+    //随机奖励配置
+    public function chargeRandBonusCfg(){
+        if (input('action') == 'list') {
+            $limit = input('limit')?:20;
+            $data = (new \app\model\MasterDB())->getTableObject('T_ChargeRandBonusCfg')->paginate($limit)
+                ->toArray();
+            foreach ($data['data'] as $key => &$val) {
+                $val['MinBonusPer2'] = $val['MinBonusPer'].'%';
+                $val['MaxBonusPer2'] = $val['MaxBonusPer'].'%';
+                $val['RandValue']   = $val['RandValue']/100;
+                $val['RandValue2']   = ($val['RandValue']).'%';
+            }
+            return $this->apiReturn(0, $data['data'], 'success', $data['total'],[]);
+        } else {
+            return $this->fetch();
+        }
+    }
+
+    public function editchargerandbonuscfg(){
+        $ID = input('ID');
+        $MinBonusPer = input('MinBonusPer');
+        $MaxBonusPer = input('MaxBonusPer');
+        $RandValue = input('RandValue');
+
+        if($ID){
+           $res = (new \app\model\MasterDB())->getTableObject('T_ChargeRandBonusCfg')->where('ID',$ID)->data([
+                'MinBonusPer'=>$MinBonusPer,
+                'MaxBonusPer'=>$MaxBonusPer,
+                'RandValue'=>$RandValue*100,
+            ])->update();
+        } else {
+            $res = (new \app\model\MasterDB())->getTableObject('T_ChargeRandBonusCfg')->insert([
+                'MinBonusPer'=>$MinBonusPer,
+                'MaxBonusPer'=>$MaxBonusPer,
+                'RandValue'=>$RandValue*100,
+            ]);
+        }
+        if ($res) {
+            return json(['code'=>0,'msg'=>'操作成功']);
+        } else {
+            return json(['code'=>1,'msg'=>'操作失败']);
+        } 
+    }
+
+    public function delChargeRandBonusCfg(){
+        $ID = input('ID');
+
+        $res = $res = (new \app\model\MasterDB())->getTableObject('T_ChargeRandBonusCfg')->where('ID',$ID)->delete();
         if ($res) {
             return json(['code'=>0,'msg'=>'操作成功']);
         } else {

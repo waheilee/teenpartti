@@ -177,23 +177,62 @@ class DataChangelogsDB extends BaseModel
         }
     }
 
-    /**
-     * @param $day
-     * @return array
-     */
-    public function getFirstChargeAccountId($day)
-    {
-        $this->table = $this->transactionlog;
-        $where = " datediff(d,addtime,'$day')=0 and IfFirstCharge=1 ";
-        $list = $this->getTableObject($this->table)
-            ->field('roleid')
-            ->where($where)
-            ->select();
 
-        $data = [];
-        foreach ($list as $k){
-            $data[] = $k['roleid'];
+    public function weekBonusLog(){
+        $limit      = request()->param('limit') ?: 15;
+        $OperatorId = request()->param('OperatorId');
+        $RoleId     = request()->param('RoleID');
+        $Status     = request()->param('Status');
+        $start_date     = request()->param('start_date');
+        $end_date       = request()->param('end_date');
+        $orderby        = request()->param('orderby') ?: 'AddTime';
+        $ordertype      = request()->param('ordertype') ?: 'desc';
+
+        $where      = '1=1';
+        if (session('merchant_OperatorId') && request()->module() == 'merchant') {
+            $where .= ' and b.OperatorId='.session('merchant_OperatorId');  
         }
+        if ($RoleId != '') {
+            $where .= ' and a.RoleId='.$RoleId;
+        }
+        if ($OperatorId != '') {
+            $where .= ' and b.OperatorId='.$OperatorId;
+        }
+        if ($Status != '') {
+            $where .= ' and a.Status='.$Status;
+        }
+        if ($start_date != '') {
+            $where .= ' and a.AddTime>=\'' . $start_date . '\'';
+        }
+        if ($end_date != '') {
+            $where .= ' and a.AddTime<\'' . $end_date . '\'';
+        }
+
+        $data = $this->getTableObject('[T_WeekBonusLog](NOLOCK)')->alias('a')
+            ->join('[CD_Account].[dbo].[T_Accounts](nolock) as b','b.AccountID=a.RoleID')
+            ->where($where)
+            ->field('a.*')
+            ->order("$orderby $ordertype")
+            ->paginate($limit)
+            ->toArray();
+        foreach ($data['data'] as $key => &$val) {
+            $val['WeekBonus'] = FormatMoney($val['WeekBonus']);
+            $val['Lv1Running'] = FormatMoney($val['Lv1Running'] ?? 0);
+        }
+
+        $data['other']['hassend'] = $this->getTableObject('[T_WeekBonusLog](NOLOCK)')->alias('a')
+            ->join('[CD_Account].[dbo].[T_Accounts](nolock) as b','b.AccountID=a.RoleID')
+            ->where($where)
+            ->where('status',1)
+            ->sum('WeekBonus')?:0;
+        $data['other']['nosend'] = $this->getTableObject('[T_WeekBonusLog](NOLOCK)')->alias('a')
+            ->join('[CD_Account].[dbo].[T_Accounts](nolock) as b','b.AccountID=a.RoleID')
+            ->where($where)
+            ->where('status',0)
+            ->sum('WeekBonus')?:0;
+
+        $data['other']['hassend'] = FormatMoney($data['other']['hassend']);
+        $data['other']['nosend'] = FormatMoney($data['other']['nosend']);
         return $data;
     }
 }

@@ -65,7 +65,7 @@
 
 <script id="msg-bar" type="text/html">
     <input type="button" class="layui-btn layui-btn-xs" lay-event="lookteam" value="{:lang('查看下级成员')}">
-    <input type="button" class="layui-btn layui-btn-xs" lay-event="addremark" value="{:lang('添加备注')}">
+    <input type="button" class="layui-btn layui-btn-xs layui-btn-normal" lay-event="buchang" value="{:lang('上下级恢复')}">
 </script>
 <script>
 
@@ -107,7 +107,6 @@
                     {field: 'Lv3Deposit', title: "{:lang('三级充值')}", width: 150, align: 'center', sort: true},
                     {field: 'Lv3DepositPlayers', title: "{:lang('三级充值人数')}", width: 150, align: 'center', sort: true},
                     {field: 'Lv3Running', title:"{:lang('三级流水')}", width: 180, align: 'center'},
-                    {field: 'UnBindCount', title:"{:lang('漏绑定人数')}", width: 180, align: 'center'},
                     {fixed: 'right', align: "center", title: "{:lang('操作')}", align: 'center', width: 200, toolbar: '#msg-bar'},
                 ];
                 table.render({
@@ -161,40 +160,9 @@
                         url = "{:url('agent/agentwatersum')}" + "?parentid=" +data.ProxyId;
                         location.href=url;
                     }
-                    if (layEvent === 'addremark') {
-                        layer.prompt({
-                            formType: 2,
-                            value: '',
-                            title: "{:lang('请输入备注')}",
-                            btn: ['{:lang("确定")}', '{:lang("取消")}'],
-                            area: ['300px', '100px'] //自定义文本域宽高
-                        }, function (value, index, elem) {
-                            $.ajax({
-                                type: 'post',
-                                url: "{:url('agent/addRemark')}",
-                                data: {
-                                    'roleid': data.ProxyId,
-                                    'comment': value,
-                                    'type': 1
-                                },
-                                dataType: 'json',
-                                success: function (res) {
-                                    if (res.code == 0) {
-                                        layer.msg("{:lang('添加成功')}", {icon: 1, time: 1000}, function () {
-                                            //window.location.reload();
-                                            table.reload("proxylist", {page: {curr: $(".layui-laypage-em").next().html()}});
-                                            layer.closeAll();
-                                        });
-                                    } else {
-                                        layer.msg(res['msg'], {icon: 5});
-                                    }
-                                }
-                            });
-                            // alert(value); //得到value
-                            // layer.closeAll();
-                        });
+                    if(layEvent ==='buchang'){
+                        x_admin_show("{:lang('上下级恢复')}", 'leveluserReset?proxyid=' + data.ProxyId, 500, 550);
                     }
-
                     if (layEvent === 'setextraed') {
                         layer.prompt({
                             formType: 3,

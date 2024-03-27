@@ -4,8 +4,6 @@ namespace app\merchant\controller;
 
 use app\common\Api;
 use app\common\GameLog;
-use app\model\Account;
-use app\model\AccountDB;
 use app\model\UserDB;
 use app\model\GameOCDB;
 use app\model\MasterDB;
@@ -210,156 +208,6 @@ class Channel extends Main
         return $this->fetch();
     }
 
-    //微信推广地址
-    public function geturl()
-    {
-        if ($this->request->isAjax()) {
-            $qudao = trim(input('roleid')) ? trim(input('roleid')) : '';
-            $urlArr = [
-                'https://www.winbo1.com/?proxyid=',
-                'https://www.winbo2.com/?proxyid=',
-                'https://www.winbo3.com/?proxyid=',
-                'https://www.winbo4.com/?proxyid=',
-                'https://www.winbo5.com/?proxyid=',
-                'https://www.winbo6.com/?proxyid=',
-                'https://www.winbo7.com/?proxyid=',
-                'https://www.winbo8.com/?proxyid=',
-                'https://www.winbo9.com/?proxyid=',
-
-                'https://www.winbo1.xyz/?proxyid=',
-                'https://www.winbo2.xyz/?proxyid=',
-                'https://www.winbo3.xyz/?proxyid=',
-                'https://www.winbo4.xyz/?proxyid=',
-                'https://www.winbo5.xyz/?proxyid=',
-                'https://www.winbo6.xyz/?proxyid=',
-                'https://www.winbo7.xyz/?proxyid=',
-                'https://www.winbo8.xyz/?proxyid=',
-                'https://www.winbo9.xyz/?proxyid=',
-
-                'https://www.wanbo1.xyz/?proxyid=',
-                'https://www.wanbo2.xyz/?proxyid=',
-                'https://www.wanbo3.xyz/?proxyid=',
-                'https://www.wanbo4.xyz/?proxyid=',
-                'https://www.wanbo5.xyz/?proxyid=',
-                'https://www.wanbo6.xyz/?proxyid=',
-                'https://www.wanbo7.xyz/?proxyid=',
-                'https://www.wanbo8.xyz/?proxyid=',
-                'https://www.wanbo9.xyz/?proxyid=',
-
-                'https://www.wanbo0.vip/?proxyid=',
-                'https://www.wanbo1.vip/?proxyid=',
-                'https://www.wanbo2.vip/?proxyid=',
-                'https://www.wanbo3.vip/?proxyid=',
-                'https://www.wanbo4.vip/?proxyid=',
-                'https://www.wanbo5.vip/?proxyid=',
-                'https://www.wanbo6.vip/?proxyid=',
-                'https://www.wanbo7.vip/?proxyid=',
-                'https://www.wanbo9.vip/?proxyid=',
-
-                'https://www.winbo0.vip/?proxyid=',
-                'https://www.winbo1.vip/?proxyid=',
-                'https://www.winbo2.vip/?proxyid=',
-                'https://www.winbo3.vip/?proxyid=',
-                'https://www.winbo4.vip/?proxyid=',
-                'https://www.winbo5.vip/?proxyid=',
-                'https://www.winbo6.vip/?proxyid=',
-                'https://www.winbo7.vip/?proxyid=',
-                'https://www.winbo8.vip/?proxyid=',
-                'https://www.winbo9.vip/?proxyid=',
-
-                'https://9n1.xyz/?proxyid=',
-                'http://zzpixie.com/?proxyid=',
-            ];
-            $numbers = range(0, count($urlArr) - 1);
-
-//shuffle 将数组顺序随即打乱 
-
-            shuffle($numbers);
-
-//array_slice 取该数组中的某一段 
-
-            $num = 10;
-
-            $result = array_slice($numbers, 0, $num);
-            $tmp = [];
-            foreach ($result as $value) {
-                $tmp[] = $urlArr[$value];
-            }
-
-            foreach ($tmp as &$v) {
-                $v .= $qudao;
-            }
-            unset($v);
-//var_dump($tmp);die;
-            $arr = Db::connect($this->db2)->name('game_url')->where(['qudao' => $qudao, 'real' => ['in', $tmp]])->select();
-            shuffle($arr);
-            $xx = '';
-            foreach ($arr as $u) {
-                $xx .= $u['url'] . '<br>';
-            }
-            //$v = trim($v, '<br>');
-
-            return $this->apiReturn(0, $xx, 'success');
-        }
-        $url = input('url');
-        $this->assign('url', $url);
-        return $this->fetch();
-    }
-
-    //获取短信推广地址
-    public function geturl1()
-    {
-
-        $qudao = trim(input('roleid')) ? trim(input('roleid')) : '';
-        $smsArr = [
-            0 => 'https://winbo0.vip/?proxyid=',
-            1 => 'https://winbo1.vip/?proxyid=',
-            2 => 'https://winbo2.vip/?proxyid=',
-            3 => 'https://winbo3.vip/?proxyid=',
-            4 => 'https://winbo4.vip/?proxyid=',
-            5 => 'https://winbo5.vip/?proxyid=',
-            6 => 'https://winbo6.vip/?proxyid=',
-            7 => 'https://winbo7.vip/?proxyid=',
-            8 => 'https://winbo8.vip/?proxyid=',
-            9 => 'https://winbo9.vip/?proxyid=',
-        ];
-
-        $v = '';
-        foreach ($smsArr as $u) {
-            $v .= $u . $qudao . '<br>';
-        }
-        // $v = trim($v, '<br>');
-
-        return $this->apiReturn(0, $v, 'success');
-    }
-
-
-    //获取其他推广地址
-    public function geturl2()
-    {
-
-        $qudao = trim(input('roleid')) ? trim(input('roleid')) : '';
-        $otherArr = [
-            0 => 'https://wanbo0.vip/?proxyid=',
-            1 => 'https://wanbo1.vip/?proxyid=',
-            2 => 'https://wanbo2.vip/?proxyid=',
-            3 => 'https://wanbo3.vip/?proxyid=',
-            4 => 'https://wanbo4.vip/?proxyid=',
-            5 => 'https://wanbo5.vip/?proxyid=',
-            6 => 'https://wanbo6.vip/?proxyid=',
-            7 => 'https://wanbo7.vip/?proxyid=',
-            9 => 'https://wanbo9.vip/?proxyid=',
-        ];
-
-        $v = '';
-        foreach ($otherArr as $u) {
-            $v .= $u . $qudao . '<br>';
-        }
-        // $v = trim($v, '<br>');
-
-        return $this->apiReturn(0, $v, 'success');
-    }
-
 
     public function editdownload()
     {
@@ -419,31 +267,6 @@ class Channel extends Main
     }
 
 
-    //生成短地址
-    public function getShorturl($url)
-    {
-        $apiurl = 'https://v94.cn/api/SingleShortUrl.json?appid=510340223&appkey=cb071b0b0442ac949125e5ecf1aa43b6&type=add&url=' . $url . '&visit_type=browser&title=title1&keywords=keywords2&description=description3';
-        $res = file_get_contents($apiurl);
-        $res = json_decode($res, true);
-
-        if ($res['code'] == 1 && isset($res['data']['weibo_shorturl'])) {
-            //成功
-            return $res['data']['weibo_shorturl'];
-        } else if ($res['code'] == 1401) { //已经添加过了
-            //删掉重新生成
-            $apiurl = 'https://v94.cn/api/SingleShortUrl.json?appid=510340223&appkey=cb071b0b0442ac949125e5ecf1aa43b6&type=delete&url=' . $url;
-            $res = file_get_contents($apiurl);
-            $res = json_decode($res, true);
-            if ($res['code'] == 1) {
-                //删除成功 新增
-                return $this->getShorturl($url);
-            } else {
-                return '';
-            }
-        } else {
-            return '';
-        }
-    }
 
 
     //分发管理
@@ -794,13 +617,12 @@ class Channel extends Main
         if ($action == 'list') {
             $ProxyChannelId = $this->request->param('roleid');
             $tab = $this->request->param('tab');
-            $start = $this->request->param('start',date('Y-m-d'));
-            $end = $this->request->param('end',date('Y-m-d'));
+            $start = $this->request->param('start');
+            $end = $this->request->param('end');
             $bustype = $this->request->param('bustype');
             $parentName = $this->request->param('parentName');
             $businessid = (int)$this->request->param('businessid');
             $limit = $this->request->param('limit') ?: 10;
-
             $where = '1=1';
             if ($ProxyChannelId != '') {
                 $where .= " and a.ChannelId='" . $ProxyChannelId . "'";
@@ -899,23 +721,7 @@ class Channel extends Main
                     $val['parentName'] = $parents[$val['pid']]['AccountName'];
                 }
             }
-            $field = "ISNULL(sum(PersonCount),0) as PersonCount,
-                    ISNULL(sum(ActiveUserCount),0) as ActiveUserCount,
-                    ISNULL(sum(RechargeActiveCount),0) as RechargeActiveCount,
-                    ISNULL(sum(FirstRechargeCount),0) as FirstRechargeCount,
-                    ISNULL(sum(TotalRecharge),0) as TotalRecharge,
-                    ISNULL(sum(RechargeCount),0) as RechargeCount,
-                    ISNULL(sum(TotalDrawMoney),0) as TotalDrawMoney,
-                    ISNULL(sum(TotalDrawCount),0) as TotalDrawCount,
-                    ISNULL(sum(RoundBets),0) as RoundBets,
-                    ISNULL(sum(RoundBetsCount),0) as RoundBetsCount,
-                    ISNULL(sum(RoundBetTimes),0) as RoundBetTimes,
-                    ISNULL(sum(PrizeBonus),0) as PrizeBonus,
-                    ISNULL(sum(TotalYk),0) as TotalYk,
-                    ISNULL(sum(ProxyTotal),0) as ProxyTotal,
-                    ISNULL(sum(ProxyChildBonus),0) as ProxyChildBonus,
-                    ISNULL(sum(SendCoin),0) as SendCoin,
-                    ISNULL(sum(HistoryCoin),0) as HistoryCoin";
+            $field = "ISNULL(sum(PersonCount),0) as PersonCount,ISNULL(sum(ActiveUserCount),0) as ActiveUserCount,ISNULL(sum(RechargeActiveCount),0) as RechargeActiveCount,ISNULL(sum(FirstRechargeCount),0) as FirstRechargeCount,ISNULL(sum(TotalRecharge),0) as TotalRecharge,ISNULL(sum(RechargeCount),0) as RechargeCount,ISNULL(sum(TotalDrawMoney),0) as TotalDrawMoney,ISNULL(sum(TotalDrawCount),0) as TotalDrawCount,ISNULL(sum(RoundBets),0) as RoundBets,ISNULL(sum(RoundBetsCount),0) as RoundBetsCount,ISNULL(sum(RoundBetTimes),0) as RoundBetTimes,ISNULL(sum(PrizeBonus),0) as PrizeBonus,ISNULL(sum(TotalYk),0) as TotalYk,ISNULL(sum(ProxyTotal),0) as ProxyTotal,ISNULL(sum(ProxyChildBonus),0) as ProxyChildBonus,ISNULL(sum(SendCoin),0) as SendCoin,ISNULL(sum(HistoryCoin),0) as HistoryCoin";
             $other = (new \app\model\GameOCDB())->getTableObject('T_ChannelDailyCollect')->alias('a')
                 ->join('T_ProxyChannelConfig b', 'b.ProxyChannelId=a.ChannelId')
                 ->where('b.OperatorId', session('merchant_OperatorId'))
@@ -933,24 +739,6 @@ class Channel extends Main
                 $other['HistoryCoin'] = FormatMoney($other['HistoryCoin']);
 
                 $other['Profit'] = bcsub($other['TotalRecharge'], $other['TotalDrawMoney'], 2);
-                $other['FirstDepositMoney'] = (new AccountDB())->getTableObject('T_Accounts')
-                    ->alias('a')
-                    ->join('[CD_DataChangelogsDB].[dbo].[T_UserTransactionLogs](NOLOCK) b','b.RoleID=a.AccountID','left')
-                    ->where('a.OperatorId',session('merchant_OperatorId'))
-                    ->whereTime('b.AddTime','>=',$start.' 00:00:00')
-                    ->whereTime('b.AddTime','<=',$end.' 23:59:59')
-                    ->where('b.ChangeType',5)
-                    ->where('b.IfFirstCharge',1)
-                    ->sum('b.TransMoney')?:0;
-//                $other['FirstDepositMoney'] = (new \app\model\DataChangelogsDB())
-//                    ->getTableObject('T_UserTransactionLogs')->alias('a')
-//                    ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) b', 'b.AccountID=a.RoleID', 'left')
-//                    ->where('b.OperatorId',session('merchant_OperatorId'))
-//                    ->whereTime('a.AddTime','>=',$start.' 00:00:00')
-//                    ->whereTime('a.AddTime','<=',$end.' 23:59:59')
-//                    ->where('a.ChangeType',5)
-//                    ->where('a.IfFirstCharge',1)
-//                    ->sum('TransMoney')?:0;
             }
             return $this->apiReturn(0, $data['data'], 'success', $data['total'], $other);
         }
@@ -1711,7 +1499,7 @@ class Channel extends Main
         $typeid =input('typeid',111);
         $where = " and typeid=".$typeid;
         if ($start != null && $end != null) {
-            $where = "And mydate BETWEEN '$start' And '$end'";
+            $where .= "And mydate BETWEEN '$start' And '$end'";
         }
         if ($roleid > 0) {
             $where .= ' and  ChannelID=' . $roleid;
@@ -1769,9 +1557,7 @@ class Channel extends Main
         }
         $db = new GameOCDB();
         $where = ' OperatorId=' . session('merchant_OperatorId');
-        if ($proxychannelId) {
-            $where .= ' and channelid=' . $proxychannelId;
-        }
+        $where .= ' and channelid=' . $proxychannelId;
 
         $firstdate = $date . '-01';
         $where .= " and Date>='$firstdate' ";
@@ -1779,7 +1565,21 @@ class Channel extends Main
         $lastdate = date('Y-m-d', $lasttime);
         $where .= " and Date<='$lastdate'";
 
-        $total = $db->getTableObject('T_ChannelDailyCollect')->where($where)->field('sum(convert(bigint,TotalRecharge)) TotalRecharge,sum(convert(bigint,TotalDrawMoney)) TotalPayOut,sum(convert(bigint,PPBet)) as ppgamewin,sum(convert(bigint,PGBet)) as pggamewin,sum(convert(bigint,EvoLiveBet)) as evolivewin,sum(convert(bigint,Spribe)) as spribegamewin,sum(convert(bigint,habawin)) as habawin,sum(convert(bigint,hacksaw)) as hacksaw,sum(convert(bigint,JiLiBet)) as jiliwin,sum(convert(bigint,yesbingo)) as yesbingo,sum(convert(bigint,fcgame)) as fcgame,sum(convert(bigint,tadagame)) as tadagame')->find();
+        $total = $db->getTableObject('T_ChannelDailyCollect')->where($where)->field('sum(convert(bigint,TotalRecharge)) TotalRecharge,
+        sum(convert(bigint,TotalDrawMoney)) TotalPayOut,
+        sum(convert(bigint,PPBet)) as ppgamewin,
+        sum(convert(bigint,PGBet)) as pggamewin,
+        sum(convert(bigint,EvoLiveBet)) as evolivewin,
+        sum(convert(bigint,Spribe)) as spribegamewin,
+        sum(convert(bigint,habawin)) as habawin,
+        sum(convert(bigint,hacksaw)) as hacksaw,
+        sum(convert(bigint,JiLiBet)) as jiliwin,
+        sum(convert(bigint,yesbingo)) as yesbingo,
+        sum(convert(bigint,fcgame)) as fcgame,
+        sum(convert(bigint,tadagame)) as tadagame,
+        sum(convert(bigint,pplive)) as pplive,
+        sum(convert(bigint,fakepggame)) as fakepggame')->find();
+
 
         $data['total_recharge'] = FormatMoney($total['TotalRecharge'] ?? 0);
         $data['totalpayout'] = FormatMoney($total['TotalPayOut'] ?? 0);
@@ -1799,6 +1599,8 @@ class Channel extends Main
         $APIFee[7] = $APIFee[7] ?? 0; //yesbingo
         $APIFee[8] = $APIFee[8] ?? 0; //jiliwin
         $APIFee[9] = $APIFee[9] ?? 0; //yesbingo
+        $APIFee[10] = $APIFee[10] ?? 0; //pplive
+        $APIFee[11] = $APIFee[11] ?? 0; //fakepggame
 
         $TotalAPICost = 0;
         $totalpp = bcmul($APIFee[0], $total['ppgamewin'], 4);
@@ -1811,6 +1613,10 @@ class Channel extends Main
         $totalyesbingo = bcmul($APIFee[7], $total['yesbingo'], 4);
         $tadagame = bcmul($APIFee[8], $total['tadagame'], 4);
         $fcgame = bcmul($APIFee[9], $total['fcgame'], 4);
+        $pplive = bcmul($APIFee[10], $total['pplive'], 4);
+        $fakepggame = bcmul($APIFee[11], $total['fakepggame'], 4);
+
+
 
         if ($totalpp < 0) {//系统赢算费用
             $TotalAPICost += abs($totalpp);
@@ -1846,6 +1652,15 @@ class Channel extends Main
         if ($fcgame < 0) {//系统赢算费用
             $TotalAPICost += abs($fcgame);
         }
+        if ($pplive < 0) {//系统赢算费用
+            $TotalAPICost += abs($pplive);
+        }
+
+        if ($fakepggame < 0) {//系统赢算费用
+            $TotalAPICost += abs($fakepggame);
+        }
+
+
 
         $data['TotalAPICost'] = FormatMoney($TotalAPICost);
         $data['totalprofit'] = round(($data['total_recharge']) - ($data['totalpayout'] + $data['recharge_fee'] + $data['payout_fee'] + $data['TotalAPICost']), 3);
@@ -1872,7 +1687,7 @@ class Channel extends Main
     {
 
         $ProxyChannelId = request()->param('ProxyChannelId');
-        $userInfo = (new \app\model\GameOCDB)->getTableObject('T_ProxyChannelConfig')->where('ProxyChannelId', $ProxyChannelId)->find();
+        $userInfo = (new \app\model\GameOCDB)->getTableObject('T_ProxyChannelConfig')->where('ProxyChannelId',$ProxyChannelId)->find();
         if ($userInfo) {
             session('business_LoginAccount', $userInfo['LoginAccount']);
             session('business_ProxyChannelId', $userInfo['ProxyChannelId']);
@@ -1890,247 +1705,21 @@ class Channel extends Main
         $this->redirect($url);
     }
 
-    ///盈利报表
+        ///盈利报表
     public function profitStatement()
     {
         $this->assign('thismonth', date('Y-m'));
         return $this->fetch();
     }
-
-    //运营商详情
-    public function operatorSummaryData()
-    {
-        $proxychannelId = $this->request->param('proxychannelId');
-        $date = $this->request->param('date');
-        if (empty($date)) {
-            $date = date('Y-m');
-        }
-        $db = new GameOCDB();
-        $proxy_channel_info = $db->getTableObject('T_ProxyChannelConfig')->where('OperatorId', session('merchant_OperatorId'))->column('ProxyChannelId,AccountName', 'ProxyChannelId');
-        $channelIds = array_column($proxy_channel_info, 'ProxyChannelId');
-        if (empty($channelIds)) {
-            return $this->apiReturn(0, [], 'success');
-        }
-        $where = ' ChannelId in(' . implode(',', $channelIds) . ')';
-        if ($proxychannelId != '') {
-            $where .= ' and ChannelId=' . $proxychannelId;
-        }
-
-
-        $firstdate = $date . '-01';
-        $where .= " and Date>='$firstdate' ";
-        $lasttime = strtotime("$firstdate +1 month -1 day");
-        $lastdate = date('Y-m-d', $lasttime);
-        $where .= " and Date<='$lastdate'";
-
-        $total_data = $db->getTableObject('T_ChannelDailyCollect')->where($where)->field('ChannelId as ProxyChannelId,sum(convert(bigint,TotalRecharge)) total_recharge,sum(convert(bigint,TotalDrawMoney)) totalpayout,sum(convert(bigint,PPBet)) as ppgamewin,sum(convert(bigint,PGBet)) as pggamewin,sum(convert(bigint,EvoLiveBet)) as evolivewin,sum(convert(bigint,Spribe)) as spribegamewin,sum(convert(bigint,habawin)) as habawin')->group('ChannelId')->select();
-
-        $config = (new MasterDB)->getTableObject('T_OperatorLink')->where('OperatorId', session('merchant_OperatorId'))->find();
-        foreach ($total_data as $key => &$data) {
-            $data['ProxyChannelName'] = $proxy_channel_info[$data['ProxyChannelId']]['AccountName'];
-            $data['totalpayorder'] = FormatMoney($data['total_recharge'] ?? 0);
-            $data['totalpayout'] = FormatMoney($data['totalpayout'] ?? 0);
-
-            $data['rechargefee'] = bcmul($data['totalpayorder'], $config['RechargeFee'], 3);
-            $data['withdrawfee'] = bcmul($data['totalpayout'], $config['WithdrawalFee'], 3);
-
-            $APIFee = explode(',', $config['APIFee']);
-            $APIFee[0] = $APIFee[0] ?? 0; //pp
-            $APIFee[1] = $APIFee[1] ?? 0; //pg
-            $APIFee[2] = $APIFee[2] ?? 0; //evo
-            $APIFee[3] = $APIFee[3] ?? 0; //spribe游戏
-            $APIFee[4] = $APIFee[4] ?? 0; //haba
-//            $APIFee[5] = $APIFee[5] ?? 0; //hacksaw
-
-            $TotalAPICost = 0;
-            $totalpp = bcmul($APIFee[0], $data['ppgamewin'], 4);
-            $totalpg = bcmul($APIFee[1], $data['pggamewin'], 4);
-            $totalevo = bcmul($APIFee[2], $data['evolivewin'], 4);
-            $totalspribe = bcmul($APIFee[3], $data['spribegamewin'], 4);
-            $totalhaba = bcmul($APIFee[4], $data['habawin'], 4);
-//            $totalhacksaw = bcmul($APIFee[5], $data['hacksaw'], 4);
-
-            if ($totalpp < 0) {//系统赢算费用
-                $TotalAPICost += abs($totalpp);
-            }
-            if ($totalpg < 0) {//系统赢算费用
-                $TotalAPICost += abs($totalpg);
-            }
-            if ($totalevo < 0) {//系统赢算费用
-                $TotalAPICost += abs($totalevo);
-            }
-
-            if ($totalhaba < 0) {//系统赢算费用
-                $TotalAPICost += abs($totalhaba);
-            }
-
-//            if ($totalhacksaw < 0) {//系统赢算费用
-//                $TotalAPICost += abs($totalhacksaw);
-//            }
-
-            if ($totalspribe < 0) {//系统赢算费用
-                $TotalAPICost += abs($totalspribe);
-            }
-
-            $data['apicost'] = FormatMoney($TotalAPICost);
-            $data['totalprofit'] = round(($data['totalpayorder']) - ($data['totalpayout'] + $data['rechargefee'] + $data['withdrawfee'] + $data['apicost']), 3);
-        }
-
-        return $this->apiReturn(0, $total_data, 'success');
-
+    
+     //业务员对账
+    public function operatorSummaryData(){
+        $data = (new \app\model\GameOCDB())->operatorSummaryData();
+        return $this->apiReturn(0, $data['data'], 'success', $data['total']);
     }
+    //弃用
+    public function operatorSummaryData_old(){
+        
 
-
-    /**
-     * 业务员对账
-     * @return mixed
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\ModelNotFoundException
-     * @throws \think\exception\DbException
-     */
-    public function channelReconciliation()
-    {
-        if ($this->request->isAjax()){
-            $OperatorSessionId = session('merchant_OperatorId');
-            $time = $this->request->param('time');
-            $channelId = $this->request->param('channel_id');
-            $GameOCDB = new GameOCDB();
-            //业务员
-            $channels = $GameOCDB->getTableObject('T_ProxyChannelConfig')
-                ->where('OperatorId', $OperatorSessionId)
-                ->where(function ($q) use($channelId){
-                    if($channelId){
-                        $q->where('ProxyChannelId',$channelId);
-                    }
-                })
-                ->column('ProxyChannelId,AccountName');
-//dump($channels);die();
-            $channelIds = [];
-            foreach ($channels as $id){
-                $channelIds[] = $id['ProxyChannelId'];
-            }
-            $data = [];
-            if (!empty($channelIds)) {
-                $channelDaliyCollect = $GameOCDB->getTableObject('T_ChannelDailyCollect')
-                    ->field('ChannelId,sum(convert(bigint,TotalRecharge)) totalrecharge,
-                sum(convert(bigint,TotalDrawMoney)) totalpayout,
-                sum(convert(bigint,PGBet)) as pggamewin,
-                sum(convert(bigint,PPBet)) as ppgamewin,
-                sum(convert(bigint,EvoLiveBet)) as evolivewin,
-                sum(convert(bigint,JiLiBet)) as jiliwin,
-                sum(convert(bigint,Spribe)) as spribegamewin,
-                sum(convert(bigint,habawin)) as habawin,
-                sum(convert(bigint,hacksaw)) as hacksaw,
-                sum(convert(bigint,yesbingo)) as yesbingo,
-                sum(convert(bigint,tadagame)) as tadagame,
-                sum(convert(bigint,fcgame)) as fcgame,
-                sum(convert(bigint,pplive)) as pplive')
-                    ->where(function ($q) use ($time){
-                        if ($time){
-                            $beginTime = date('Y-m-01 00:00:00',strtotime($time));
-                            $endTime = date('Y-m-31 23:59:59',strtotime($time));
-                            $q->where('Date','between time',[$beginTime,$endTime]);
-                        }
-                    })
-                    ->whereIn('ChannelId', $channelIds)
-                    ->group('ChannelId')
-                    ->select();
-                $config = (new MasterDB)->getTableObject('T_OperatorLink')
-                    ->where('OperatorId',$OperatorSessionId)
-                    ->find();
-                foreach ($channelDaliyCollect as $channel) {
-                    $item = [];
-                    foreach ($channels as $id){
-                        if ($id['ProxyChannelId'] == $channel['ChannelId']){
-                            $item['AccountName'] = $id['AccountName'];
-                        }
-                    }
-                    $item['ProxyChannelId'] = $channel['ChannelId'];
-                    $item['totalInCash'] = FormatMoney($channel['totalrecharge']);
-                    $item['totalOutCah'] = FormatMoney($channel['totalpayout']);
-                    $item['rechargeCommission'] = bcmul($item['totalInCash'], $config['RechargeFee'], 3);
-                    $item['withdrawalCommission'] = bcmul($item['totalOutCah'], $config['WithdrawalFee'], 3);
-                    $item['apiCommission'] = $this->getTotalAPICost($config,$channel);
-                    $item['totalProfit'] = bcsub(($item['totalInCash']) , $item['totalOutCah'], 3);
-
-                    $data[] = $item;
-                }
-            }
-            return $this->apiReturn(0, $data, 'success');
-        }
-        $this->assign('thismonth', date('Y-m'));
-        return $this->fetch();
-
-    }
-
-    public function getTotalAPICost($config,$data)
-    {
-        $APIFee = explode(',', $config['APIFee']);
-        $APIFee[0] = $APIFee[0] ?? 0; //pp
-        $APIFee[1] = $APIFee[1] ?? 0; //pg
-        $APIFee[2] = $APIFee[2] ?? 0; //evo
-        $APIFee[3] = $APIFee[3] ?? 0; //JDB
-        $APIFee[4] = $APIFee[4] ?? 0; //habawin
-        $APIFee[5] = $APIFee[5] ?? 0; //hacksaw
-        $APIFee[6] = $APIFee[6] ?? 0; //JILI
-        $APIFee[7] = $APIFee[7] ?? 0; //YES!BINGO
-        $APIFee[8] = $APIFee[8] ?? 0; //tadagame
-        $APIFee[9] = $APIFee[9] ?? 0; //fcgame
-        $APIFee[10] = $APIFee[10] ?? 0; //pplive
-
-        $totalpp = bcmul($APIFee[0], $data['ppgamewin'], 4);
-        $totalpg = bcmul($APIFee[1], $data['pggamewin'], 4);
-        $totalevo = bcmul($APIFee[2], $data['evolivewin'], 4);
-        $totalspribe = bcmul($APIFee[3], $data['spribegamewin'], 4);
-        $habawin = bcmul($APIFee[4], $data['habawin'], 4);
-        $hackSaw = bcmul($APIFee[5], $data['hacksaw'], 4);
-        $jiliwin = bcmul($APIFee[6], $data['jiliwin'], 4);
-        $yesbingo = bcmul($APIFee[7], $data['yesbingo'], 4);
-        $tadagame = bcmul($APIFee[8], $data['tadagame'], 4);
-        $fcgame = bcmul($APIFee[9], $data['fcgame'], 4);
-        $pplive = bcmul($APIFee[10], $data['pplive'], 4);
-
-        $TotalAPICost = 0;
-        if ($totalpp < 0) {//系统赢算费用
-            $TotalAPICost += abs($totalpp);
-        }
-        if ($totalpg < 0) {//系统赢算费用
-            $TotalAPICost += abs($totalpg);
-        }
-        if ($totalevo < 0) {//系统赢算费用
-            $TotalAPICost += abs($totalevo);
-        }
-        if ($totalspribe < 0) {//系统赢算费用
-            $TotalAPICost += abs($totalspribe);
-        }
-
-        if ($habawin < 0) {//系统赢算费用
-            $TotalAPICost += abs($habawin);
-        }
-
-        if ($hackSaw < 0) {//系统赢算费用
-            $TotalAPICost += abs($hackSaw);
-        }
-        if ($jiliwin < 0) {//系统赢算费用
-            $TotalAPICost += abs($jiliwin);
-        }
-
-        if ($yesbingo < 0) {//系统赢算费用
-            $TotalAPICost += abs($yesbingo);
-        }
-
-        if ($tadagame < 0) {//系统赢算费用
-            $TotalAPICost += abs($tadagame);
-        }
-
-        if ($fcgame < 0) {//系统赢算费用
-            $TotalAPICost += abs($fcgame);
-        }
-
-        if ($pplive < 0) {//系统赢算费用
-            $TotalAPICost += abs($pplive);
-        }
-
-        return FormatMoney(round($TotalAPICost, 3));
     }
 }

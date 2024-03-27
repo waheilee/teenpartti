@@ -37,8 +37,10 @@
                     <div class="layui-input-inline" style="width: 90px">
                         <select id="operatetype" name="operatetype">
                             <option value="-1">{:lang('全部')}</option>
-                            <option value="1">{:lang('上分')}</option>
-                            <option value="2">{:lang('下分')}</option>
+                            <option value="1">{:lang('游戏上分')}</option>
+                            <option value="2">{:lang('游戏下分')}</option>
+                            <option value="3">{:lang('佣金上分')}</option>
+                            <option value="4">{:lang('佣金下分')}</option>
                         </select>
                     </div>
                 </div>
@@ -99,9 +101,13 @@
                                 case 0:
                                     return str += "red'></span>"
                                 case 1:
-                                    return str += "green'>{:lang('上分')}" + "</span>"
+                                    return str += "green'>{:lang('游戏上分')}" + "</span>"
                                 case 2:
-                                    return str += "red'>{:lang('下分')}" + "</span>"
+                                    return str += "red'>{:lang('游戏下分')}" + "</span>"
+                                case 3:
+                                    return str += "green'>{:lang('佣金上分')}" + "</span>"
+                                case 4:
+                                    return str += "red'>{:lang('佣金下分')}" + "</span>"    
                             }
 
                         }

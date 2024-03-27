@@ -874,9 +874,9 @@ class Agent extends Main
                 if ((int)input('exec', 0) == 1 && $outAll = true) {
                     $header_types = [
                         lang('玩家ID') => 'string',
-                        lang('代理流水返利') => "string",
+                        lang('代理投注返佣') => "string",
+                        lang('邀请梯度奖励') => "string",
                         lang('代理邀请奖励') => "string",
-                        lang('代理首充奖励') => "string",
                         lang('总收益') => 'string',
                     ];
                     $filename = lang('代理奖励列表') . '-' . date('YmdHis');
@@ -913,6 +913,67 @@ class Agent extends Main
             $xChannelIds = array_column($xChannelIds, 'ProxyChannelId');
             $result = array_unique(array_merge($result,$xChannelIds));
             return $this->getXbusiness($xChannelIds);
+        }
+    }
+
+     //博主
+    public function blogger(){
+        if (input('action') == 'list') {
+            $data = (new \app\model\UserDB())->getBloggerData();
+            return $this->apiReturn(0, $data['data'], 'success', $data['total']);
+        } else {
+            return $this->fetch();
+        }
+    }
+
+    public function addBlogger(){
+        if ($this->request->method() == 'POST') {
+            $roleId = input('roleid', '');
+            $WeChat = input('WeChat', '');
+            $AccountDB = new \app\model\AccountDB();
+            $roleidinfo = $AccountDB->getTableObject('T_Accounts(NOLOCK)')->where('AccountID',$roleId)->find();
+
+            if (empty($roleidinfo)) {
+                return $this->apiReturn(1, '', '玩家ID不存在，请重新输入');
+            }
+            if ($roleidinfo['ProxyChannelId'] != session('business_ProxyChannelId')) {
+                return $this->apiReturn(1, '', '无法添加该玩家');
+            }
+            if ($roleidinfo['IsBlogger'] == 1) {
+                return $this->apiReturn(1, '', '请勿重复提交博主ID');
+            }
+            $data = ['IsBlogger'=>1,'BloggerDate'=>date('Y-m-d H:i:s'),'WeChat'=>$WeChat];
+            $res = $AccountDB->getTableObject('T_Accounts')->where('AccountID',$roleId)->data($data)->update();
+            if ($res) {
+                return $this->apiReturn(0, '', 'success');
+            } else {
+                return $this->apiReturn(1, '', 'fail');
+            }
+        } else {
+            return $this->fetch();
+        }
+    }
+
+    public function editWechat(){
+        $id = request()->param('id');
+        $field = request()->param('field');
+        $value = request()->param('value');
+        $AccountDB = new \app\model\AccountDB();
+        $res = $AccountDB->getTableObject('T_Accounts')->where('AccountID',$id)->data(['WeChat'=>$value])->update();
+        if($res){
+            return ['code'=>0,'msg'=>'success'];
+        } else {
+            return ['code'=>1,'msg'=>'更新失败'];
+        }
+    }
+
+    //掉绑比例
+    public function unbindRecord(){
+        if (input('action') == 'list') {
+            $data = (new \app\model\UserDB())->unbindRecord();
+            return $this->apiReturn(0, $data['data'], 'success', $data['total']);
+        } else {
+            return $this->fetch();
         }
     }
 }

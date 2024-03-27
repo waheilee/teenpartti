@@ -81,6 +81,19 @@
                             <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date2" name="end" type="text">
                         </div>
                     </div>
+                     <div class="layui-inline">
+	                    <label class="layui-form-label">{:lang('房间')}</label>
+	                    <div class="layui-input-inline">
+	                        <select name="roomid" id="roomid"  lay-search>
+	                            <option value="0">{:lang('所有')}</option>
+	                            <!-- foreach循环 -->
+	                            {foreach name="selectData" item="vo"}
+	                            <option value="{$vo.RoomID}">{$vo.RoomName}</option>
+	                            {/foreach}
+	                            <!-- for循环 -->
+	                        </select>
+	                    </div>
+                	</div>
                     <div class="layui-inline">
                         <label class="layui-form-label">{:lang('类型')}</label>
                         <div class="layui-input-inline">
@@ -175,6 +188,7 @@
 						enddate: $.trim($('#LAY-component-form-group-date2').val()),
 						changetype:  $.trim($('#changetype').val()),
 						usertype: $.trim($('#usertype').val()),
+						ServerID: $.trim($('#roomid').val()),
 						// 'AccountName': AccountName,
 						// 'NickName': NickName,
 					}
@@ -232,6 +246,7 @@
 			enddate: $.trim($('#LAY-component-form-group-date2').val()),
 			changetype:  $.trim($('#changetype').val()),
 			usertype: $.trim($('#usertype').val()),
+			ServerID: $.trim($('#roomid').val()),
 			limit: 20000,
 			Action: 'exec',
 		}

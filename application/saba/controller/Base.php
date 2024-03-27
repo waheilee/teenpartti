@@ -1,65 +1,50 @@
 <?php
 
-namespace app\Saba\controller;
+namespace app\saba\controller;
 
 use think\Controller;
 
 class Base extends Controller
 {
-    public $vendor_id ='';
-    public $operatorId ='';
-    public $Currency  = '';
-    public $country  = '';
-
-    public $url = '';
-
+    public $operator_id ='';
+    public $securykey ='';
     public $config = [];
 
     public function _initialize()
     {
-        $this->vendor_id = config('saba.vendor_id');
-        $this->operatorId = config('saba.operatorId');
-        $this->Currency = config('saba.Currency');
-        $this->country = config('saba.country');
-        $this->url = config('saba.API_Host');
+        if (request()->ip() == '177.71.145.60' && request()->action() != 'createuser') {
+            $tgcfg = config('sabagame_test');
+        } else {
+            $tgcfg = config('sabagame');
+        }
+        
+        $this->config = $tgcfg;
     }
 
 
     public function failjson($msg){
-        $data = json_encode([
-            'code' => 100,
-            'msg' => $msg
+        $log_data = json_encode([
+            'code'=>100,
+            'msg'=>$msg,
         ]);
-        save_log('saba', '===='.$this->request->url().'====响应失败数据====' . $data);
+        save_log('sabagame', '===='.request()->url().'====响应失败数据====' . $log_data);
         return json([
-            'code' => 100,
-            'msg' => $msg
+            'code'=>100,
+            'msg'=>$msg,
         ]);
     }
 
     public function succjson($data){
-        $data = json_encode([
-            'code' => 0,
-            'msg' => 'success',
+        $log_data = json_encode([
+            'code'=>0,
+            'msg'=>'success',
             'data'=>$data
         ]);
-        save_log('saba', '===='.$this->request->url().'====响应成功数据====' . $data);
+        save_log('sabagame', '===='.request()->url().'====响应成功数据====' . $log_data);
         return json([
-            'code' => 0,
-            'msg' => 'success',
-            'data'=>$data
+            'code'=>0,
+            'msg'=>'success',
+            'data'=>$log_data
         ]);
     }
-
-
-    public function apiReturn($code, $data = [], $msg = '')
-    {
-        return json([
-            'code' => $code,
-            'data' => $data,
-            'msg'  => $msg
-
-        ]);
-    }
-
 }

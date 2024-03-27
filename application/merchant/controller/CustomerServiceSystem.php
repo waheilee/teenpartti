@@ -86,7 +86,7 @@ class CustomerServiceSystem extends Main
     //     }
     //     return self::ResetPwd();
     //     return $this->success("更新成功");
-
+        
     //     switch (input('Action')) {
     //         case 'bind':
     //             $db = new AccountDB();
@@ -125,7 +125,6 @@ class CustomerServiceSystem extends Main
     // }
 
 
-    /**客服配置 增删改查        [OM_MasterDB] [T_CustomService_Cfg] **/
     public function CustomerServiceConfig($action = null)
     {
 
@@ -133,19 +132,29 @@ class CustomerServiceSystem extends Main
         //$countrycode = input('CountryCode');
 //        if($countrycode=='-1')
 //            $countrycode ='';
-        $data = ["CustomName" => input('CustomName'), "Phone" => input('Phone'), 'VipLabel' => input('VipLabel'),
-            "FaceId" => input('FaceID'), "Id" => input('ID'), 'CountryCode' => '', 'CustomTitle' => input('CustomTitle')
+        $data = ["CustomName" => input('CustomName'), "Phone" => str_replace('\r\n', '', input('Phone')), 'VipLabel' => input('VipLabel'),
+            "FaceId" => input('FaceID'), 'FaceUrl' => input('FaceUrl', ''), "Id" => input('ID'), 'CountryCode' => '', 'CustomTitle' => input('CustomTitle', ''), 'ExternalLink' => input('ExternalLink'),'UrlLink' => input('UrlLink',''),'PackageId'=>session('merchant_OperatorId'),
         ];
+        if (config('is_usa') == 1) {
+            $data['UrlLink'] = input('UrlLink','');
+            $data['SORTID'] = input('SORTID','');
+        }
+
+
         switch ($action) {
             case "list":
-                $result = $db->TCustomServiceCfg()->GetPage();
+                $where = ' and PackageId='.session('merchant_OperatorId');
+                $result = $db->TCustomServiceCfg()->GetPage($where);
                 return $this->apiJson($result);
                 break;
             case  "add": //添加页面
                 if ($this->request->isAjax()) {
+                    if (empty($data['CustomName']) || empty($data['CustomTitle'])) {
+                        return $this->error("表单未填写完整");
+                    }
                     unset($data['Id']);
                     $rows = $db->TCustomServiceCfg()->Insert($data);
-                    if ($rows > 0){
+                    if ($rows > 0) {
                         Redis::rm('CustomService::LoginPage');
                         return $this->success("添加成功");
                     }
@@ -189,7 +198,7 @@ class CustomerServiceSystem extends Main
                 if ($this->request->isAjax()) {
                     $status = input('status');
                     $ID = input('id');
-                    $rows = $db->TCustomServiceCfg()->UPData(['Status'=>$status], "Id=" . $ID);
+                    $rows = $db->TCustomServiceCfg()->UPData(['Status' => $status], "Id=" . $ID);
                     if ($rows > 0) {
                         Redis::rm('CustomService::LoginPage');
                         return $this->success(lang("更新成功"));
@@ -207,6 +216,26 @@ class CustomerServiceSystem extends Main
 
         }
         return $this->fetch();
+    }
+
+    //上传客服头像
+    public function uploadheadpic()
+    {
+        $file = $this->request->file('file');
+        $info = $file->validate(['size' => 2097152, 'ext' => 'png,jpg,jpeg'])->move(ROOT_PATH . 'public' . DS . 'images' . DS . 'topshow');
+        if ($info) {
+            $savepath = $info->getSaveName();
+            //验证文件手机号是否正确
+            $filepath = ROOT_PATH . 'public' . DS . 'images' . DS . 'topshow' . DS . $savepath;
+            if (!file_exists($filepath)) {
+                return $this->apiReturn(2, [], '上传失败');
+            }
+            $headurl = config('active_img_url') . '/topshow/' . $savepath;
+            return $this->apiReturn(0, ['path' => $headurl], '上传成功');
+        } else {
+            return $this->apiReturn(1, [], $file->getError());
+        }
+
     }
 
     /**
@@ -241,7 +270,7 @@ class CustomerServiceSystem extends Main
                     $chargeorder = intval(input('chargeorder', 0));
                     $error = null;
                     $WageMul = $WageMul * 10;
-
+                    
 //                    halt(request()->request());
                     if ($recordtype < 0 || $extratype < 0 || $sendtype < 0 || empty($mailtxt) || empty($title)) $error = lang('请确认输入都正确');
                     if ($extratype > 0 && empty($amount)) $error .= lang("请输入附件数量");
@@ -250,41 +279,41 @@ class CustomerServiceSystem extends Main
                     if ($OperatorId) {
                         return $this->apiReturn(100, '', '权限不足');
                     }
-
+                    
                     if ($extratype > 0) {
                         //额度判断
                         $merchant_OperatorId = session('merchant_OperatorId');
-                        $db = new GameOCDB();
-                        $email_db = new DataChangelogsDB();
-                        $config = $db->getTableObject('T_OperatorEmailQuota')->where('OperatorId', $merchant_OperatorId)->find();
+                         $db = new GameOCDB();
+                         $email_db = new DataChangelogsDB();
+                         $config = $db->getTableObject('T_OperatorEmailQuota')->where('OperatorId', $merchant_OperatorId)->find();
 
-                        if (empty($config)) {
-                            $DailyQuota = 0;
-                            $TotalQuota = 0;
-                        } else {
-                            $DailyQuota = $config['DailyQuota'];
-                            $TotalQuota = $config['TotalQuota'];
-                        }
+                         if (empty($config)) {
+                             $DailyQuota = 0;
+                             $TotalQuota = 0;
+                         } else {
+                             $DailyQuota = $config['DailyQuota'];
+                             $TotalQuota = $config['TotalQuota'];
+                         }
 
 
                         $where =' extratype in(1,7) and  replace(Operator,\'biz-\',\'\')
   in(SELECT  LoginAccount  FROM [OM_GameOC].[dbo].[T_ProxyChannelConfig] where OperatorId='.$merchant_OperatorId.') or Operator=\''.session('merchant_OperatorName').'\'';
-
-                        $hasQuotaToday = $email_db->getTableObject('T_ProxyMsgLog')
-                            ->where($where)
-                            ->whereTime('AddTime', '>=', date('Y-m-d'))
-                            ->sum('Amount') ?: 0;
-                        $hasQuotaToday /= bl;
-                        $hasQuotaTotal = $email_db->getTableObject('T_ProxyMsgLog')
-                            ->where($where)
-                            ->sum('Amount') ?: 0;
-                        $hasQuotaTotal /= bl;
-                        if ($DailyQuota < ($hasQuotaToday + $amount)) {
-                            return $this->apiReturn(100, '', '日额度不足');
-                        }
-                        if ($TotalQuota < ($hasQuotaTotal + $amount)) {
-                            return $this->apiReturn(100, '', '总额度不足');
-                        }
+                         
+                         $hasQuotaToday = $email_db->getTableObject('T_ProxyMsgLog')
+                             ->where($where)
+                             ->whereTime('AddTime', '>=', date('Y-m-d'))
+                             ->sum('Amount') ?: 0;
+                         $hasQuotaToday /= bl;
+                         $hasQuotaTotal = $email_db->getTableObject('T_ProxyMsgLog')
+                             ->where($where)
+                             ->sum('Amount') ?: 0;
+                         $hasQuotaTotal /= bl;
+                         if ($DailyQuota < ($hasQuotaToday + $amount)) {
+                             return $this->apiReturn(100, '', '日额度不足');
+                         }
+                         if ($TotalQuota < ($hasQuotaTotal + $amount)) {
+                             return $this->apiReturn(100, '', '总额度不足');
+                         }
                     }
                     $amount *= bl;
                     if ($sendtype == 1 && !empty($sendtime)) {
@@ -406,7 +435,7 @@ class CustomerServiceSystem extends Main
                 }
                 //导出表格
                 if ((int)input('exec', 0) == 1 && $outAll = true) {
-                    //权限验证
+                    //权限验证 
                     // $auth_ids = $this->getAuthIds();
                     // if (!in_array(10008, $auth_ids)) {
                     //     return $this->apiReturn(1, '', '没有权限');
@@ -498,7 +527,7 @@ class CustomerServiceSystem extends Main
                 }
                 //导出表格
                 if ((int)input('exec', 0) == 1 && $outAll = true) {
-                    //权限验证
+                    //权限验证 
                     // $auth_ids = $this->getAuthIds();
                     // if (!in_array(10008, $auth_ids)) {
                     //     return $this->apiReturn(1, '', '没有权限');
@@ -912,11 +941,11 @@ class CustomerServiceSystem extends Main
                 $val['InviteCommi'] = $val['InviteCommi']/bl;
                 $val['HistoryInviteAmount'] = $val['HistoryInviteAmount']/bl;
                 if ($val['LV1FirstChargeCount'] == 0) {
-                    $val['avg'] = 0.00;
+                     $val['avg'] = 0.00;
                 } else {
-                    $val['avg'] = round($val['LV1FirstChargeAmount']/$val['LV1FirstChargeCount'],2);
+                    $val['avg'] = round($val['LV1FirstChargeAmount']/$val['LV1FirstChargeCount'],2); 
                 }
-
+                
             }
             return $this->apiReturn(0, $data['data'], 'success', $data['total']);
         }
@@ -959,6 +988,7 @@ class CustomerServiceSystem extends Main
         }
         return $this->apiReturn(0, '', 'success');
     }
+
 
     public function testMember(){
         if (input('action') == 'list' || input('action') == 'output') {
@@ -1052,7 +1082,7 @@ class CustomerServiceSystem extends Main
             }
         } else {
             return $this->fetch();
-        }
+        }   
     }
 
     public function createtest(){
@@ -1061,14 +1091,26 @@ class CustomerServiceSystem extends Main
         $ed['TestMemberNum'] = $ed['TestMemberNum']??0;
         $ed['TestMemberNumUsed'] = $ed['TestMemberNumUsed']??0;
         $leftnum = floor($ed['TestMemberNum'] - $ed['TestMemberNumUsed']);
-
+        $leftbalance  = floor($ed['TestMemberQuota'] - $ed['TestMemberUsed']);
         if ($this->request->method() == 'POST') {
             $totalnum = input('num');
+            $balance =  input('balance') ?: 0;
             if ($totalnum>$leftnum) {
-                return $this->apiReturn(1, '', '剩余额度不足');
+                return $this->apiReturn(1, '', '剩余生成数量额度不足');
             }
-            $res = (new GameOCDB())->getTableObject('T_OperatorQuotaManage')->where('OperatorId', $operatorId)->data(['TestMemberNumUsed'=>($ed['TestMemberNumUsed'] + $totalnum)])->update();
-            $sqlExec = "exec Proc_TestGameid_Insert  $totalnum,$operatorId";
+
+            $totalbalance = $totalnum * $balance;
+            if ($totalbalance > $leftbalance) {
+                return $this->apiReturn(1, '', '剩余上分额度不足');
+            }
+            $balance = $balance * bl;
+            $res = (new GameOCDB())->getTableObject('T_OperatorQuotaManage')->where('OperatorId', $operatorId)->data(['TestMemberNumUsed'=>($ed['TestMemberNumUsed'] + $totalnum),'TestMemberUsed'=>($ed['TestMemberUsed'] + $totalbalance)])->update();
+            if (config('test_member_create_balance') == 1) {
+                $sqlExec = "exec Proc_TestGameid_Insert  $totalnum,$operatorId,$balance";
+            } else {
+                $sqlExec = "exec Proc_TestGameid_Insert  $totalnum,$operatorId";
+            }
+            
             $res = (new AccountDB())->getTableQuery($sqlExec);
             if ($res) {
                 return $this->apiReturn(0, '', '操作成功');
@@ -1076,8 +1118,9 @@ class CustomerServiceSystem extends Main
                 return $this->apiReturn(1, '', '操作失败');
             }
         }
-
+        
         $this->assign('leftnum',$leftnum);
+        $this->assign('leftbalance',$leftbalance);
         return $this->fetch();
     }
 
@@ -1101,8 +1144,8 @@ class CustomerServiceSystem extends Main
         } else {
             return $this->apiReturn(1, '', '操作失败');
         }
-
-
+        
+        
     }
 
     //抽税白名单
@@ -1132,7 +1175,7 @@ class CustomerServiceSystem extends Main
         } else {
             return ['code' => 1,'msg'=>'操作失败'];
         }
-    }
+    } 
 
     //掉绑白名单
     public function disableBindWhiteList(){
@@ -1164,5 +1207,5 @@ class CustomerServiceSystem extends Main
     public function editAutoWithdrawalUser()
     {
         return (new \app\model\GameOCDB())->editAutoWithdrawalUser();
-    }
+    } 
 }

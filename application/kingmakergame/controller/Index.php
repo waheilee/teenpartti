@@ -15,7 +15,7 @@ class Index extends Base
     public function __construct()
     {
         parent::__construct();
-
+        
         header('Access-Control-Allow-Origin:*');
 //允许的请求头信息
         header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authorization");
@@ -70,7 +70,7 @@ class Index extends Base
             if($result['status'] != '0000' && $result['status'] != '1001'){
                 return $this->failjson($result['desc']);
             }
-
+            
             $post_data = [
                 'cert'=>$this->config['Secret_Key'],
                 'agentId'=>$this->config['Merchant_ID'],
@@ -95,7 +95,7 @@ class Index extends Base
         }
     }
 
-    public function _empty()
+     public function _empty()
     {
         $params  = request()->param() ?: json_decode(file_get_contents('php://input'),1);
         $key     = $params['key']??'';
@@ -132,7 +132,7 @@ class Index extends Base
                 save_log('kingmaker', '==='.request()->url().'===响应成功数据===' . json_encode($respons));
                 return json($respons);
             }
-            $balance = $this->getSocketBalance($user_id);
+            $balance = $this->getSocketBalance($user_id); 
             $respons = [
                 'status'    =>0000,
                 'desc'      =>'SUCCESS',
@@ -177,7 +177,7 @@ class Index extends Base
                 return json($respons);
             }
             $balance = $this->getSocketBalance($user_id);
-
+ 
             if ($balance < $bet_amount) {
                 $respons = [
                     "status"   =>"1018",
@@ -232,7 +232,7 @@ class Index extends Base
                 save_log('kingmaker', '==='.request()->url().'===响应成功数据===' . json_encode($respons));
                 return json($respons);
             }
-            $balance = $this->getSocketBalance($user_id);
+            $balance = $this->getSocketBalance($user_id); 
             $respons = [
                 'status'    =>0000,
                 'desc'      =>'SUCCESS',
@@ -275,7 +275,7 @@ class Index extends Base
                 save_log('kingmaker', '==='.request()->url().'===响应成功数据===' . json_encode($respons));
                 return json($respons);
             }
-
+ 
             $socket = new QuerySocket();
             if ($win_amount >= 0) {
                 $gamemoney = bcmul($win_amount,bl,0);
@@ -358,7 +358,7 @@ class Index extends Base
                 } else {
                     $md5str = $key.'='.$val;
                 }
-
+                
             }
         }
         $str = $md5str.$Md5key;

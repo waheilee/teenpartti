@@ -42,6 +42,7 @@
                 var cols = [ //表头
                     {field: 'VipLevel', title: "{:lang('VIP等级')}", minWidth: 100}
                     ,{field: 'NeedPoint', title: "{:lang('需达到的流水')}", minWidth: 150}
+                    ,{field: 'ValidInviteCounts', title: "{:lang('邀请人数')}", minWidth: 100}
                     ,{field:  'ServiceFeeRate', title: "{:lang('提现手续费')}%", minWidth: 100}
                     , {field: 'DayMaxWithdrawTimes', title: "{:lang('每日可提现次数')}", minWidth: 100}
                     , {field: 'WithdrawSingleLimit', title: "{:lang('提现单笔限额')}", minWidth: 100}
@@ -55,7 +56,7 @@
                     , {field: 'SevenDaysCharge', title: "{:lang('7日内达到充值')}", minWidth: 100}
                     , {field: 'NeedCharge', title: "{:lang('升级需要充值')}", minWidth: 100}
                     // , {field: 'LimitDown', title: "{:lang('随机值下限')}", minWidth: 200}
-                    , {field: 'WeekLossRate', title: "{:lang('周亏损奖励')}", minWidth: 200}
+                    // , {field: 'LimitUp', title: "{:lang('随机值上限')}", minWidth: 200}
                     , {fixed: 'right', title: "{:lang('操作')}", align: 'center', minWidth: 150, toolbar: '#msg-bar'}
                 ];
                 table.render({

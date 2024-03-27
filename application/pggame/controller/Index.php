@@ -35,7 +35,7 @@ class Index extends Base
         $uuid   = substr($charid, 0,8).$hyphen.substr($charid, 8,4).$hyphen.substr($charid, 12,4).$hyphen.substr($charid, 16,4).$hyphen.substr($charid, 20,12);
         return $uuid;
     }
-
+    
     //游戏对外接口创建玩家
     public function createuser()
     {
@@ -47,8 +47,8 @@ class Index extends Base
             $language = $params['language'];
             $time     = $params['time'];
             $sign     = $params['sign'];
-
-
+                
+            
             if(empty($roleid) || empty($gameid) ||empty($time) ||empty($sign)){
                 return $this->failjson('Missing parameter');
             }
@@ -58,10 +58,18 @@ class Index extends Base
             if ($key != strtolower($sign)) {
                 return $this->failjson('sign is error');
             }
-
+            $pgfake_whiteip_data = Redis::get('pgfake_whiteip_data');
+            $is_tofake = 1;
+            if (!empty($pgfake_whiteip_data)) {
+                $pgfake_whiteip_data = json_decode($pgfake_whiteip_data,1);
+                if (isset($pgfake_whiteip_data[$roleid])) {
+                    $is_tofake = 0;
+                }
+            }
+            
             //是否走假pg
             $fake_pg_data = Redis::get('pgfake_data');
-            if (!empty($fake_pg_data)) {
+            if (!empty($fake_pg_data) && $is_tofake == 1) {
                 $fake_pg_data =json_decode($fake_pg_data,true);
                 if (isset($fake_pg_data[$gameid])) {
                     if ($fake_pg_data[$gameid]['status'] == 1 && strlen($roleid)==8) {
@@ -80,7 +88,7 @@ class Index extends Base
                 config('trans_url',config('test_trans_url'));
             }
             //中转站获取链接
-
+            
             if(config('is_pgame_trans') == 2){
                 $gameURL = $this->GAME_URL.'/'.$gameid.'/index.html?btt=1&ot='.$this->Operator_Token.'&l='.$language.'&ops='.$this->encry($roleid);
             } else {
@@ -104,7 +112,7 @@ class Index extends Base
                 }
             }
             return  $this->succjson($gameURL);
-
+            
         } catch (Exception $ex) {
             save_log('pggame_error', '==='.$ex->getMessage() . $ex->getTraceAsString() . $ex->getLine());
             return $this->failjson('api error');
@@ -139,7 +147,7 @@ class Index extends Base
         }
     }
 
-    //查询余额
+   //查询余额
     public function Balance(){
         try {
             $params = request()->param() ?: json_decode(file_get_contents('php://input'),1);
@@ -186,8 +194,8 @@ class Index extends Base
             $bet_id                  = $params['bet_id'];
             $currency_code           = $params['currency_code'];
             $bet_amount              = $params['bet_amount'];
-            $win_amount              = $params['win_amount'];
-            $transfer_amount         = $params['transfer_amount'];
+            $win_amount              = $params['win_amount'];    
+            $transfer_amount         = $params['transfer_amount']; 
             $transaction_id          = $params['transaction_id'];
             $jackpot_win_amount      = $params['jackpot_win_amount'] ?? 0;
 
@@ -200,7 +208,7 @@ class Index extends Base
             }
             $AccountID = $this->decry($operator_player_session);
             // if ($is_validate_bet || $is_adjustment) {
-
+                
             // } else {
             //     $AccountID = $this->decry($operator_player_session);
             //     $user = (new AccountDB())->getRow(['AccountID' => $AccountID,'AccountID'=>$AccountID], 'AccountID,AccountName');
@@ -220,7 +228,7 @@ class Index extends Base
             if (Redis::get('pggame_is_exec_TransferInOut_'.$user_id.$transaction_id)) {
                 return $this->apiReturn(null,"1034",'Invalid request');
             }
-
+            
             if ($bet_amount == 0 && $win_amount == 0 && $transfer_amount ==0 && $jackpot_win_amount == 0) {
                 $socket = new QuerySocket();
                 $respons = [
@@ -328,8 +336,8 @@ class Index extends Base
             return $this->apiReturn(null,"1200",'Internal server error');
         }
     }
-
-    //投付
+    
+     //投付
     public function Adjustment(){
         try {
             $params = request()->param() ?: json_decode(file_get_contents('php://input'),1);
@@ -338,7 +346,7 @@ class Index extends Base
             $secret_key      = $params['secret_key'];
             $player_name     = $params['player_name'];
             $currency_code   = $params['currency_code'];
-            $transfer_amount = $params['transfer_amount'];
+            $transfer_amount = $params['transfer_amount']; 
             $transaction_id  = $params['adjustment_transaction_id'];
             $adjustment_time  = $params['adjustment_time'] ?? time().'000';
             $operator_player_session = urldecode($params['operator_player_session']);
@@ -354,7 +362,7 @@ class Index extends Base
             // }
             // $user_id = intval($user['AccountID']);
             $user_id = $this->decry($operator_player_session);
-
+            
             $balance = $this->getBalance($user_id);
             if (Redis::get('pggame_is_exec_Adjustment_'.$user_id.$transaction_id)) {
                 return $this->apiReturn(null,"1034",'Invalid request');
@@ -372,7 +380,7 @@ class Index extends Base
                 if ($balance < abs($transfer_amount)) {
                     return $this->apiReturn(null,"3202",'Insufficient player balance');
                 }
-
+                
                 $gamemoney = bcmul(abs($transfer_amount),bl,0);
                 $state = $socket->downScore($user_id, $gamemoney, $transaction_id,36000);
             } elseif ($transfer_amount > 0) {
@@ -394,7 +402,7 @@ class Index extends Base
             return $this->apiReturn(null,"1200",'Internal server error');
         }
     }
-
+    
     //投付
     public function UpdateBetDetail(){
         $respons = [
@@ -461,7 +469,7 @@ class Index extends Base
                 } else {
                     $md5str = $key.'='.$val;
                 }
-
+                
             }
         }
         $str = $md5str.$Md5key;

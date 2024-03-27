@@ -17,7 +17,7 @@ class Base extends Controller
         } else {
             $tgcfg = config('habagame');
         }
-
+        
         $this->config = $tgcfg;
     }
 

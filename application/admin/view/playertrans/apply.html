@@ -3,9 +3,14 @@
 {block name="title"}向玩家转账{/block}
 {block name="css"}
 <style type="text/css">
-    .layui-table-cell {
-        height: auto;
-    }
+.layui-table-cell{
+    height: auto !important;
+    
+  }
+  .layui-table-cell, .layui-table-tool-panel li{
+     word-wrap: break-word !important;
+     white-space:unset !important;
+  }
 </style>
 {/block}
 {block name="content"}
@@ -73,6 +78,16 @@
                             <option value="2">Bank</option>
                             <!-- <option value="3">PIX</option> -->
                             {/if}
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('出款来源')}</label>
+                    <div class="layui-input-inline"  style="width: 100px">
+                        <select name="DrawBackWay" id="DrawBackWay" name="DrawBackWay">
+                            <option value="" selected>{:lang('全部')}</option>
+                            <option value="1">余额提款</option>
+                            <option value="2">佣金提款</option>
                         </select>
                     </div>
                 </div>
@@ -150,12 +165,21 @@
 				//设置表头
 				var cols = [
                     {type: 'checkbox', fixed: 'left'},
-					{field: 'OrderNo', align: 'center', title: "{:lang('订单号')}", minWidth: 200},
-					{
-						field: 'AccountID', align: 'center', title: "{:lang('玩家ID')}", minWidth: 100, templet: function (d) {
-							return " <a class=\"layui-bg-green\" lay-event=\"info\">" + d.AccountID + "</a>";
-						}
-					},
+                    {
+                        field: '', align: 'left', title: "{:lang('订单号')}", minWidth: 250, templet: function (d) {
+                            var html = "";
+                            html += "{:lang('系统')}：" + d.OrderNo + '<br/>';
+                            html += "{:lang('三方')}：" + d.TransactionNo + '<br/>';
+                            html += "{:lang('申请时间')}：" + d.AddTime;
+                            return html;
+                        }
+                    },
+                    {
+                        field: 'AccountID', align: 'center', title: "{:lang('玩家ID')}", minWidth: 100, templet: function (d) {
+                            return " <a class=\"layui-bg-green\" lay-event=\"info\">" + d.AccountID + "</a>";
+                        }
+                    },
+                    {field: 'Money', align: 'center', title: "{:lang('携带余额')}", minWidth: 100},
                     {if(config('app_name')=='TATUWIN')}
                         {field: 'RiskLevel', align: 'center', title: "{:lang('风险等级')}", minWidth: 120, templet: function (d) {
                                 return '等级'+d.RiskLevel;
@@ -163,62 +187,84 @@
                         },
                     {/if}
                     {
-                        field: 'OperatorId', align: 'center', title: "{:lang('渠道ID')}", minWidth: 100
-                    },
-                    {
-                        field: 'cheatLevelDesc', align: 'center', title: "{:lang('异常状态')}", width: 100, templet: function (d) {
-                            var url = '{"player/gamelog2"}?roleid=' + d.AccountID;
-                            if (d.cheatLevelDesc != '') {
-                                return "<a  class=\"layui-btn layui-btn-xs layui-bg-red\" lay-event=\"gamelog\">" + d.cheatLevelDesc + "</a>";
+                        field: 'DrawBackWay', align: 'center', title: "{:lang('出款来源')}", width: 100, templet: function (d) {
+                            if (d.DrawBackWay == 1) {
+                                return "余额提款";
                             }
                             else {
-                                return '<span style="color:green">{:lang(\'未标记\')}</span>';
+                                return "佣金提款";
                             }
                         }
                     },
-                    {field: 'Descript', align: 'center', title: "{:lang('备注')}", minWidth: 100},
-					{
-						field: 'iMoney', align: 'center', title: "{:lang('提现金额')}", minWidth: 100, templet: function (d) {
-							return Math.floor(d.iMoney * 100) / 100;
-						}
-					},
-					{
-						field: 'Tax', align: 'center', title: "{:lang('税收')}", minWidth: 100, templet: function (d) {
-							return Math.floor(d.Tax * 100) / 100;
-						}
-					},
-					{field: 'RealPay', align: 'center', title: "{:lang('打款金额')}", minWidth: 100},
-                    {field: 'Money', align: 'center', title: "{:lang('携带余额')}", minWidth: 100},
-					{field: 'totalPay', align: 'center', title: "{:lang('总充值')}", minWidth: 100},
-					{field: 'TotalDS', align: 'center', title: "{:lang('总提现')}", width: 100},
-					{field: 'EamilMoney', align: 'center', title: "{:lang('邮件补偿')}", minWidth: 100},
-					{
-						field: 'status', align: 'center', title: "{:lang('订单状态')}", minWidth: 100, templet: function (d) {
-							switch (Number(d.status)) {
-								case 0:
-									return '<span style="color: red">'+d.orderType+'</span>';
-								case 1:
-									return '<span style="color:yellowgreen">'+d.orderType+'</span>';
-								case 100:
-									return '<span style="color: red">'+d.orderType+'</span>';
-								default:
-									return d.orderType;
-							}
-						}
-					},
+                     {
+                        field: '', align: 'center', title: "{:lang('提款')}", minWidth: 120, templet: function (d) {
+                            var html = "";
+                            html += "{:lang('金额')}：" +'<span style="color: red">'+ Math.floor(d.iMoney * 100) / 100 + '</span><br/>';
+                            html += "{:lang('税收')}：" +'<span style="color: black">'+ Math.floor(d.Tax * 100) / 100 + '</span><br/>';
+                            html += "{:lang('打款')}：" +'<span style="color: black">'+ d.RealPay+ '</span>';
+                            return html;
+                        }
+                    },
+                    {field: 'Descript', align: 'center', title: "{:lang('备注')}", minWidth: 100, templet: function (d) {
+                            if (d.Descript) {
+                                return '<span style="color: red">'+d.Descript+'</span>';
+                            } else{
+                                return '';
+                            }
+                            
+                        }
+                    },
+                    {field: 'totalPay', align: 'center', title: "{:lang('总充值')}", minWidth: 100, templet: function (d) {
+                            return '<span style="color: red">'+d.totalPay+'</span>';
+                        }
+                    },
+                    {field: 'TotalDS', align: 'center', title: "{:lang('总提现')}", minWidth: 100, templet: function (d) {
+                            return '<span style="color: red">'+d.TotalDS+'</span>';
+                        }
+                    },
+                    
+                    
+                    // {
+                    //     field: '', align: 'center', title: "{:lang('充提')}", minWidth: 150, templet: function (d) {
+                    //         var html = "";
+                    //         html += "{:lang('总充值')}："+'<span style="color: red">' + d.totalPay + '</span><br/>';
+                    //         html += "{:lang('总提现')}：" +'<span style="color: red">'+ d.TotalDS + '</span>';
+                    //         return html;
+                    //     }
+                    // },
+                    
                     {
-                        field: 'PayWay', align: 'center', title: "{:lang('出款方式')}", minWidth: 100, templet: function (d) {
-                            if (d.PayWay == 1) {
-                                return '<span style="color: #e60000">UPI</span>';
-                            }
-                            else if (d.PayWay == 2 || d.PayWay == 5 || d.PayWay == 6|| d.PayWay == 7) {
-                                return '<span style="color: #e60000">PIX</span>';
-                            }
-                            else if (d.PayWay == 3) {
-                                return '<span style="color: #e60000">GCASH</span>';
+                        field: '', align: 'center', title: "{:lang('上分（游戏+佣金）')}", minWidth: 150, templet: function (d) {
+                            return d.totalsf+'（'+d.gamesf+'+'+d.commisionsf+'）'
+                        }
+                    },
+                    {
+                        field: 'status', align: 'center', title: "{:lang('订单状态')}", minWidth: 100, templet: function (d) {
+                            switch (Number(d.status)) {
+                                case 0:
+                                    return '<span style="color: red">'+d.orderType+'</span>';
+                                case 1:
+                                    return '<span style="color:yellowgreen">'+d.orderType+'</span>';
+                                case 100:
+                                    return '<span style="color: red">'+d.orderType+'</span>';
+                                default:
+                                    return d.orderType;
                             }
                         }
                     },
+                    // {
+                    //     field: 'PayWay', align: 'center', title: "{:lang('出款方式')}", minWidth: 100, templet: function (d) {
+                    //         if (d.PayWay == 1) {
+                    //             return '<span style="color: #e60000">UPI</span>';
+                    //         }
+                    //         else if (d.PayWay == 2) {
+                    //             return '<span style="color: #e60000">PIX</span>';
+                    //         }
+                    //         else if (d.PayWay == 3) {
+                    //             return '<span style="color: #e60000">GCASH</span>';
+                    //         }
+                    //     }
+                    // },
                     {
                         field: '', align: 'left', title: "{:lang('账号详情')}", width: 250, templet: function (d) {
                             if (d.PayWay == 1) {
@@ -232,7 +278,7 @@
                                 html += "{:lang('银行')}：" + d.Province + '<br/>';
                                 return html;
                             }
-                            else if (d.PayWay == 2 || d.PayWay == 5) {
+                            else if (d.PayWay == 2) {
                                 var html = "";
                                 html += "{:lang('PIX类型')}：CPF<br/>";
                                 html += 'Chave CPF:' + d.CardNo + '<br/>';
@@ -240,28 +286,25 @@
                                 html += 'EMAIL：' + d.City + '<br/>';
                                 return html;
                             }
-                            else if (d.PayWay == 6) {
-                                var html = "";
-                                html += "{:lang('PIX类型')}：PHONE<br/>";
-                                html += 'PHONE:' + d.CardNo + '<br/>';
-                                html += 'CPF：' + d.Province + '<br/>';
-                                html += 'EMAIL：' + d.City + '<br/>';
-                                return html;
-                            }
-                            else if (d.PayWay == 7) {
-                                var html = "";
-                                html += "{:lang('PIX类型')}：EMAIL<br/>";
-                                html += 'EMAIL:' + d.CardNo + '<br/>';
-                                html += 'CPF：' + d.Province + '<br/>';
-                                return html;
-                            }
                         }
                     },
-					{field: 'TransactionNo', align: 'center', title: "{:lang('三方单号')}", minWidth: 150},
-					{field: 'AddTime', align: 'center', title: "{:lang('申请时间')}", minWidth: 180,sort:true},
-					{field: 'countryCode', align: 'center', title: "{:lang('国家代码')}", minWidth: 120},
-					
-					// {fixed: 'right', title: '操作', align: 'center', minWidth: 230, toolbar: '#msg-bar'},
+                    {field: 'EamilMoney', align: 'center', title: "{:lang('邮件补偿')}", minWidth: 100},
+                    // {field: 'countryCode', align: 'center', title: "{:lang('国家代码')}", minWidth: 120},
+                    {
+                        field: '', align: 'center', title: "{:lang('渠道')}", minWidth: 100, templet: function (d) {
+                            var html = "";
+                            html += d.OperatorId + '<br/>';
+                            html += d.OperatorName ;
+                            return html;
+                            // return d.OperatorId+'（'+d.OperatorName +'）'
+                        }
+                    },
+                    {
+                        field: '', align: 'center', title: "{:lang('业务员')}", minWidth: 100, templet: function (d) {
+                            return d.ProxyChannelName
+                        }
+                    },
+                    
 					{
 						fixed: 'right', title: '操作', align: 'center', minWidth: 200,height:'auto', templet: function (d) {
 							status = Number(d.status);
@@ -290,8 +333,7 @@
 							//         "    <a class=\"layui-btn layui-btn-xs layui-btn-warm\" lay-event=\"freeze\">没收</a>";
 
 						}
-					},
-                    {field: 'CurWageRequire', align: 'center', title: "{:lang('总打码量')}", minWidth: 200},
+					}
 				];
 				table.render({
 					elem: '#proxylist', url: url, page: true, limit: 15,toolbar: '#toolbarDemo',defaultToolbar:[], cols: [cols],where: {Status:0}
@@ -340,7 +382,7 @@
 				var end = $.trim($('#LAY-component-form-group-date2').val());
 				var payChannel = $.trim($('#payChannel').val());
 				var payWay = $.trim($('#payWay').val());
-
+                var DrawBackWay = $.trim($('#DrawBackWay').val());
 
 				//执行重载
 				table.reload('proxylist', {
@@ -352,6 +394,7 @@
 						'start': start, //AddTime
 						'end': end,
 						'payWay':payWay,
+                        'DrawBackWay':DrawBackWay,
 						'payChannel': payChannel,//支付方式
                         'amount':$.trim($('#min_amount').val()),
                         'max_amount':$.trim($('#max_amount').val()),

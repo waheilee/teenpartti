@@ -15,7 +15,7 @@ class Index extends Base
     public function __construct()
     {
         parent::__construct();
-
+        
         header('Access-Control-Allow-Origin:*');
 //允许的请求头信息
         header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authorization");
@@ -23,7 +23,7 @@ class Index extends Base
         header('Access-Control-Allow-Methods: GET, POST, PUT,DELETE,OPTIONS,PATCH');
 //允许携带证书式访问（携带cookie）
         header('Access-Control-Allow-Credentials:true');
-
+        
     }
 
 
@@ -54,11 +54,11 @@ class Index extends Base
             $gameid = $param['gameid'];
 
             $token = $this->encry(config('platform_name').'_'.$user['AccountID']);
-
+            
             $gameURL = $this->config['GAME_URL'].'/launcher?gameCode='.$gameid.'&token='.$this->encry(config('platform_name').'_'.$roleid).'&platform=web&language='.$language.'&playerId='.config('platform_name').'_'.$roleid.'&brandId='.$this->config['Merchant_ID'].'&mode=1';
 
             return $this->succjson($gameURL);
-
+            
         } catch (Exception $ex) {
             save_log('spribe_error', '==='.$ex->getMessage() . $ex->getTraceAsString() . $ex->getLine());
             return $this->failjson('api error');
@@ -123,7 +123,7 @@ class Index extends Base
     public function balance(){
         try {
             $params = request()->param() ?: json_decode(file_get_contents('php://input'),1);
-
+            
             $hash      = $params['hash']??'';
             $requestId = $params['requestId']??'';
             $playerId  = $params['playerId']??'';
@@ -165,7 +165,7 @@ class Index extends Base
             return json($respons);
         } catch (Exception $ex) {
             save_log('spribe_error', '==='.$ex->getMessage() . $ex->getTraceAsString() . $ex->getLine());
-            $respons = [
+           $respons = [
                 "requestId"=>$requestId,
                 "error"   =>"P_00",
                 "message"   =>'Server Error, internal server error',
@@ -241,7 +241,7 @@ class Index extends Base
                 return json($respons);
             }
             $balance = $this->getSocketBalance($user_id);
-
+ 
             if ($balance < $bet_amount) {
                 $respons = [
                     "requestId"=>$requestId,
@@ -293,7 +293,7 @@ class Index extends Base
                     'GameId'=>$game_id,
                 ]));
             }
-
+            
 
             Redis::set('spribe_is_exec_bet_'.$transaction_id,1,3600);
             $balance = $this->getSocketBalance($user_id);
@@ -362,7 +362,7 @@ class Index extends Base
                 // save_log('spribe', '==='.request()->url().'===响应成功数据===' . json_encode($respons));
                 return json($respons);
             }
-
+ 
             if ($win_amount >= 0) {
                 $gamemoney = bcmul($win_amount,bl,0);
                 $gamemoney2 = bcmul($bet_amount,bl,0);
@@ -451,7 +451,7 @@ class Index extends Base
                 } else {
                     $md5str = $key.'='.$val;
                 }
-
+                
             }
         }
         $str = $md5str.$Md5key;

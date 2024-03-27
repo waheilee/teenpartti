@@ -106,7 +106,7 @@ class User extends Controller
         session('business_Proxytype', null);
         cookie('business_LoginAccount', null);
         cookie('business_ProxyChannelId', null);
-        session('business_Proxytype', null);
+        cookie('business_Proxytype', null);
         // cookie('auth', null);
         $domain = $this->request->domain();
         $domain .= "/business/user/index";

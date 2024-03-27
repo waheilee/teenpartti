@@ -6,6 +6,7 @@
 
 <form action="{:url('CustomerServiceSystem/CustomerServiceConfig')}?action={$action}" class="layui-form" id="addmailbox" method="post">
     <div class="layui-form-item" hidden>
+        <input type="hidden" name="FaceUrl" id="FaceUrl" value="{$info.FaceUrl}" />
         <label class="layui-form-label">ID</label>
         <div class="layui-input-block">
             <input VALUE="{$info.Id}" autocomplete="off" class="layui-input layui-disabled" disabled id="ID" type="text">
@@ -14,14 +15,20 @@
     <div class="layui-form-item">
         <label class="layui-form-label"> {:lang("客服名称")}</label>
         <div class="layui-input-block">
-            <input VALUE="{$info.CustomName}" autocomplete="off" class="layui-input" id="CustomName" type="text">
+            <input VALUE="{$info.CustomName}" autocomplete="off" lay-verify="required"  class="layui-input" id="CustomName" type="text">
         </div>
     </div>
 
     <div class="layui-form-item">
         <label class="layui-form-label"> {:lang("标题")}</label>
         <div class="layui-input-block">
-            <input VALUE="{$info.CustomTitle}" autocomplete="off" class="layui-input" id="CustomTitle" type="text">
+            <input VALUE="{$info.CustomTitle}" autocomplete="off" lay-verify="required"  class="layui-input" id="CustomTitle" type="text">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label"> {:lang("客服手机号码")}</label>
+        <div class="layui-input-block">
+            <input VALUE="{$info.UrlLink ?? ''}" autocomplete="off" lay-verify="required"  class="layui-input" id="UrlLink" type="text">
         </div>
     </div>
     <div class="layui-form-item">
@@ -30,6 +37,9 @@
             <input VALUE="{$info.Phone}" autocomplete="off" class="layui-input" id="Phone" type="text">
         </div>
     </div>
+
+
+
     <div class="layui-form-item">
         <label class="layui-form-label"> FaceID</label>
         <div class="layui-input-block">
@@ -41,12 +51,52 @@
         <label class="layui-form-label">  {:lang("客服类型")}</label>
         <div class="layui-input-block">
             <select name="VipLabel" id="VipLabel">
-                <option value="0" {if $info.VipLabel==0}selected="selected"{/if}>{:lang("运营客服")}</option>
-                <option value="1" {if $info.VipLabel==1}selected="selected"{/if}>{:lang("VIP客服")}</option>
+                <option value="6" {if $info.VipLabel==6}selected="selected"{/if}>{:lang("充值客服")}</option>
+                <!-- <option value="1" {if $info.VipLabel==1}selected="selected"{/if}>{:lang("VIP客服")}</option>
                 <option value="2" {if $info.VipLabel==2}selected="selected"{/if}>{:lang("登录页客服")}</option>
+                <option value="3" {if $info.VipLabel==3}selected="selected"{/if}>{:lang("商务客服")}</option>
+                <option value="4" {if $info.VipLabel==4}selected="selected"{/if}>{:lang("Livechat客服")}</option>
+                <option value="5" {if $info.VipLabel==4}selected="selected"{/if}>{:lang("代理邀请奖励客服")}</option> -->
             </select>
         </div>
     </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">  {:lang("打开方式")}</label>
+        <div class="layui-input-block">
+            <select name="ExternalLink" id="ExternalLink">
+                <option value="0" {if $info.ExternalLink==0}selected="selected"{/if}>{:lang("内部打开")}</option>
+                <option value="1" {if $info.ExternalLink==1}selected="selected"{/if}>{:lang("外部打开")}</option>
+            </select>
+        </div>
+    </div>
+
+
+    {if(config('is_usa') == 1)}
+    <div class="layui-form-item">
+        <label class="layui-form-label"> 排序ID</label>
+        <div class="layui-input-block">
+            <input VALUE="{$info.SORTID}" autocomplete="off" placeholder="排序ID" class="layui-input" id="SORTID" type="text">
+        </div>
+    </div>
+    {/if}
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('上传头像')}：</label>
+        <div class="layui-input-block" id="cutpic">
+            <button type="button" class="layui-btn layui-btn-primary" id="headpic"><i class="layui-icon"></i>{:lang('上传头像')}
+            </button>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label"></label>
+        <div class="layui-inline" id="iconpic" {if condition="$info.Id eq 0" } style="display: none" {/if} >
+        <img src="{$info.FaceUrl}" height="100">
+    </div>
+
 
     <div class="layui-form-item">
         <div class="layui-input-block">
@@ -65,8 +115,46 @@
 	}).extend({
 		index: 'lib/index' //主入口模块
 
-	}).use(['index', 'table', 'layer', 'element', 'layedit', 'laydate', 'form', 'jquery'], function () {
-		var element = layui.element, layer = layui.layer, laydate = layui.laydate, layedit = layui.layedit, table = layui.table, $ = layui.$, form = layui.form;
+	}).use(['index', 'table', 'layer', 'element', 'layedit', 'laydate', 'form', 'jquery','upload'], function () {
+		var element = layui.element,
+            layer = layui.layer,
+            laydate = layui.laydate,
+            layedit = layui.layedit,
+            table = layui.table,
+            upload = layui.upload,
+            $ = layui.$,
+            form = layui.form;
+
+
+
+        upload.render({
+            elem: '#headpic'
+            , url: '{:url("CustomerServiceSystem/uploadheadpic")}'
+            , accept: 'file' //普通文件
+            , exts: 'png|jpg|jpeg'
+            ,data : {'id':$('#ID').val()}
+            , before: function (obj) { //obj参数包含的信息，跟 choose回调完全一致，可参见上文。
+            }
+            , done: function (res) {$(".layui-table-main tr").each(function (index, val) {
+                $($(".layui-table-fixed-l .layui-table-body tbody tr")[index]).height($(val).height());
+                $($(".layui-table-fixed-r .layui-table-body tbody tr")[index]).height($(val).height());
+            });
+                //layer.close(loading);
+                if (res.code == 0) {
+                    $('#FaceUrl').val(res.data.path);
+                    $('#iconpic').html('<img src="' + res.data.path + '" width="100" height="100"/>');
+                    $('#iconpic').css('display','block');
+                    layer.msg(res.msg, {icon: 1});
+                } else {
+                    layer.msg(res.msg, {icon: 2});
+                }
+            }
+        });
+
+
+
+
+
 		var main = {
 			submitForm: function (data) {
 				$.ajax({
@@ -81,6 +169,12 @@
 						'Phone': $.trim($("#Phone").val()),
 						'FaceID': $.trim($("#FaceID").val()),
 						'CountryCode': $.trim($("#CountryCode").val()),
+                        'FaceUrl' : $.trim($('#FaceUrl').val()),
+                        'ExternalLink':$.trim($('#ExternalLink').val())
+                {if(config('is_usa') == 1)}
+                    ,'UrlLink':$.trim($('#UrlLink').val())
+                    ,'SORTID':$.trim($('#SORTID').val())
+                {/if}
 					},
 					dataType: 'json',
 					success: function (res) {

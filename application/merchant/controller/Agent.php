@@ -2,7 +2,6 @@
 
 namespace app\merchant\controller;
 
-use app\admin\controller\Export\AgentWaterDailyExport;
 use app\model\BankDB;
 use app\model\GameConfig;
 use app\model\GameOCDB;
@@ -332,7 +331,7 @@ class Agent extends Main
             if (!empty($orderby)) {
                 $order = " $orderby $orderytpe";
             }
-            $field = 'A.ParentID,A.OperatorId,A.RoleId as ProxyId,ISNULL(B.ReceivedIncome,0) As ReceivedIncome,ISNULL(B.TotalDeposit,0) AS TotalDeposit,ISNULL(B.TotalTax,0) AS TotalTax,ISNULL(B.TotalRunning,0) AS TotalRunning,ISNULL(B.Lv1PersonCount,0) AS Lv1PersonCount,ISNULL(B.Lv1Deposit,0) AS Lv1Deposit,ISNULL(B.Lv1DepositPlayers,0) AS Lv1DepositPlayers,ISNULL(B.Lv1Tax,0) AS Lv1Tax,ISNULL(B.Lv1Running,0) AS Lv1Running,ISNULL(B.Lv2PersonCount,0) AS Lv2PersonCount,ISNULL(B.Lv2Deposit,0) AS Lv2Deposit,ISNULL(B.Lv2Tax,0) AS Lv2Tax,ISNULL(B.Lv2Running,0) AS Lv2Running,ISNULL(B.Lv3PersonCount,0) AS Lv3PersonCount,ISNULL(B.Lv3Deposit,0) AS Lv3Deposit,ISNULL(B.Lv3Tax,0) AS Lv3Tax,ISNULL(B.Lv3Running,0) AS Lv3Running,A.MobileBackgroundSwitch';
+            $field = 'A.ParentID,A.OperatorId,A.RoleId as ProxyId,ISNULL(B.ReceivedIncome,0) As ReceivedIncome,ISNULL(B.TotalDeposit,0) AS TotalDeposit,ISNULL(B.TotalTax,0) AS TotalTax,ISNULL(B.TotalRunning,0) AS TotalRunning,ISNULL(B.Lv1PersonCount,0) AS Lv1PersonCount,ISNULL(B.Lv1Deposit,0) AS Lv1Deposit,ISNULL(B.Lv1Tax,0) AS Lv1Tax,ISNULL(B.Lv1Running,0) AS Lv1Running,ISNULL(B.Lv2PersonCount,0) AS Lv2PersonCount,ISNULL(B.Lv2Deposit,0) AS Lv2Deposit,ISNULL(B.Lv2Tax,0) AS Lv2Tax,ISNULL(B.Lv2Running,0) AS Lv2Running,ISNULL(B.Lv3PersonCount,0) AS Lv3PersonCount,ISNULL(B.Lv3Deposit,0) AS Lv3Deposit,ISNULL(B.Lv3Tax,0) AS Lv3Tax,ISNULL(B.Lv3Running,0) AS Lv3Running,A.MobileBackgroundSwitch';
             $proxyinfo = new UserProxyInfo();
             //$table = 'T_UserProxyInfo';
             $table = '(select ' . $field . '  FROM   CD_UserDB.dbo.T_UserProxyInfo(nolock) as A  left join [CD_UserDB].[dbo].[T_ProxyCollectData](nolock) as B on A.RoleID=B.ProxyId) as t ';
@@ -496,80 +495,78 @@ class Agent extends Main
                 $result['other'] = $sumdata;
                 return $this->apiJson($result);
             case 'exec':
-                $AgentWaterDailyExport = new AgentWaterDailyExport();
-                $AgentWaterDailyExport->export();
-//                $db = new  GameOCDB();
-//                $result = $db->GetAgentRecord(true);
-//                $outAll = input('outall', false);
-//                if ((int)input('exec', 0) == 0) {
-//                    if ($result['count'] == 0) {
-//                        $result = ["count" => 0, "code" => 1, 'msg' => lang("没有找到任何数据,换个姿势再试试?")];
-//                    }
-//                    if ($result['count'] >= 5000 && $outAll == false) {
-//                        $result = ["code" => 2, 'msg' => lang("数据超过5000行是否全部导出?<br>只能导出一部分数据.</br>请选择筛选条件,让数据少于5000行<br>当前数据一共有") . $result['count'] . lang("行")];
-//                    }
-//                    unset($result['list']);
-//                    return $this->apiJson($result);
-//                }
-//                //导出表格
-//                if ((int)input('exec') == 1 && $outAll = true) {
-//                    $header_types = [
-//                        lang('日期') => 'string',
-//                        lang('代理ID') => 'string',
-//                        lang('个人总收益') => 'string',
-//                        lang('个人充值') => "string",
-//                        lang('个人流水') => 'string',
-//                        lang('一级人数') => 'string',
-//                        lang('一级充值') => 'string',
-//                        lang('一级流水') => 'string',
-//                        lang('二级人数') => 'string',
-//                        lang('二级充值') => 'string',
-//                        lang('二级流水') => 'string',
-//                        lang('三级人数') => 'string',
-//                        lang('三级充值') => 'string',
-//                        lang('三级流水') => 'string',
-//                    ];
-//                    $filename = lang('代理明细') . '-' . date('YmdHis');
-//                    $rows =& $result['list'];
-////                    halt($rows[0]);
-//                    $writer = $this->GetExcel($filename, $header_types, $rows, true);
-//                    foreach ($rows as $index => &$row) {
-//                        $lv1rate = bcdiv(10, 1000, 4);
-//                        $lv2rate = bcdiv(5, 1000, 4);
-//                        $lv3rate = bcdiv(2.5, 1000, 4);
-//                        $Lv1Reward = bcmul($row['Lv1Running'], $lv1rate, 4);
-//                        $Lv2Reward = bcmul($row['Lv2Running'], $lv2rate, 4);
-//                        $Lv3Reward = bcmul($row['Lv3Running'], $lv3rate, 4);
-//
-//                        $rewar_amount = bcadd($Lv1Reward , $Lv2Reward,4);
-//                        $rewar_amount = bcadd($rewar_amount, $Lv3Reward,2);
-//                        $row['ReceivedIncome'] = $rewar_amount;
-//
-//                        $item = [
-//                            $row['AddTime'],
-//                            $row['ProxyId'],
-//                            $row['ReceivedIncome'],
-//                            $row['DailyDeposit'],
-//                            $row['DailyRunning'],
-//                            $row['Lv1PersonCount'],
-//                            $row['Lv1Deposit'],
-//                            $row['Lv1Running'],
-//
-//                            $row['Lv2PersonCount'],
-//                            $row['Lv2Deposit'],
-//                            $row['Lv2Running'],
-//
-//                            $row['Lv3PersonCount'],
-//                            $row['Lv3Deposit'],
-//                            $row['Lv3Running']
-//                        ];
-//                        $writer->writeSheetRow('sheet1', $item, ['height' => 16, 'halign' => 'center',]);
-//                        unset($rows[$index]);
-//                    }
-//                    unset($row, $item);
-//                    $writer->writeToStdOut();
-//                    exit();
-//                }
+                $db = new  GameOCDB();
+                $result = $db->GetAgentRecord(true);
+                $outAll = input('outall', false);
+                if ((int)input('exec', 0) == 0) {
+                    if ($result['count'] == 0) {
+                        $result = ["count" => 0, "code" => 1, 'msg' => lang("没有找到任何数据,换个姿势再试试?")];
+                    }
+                    if ($result['count'] >= 5000 && $outAll == false) {
+                        $result = ["code" => 2, 'msg' => lang("数据超过5000行是否全部导出?<br>只能导出一部分数据.</br>请选择筛选条件,让数据少于5000行<br>当前数据一共有") . $result['count'] . lang("行")];
+                    }
+                    unset($result['list']);
+                    return $this->apiJson($result);
+                }
+                //导出表格
+                if ((int)input('exec') == 1 && $outAll = true) {
+                    $header_types = [
+                        lang('日期') => 'string',
+                        lang('代理ID') => 'string',
+                        lang('个人总收益') => 'string',
+                        lang('个人充值') => "string",
+                        lang('个人流水') => 'string',
+                        lang('一级人数') => 'string',
+                        lang('一级充值') => 'string',
+                        lang('一级流水') => 'string',
+                        lang('二级人数') => 'string',
+                        lang('二级充值') => 'string',
+                        lang('二级流水') => 'string',
+                        lang('三级人数') => 'string',
+                        lang('三级充值') => 'string',
+                        lang('三级流水') => 'string',
+                    ];
+                    $filename = lang('代理明细') . '-' . date('YmdHis');
+                    $rows =& $result['list'];
+//                    halt($rows[0]);
+                    $writer = $this->GetExcel($filename, $header_types, $rows, true);
+                    foreach ($rows as $index => &$row) {
+                        $lv1rate = bcdiv(10, 1000, 4);
+                        $lv2rate = bcdiv(5, 1000, 4);
+                        $lv3rate = bcdiv(2.5, 1000, 4);
+                        $Lv1Reward = bcmul($row['Lv1Running'], $lv1rate, 4);
+                        $Lv2Reward = bcmul($row['Lv2Running'], $lv2rate, 4);
+                        $Lv3Reward = bcmul($row['Lv3Running'], $lv3rate, 4);
+
+                        $rewar_amount = bcadd($Lv1Reward , $Lv2Reward,4);
+                        $rewar_amount = bcadd($rewar_amount, $Lv3Reward,2);
+                        $row['ReceivedIncome'] = $rewar_amount;
+
+                        $item = [
+                            $row['AddTime'],
+                            $row['ProxyId'],
+                            $row['ReceivedIncome'],
+                            $row['DailyDeposit'],
+                            $row['DailyRunning'],
+                            $row['Lv1PersonCount'],
+                            $row['Lv1Deposit'],
+                            $row['Lv1Running'],
+
+                            $row['Lv2PersonCount'],
+                            $row['Lv2Deposit'],
+                            $row['Lv2Running'],
+
+                            $row['Lv3PersonCount'],
+                            $row['Lv3Deposit'],
+                            $row['Lv3Running']
+                        ];
+                        $writer->writeSheetRow('sheet1', $item, ['height' => 16, 'halign' => 'center',]);
+                        unset($rows[$index]);
+                    }
+                    unset($row, $item);
+                    $writer->writeToStdOut();
+                    exit();
+                }
 
                 break;
         }
@@ -1407,9 +1404,10 @@ class Agent extends Main
     public function receive()
     {
         $activity_arr = [
-            '3' => lang('代理流水返利'),
-            '4' => lang('代理邀请奖励'),
-            '5' => lang('代理首充奖励'),
+            '3' => lang('代理投注返佣'),
+            '4' => lang('邀请梯度奖励'),
+            '5' => lang('代理邀请奖励'),
+            '8' => lang('邮件佣金'),
         ];
         $action = $this->request->param('action');
         if ($action == 'list') {
@@ -1989,4 +1987,58 @@ class Agent extends Main
         return $this->fetch();
     }
 
+    public function blogger(){
+        if (input('action') == 'list') {
+            $data = (new \app\model\UserDB())->getBloggerData();
+            return $this->apiReturn(0, $data['data'], 'success', $data['total']);
+        } else {
+            return $this->fetch();
+        }
+    }
+
+    //掉绑比例
+    public function unbindRecord(){
+        if (input('action') == 'list') {
+            $data = (new \app\model\UserDB())->unbindRecord();
+            return $this->apiReturn(0, $data['data'], 'success', $data['total']);
+        } else {
+            return $this->fetch();
+        }
+    }
+
+    //周薪
+    public function weekBonusLog(){
+        if (input('action') == 'list') {
+            $data = (new \app\model\DataChangelogsDB())->weekBonusLog();
+            return $this->apiReturn(0, $data['data'], 'success', $data['total'],$data['other']);
+        } else {
+            return $this->fetch();
+        }
+    }
+
+    //发送周薪
+    public function sendWeekBonus()
+    {
+        $RoleID  = input('RoleID', 0);
+        $ID = input('ID', 0);
+        
+        if (session('merchant_OperatorId') && request()->module() == 'merchant') {
+            $RoleInfo    = (new \app\model\AccountDB())->getTableObject('T_Accounts')->where(['AccountID'=>$RoleID,'OperatorId'=>session('merchant_OperatorId')])->find();
+            if(empty($RoleInfo)){
+                return ['code' => 1,'msg'=>'权限不足'];
+            }
+        }
+        $record = (new \app\model\DataChangelogsDB())->getTableObject('[T_WeekBonusLog](NOLOCK)')->where('ID',$ID)->find();
+        if ($record['Status'] != 0) {
+            return ['code' => 1,'msg'=>'状态有误，已发送'];
+        }
+
+        //服务端
+        $data = $this->sendGameMessage('CMD_MD_WEEK_BONUS_GET', [$ID,$RoleID], "DC", 'returnComm');
+        if ($data['iResult'] == 0) {
+            return ['code' => 0,'msg'=>'操作成功'];
+        } else {
+            return ['code' => 1,'msg'=>'操作失败'];
+        }
+    } 
 }

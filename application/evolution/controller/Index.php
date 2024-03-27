@@ -17,7 +17,7 @@ class Index extends Base
     public function _initialize()
     {
         parent::_initialize();
-
+        
         header('Access-Control-Allow-Origin:*');
 //允许的请求头信息
         header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authorization");
@@ -51,11 +51,16 @@ class Index extends Base
                 $this->country = config('evolution_test.country');
                 $this->Currency = config('evolution_test.Currency');
                 $this->language = config('evolution_test.language');
-                $this->url      = config('evolution_test.API_Host').'/ua/v1/'.config('evolution_test.Casino_Key').'/'.config('evolution_test.API_Token');
+                $this->url      = config('evolution_test.API_Host').'/ua/v1/'.config('evolution_test.Casino_Key').'/'.config('evolution_test.API_Token'); 
                 config('trans_url_other',config('test_trans_url'));
             }
 
-            $min_amount = (new \app\model\MasterDB)->getTableObject('T_GameConfig')->where('CfgType',300)->value('CfgValue') ?: 0;
+            $has = (new \app\model\MasterDB)->getTableObject('T_GameConfig')->where('CfgType',3000)->find();
+            if (empty($has)) {
+                $min_amount = (new \app\model\MasterDB)->getTableObject('T_GameConfig')->where('CfgType',300)->value('CfgValue') ?: 0;
+            } else {
+               $min_amount = $has['CfgValue'];
+            }
             $balance = $this->getBalance($roleid);
             if ($balance < $min_amount) {
                 return $this->failjson($min_amount,101);
@@ -72,40 +77,40 @@ class Index extends Base
                     $table_id  = "";
                     break;
                 case '2':
-                    $category = "baccarat";
-                    $table_id  = "";
+                     $category = "baccarat";
+                     $table_id  = "";
                     break;
                 case '3':
                     $category  = "blackjack";
                     $table_id  = "";
                     break;
                 case '4':
-                    $category = "funy_live";
-                    $table_id  = "";
+                     $category = "funy_live";
+                     $table_id  = "";
                     break;
                 case '5':
                     $category  = "game_shows";
                     $table_id  = "";
                     break;
                 case '6':
-                    $category = "top_games";
-                    $table_id  = "";
+                     $category = "top_games";
+                     $table_id  = "";
                     break;
                 case '7':
                     $category  = "dragon_tiger";
                     $table_id  = "";
                     break;
                 case '8':
-                    $category = "fan_tan";
-                    $table_id  = "";
+                     $category = "fan_tan";
+                     $table_id  = "";
                     break;
                 case '9':
-                    $category = "poker";
-                    $table_id  = "";
+                     $category = "poker";
+                     $table_id  = "";
                     break;
                 case '10':
-                    $category = "";
-                    $table_id  = "";
+                     $category = "";
+                     $table_id  = "";
                     break;
                 default:
                     $category  = "americanroulette";
@@ -154,7 +159,7 @@ class Index extends Base
             ];
 
             if(config('is_evolution_trans') == 1){
-                $post_param['url'] = $this->url;
+                $post_param['url'] = $this->url;    
                 $result = $this->curl(config('trans_url_other').'/evolution/index/createuser',$post_param);
             } else {
                 $post_param = json_encode($post_param);
@@ -168,7 +173,7 @@ class Index extends Base
             } else {
                 return $this->failjson('create player faild');
             }
-
+            
         } catch (Exception $ex) {
             save_log('evolution_error', '==='.$ex->getMessage() . $ex->getTraceAsString() . $ex->getLine());
             return $this->failjson('api error');
@@ -179,7 +184,7 @@ class Index extends Base
         $params = $this->request->param();
         $authToken = $params['authToken'];
         if($authToken != $this->API_Token){
-            return $this->failjson('authToken error');
+            return $this->failjson('authToken error'); 
         }
         $user_id = $params['userId'];
         $uuid = $params['uuid'];
@@ -195,12 +200,12 @@ class Index extends Base
         save_log('evolution', '==='.$this->request->url().'===响应成功数据===' . json_encode($respons));
         return json($respons);
     }
-
+    
     public function sid(){
         $params = $this->request->param();
         $authToken = $params['authToken'];
         if($authToken != $this->API_Token){
-            return $this->failjson('authToken error');
+            return $this->failjson('authToken error'); 
         }
         $user_id = $params['userId'];
         $uuid = $params['uuid'];
@@ -223,7 +228,7 @@ class Index extends Base
             $params = $this->request->param();
             $authToken = $params['authToken'];
             if($authToken != $this->API_Token){
-                return $this->failjson('authToken error');
+                return $this->failjson('authToken error'); 
             }
 
             $user_id = $params['userId'];
@@ -232,7 +237,7 @@ class Index extends Base
             if (Redis::set('evolution_'.$user_id.'session_id') != $sid) {
                 return $this->failjson('sid Mismatch');
             }
-
+            
             $balance = $this->getBalance($user_id);
             $respons = [
                 "status"=>'OK',
@@ -255,7 +260,7 @@ class Index extends Base
             $params = $this->request->param();
             $authToken = $params['authToken'];
             if($authToken != $this->API_Token){
-                return $this->failjson('authToken error');
+                return $this->failjson('authToken error'); 
             }
             $user_id = $params['userId'];
             $uuid = $params['uuid'];
@@ -286,7 +291,7 @@ class Index extends Base
             $socket    = new QuerySocket();
             $gamemoney = bcmul($transaction['amount'],bl,0);
             $user_id   = intval($user_id);
-
+            
             // save_log('evolution', '===下注扣钱' . $user_id . $gamemoney .$transaction['id']);
             $state = $socket->downScore($user_id, $gamemoney, $transaction['id'],37000);
             Redis::set('evolution_bet_amount_debit_'.$user_id.$transaction['refId'],$gamemoney,3600);
@@ -314,7 +319,7 @@ class Index extends Base
             $params = $this->request->param();
             $authToken = $params['authToken'];
             if($authToken != $this->API_Token){
-                return $this->failjson('authToken error');
+                return $this->failjson('authToken error'); 
             }
             $user_id = $params['userId'];
             $uuid = $params['uuid'];
@@ -338,7 +343,7 @@ class Index extends Base
                 save_log('evolution', '==='.$this->request->url().'===响应成功数据===' . json_encode($respons));
                 return json($respons);exit();
             }
-
+            
             if($transaction['amount'] >= 0){
                 $socket = new QuerySocket();
                 $gamemoney = bcmul($transaction['amount'],bl,0);
@@ -379,13 +384,13 @@ class Index extends Base
     }
 
 
-    //取消下注加钱
+     //取消下注加钱
     public function cancel(){
         try {
             $params = $this->request->param();
             $authToken = $params['authToken'];
             if($authToken != $this->API_Token){
-                return $this->failjson('authToken error');
+                return $this->failjson('authToken error'); 
             }
             $user_id = $params['userId'];
             $uuid = $params['uuid'];
@@ -408,7 +413,7 @@ class Index extends Base
                 save_log('evolution', '==='.$this->request->url().'===响应成功数据===' . json_encode($respons));
                 return json($respons);exit();
             }
-            if($transaction['amount'] > 0){
+             if($transaction['amount'] > 0){
                 $socket = new QuerySocket();
                 $gamemoney = bcmul($transaction['amount'],bl,0);
                 $user_id = intval($user_id);
@@ -420,7 +425,7 @@ class Index extends Base
                 Redis::set('evolution_is_exec_cancel_'.$user_id.$transaction['id'],1,3600);
                 save_log('evolution', '===取消下注加钱' . $user_id . '===状态：' . json_encode($state));
             }
-
+            
             $left_balance = $this->getBalance($user_id);
             $respons = [
                 "status"=>'OK',
@@ -428,7 +433,7 @@ class Index extends Base
                 "bonus"=>0,
                 "uuid"=>$uuid
             ];
-
+            
             save_log('evolution', '==='.$this->request->url().'===响应成功数据===' . json_encode($respons));
             return json($respons);
         } catch (Exception $ex) {

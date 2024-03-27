@@ -85,7 +85,7 @@
                     return d.ProxyChannelId
                 }},
                 {field: 'AccountName', title: "{:lang('业务员名称')}", minWidth: 200,  align: 'center', templet: function(d){
-                    return d.AccountName;
+                    return '<a class="font-primary layui-btn  layui-btn-xs  layui-btn-primary" lay-event="toIndex">'+d.AccountName+'</a>'
                 }},
                 {field: 'LoginAccount', title: "{:lang('登陆账号')}", minWidth: 200,  align: 'center', templet: function(d){
                     return d.LoginAccount;
@@ -155,6 +155,22 @@
             }
             if (obj.event === 'report') {
                 x_admin_show('{:lang(\'每月财报\')}', "{:url('/merchant/channel/proxyChannelStatic')}?RoleID="+data.ProxyChannelId, 1300, 700);
+            }
+            if (obj.event === 'toIndex') {
+                $.ajax({
+                    url: '/merchant/channel/toIndex',
+                    type: 'POST',
+                    data: {ProxyChannelId:data.ProxyChannelId},
+                    dataType: 'json',
+                    success: function (ret) {
+                        if (ret.code == 0) {
+                            window.open("{:url('/merchant/channel/toIndex2')}?ProxyChannelId=" + data.ProxyChannelId);
+                        } else {
+    
+                        }
+                    }
+                });
+                // 
             }
           });
           $('#output').click(function () {

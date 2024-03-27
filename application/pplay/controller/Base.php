@@ -40,7 +40,7 @@ class Base
             $this->country     = config('pplay.country');
             $this->url         = $this->API_Host;
         }
-
+         
     }
 
 

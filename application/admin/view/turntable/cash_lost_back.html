@@ -54,13 +54,13 @@
                             <label class="layui-form-label" style="width: 33px">{:lang('日期')}</label>
                             <div class="layui-input-inline">
                                 <input type="text" name="start" id="LAY-component-form-group-date"
-                                       class="layui-input" value="{:date('Y-m-d')}">
+                                       class="layui-input" value="{:date('Y-m-d').' 00:00:00'}">
                             </div>
                             <div class="layui-form-mid"> -</div>
-<!--                            <div class="layui-input-inline">-->
-<!--                                <input class="layui-input" id="LAY-component-form-group-date2"-->
-<!--                                       name="end" type="text" value="{:date('Y-m-d').' 23:59:59'}">-->
-<!--                            </div>-->
+                            <div class="layui-input-inline">
+                                <input class="layui-input" id="LAY-component-form-group-date2"
+                                       name="end" type="text" value="{:date('Y-m-d').' 23:59:59'}">
+                            </div>
                         </div>
                         <div class="layui-inline">
                             <!-- <div class="layui-input-inline"> -->
@@ -161,7 +161,7 @@
                     },
                     where: {
                         begin_time: begin_time,
-                        // end_time: end_time,
+                        end_time: end_time,
                         take_status: take_status,
                         roleid: $.trim($('#roleid').val()),
                     },
@@ -172,7 +172,7 @@
                             type: "POST",
                             data: {
                                 'begin_time':begin_time,
-                                // 'end_time': end_time,
+                                'end_time': end_time,
                                 'take_status':take_status
                             },
                             dataType: 'json',
@@ -362,7 +362,7 @@
                     , max: 1
                     , lang: '{$datelang ?: "cn"}'
                     , btns: ['clear', 'confirm']
-                    , type: 'date'
+                    , type: 'datetime'
                     // , value: new Date()
                 });
                 laydate.render({

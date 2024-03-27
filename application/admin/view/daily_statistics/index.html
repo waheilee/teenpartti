@@ -4,33 +4,8 @@
 {block name="css"}{/block}
 {block name="content"}
 
-<div class="layui-row layui-col-space20">
-    <div class="layui-col-md2">
-        <div class="layui-card">
-            <div class="layui-card-header"> {:lang('首充总金额')}</div>
-            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="first_charge_amount"
-                                                                 style="color: #009688"></p></div>
-        </div>
-    </div>
-    <div class="layui-col-md2">
-        <div class="layui-card">
-            <div class="layui-card-header"> {:lang('首充提现金额')}</div>
-            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="withdrawal_first_recharge"
-                                                                 style="color: #009688"></p></div>
-        </div>
-    </div>
-    <div class="layui-col-md2">
-        <div class="layui-card">
-            <div class="layui-card-header"> {:lang('首充提现金额')}</div>
-            <div class="layui-card-body layuiadmin-card-list"><p class="layuiadmin-big-font" id="withdrawal_num_first_recharge"
-                                                                 style="color: #009688"></p></div>
-        </div>
-    </div>
 
-
-
-</div>
-<div class="layui-card" style="margin-top: 20px">
+<div class="layui-card">
     <div class="layui-card-header layuiadmin-card-header-auto">
         <form class="layui-form" lay-filter="component-form-group">
             <div class="layui-form-item">
@@ -119,8 +94,6 @@
                         , {field: 'first_charge_amount', title: "{:lang('首充金额')}", minWidth:100, align:'center',templet: function(d){ return formatDecimal(d.first_charge_amount / bl,0); }}
                         , {field: 'active_users', title: "{:lang('活跃用户')}", minWidth:80, align:'center'}
                         , {field: 'new_users', title: "{:lang('新增用户')}", minWidth:80, align:'center'}
-                        , {field: 'withdrawal_first_recharge', title: "{:lang('首充提现金额')}", minWidth:80, align:'center'}
-                        , {field: 'withdrawal_num_first_recharge', title: "{:lang('首充提现人数')}", minWidth:80, align:'center'}
                         // , {field: 'average_online_time', title: "{:lang('平均在线时长')}(s)", minWidth:120, align:'center'}
                         , {field: 'update_time', title: "{:lang('更新时间')}", minWidth:200, align:'center'}
                     ];
@@ -131,28 +104,6 @@
                         , page: true //开启分页
                         , limit:15
                         , cols: [cols]
-                        ,done: function (res, curr, count) {
-                            tzTbale()
-                            $.ajax({
-                                type: 'POST',
-                                data: {
-                                    'start': $.trim($('#LAY-component-form-group-date').val()),
-                                    'end': $.trim($('#LAY-component-form-group-date2').val())
-                                },
-                                async: true,
-                                url: "{:url('getSumData')}",
-                                success: function (data) {
-                                    console.log(data.data)
-                                    $('#first_charge_amount').html(data.data['first_charge_amount']);
-                                    $('#withdrawal_first_recharge').html(data.data['withdrawal_first_recharge']);
-                                    $('#withdrawal_num_first_recharge').html(data.data['withdrawal_num_first_recharge']);
-                                },
-                                error: function (XMLHttpRequest, textStatus, e) {
-
-                                }
-                            });
-
-                        }
                     });
                 },
 
@@ -169,27 +120,6 @@
                         where: {
                             'start':strartdate,
                             'end':enddate
-                        },
-                        done: function (res, curr, count) {
-                            tzTbale()
-                            $.ajax({
-                                type: 'POST',
-                                data: {
-                                    'start': $.trim($('#LAY-component-form-group-date').val()),
-                                    'end': $.trim($('#LAY-component-form-group-date2').val())
-                                },
-                                async: true,
-                                url: "{:url('getSumData')}",
-                                success: function (data) {
-                                    $('#first_charge_amount').html(data.data['first_charge_amount']);
-                                    $('#withdrawal_first_recharge').html(data.data['withdrawal_first_recharge']);
-                                    $('#withdrawal_num_first_recharge').html(data.data['withdrawal_num_first_recharge']);
-                                },
-                                error: function (XMLHttpRequest, textStatus, e) {
-
-                                }
-                            });
-
                         }
                     });
                 },

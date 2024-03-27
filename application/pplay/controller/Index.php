@@ -15,7 +15,7 @@ class Index extends Base
     public function __construct()
     {
         parent::__construct();
-
+        
         header('Access-Control-Allow-Origin:*');
 //允许的请求头信息
         header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authorization");
@@ -65,15 +65,15 @@ class Index extends Base
             }
             $token = $this->encry($roleid);
             $post_param = [
-                'secureLogin'=>$this->Merchant_ID,
-                'symbol'=>$table_id,
-                'language'=>$param['language'],
-                'token'=>$token,
-                'currency'=>$this->Currency,
-                'technology'=>'H5',
-                'lobbyUrl'=>config('domain_url')
+               'secureLogin'=>$this->Merchant_ID,
+               'symbol'=>$table_id,
+               'language'=>$param['language'],
+               'token'=>$token,
+               'currency'=>$this->Currency, 
+               'technology'=>'H5',
+               'lobbyUrl'=>config('domain_url')
             ];
-
+            
             $header = [
                 'content-type:application/x-www-form-urlencoded'
             ];
@@ -81,7 +81,7 @@ class Index extends Base
                 $post_param['token'] = $this->encry(config('platform_name').'_'.$roleid);
                 $post_param['hash'] = $this->createsign($post_param,$this->API_Token);
                 $result = $this->curl($this->url.'/game/url/',$post_param,$header);
-
+                
             } else {
                 $post_param['platform'] = config('platform_name');
                 $post_param['url'] = $this->url.'/game/url/';
@@ -96,7 +96,7 @@ class Index extends Base
             } else {
                 return $this->failjson('create player faild');
             }
-
+            
         } catch (Exception $ex) {
             save_log('pplay_error', '==='.$ex->getMessage() . $ex->getTraceAsString() . $ex->getLine());
             return $this->failjson('api error');
@@ -111,7 +111,7 @@ class Index extends Base
             $token = $params['token']??'';
             $providerId = $params['providerId']??'';
             if(empty($hash) || empty($token) || empty($providerId)){
-                return $this->failjsonpp('parameters error');
+                return $this->failjsonpp('parameters error'); 
             }
             unset($params['hash']);
             $check_hash = $this->createsign($params,$this->API_Token);
@@ -124,7 +124,7 @@ class Index extends Base
             }
 
             $balance = $this->getBalance($userId);
-            if(config('is_pplay_trans') == 2){
+             if(config('is_pplay_trans') == 2){
                 $userId = config('platform_name').'_'.$userId;
             }
             $respons = [
@@ -152,7 +152,7 @@ class Index extends Base
             $hash       = $params['hash']??'';
             $user_id    = $params['userId']??'';
             $providerId = $params['providerId']??'';
-
+            
             if(empty($hash) || empty($user_id) || empty($providerId)){
                 return $this->failjsonpp('parameters error');
             }
@@ -162,7 +162,7 @@ class Index extends Base
             if ($check_hash != $hash) {
                 return $this->failjsonpp('hash error');
             }
-            $balance = $this->getBalance($user_id);
+            $balance = $this->getBalance($user_id); 
             $respons = [
                 "currency"    =>$this->Currency,
                 "cash"        =>round($balance,2),
@@ -192,7 +192,7 @@ class Index extends Base
             $reference  = $params['reference']??'';
             $providerId = $params['providerId']??'';
             if(empty($hash) || empty($user_id) || empty($reference)){
-                return $this->failjsonpp('parameters error');
+                return $this->failjsonpp('parameters error'); 
             }
             $user_id = explode('_',$user_id)[1];
             unset($params['hash']);
@@ -219,7 +219,7 @@ class Index extends Base
                     "description"   =>"fail"
                 ];
                 save_log('pplay', '==='.request()->url().'===响应成功数据===' . json_encode($respons));
-                return json($respons);exit();
+                return json($respons);exit(); 
             }
 
             if (Redis::get('pplay_is_exec_bet_'.$user_id.$reference)) {
@@ -235,10 +235,10 @@ class Index extends Base
                 save_log('pplay', '==='.request()->url().'===响应成功数据===' . json_encode($respons));
                 return json($respons);exit();
             }
-
+            
             $gamemoney = bcmul($amount,bl,0);
-
-
+            
+            
             // save_log('pplay', '===下注扣钱' . $user_id . $gamemoney .$reference);
             $state = $socket->downScore($user_id, $gamemoney, $reference,38000);
             if ($state['iResult']!=0) {
@@ -265,7 +265,7 @@ class Index extends Base
             Redis::set('pplay_amount_bet_'.$gameId.'_'.$user_id,$gamemoney,3600);
 
             // save_log('pplay', '===下注扣钱' . $user_id . '===状态：' . json_encode($state));
-
+            
             $left_balance = $this->getBalance($user_id);
             $respons = [
                 "transactionId" =>substr($user_id.'_'.$reference,0,30),
@@ -299,7 +299,7 @@ class Index extends Base
             $providerId = $params['providerId']??'';
             $promoWinAmount = $params['promoWinAmount']??0;
             if(empty($hash) || empty($user_id) || empty($reference)){
-                return $this->failjsonpp('parameters error');
+                return $this->failjsonpp('parameters error'); 
             }
             $user_id = explode('_',$user_id)[1];
             unset($params['hash']);
@@ -307,7 +307,7 @@ class Index extends Base
             if ($check_hash != $hash) {
                 return $this->failjsonpp('hash error');
             }
-
+            
             if (Redis::get('pplay_is_exec_result_'.$user_id.$reference)) {
                 $balance = $this->getBalance($user_id);
                 $respons = [
@@ -322,12 +322,12 @@ class Index extends Base
                 save_log('pplay', '==='.request()->url().'===响应成功数据===' . json_encode($respons));
                 return json($respons);exit();
             }
-
+            
             if($amount >= 0 || $promoWinAmount >0){
                 $socket = new QuerySocket();
                 $gamemoney = bcmul($amount+$promoWinAmount,bl,0);
                 $user_id = intval($user_id);
-
+                
                 if (config('is_portrait') == 1) {
                     $bet_amount = Redis::get('pplay_amount_bet_'.$gameId.'_'.$user_id) ?: 0;
                     $state = $socket->UpScore2($user_id, $gamemoney, $reference,38000,$bet_amount);
@@ -381,7 +381,7 @@ class Index extends Base
             $reference  = $params['reference']??'';
             $providerId = $params['providerId']??'';
             if(empty($hash) || empty($user_id) || empty($reference)){
-                return $this->failjsonpp('parameters error');
+                return $this->failjsonpp('parameters error'); 
             }
             $user_id = explode('_',$user_id)[1];
             unset($params['hash']);
@@ -420,7 +420,7 @@ class Index extends Base
             $reference  = $params['reference']??'';
             $providerId = $params['providerId']??'';
             if(empty($hash) || empty($user_id) || empty($reference)){
-                return $this->failjsonpp('parameters error');
+                return $this->failjsonpp('parameters error'); 
             }
             $user_id = explode('_',$user_id)[1];
             unset($params['hash']);
@@ -484,7 +484,7 @@ class Index extends Base
             $reference  = $params['reference']??'';
             $providerId = $params['providerId']??'';
             if(empty($hash) || empty($user_id) || empty($reference)){
-                return $this->failjsonpp('parameters error');
+                return $this->failjsonpp('parameters error'); 
             }
             $user_id = explode('_',$user_id)[1];
             unset($params['hash']);
@@ -534,7 +534,7 @@ class Index extends Base
             return $this->failjsonpp('api error');
         }
     }
-    //取消下注加钱
+     //取消下注加钱
     public function refund(){
         try {
             $params = request()->param() ?: json_decode(file_get_contents('php://input'),1);
@@ -547,7 +547,7 @@ class Index extends Base
             $reference  = $params['reference']??'';
             $providerId = $params['providerId']??'';
             if(empty($hash) || empty($user_id) || empty($reference)){
-                return $this->failjsonpp('parameters error');
+                return $this->failjsonpp('parameters error'); 
             }
             $user_id = explode('_',$user_id)[1];
             unset($params['hash']);
@@ -577,7 +577,7 @@ class Index extends Base
                 // Redis::rm('pplay_'.$user_id.$reference);
                 // save_log('pplay', '===取消下注加钱' . $user_id . '===状态：' . json_encode($state));
             }
-
+            
             $left_balance = $this->getBalance($user_id);
             $respons = [
                 "transactionId" =>substr($user_id.'_'.$reference,0,30),
@@ -605,7 +605,7 @@ class Index extends Base
             $reference  = $params['reference']??'';
             $providerId = $params['providerId']??'';
             if(empty($hash) || empty($user_id)){
-                return $this->failjsonpp('parameters error');
+                return $this->failjsonpp('parameters error'); 
             }
             $user_id = explode('_',$user_id)[1];
             unset($params['hash']);
@@ -705,7 +705,7 @@ class Index extends Base
                 } else {
                     $md5str = $key.'='.$val;
                 }
-
+                
             }
         }
         $str = $md5str.$Md5key;

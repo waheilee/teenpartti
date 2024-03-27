@@ -1,6 +1,15 @@
 {extend name="common/base" /}
 {block name="title"}{:lang("功能配置开关")}{/block}
-{block name="css"}{/block}
+{block name="css"}
+<style type="text/css">
+    .layui-table-cell{
+        text-align:center;
+        height:auto;
+        white-space:normal;
+    }
+
+</style>
+{/block}
 {block name="content"}
 <script id="msg-bar" type="text/html">
 	{{#  if(d.Status == 1){ }}
@@ -50,22 +59,65 @@
 <script>
 
 	var cols0 = [
-		{field: 'Id', align: 'center', title: 'ID', width: 100},
-		{field: 'CustomName', align: 'center', title: '{:lang("客服名称")}', width: 200},
-        {field: 'CustomTitle', align: 'center', title: '{:lang("标题")}', width: 200},
-        {field: 'VipLabel', align: 'center', title: '{:lang("客服类型")}', width: 180,templet:function(d) {
-            if(d.VipLabel==1){
-                return '{:lang("Vip客服")}';
+		{field: 'Id', align: 'center',style:"height: 100px;", title: 'ID', width: 100},
+        {
+            field: 'FaceUrl', title: '头像', style:"height: 100px;",minWidth: 200, templet: function (d) {
+                if(d.FaceUrl!='')
+                    return '<a href="'+d.FaceUrl+'" target="_blank"><img src="' + d.FaceUrl + '"  /></a>';
             }
-            else if(d.VipLabel==2){
-                return '{:lang("登录页客服")}';
+        },
+		{field: 'CustomName', align: 'center',style:"height: 100px;", title: '{:lang("客服名称")}', width: 200},
+        {field: 'CustomTitle', align: 'center',style:"height: 100px;", title: '{:lang("标题")}', width: 200},
+        {
+            field: 'VipLabel',
+            align: 'center',
+            style: "height: 100px;",
+            title: '{:lang("客服类型")}',
+            width: 180,
+            templet: function (d) {
+                if (d.VipLabel == 0) {
+                    return '{:lang("充值客服")}';
+                }
+                else if (d.VipLabel == 1) {
+                    return '{:lang("Vip客服")}';
+                }
+                else if (d.VipLabel == 2) {
+                    return '{:lang("登录页客服")}';
+                }
+                else if (d.VipLabel == 3) {
+                    return '{:lang("商务客服")}';
+                }
+                else if (d.VipLabel == 4) {
+                    return '{:lang("Livechat客服")}';
+                }
+                else if (d.VipLabel == 5) {
+                    return '{:lang("代理邀请奖励客服")}';
+                }
+                else if (d.VipLabel == 6) {
+                    return '{:lang("充值客服")}';
+                }
+                else{
+                    return '-';
+                }
             }
-            else
-                return '{:lang("运营客服")}';
-        }},
-		{field: 'Phone', align: 'center', title: '{:lang("客服链接")}', minWidth: 350},
-		{field: 'FaceId', align: 'center', title: 'FaceID', width: 120},
-		{fixed: 'right', title: '{:lang("操作")}', align: 'center', minWidth: 300, toolbar: '#msg-bar'}
+        },
+        {field: 'ExternalLink', align: 'center',style:"height: 100px;", title: '{:lang("打开方式")}', width: 150,templet:function(d) {
+                if(d.ExternalLink==0){
+                    return '{:lang("内部打开")}';
+                }
+                else if(d.ExternalLink==1){
+                    return '{:lang("外部打开")}';
+                }
+                else
+                    return '-';
+            }},
+        {if(config('is_usa') == 1)}
+            {field: 'UrlLink', align: 'center',style:"height: 100px;", title: '{:lang("手机号码")}', minWidth: 200},
+            {field: 'SORTID', align: 'center',style:"height: 100px;", title: '排序', width: 120},
+        {/if}
+		{field: 'Phone', align: 'center', style:"height: 100px;",title: '{:lang("客服链接")}', minWidth: 350},
+		{field: 'FaceId', align: 'center',style:"height: 100px;", title: 'FaceID', width: 120},
+		{fixed: 'right', style:"height: 100px;",title: '{:lang("操作")}', align: 'center', minWidth: 300, toolbar: '#msg-bar'}
 
 	]; //分包管理配置
 	layui.config({
@@ -100,9 +152,13 @@
 				table.on('tool(' + tb0 + ')', function (obj) {
 					if (obj.event == 'edit') {
 						data = obj.data;
+						console.log();
+						if (!data.UrlLink) {
+							data.UrlLink ='';
+						}
 						url = "{:url('CustomerServiceSystem/CustomerServiceConfig')}?action=edit";
-						parms = "&ID=" + data.Id + "&CustomName=" + data.CustomName + "&Phone=" + data.Phone + "&FaceID=" + data.FaceId + "&CountryCode=" + data.CountryCode+"&VipLabel="+data.VipLabel;
-						x_admin_show('{:lang("编辑")}', url + parms, $(window).width() * 0.4, $(window).height() * 0.5);
+						parms = "&ID=" + data.Id + "&CustomName=" + data.CustomName + "&Phone=" +encodeURIComponent(data.Phone) + "&FaceID=" + data.FaceId + "&CountryCode=" + data.CountryCode+"&VipLabel="+data.VipLabel+'&FaceUrl='+data.FaceUrl+'&ExternalLink='+data.ExternalLink+'&CustomTitle='+data.CustomTitle+'&UrlLink='+data.UrlLink;
+						x_admin_show('{:lang("编辑")}', url + parms, $(window).width() * 0.4, $(window).height() * 0.7);
 					}
 					if (obj.event == 'del') {
 						data = obj.data;
@@ -135,7 +191,7 @@
 					// console.info(obj);
 					if (obj.event == "additem") {
 						url = "{:url('CustomerServiceSystem/CustomerServiceConfig')}?action=add";
-						x_admin_show('{:lang("新增")}', url, $(window).width() * 0.3, $(window).height() * 0.5);
+						x_admin_show('{:lang("新增")}', url, $(window).width() * 0.4, $(window).height() * 0.7);
 					}
 				});
 				//监听单元格switch

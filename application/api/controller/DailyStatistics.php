@@ -3,9 +3,6 @@
 namespace app\api\controller;
 
 
-use app\model\UserDB;
-
-use redis\Redis;
 use think\Controller;
 
 /**
@@ -232,10 +229,5 @@ class DailyStatistics extends Controller {
         $team[2] = "SELECT RoleID FROM [CD_UserDB].[dbo].[T_UserProxyInfo] WHERE ParentID IN(".$team[1].")";
         $team[3] = "SELECT RoleID FROM [CD_UserDB].[dbo].[T_UserProxyInfo] WHERE ParentID IN(".$team[2].")";
         return $team;
-    }
-
-    public function test()
-    {
-
     }
 }

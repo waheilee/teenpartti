@@ -16,4 +16,6 @@ return [
     "app\\command\\Addpush",
     "app\\command\\Execpush",
     "app\\command\\SendBatchMail",
+    "app\\command\\ThirdRank",
+    
 ];

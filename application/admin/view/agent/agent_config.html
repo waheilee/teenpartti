@@ -12,7 +12,7 @@
             <li class="" lay-id="2">{:lang('配置')}</li>
             <!-- <li class="" lay-id="3">{:lang('代理推荐奖励配置')}</li>
             <li class="" lay-id="4">{:lang('代理流水业绩返利配置')}</li> -->
-            <li class="" lay-id="3">{:lang('代理有效邀请奖励配置')}</li>
+            <li class="" lay-id="3">{:lang('邀请梯度奖励配置')}</li>
             <!--<li class="" lay-id="4">{:lang('代理额外奖励')}</li>-->
             <!--<li class="" lay-id="5">{:lang('层级返利配置')}</li>-->
             <!--            <li class="" lay-id="6">连胜防刷</li>-->
@@ -28,7 +28,7 @@
             </div>
 
             <div class='layui-tab-item'>
-                <!-- <a style="margin-bottom: 10px;" class="layui-btn" onclick="add(1)"> <i class="layui-icon layui-icon-add-circle"></i> </a> -->
+                <a style="margin-bottom: 10px;" class="layui-btn" onclick="add(2)"> <i class="layui-icon layui-icon-add-circle"></i> </a>
                 <table id='Table2' lay-filter='Table2'></table>
             </div>
             <!--代理流水业绩返利配置-->
@@ -362,7 +362,7 @@
 				break;
 			case 2:
 				url = "{:url('Agent/AgentValidInviteAward')}?Action=addView";
-				width = 500, high = 280;
+				width = 500, high = 400;
 				__callback = TabReload.tab4;
 				break;
 		}

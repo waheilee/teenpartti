@@ -36,12 +36,9 @@
                 <li class="" lay-id="5" id="c5">{:lang('充值记录')}</li>
                 <li class="" lay-id="6" id="c6">{:lang('提现记录')}</li>
                 <li class="" lay-id="7" id="c7">{:lang('登陆日志')}</li>
-                <li class="" lay-id="8" id="c8">{:lang('同ip查询')}</li>
+                <li class="" lay-id="8" id="c8" style="{if(config('is_sameip_ban')==1)}display:none{/if}">{:lang('同ip查询')}</li>
                 <li class="" lay-id="8" id="c10">{:lang('玩家备注')}</li>
                 <li class="" lay-id="9" id="c11">{:lang('下级数据')}</li>
-                <li class="" lay-id="15" id="c15">{:lang('推广记录 ')}</li>
-                <li class="">{:lang('打码变化')}</li>
-                <li class="">{:lang('打码任务')}</li>
             </ul>
             <div class="layui-tab-content " >
                 {if(!empty($user))}
@@ -76,10 +73,10 @@
                             <td>{:lang('VIP等级')}:</td>
                             <td>VIP{$user.VipLv}&nbsp;&nbsp;&nbsp;[<a href="#" id="editlevel" >{:lang('修改')}</a>]</td>
                             <td>{:lang('上级ID')}:</td>
-                            {if(config('merchantParentId') == 1)}
-                            <td><a class="layui-bg-green" id="parentIdDetail" lay-event="detail">{$user.parentId}</a></td>
-                            {else /}
-                            <td>{$user.parentId}</td>
+                            {if condition="(($user.parentId)>0)"}
+                                <td><a href="#" style="color: blue" onclick="todetail({$user.parentId})">{$user.parentId}</a></td>
+                            {else /} 
+                                <td>{$user.parentId}</td>
                             {/if}
                         </tr>
                         <tr>
@@ -146,9 +143,30 @@
                                     {/if}
                                 </div>
                             </td>
+                            <td>{:lang('赠送金币金额')}:</td>
+                            <td>{$user.zscoin}</td>
+                        </tr>
+                        {if(config('is_merchant_ThirdgameSwitch') == 1)}
+                         <tr>
+                            
+                                <td>{:lang('禁止进入游戏')}:</td>
+                                <td>
+                                    <div class="layui-inline layui-form">
+                                        {if($proxyinfo.ThirdgameSwitch == 1)}
+                                        <input type="checkbox" RoleID="{$proxyinfo.RoleID}" name="switch" lay-skin="switch" lay-text="{:lang('开')}|{:lang('关')}" lay-filter='ThirdgameSwitch' checked>
+                                        {else/}
+                                        <input type="checkbox" RoleID="{$proxyinfo.RoleID}" name="switch" lay-skin="switch" lay-text="{:lang('开')}|{:lang('关')}" lay-filter='ThirdgameSwitch'>
+                                        {/if}
+                                    </div>
+                                </td>
+                           
+
+                            <td></td>
+                            <td></td>
                             <td></td>
                             <td></td>
                         </tr>
+                         {/if}
                         </tbody>
                     </table>
                     <div class="layui-fluid">
@@ -447,22 +465,8 @@
                 <div class="layui-tab-item">
                     <table id="Table7" lay-filter="Table7"></table>
                 </div>
-<!--                推广记录-->
-                <div class="layui-tab-item">
-                    <table id="Table8" lay-filter="Table8"></table>
-                </div>
-                <!--   打码量变化    -->
-                <div class="layui-tab-item">
-                    <table id="Table9" lay-filter="Table0"></table>
-
-                </div>
 
 
-                <!--   打码量任务    -->
-                <div class="layui-tab-item">
-                    <table id="Table10" lay-filter="Table10"></table>
-
-                </div>
                 <!--<div class="layui-tab-item">-->
                 <!--<table id="Table7" lay-filter="Table4">-->
                 <!--<div class="layui-fluid">-->
@@ -500,7 +504,7 @@
         index: 'lib/index' //主入口模块
 
     }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
-        var tb0 = 'Table0', tb1 = 'Table1', tb2 = 'Table2', tb3 = 'Table3', tb4 = 'Table4', tb5 = 'Table5', tb6 = 'Table6',tb7 = 'Table7',tb8 = 'Table8',tb9='Table9',tb10='Table10';
+        var tb0 = 'Table0', tb1 = 'Table1', tb2 = 'Table2', tb3 = 'Table3', tb4 = 'Table4', tb5 = 'Table5', tb6 = 'Table6',tb7 = 'Table7';
         var element = layui.element, layer = layui.layer, laydate = layui.laydate, util = layui.util,
             table = layui.table, $ = layui.$, form = layui.form;
         //增加页签  闭包增加 TabxxxxEvn
@@ -633,97 +637,18 @@
         var cols7 = [
             {field: 'level', title: "{:lang('等级')}", minWidth: 200,align: 'center'}
             , {field: 'person', title: "{:lang('人数')}", minWidth: 200,align: 'center'}
-            , {field: 'chargenum', title: "{:lang('充值人数')}", minWidth: 300,align: 'center'}
-            , {field: 'amount', title: "{:lang('充值金额')}", minWidth: 300,align: 'center'}
-            , {field: 'avarage', title: "{:lang('平均充值')}", minWidth: 300,align: 'center'}
+            , {field: 'ValidInviteCount', title: "{:lang('有效邀请人数')}", minWidth: 200,align: 'center'}
+            , {field: 'chargenum', title: "{:lang('充值人数')}", minWidth: 200,align: 'center'}
+            , {field: 'amount', title: "{:lang('充值金额')}", minWidth: 200,align: 'center'}
+            , {field: 'avarage', title: "{:lang('平均充值')}", minWidth: 200,align: 'center'}
+            , {field: 'withdrawCount', title: "{:lang('总提现人数')}", minWidth: 200,align: 'center'}
+            , {field: 'withdrawAmount', title: "{:lang('总提现金额')}", minWidth: 200,align: 'center'}
         ];
-        var cols8 = [ //表头
-            {field:'ParentID', title: "{:lang('邀请人ID')}",align:'center', minWidth: 100},
-            // {field:'ParentName', title: "{:lang('邀请人昵称')}",align:'center', minWidth: 300},
-            {field:'RoleID', title: "{:lang('受邀人ID')}",align:'center', minWidth: 100},
-            // {field:'RoleName', title: "{:lang('受邀人昵称')}",align:'center', minWidth: 300},
-            {field:'TotalDeposit', title: "{:lang('总充值')}",align:'center', minWidth: 100, sort: true},
 
-            {field:'TransMoney', title: "{:lang('首充金额')}",align:'center', minWidth: 100, sort: true},
-            {field:'firtczTime', title: "{:lang('首充时间')}",align:'center', minWidth: 200, sort: true},
-            {field:'TotalRollOut', title: "{:lang('总提现')}",align:'center', minWidth: 100, sort: true},
-            {field:'Totalyk', title: "{:lang('总盈亏')}",align:'center', minWidth: 100, sort: true},
-            // {field:'TotalTax', title: "{:lang('总税收')}",align:'center', minWidth: 100, sort: true},
-            {field:'RegIP', title: "{:lang('注册ip')}",align:'center', minWidth: 100},
-            {field:'RegisterTime', title: "{:lang('注册时间')}",align:'center', minWidth: 100, sort: true},
-            {field:'LastLoginTime', title: "{:lang('最后登陆时间')}",align:'center', minWidth: 100, sort: true}
-            // {title:'操作', toolbar: '#toolbar'}
-        ];
-        var cols9 = [ //表头
-            {field: 'WageFinishWay', title: "{:lang('打码完成方式')}", align: 'center',minWidth: 100, templet: function (d) {
-                    if(d.WageFinishWay==1){
-                        return '正常打码完成';
-                    }else if(d.WageFinishWay==2){
-                        return '系统自动打码清零';
-                    }
-                    else{
-                        return '未知';
-                    }
-                }
-            }
-            , {field: 'ChangeMoney', title: "{:lang('需打码的金币')}", align: 'center', minWidth: 120}
-            , {field: 'NeedWageRequire', title: "{:lang('需要的打码量')}", align: 'center', minWidth: 120}
-            , {field: 'CurWageRequire', title: "{:lang('当前达到的量')}", align: 'center', minWidth: 120}
-            , {field: 'difference', title: "{:lang('差额')}", minWidth: 120}
-            , {field: 'FreezonMoney', title: "{:lang('冻结金额')}", minWidth: 120}
-            , {field: 'EnableWithdrawMoney', title: "{:lang('可提金额')}", minWidth: 120}
-            , {field: 'AddTime', title: "{:lang('添加时间')}", minWidth: 160}
-            , {
-                field: 'Status', title: "{:lang('状态')}", minWidth: 120, templet: function (d) {
-                    var myid = d.Id;
-                    if (d.Status == 0) {
-                        return "{:lang('未达到')}";
-                    } else {
-                        return "{:lang('已达成')}";
-                    }
-                }
-            }
-        ];
-        var cols10 = [
-            {
-                field: 'iGameWealth', align: 'center', title: "{:lang('携带金币')}", width: 180, sort: true, templet: function (d) {
-                    return d.iGameWealth != 0 ? d.iGameWealth : '0.00';
-                }
-            },
-            {
-                field: 'iGameWealth', align: 'center', title: "{:lang('总和')}", width: 180,  templet: function (d) {
-                    return d.iGameWealth != 0 ? d.iGameWealth : '0.00';
-                }
-            },
-            {field: 'TotalDeposit', align: 'center', title: "{:lang('总充值')}", width: 150},
-            {field: 'TotalRollOut', align: 'center', title: "{:lang('总提现')}", width: 150},
-            {
-                field: 'iFreezonMoney', align: 'center', title: "{:lang('冻结金额')}", width: 180, templet: function (d) {
-                    return d.iFreezonMoney != 0 ? d.iFreezonMoney : '0.00';
-                }
-            },
-            {
-                field: 'CashAble', align: 'center', title: "{:lang('可提金额')}", width: 150,  templet: function (d) {
-                    return d.CashAble != 0 ? d.CashAble : '0.00';
-                }
-            }
-            ,
-            {
-                field: 'iCurWaged', align: 'center', title: "{:lang('当前完成打码')}", width: 150, templet: function (d) {
-                    return d.iCurWaged != 0 ? d.iCurWaged : '0.00';
-                }
-            },
-            {
-                field: 'iNeedWaged', align: 'center', title: "{:lang('打码任务')}", width: 150, templet: function (d) {
-                    return d.iNeedWaged != 0 ? d.iNeedWaged : '0.00';
-                }
-            },
-            {field: 'WagedFinishTime', align: 'center', title: "{:lang('完成时间')}", width: 180}
-        ];
         Tabs = {
             tab0Evn: function () { table.render({elem: '#' + tb0, where: Wheres[0], url: "{:url('player/getRoleWage',['roleid'=>$user.AccountID])}", page: true, cols: [cols0], autoSort: false,});},
             tab1Evn: function () { table.render({elem: '#' + tb1, where: Wheres[1], url: "{:url('charge/channelpayorder',['roleid'=>$user.AccountID,'Action'=>'list'])}?strartdate=&enddate=&tranNO=&payChannel=-1&payType=-1&amount=&Status=1&isReturn=-1", page: true, cols: [cols1], autoSort: false,});},
-            tab2Evn: function () { table.render({elem: '#' + tb2, where: Wheres[2], url: "{:url('playertrans/record',['roleid'=>$user.AccountID,'Action'=>'list'])}?classid=&start=&end=&Status=100&amount=&payType=0&tranNO=&payChannel=-1&payway=&checkUser=0", page: true, cols: [cols2], autoSort: false,});},
+            tab2Evn: function () { table.render({elem: '#' + tb2, where: Wheres[2], url: "{:url('playertrans/record',['roleid'=>$user.AccountID,'Action'=>'list'])}?classid=&start=&end=&amount=&payType=0&tranNO=&payChannel=-1&payway=&checkUser=0", page: true, cols: [cols2], autoSort: false,});},
             tab3Evn: function () { table.render({elem: '#' + tb3, where: Wheres[3], url: "{:url('player/getloginLog',['roleid'=>$user.AccountID])}", page: true, cols: [cols3], autoSort: false,});},
             tab4Evn: function () { table.render({elem: '#' + tb4, where: Wheres[4], url: "{:url('player/getSameIp',['roleid'=>$user.AccountID])}", page: true, cols: [cols4], autoSort: false,});},
             tab5Evn: function () { table.render({elem: '#' + tb5, where: Wheres[5], url: "{:url('player/getCommentList',['roleid'=>$user.AccountID,'type'=>2])}", page: true, cols: [cols5], autoSort: false,});},
@@ -731,9 +656,6 @@
             tab6Evn: function () { table.render({elem: '#' + tb6, where: Wheres[6], url: "{:url('player/getCommentList',['roleid'=>$user.AccountID,'type'=>1])}", page: true, cols: [cols6], autoSort: false,});},
 
             tab7Evn: function () { table.render({elem: '#' + tb7, where: Wheres[7], url: "{:url('player/getProxyLvData',['roleid'=>$user.AccountID,'type'=>1])}", page: true, cols: [cols7], autoSort: false,});},
-            tab8Evn: function () { table.render({elem: '#' + tb8, where: {}, url: "{:url('agent/relation',['parentid'=>$user.AccountID,'action'=>'list'])}", page: true, cols: [cols8], autoSort: false,});},
-            tab9Evn: function () { table.render({elem: '#' + tb9, where: Wheres[0], url: "{:url('player/getRoleWage',['roleid'=>$user.AccountID])}", page: true, cols: [cols9], autoSort: false,});},
-            tab10Evn: function () { table.render({elem: '#' + tb10, where: [], url: "{:url('ranke/coin',['roleid'=>$user.AccountID,'Action'=>'list','from'=>'playerdetail'])}", page: true, cols: [cols10], autoSort: false,});},
 
         };
         TabReload = {
@@ -744,10 +666,7 @@
             tab4: function () {table.reload(tb4, {page: {curr: 1}});},
             tab5: function () {table.reload(tb5, {page: {curr: 1}});},
             tab6: function () {table.reload(tb6, {page: {curr: 1}});},
-            tab7: function () {table.reload(tb7, {page: {curr: 1}});},
-            tab8: function () {table.reload(tb8, {page: {curr: 1}});},
-            tab9: function () {table.reload(tb9, {page: {curr: 1}});},
-            tab10: function () {table.reload(tb10, {page: {curr: 1}});}
+            tab7: function () {table.reload(tb7, {page: {curr: 1}});}
         }
         TBinit = {
             searchEvn: function () {
@@ -764,9 +683,6 @@
                 table.reload(tb5, {page: {curr: 1},where: where});
                 table.reload(tb6, {page: {curr: 1},where: where});
                 table.reload(tb7, {page: {curr: 1},where: where});
-                table.reload(tb8, {page: {curr: 1},where: where});
-                table.reload(tb9, {page: {curr: 1},where: where});
-                table.reload(tb10, {page: {curr: 1},where: where});
             },
             sortEvn: function () {
             },
@@ -804,12 +720,6 @@
                             return Tabs.tab6Evn();
                         case 7:
                             return Tabs.tab7Evn();
-                        case 8:
-                            return Tabs.tab8Evn();
-                        case 9:
-                            return Tabs.tab9Evn();
-                        case 10:
-                            return Tabs.tab10Evn();
                     }
                 });
             },
@@ -926,9 +836,6 @@
                 Tabs.tab5Evn();
                 Tabs.tab6Evn();
                 Tabs.tab7Evn();
-                Tabs.tab8Evn();
-                Tabs.tab9Evn();
-                Tabs.tab10Evn();
                 this.sortEvn();
                 this.editEvn();
                 this.TabEvn();
@@ -952,6 +859,64 @@
             //设置开关
             $.ajax({
                 url: "{:url('setProxySwitch')}",
+                type: 'post',
+                data: {'RoleID': RoleID, type: type},
+                success: function (res) {
+                    if (res.code === 0) {
+                        // $(".layui-laypage-btn")[0].click();
+                        layer.msg("{:lang('修改成功')}", {icon: 6});
+                        //window.location.reload();
+
+                    } else {
+                        // $(".layui-laypage-btn")[0].click();
+                        layer.msg("{:lang('修改失败')}", {icon: 5});
+                        //window.location.reload();
+                    }
+                    form.render();
+                }
+            })
+
+        });
+        form.on('switch(ThirdgameSwitch)', function (data) {
+            // alert(2);
+            var RoleID = data.elem.attributes['RoleID'].nodeValue;
+            var swtype = data.elem.checked;
+            var type = 0;
+            if (swtype) type = 1;
+            else type = 0;
+            // layer.msg(data);
+            //设置开关
+            $.ajax({
+                url: "{:url('ThirdgameSwitch')}",
+                type: 'post',
+                data: {'RoleID': RoleID, type: type},
+                success: function (res) {
+                    if (res.code === 0) {
+                        // $(".layui-laypage-btn")[0].click();
+                        layer.msg("{:lang('修改成功')}", {icon: 6});
+                        //window.location.reload();
+
+                    } else {
+                        // $(".layui-laypage-btn")[0].click();
+                        layer.msg("{:lang('修改失败')}", {icon: 5});
+                        //window.location.reload();
+                    }
+                    form.render();
+                }
+            })
+
+        });
+        form.on('switch(WinthdrawSwitch)', function (data) {
+            // alert(2);
+            var RoleID = data.elem.attributes['RoleID'].nodeValue;
+            var swtype = data.elem.checked;
+            var type = 0;
+            if (swtype) type = 1;
+            else type = 0;
+            // layer.msg(data);
+            //设置开关
+            $.ajax({
+                url: "{:url('WinthdrawSwitch')}",
                 type: 'post',
                 data: {'RoleID': RoleID, type: type},
                 success: function (res) {
@@ -1083,19 +1048,16 @@
             }
         });
     }
-
+    function todetail(e){
+        var url = 'playerDetail?roleid=' + e;
+        x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.8);
+    }
     $('#editlevel').click(function(){
 
         var url ='{:url("player/setVipRate",["RoleID"=>$user.AccountID])}?rate={$user.VipLv}';
         x_admin_show("{:lang('修改vip等级')}", url, 500,450);
     });
-    $('#parentIdDetail').click(function(){
-        console.log('{$user.parentId}')
-        if ('{$user.parentId}' != 0){
-            var url ='{:url("playerDetail")}?roleid={$user.parentId}';
-            x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.7);
-        }
-    });
+
 
 </script>
 {/block}

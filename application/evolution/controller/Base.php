@@ -28,7 +28,7 @@ class Base extends Controller
             $this->API_Host    = config('evolution_test.API_Host');
             $this->language    = config('evolution_test.language');
             $this->country     = config('evolution_test.country');
-            $this->url = $this->API_Host.'/ua/v1/'.$this->Casino_Key.'/'.$this->API_Token;
+            $this->url = $this->API_Host.'/ua/v1/'.$this->Casino_Key.'/'.$this->API_Token; 
         } else {
             $this->Merchant_ID = config('evolution.Merchant_ID');
             $this->Currency    = config('evolution.Currency');
@@ -37,9 +37,9 @@ class Base extends Controller
             $this->API_Host    = config('evolution.API_Host');
             $this->language    = config('evolution.language');
             $this->country     = config('evolution.country');
-            $this->url = $this->API_Host.'/ua/v1/'.$this->Casino_Key.'/'.$this->API_Token;
+            $this->url = $this->API_Host.'/ua/v1/'.$this->Casino_Key.'/'.$this->API_Token; 
         }
-
+        
     }
 
 

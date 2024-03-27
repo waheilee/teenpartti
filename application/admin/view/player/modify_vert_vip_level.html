@@ -24,6 +24,15 @@
 
 
     <div class="layui-form-item">
+        <label class="layui-form-label">{:lang('邀请人数')}：</label>
+        <div class="layui-input-block">
+            <input type="number" id="ValidInviteCounts" name='ValidInviteCounts'   value="{$config.ValidInviteCounts}"  autocomplete="off" class="layui-input"
+                   lay-verify="required|number"/>
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
         <label class="layui-form-label">{:lang('提现手续费')}%：</label>
         <div class="layui-input-block">
             <input type="number" id="ServiceFeeRate" name='ServiceFeeRate'   value="{$config.ServiceFeeRate}"  autocomplete="off" class="layui-input"   lay-verify="required|number"/>
@@ -124,13 +133,7 @@
         </div>
     </div>
 
-    <div class="layui-form-item">
-        <label class="layui-form-label">{:lang('周亏损奖励')}：</label>
-        <div class="layui-input-block">
-            <input type="text" id="WeekLossRate" name='WeekLossRate'  value="{$config.WeekLossRate}"  autocomplete="off" class="layui-input"
-                   lay-verify="required|number"/>
-        </div>
-    </div>
+
     <!--<div class="layui-form-item">-->
         <!--<div class="layui-inline">-->
             <!--<label class="layui-form-label">{:lang('随机值范围')}</label>-->

@@ -1,484 +1,217 @@
 {extend name="common/base" /}
-
-{block name="title"}向玩家转账{/block}
-{block name="css"}
-<style type="text/css">
-    .layui-table-cell {
-        height: auto;
-    }
-</style>
-{/block}
+{block name="title"}关系列表{/block}
+{block name="css"}{/block}
 {block name="content"}
-
-
-<div class="layui-row layui-col-space20">
-
-
-</div>
-<div class="layui-row layui-col-space20">
-    <div class="layui-card">
-        <div class="layui-card-body">
-            <div class="layui-card-header layuiadmin-card-header-auto">
-                <form class="layui-form" lay-filter="component-form-group">
-                    <div class="layui-form-item">
-                        <div class="layui-inline">
-                            <div class="layui-input-inline">
-                                <input type="number" id="roleid" name="roleid" autocomplete="off" placeholder="{:lang('玩家ID')}" class="layui-input">
-                            </div>
-                        </div>
-                        <div class="layui-inline">
-                            <div class="layui-input-inline">
-                                <select name="tranType" id="tranType">
-                                    <option value="0">=={:lang('增加类型')}==</option>
-                                    <option value="1">{:lang('大随机金额')}</option>
-                                    <option value="2">{:lang('小随机金额')}</option>
-                                    <option value="6">{:lang('获得随机次数')}</option>
-                                </select>
-                            </div>
-                        </div>
-<!--                        {if(config('app_type')==2)}-->
-<!--                        <div class="layui-inline">-->
-<!--                            <div class="layui-input-inline">-->
-<!--                                <input type="text" id="cpf" name="cpf" placeholder="{:lang('CPF')}" autocomplete="off" class="layui-input">-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                        {/if}-->
-                        <div class="layui-inline">
-                            <label class="layui-form-label" style="width: 33px">{:lang('日期')}</label>
-                            <div class="layui-input-inline">
-                                <input type="text" name="start" id="LAY-component-form-group-date" autocomplete="off" class="layui-input" value="{:date('Y-m-d').' 00:00:00'}">
-                            </div>
-                            <div class="layui-form-mid"> -</div>
-                            <div class="layui-input-inline">
-                                <input autocomplete="off" class="layui-input" id="LAY-component-form-group-date2" name="end" type="text" value="{:date('Y-m-d').' 23:59:59'}">
-                            </div>
-                        </div>
-
-
-<!--                        <div class="layui-inline">-->
-<!--                            <div class="layui-input-inline">-->
-<!--                                <select name="payType" id="payType">-->
-<!--                                    <option value="0">=={:lang('充值类型')}==</option>-->
-<!--                                    <option value="1">{:lang('充值玩家')}</option>-->
-<!--                                    <option value="2">{:lang('未充值玩家')}</option>-->
-<!--                                </select>-->
-<!--                            </div>-->
-<!--                        </div>-->
-
-<!--                        <div class="layui-inline">-->
-<!--                            <div class="layui-input-inline">-->
-<!--                                <input type="number" id="amount" name="amount" autocomplete="off" placeholder="{:lang('输入金额')}" class="layui-input">-->
-<!--                            </div>-->
-<!--                            <div class="layui-form-mid">-->
-<!--                                - -->
-<!--                            </div>-->
-<!--                            <div class="layui-input-inline">-->
-<!--                                <input type="number" id="max_amount" name="max_amount" autocomplete="off" placeholder="{:lang('输入金额')}" class="layui-input">-->
-<!--                            </div>-->
-<!--                        </div>-->
-
-                        <div class="layui-inline">
-                            <!-- <div class="layui-input-inline"> -->
-                            <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
-                            <button type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>
-                            <!-- </div> -->
-                        </div>
-                        <div class="layui-inline">
-                            <!-- <div class="layui-input-inline"> -->
-<!--                            <a class="layui-btn" id="output">{:lang('导出记录')}</a>-->
-                            <!-- </div> -->
-                        </div>
+<div class="layui-card" style="margin-top: 20px">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form class="layui-form" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('玩家ID')}</label>
+                    <div class="layui-input-inline"><input autocomplete="off" class="layui-input" id="RoleID" lay-verify="number" name="RoleID" type="text">
                     </div>
-                </form>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">类型</label>
+                    <div class="layui-input-inline">
+                        <select name="Description" id="Description">
+                            <option value="">全部</option>
+                            {foreach $pddconfig as $k => $v}
+                            <option value="{$k}">{$v}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">{:lang('时间')}</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="start_date" id="start_date" autocomplete="off" class="layui-input">
+                    </div>
+                    <div class="layui-form-mid"> -
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="end_date" id="end_date" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <a class="layui-btn" data-type="reload" id="search">{:lang('搜索')}</a>
+                </div>
             </div>
-            <div id="alllist">
-                <table id="proxylist" lay-filter="proxylist"></table>
-            </div>
+        </form>
+
+    </div>
+    <div class="layui-card-body">
+        <div id="alllist">
+            <table id="proxylist" lay-filter="proxylist"></table>
         </div>
     </div>
+    
 </div>
-
-<script type="text/html" id="toolbarDemo">
-    <div class="layui-btn-container">
-<!--        <button class="layui-btn layui-btn-sm layui-bg-green" lay-event="multiCheck">{:lang('批量审核')}</button>-->
-
-    </div>
-</script>
 {/block}
 {block name="script"}
-
-<script type="text/html" id="desc-bar">
-<!--    <a class="layui-btn layui-btn-xs " lay-event="check">{:lang('审核')}</a>-->
-<!--    <a class="layui-btn layui-btn-xs " lay-event="refuse">{:lang('拒绝')}</a>-->
-
-
-</script>
-<script type="text/html" id="msg-bar">
-    {{#  if((d.status==2 || d.status==6 || d.status == 4) && d.isreturn==0){ }}
-    <a class="layui-btn layui-btn-xs " lay-event="bufa">{:lang('补发')}</a>
-    <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="freeze">{:lang('没收')}</a>
-    <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="handle">{:lang('手动已打款')}</a>
-
-    {{#  } }}
-</script>
-
+<script src="__js__/cache.js"></script>
+<script src="__js__/Barrett.js"></script>
+<script src="__js__/BigInt.js"></script>
+<script src="__js__/RSA.js"></script>
 <script>
-    url="{:url('turntable/detailsOfRewardIncrease')}";
-    layui.config({base: '__layui__/'}).extend({
+    url = "{:url('Turntable/detailsOfRewardIncrease')}";
+    layui.config({
+        base: '__layui__/' //静态资源所在路径
+    }).extend({
         index: 'lib/index' //主入口模块
-
     }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
-        var element = layui.element, layer = layui.layer, laydate = layui.laydate, table = layui.table, $ = layui.$, form = layui.form;
-
-        var main = {
-            renderData: function () {
-                var cols = [ //表头
-
-                    // {type: 'checkbox', fixed: 'left'},
-                    {field: 'RoleId', align: 'center', title: "{:lang('用户ID')}", width: 320},
-                    {field: 'ChangeTime', align: 'center', title: "{:lang('时间')}", width: 320},
-                    {field: 'Item', align: 'center', title: "{:lang('物品')}", width: 320, sort: true},
-                    {field: 'ItemVal', align: 'center', title: "{:lang('变动明细')}", width: 320, sort: true},
-
-
-                    // {fixed: 'right', title: "{:lang('备注')}", align: 'center', minWidth: 320, toolbar: '#desc-bar'}
-                ];
-                table.render({
-                    elem: '#proxylist'
-                    , url: url //数据接口
-                    , page: true //开启分页
-                    , limit: 15
-                    ,toolbar: '#toolbarDemo'
-                    ,defaultToolbar:[]
-                    , where: {Action:'list','classid': -1}
-                    , cols: [cols]
-                    , done: function (res, curr, count) {
-                        tzTbale()
-                        $('#TotalScore').html(res.other.TotalScore == null ? 0 : res.other.TotalScore);
-                        $('#TotalTax').html(res.other.TotalTax == null ? 0 : res.other.TotalTax);
-                        $('#TotalGold').html(res.other.TotalGold == null ? 0 : res.other.TotalGold);
-                        $('#TotalPay').html(res.other.TotalPay == null ? 0 : res.other.TotalPay);
-                        var wrong = $('td[data-field="wrong"]');
-                        for (var i = 0; i < wrong.length; i++) {
-                            if ($(wrong[i]).find('div').html() != '') {
-                                $(wrong[i]).parent().css('color', '#FF5722');
-                            } else {
-
-                            }
-                        }
-                        //表头部分
-                        //动态监听表头高度变化，冻结行跟着改变高度
-                        $(".layui-table-header  tr").resize(function () {
-                            $(".layui-table-header  tr").each(function (index, val) {
-                                $($(".layui-table-fixed .layui-table-header table tr")[index]).height($(val).height());
-                            });
-                        });
-                        //初始化高度，使得冻结行表头高度一致
-                        $(".layui-table-header  tr").each(function (index, val) {
-                            $($(".layui-table-fixed .layui-table-header table tr")[index]).height($(val).height());
-                        });
-
-                        //表体部分
-                        //动态监听表体高度变化，冻结行跟着改变高度
-                        $(".layui-table-body  tr").resize(function () {
-                            $(".layui-table-body  tr").each(function (index, val) {
-                                $($(".layui-table-fixed .layui-table-body table tr")[index]).height($(val).height());
-                            });
-                        });
-                        //初始化高度，使得冻结行表体高度一致
-                        $(".layui-table-body  tr").each(function (index, val) {
-                            $($(".layui-table-fixed .layui-table-body table tr")[index]).height($(val).height());
-                        });
-                    }
-                });
-            },
-            //搜索
-            search: function () {
-                //执行重载
-                table.reload('proxylist', {
-                    page: {
-                        curr: 1 //重新从第 1 页开始
-                    },
-                    where: {
-                        start: $.trim($('#LAY-component-form-group-date').val()),
-                        end: $.trim($('#LAY-component-form-group-date2').val()),
-                        roleid: $.trim($('#roleid').val()),
-                        tranType: $.trim($('#tranType').val()),
-                    }
-                });
-            },
-            //操作事件
-            extraEvent: function () {
-                //编辑
-                table.on('tool(proxylist)', function (obj) {
-
-                    var data = obj.data //获得当前行数据
-                        , layEvent = obj.event; //获得 lay-event 对应的值
-                    tr = obj.tr; //获得当前行 tr 的DOM对象
-
-                    if(layEvent === 'check'){
-
-                        layer.confirm('{:lang("确认审核")}？', {
-                            btn: ['{:lang("确定")}','{:lang("取消")}']
-                        }, function(){
-                            var index = layer.msg("{:lang('正在处理...')}" , {
-                                icon: 16 ,
-                                shade: 0.6 ,
-                                time: 0 ,
-                            });
-                            $.ajax({
-                                url:"{:url('turntable/check')}",
-                                type:"POST",
-                                data:{'role_id': data.RoleId,'is_pass':1},
-                                dataType:'json',
-                                success:function(ret){
-                                    if (ret.code == 0) {
-                                        layer.msg(ret.msg);
-                                        $(".layui-laypage-btn")[0].click();
-                                        setTimeout(function(){layer.closeAll()},1500);
-                                    } else {
-                                        layer.msg(ret.msg);
-                                    }
-                                }
-                            });
-                        });
-                    }else if(layEvent === 'refuse'){
-                        layer.confirm('{:lang("确认拒绝")}？', {
-                            btn: ['{:lang("确定")}','{:lang("取消")}']
-                        }, function(){
-                            var index = layer.msg("{:lang('正在处理...')}" , {
-                                icon: 16 ,
-                                shade: 0.6 ,
-                                time: 0 ,
-                            });
-                            $.ajax({
-                                url:"{:url('turntable/check')}",
-                                type:"POST",
-                                data:{'role_id': data.RoleId,'is_pass':2},
-                                dataType:'json',
-                                success:function(ret){
-                                    if (ret.code == 0) {
-                                        layer.msg(ret.msg);
-                                        $(".layui-laypage-btn")[0].click();
-                                        setTimeout(function(){layer.closeAll()},1500);
-                                    } else {
-                                        layer.msg(ret.msg);
-                                    }
-                                }
-                            });
-                        });
-                    }
-                });
-
-                $(document).off('mousedown','.layui-table-grid-down').
-                on('mousedown','.layui-table-grid-down',function (event) {
-                    table._tableTrCurrr = $(this).closest('td');
-                });
-                $(document).off('click','.layui-table-tips-main [lay-event]').
-                on('click','.layui-table-tips-main [lay-event]',function (event) {
-                    //debugger
-                    var elem = $(this);
-                    var tableTrCurrr =  table._tableTrCurrr;
-                    if(!tableTrCurrr){
-                        return;
-                    }
-                    var layerIndex = elem.closest('.layui-table-tips').attr('times');
-                    console.log(layerIndex);
-                    layer.close(layerIndex);
-                    table._tableTrCurrr.find('[lay-event="' + elem.attr('lay-event') +'"]').click();
-                });
-
-                table.on('sort(proxylist)', function (obj) {
-                    var roleid = $.trim($('#roleid').val());
-                    var start = $.trim($('#LAY-component-form-group-date').val());
-                    var end = $.trim($('#LAY-component-form-group-date2').val());
-                    var payChannel = $.trim($('#payChannel').val());
-                    var payWay = $.trim($('#payWay').val());
-                    //执行重载
-                    table.reload('proxylist', {
-                        initSort: obj,
-                        page: {
-                            curr: 1 //重新从第 1 页开始
-                        },
-                        where: {
-                            'orderby': obj.field,
-                            'ordertype': obj.type,
-                            'roleid': roleid,//AccountID
-                            'start': start, //AddTime
-                            'end': end,
-                            'payChannel': payChannel,//支付方式
-                            'payWay': payWay,
-                            'checkUser':$.trim($('#checkUser').val())
-                        }
-                    });
-
-                });
-
-                table.on('toolbar(proxylist)', function(obj){
-                    var checkStatus = table.checkStatus(obj.config.id);
-                    switch(obj.event){
-                        case 'onekeyProcessfinish':
-                            var da = checkStatus.data;
-                            if (da.length == 0) {
-                                layer.msg('{:lang("未选择记录")}');
-                                return;
-                            }
-                            var OrderNo = [];
-                            for (var i = da.length - 1; i >= 0; i--) {
-                                OrderNo.push(da[i].OrderNo)
-                            }
-                            layer.confirm('{:lang("确认处理为已付款")}？', {
-                                btn: ['{:lang("确定")}','{:lang("取消")}']
-                            }, function(){
-                                var index = layer.msg("{:lang('正在处理...')}" , {
-                                    icon: 16 ,
-                                    shade: 0.6 ,
-                                    time: 0 ,
-                                });
-                                $.ajax({
-                                    url:"{:url('playertrans/onekeyCpmpete')}",
-                                    type:"POST",
-                                    data:{'OrderNo': OrderNo+''},
-                                    dataType:'json',
-                                    success:function(ret){
-                                        if (ret.code == 0) {
-                                            layer.msg(ret.msg);
-                                            $(".layui-laypage-btn")[0].click();
-                                            setTimeout(function(){layer.closeAll()},1500);
-                                        } else {
-                                            layer.msg(ret.msg);
-                                        }
-                                    }
-                                });
-                            });
-                            break;
-                        case 'onekeyProcessfaild':
-                            var da = checkStatus.data;
-                            if (da.length == 0) {
-                                layer.msg('{:lang("未选择记录")}');
-                                return;
-                            }
-                            var OrderNo = [];
-                            for (var i = da.length - 1; i >= 0; i--) {
-                                OrderNo.push(da[i].OrderNo)
-                            }
-                            layer.confirm('{:lang("确认处理为三方失败返回金币")}？', {
-                                btn: ['{:lang("确定")}','{:lang("取消")}']
-                            }, function(){
-                                var index = layer.msg("{:lang('正在处理...')}" , {
-                                    icon: 16 ,
-                                    shade: 0.6 ,
-                                    time: 0 ,
-                                });
-                                $.ajax({
-                                    url:"{:url('playertrans/onekeyProcessfaild')}",
-                                    type:"POST",
-                                    data:{'OrderNo': OrderNo+''},
-                                    dataType:'json',
-                                    success:function(ret){
-                                        if (ret.code == 0) {
-                                            layer.msg(ret.msg);
-                                            $(".layui-laypage-btn")[0].click();
-                                            setTimeout(function(){layer.closeAll()},1500);
-                                        } else {
-                                            layer.msg(ret.msg);
-                                        }
-                                    }
-                                });
-                            });
-                            break;
-                    };
-                });
-            },
-            init: function () {
-                form.render(null, 'component-form-group');
-                laydate.render({
-                    elem: '#LAY-component-form-group-date'
-                    , format: 'yyyy-MM-dd'
-                    , max: 1
-                    , lang:'{$datelang ?: "cn"}'
-                    , btns: ['clear', 'confirm']
-                    , type: 'datetime'
-                    // , value: new Date()
-                });
-                laydate.render({
-                    elem: '#LAY-component-form-group-date2'
-                    , format: 'yyyy-MM-dd'
-                    , max: 1
-                    , lang:'{$datelang ?: "cn"}'
-                    , btns: ['clear', 'confirm']
-                    , type: 'datetime'
-                    // , value: new Date()
-                });
-                main.extraEvent();
-                main.renderData();
-                $('#search').on('click', function (e) {
-                    e.preventDefault();
-                    main.search();
-                });
-            }
-        };
-
-        main.init();
-    });
-
-    $('#output').click(function () {
-        where = {
-            start: $.trim($('#LAY-component-form-group-date').val()),
-            end: $.trim($('#LAY-component-form-group-date2').val()),
-            Status: $('#Status').val(),
-            amount: $('#amount').val(),
-            max_amount: $.trim($('#max_amount').val()),
-            roleid: $.trim($('#roleid').val()),
-            payType: $.trim($('#payType').val()),
-            classid: $.trim($('#classid').val()),
-            tranNO: $.trim($('#tranNO').val()),
-            payChannel: $.trim($('#payChannel').val()),
-            payWay: $.trim($('#payWay').val()),
-            checkUser:$.trim($('#checkUser').val()),
-            limit: 10000000,
-            Action: 'exec',
-        }
-
-        download();
-
-        function download() {
-            var params = Object.keys(where).map(function (key) {
-                return encodeURIComponent(key) + "=" + encodeURIComponent(where[key]);
-            }).join("&");
-            url = url + "?" + params;
-            $.ajax({
-                type: 'POST',
-                dataType: 'json',
-                async: true,
-                url: url, // 生成文件，保存在服务器
-                success: function (data) {
-                    var result = data;
-                    console.info(data);
-                    switch (result["code"]) {
-                        case 0:
-                            parent.parent.open(url + "&exec=1&outall=true");
-                            break;
-                        case 1:
-                            layer.msg(result["message"]);
-                            break;
-                        case 2:
-                            layer.confirm(result['message'], {
-                                btn: ['{:lang("是")}', '{:lang("否")}'] //按钮
-                            }, function () {
-                                parent.parent.open(url + "&exec=1&outall=true");
-                                layer.msg('', {icon: 6, time: 1000}, function () {
-                                    window.location.reload();
-                                });
-                            });
+        var table = layui.table;
+        var form  = layui.form;
+        var laydate  = layui.laydate;
+        var $ = layui.$;
+        var element  = layui.element;
+          table.render({
+            elem: '#proxylist'
+            // ,height: 'full-280'
+            ,url: url+'?action=list'//数据接口
+            ,limit:20
+            ,page: true //开启分页
+            ,id:'proxylist'
+            ,autoSort:false
+            ,sort: true
+            ,cols: [[ //表头
+                {field:'RoleID', title: "{:lang('玩家ID')}",align:'center', minWidth: 120, templet: function (d) {
+                        return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.RoleID+ "</a>";
                     }
                 },
-                error: function (XMLHttpRequest, textStatus, e) {
-                    console.log("oilDetection.js  method exportOilDetection" + e);
+                {field:'AddTime', title: "{:lang('时间')}",align:'center', minWidth: 120, sort: true},
+                {field:'Description', title: "{:lang('转盘类型')}",align:'center', minWidth: 200},
+                {field:'ItemValue', title: "{:lang('物品')}",align:'center', minWidth: 120, sort: true}
+            ]]
+            , done: function (res) {
+
+            }
+          });
+          laydate.render({elem: '#start_date', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+          laydate.render({elem: '#end_date', format: 'yyyy-MM-dd HH:mm:ss',type: 'datetime', max: 1, lang:'{$datelang ?: "cn"}', btns: ['clear', 'confirm']});
+
+          // 搜索 
+          $("#search").on('click', function(){
+             table.reload('proxylist', {
+              page:{
+                  curr:1 
+              },
+              where: {
+                  RoleID: $('#RoleID').val(),
+                  start_date: $('#start_date').val(),
+                  end_date:$('#end_date').val(),
+                  Description:$('#Description').val()
+              }
+            })
+          });
+        table.on('tool(proxylist)', function (obj) {
+            var data = obj.data //获得当前行数据
+                , layEvent = obj.event; //获得 lay-event 对应的值
+            tr = obj.tr; //获得当前行 tr 的DOM对象
+            if (layEvent === 'detail') {
+                var url = '/admin/player/playerDetail?roleid=' + data.RoleID;
+                x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.8);
+            }
+            if (layEvent === 'pass') {
+                layer.confirm("{:lang('确定审核通过？')}", {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
+                    $.ajax({
+                        type: 'post',
+                        url: "{:url('Turntable/turntableSwitch')}",
+                        dataType: 'json',
+                        success: function (res) {
+                            if (res.code === 0) {
+                                layer.msg(res.msg, {icon: 1, time: 1000}, function () {
+                                    $(".layui-laypage-btn")[0].click();
+                                });
+                            } else {
+                                layer.msg(res.msg, {icon: 2});
+                            }
+                        }
+                    });
+                });
+            }
+            if (layEvent === 'refuse') {
+                layer.confirm("{:lang('确定审核拒绝？')}", {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
+                    $.ajax({
+                        type: 'post',
+                        url: "{:url('Turntable/turntableSwitch')}",
+                        dataType: 'json',
+                        success: function (res) {
+                            if (res.code === 0) {
+                                layer.msg(res.msg, {icon: 1, time: 1000}, function () {
+                                    window.location.reload();
+                                });
+                            } else {
+                                layer.msg(res.msg, {icon: 2});
+                            }
+                        }
+                    });
+                });
+            }
+        });
+        table.on('toolbar(proxylist)', function (obj) {
+            if (layEvent === 'turntableSwitch') {
+                layer.confirm("{:lang('是否开启或关闭转盘？')}", {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
+                    $.ajax({
+                        type: 'post',
+                        url: "{:url('Turntable/turntableSwitch')}",
+                        dataType: 'json',
+                        success: function (res) {
+                            if (res.code === 0) {
+                                layer.msg(res.msg, {icon: 1, time: 1000}, function () {
+                                    window.location.reload();
+                                });
+                            } else {
+                                layer.msg(res.msg, {icon: 2});
+                            }
+                        }
+                    });
+                });
+            }
+            if (layEvent === 'onekeyBack') {
+                layer.confirm("{:lang('是否一键全网退款？')}", {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
+                    $.ajax({
+                        type: 'post',
+                        url: "{:url('Turntable/onekeyback')}",
+                        dataType: 'json',
+                        success: function (res) {
+                            if (res.code === 0) {
+                                layer.msg(res.msg, {icon: 1, time: 1000}, function () {
+                                    window.location.reload();
+                                });
+                            } else {
+                                layer.msg(res.msg, {icon: 2});
+                            }
+                        }
+                    });
+                });
+            }
+        });
+        //排序
+        table.on('sort(proxylist)', function (obj) {
+            //执行重载
+            table.reload('proxylist', {
+                initSort: obj,
+                page: {curr: 1},
+                where: {
+                    RoleID: $('#RoleID').val(),
+                    start_date: $('#start_date').val(),
+                    end_date:$('#end_date').val(),
+                    Description:$('#Description').val(),
+                    ordertype: obj.type,
+                    orderby: obj.field,
+                },
+                parseData:function(res){
+                  if(res.data.length==0){
+                    return{
+                      'code':'201',
+                      'msg':"{:lang('无数据')}"
+                    };
+                  };
                 }
             });
-        }
+
+        });
     });
 </script>
-
 {/block}

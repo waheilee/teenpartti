@@ -13,12 +13,15 @@ use think\Exception;
 class My extends Main
 {
 
-    public function oplink(){
+    public function oplink()
+    {
         $m = new \app\model\MasterDB();
-        $InviteUrlModel = $m->getTableObject('T_GameConfig')->where('CfgType',113)->value('keyValue');
-        $InviteUrlModel =  str_replace("ic=", 'ch=', $InviteUrlModel);
-        $link =  str_replace("{inviteCode}", session('merchant_OperatorId'), $InviteUrlModel);
-        $this->assign('link',$link);
+        $InviteUrlModel = $m->getTableObject('T_GameConfig')->where('CfgType', 113)->value('keyValue');
+        preg_match('/(\w+)=/i', $InviteUrlModel, $matches);
+        $replace_str =$matches[0];
+        $InviteUrlModel = str_replace($replace_str, 'ch=', $InviteUrlModel);
+        $link = str_replace("{inviteCode}", session('merchant_OperatorId'), $InviteUrlModel);
+        $this->assign('link', $link);
         return $this->fetch();
     }
 
@@ -61,7 +64,8 @@ class My extends Main
         sum(convert(bigint,yesbingo)) as yesbingo,
         sum(convert(bigint,fcgame)) as fcgame,
         sum(convert(bigint,tadagame)) as tadagame,
-        sum(convert(bigint,pplive)) as pplive';
+        sum(convert(bigint,pplive)) as pplive,
+        sum(convert(bigint,fakepggame)) as fakepggame';
 
         $total = $db->getTableObject('T_Operator_GameStatisticTotal')->where($where)->field($field)->find();
         $pay = $db->getTableObject('T_Operator_GameStatisticPay')->where($where)->field('sum(convert(bigint,totalpay)) totalpay')->find();
@@ -83,11 +87,12 @@ class My extends Main
         $total['jiliwin'] = FormatMoney($total['jiliwin'] ?? 0);
         $total['hacksaw'] = FormatMoney($total['hacksaw'] ?? 0);
         $total['habawin'] = FormatMoney($total['habawin'] ?? 0);
-        $total['jiliwin'] = FormatMoney($total['jiliwin'] ?? 0);
         $total['yesbingo'] = FormatMoney($total['yesbingo'] ?? 0);
         $total['fcgame'] = FormatMoney($total['fcgame'] ?? 0);
         $total['tadagame'] = FormatMoney($total['tadagame'] ?? 0);
         $total['pplive'] = FormatMoney($total['pplive'] ?? 0);
+        $total['fakepggame'] = FormatMoney($total['fakepggame'] ?? 0);
+
 
         $data['recharge_fee'] = bcmul($data['total_recharge'], $config['RechargeFee'], 3);
         $data['payout_fee'] = bcmul($data['totalpayout'], $config['WithdrawalFee'], 3);
@@ -103,6 +108,7 @@ class My extends Main
         $APIFee[8] = $APIFee[8] ?? 0; //tadagame
         $APIFee[9] = $APIFee[9] ?? 0; //fcgame
         $APIFee[10] = $APIFee[10] ?? 0; //pplive
+        $APIFee[11] = $APIFee[11] ?? 0; //fakepggame
 
         $totalpp = bcmul($APIFee[0], $total['ppgamewin'], 4);
         $totalpg = bcmul($APIFee[1], $total['pggamewin'], 4);
@@ -115,6 +121,7 @@ class My extends Main
         $tadagame = bcmul($APIFee[8], $total['tadagame'], 4);
         $fcgame = bcmul($APIFee[9], $total['fcgame'], 4);
         $pplive = bcmul($APIFee[10], $total['pplive'], 4);
+        $fakepggame = bcmul($APIFee[11], $total['fakepggame'], 4);
 
         $TotalAPICost = 0;
         if ($totalpp < 0) {//系统赢算费用
@@ -157,6 +164,10 @@ class My extends Main
             $TotalAPICost += abs($pplive);
         }
 
+        if ($fakepggame < 0) {//系统赢算费用
+            $TotalAPICost += abs($fakepggame);
+        }
+
         $data['TotalAPICost'] = round($TotalAPICost, 3);
         $data['totalprofit'] = round(($data['total_recharge']) - ($data['totalpayout'] + $data['recharge_fee'] + $data['payout_fee'] + $data['TotalAPICost']), 3);
 
@@ -177,26 +188,25 @@ class My extends Main
     }
 
 
+    public function subAccount()
+    {
 
-    public function subAccount(){
-
-        if($this->request->isAjax())
-        {
-            $opname = input('opname','');
+        if ($this->request->isAjax()) {
+            $opname = input('opname', '');
             $page = intval(input('page')) ? intval(input('page')) : 1;
             $limit = intval(input('limit')) ? intval(input('limit')) : 15;
             $operatorId = session('merchant_OperatorId');
-            $where=' AccountType=1 and OperatorId='.$operatorId;
-            if(!empty($opname)){
-                $where.=" and  OperatorName like '%$opname%'";
+            $where = ' AccountType=1 and OperatorId=' . $operatorId;
+            if (!empty($opname)) {
+                $where .= " and  OperatorName like '%$opname%'";
             }
-            $db= new GameOCDB();
-            $field ='Id,OperatorName,AddTime,LastLoginTime,google_verify';
-            $data = $db->getTableList('T_OperatorSubAccount',$where,$page,$limit,$field,'addtime desc');
-            foreach ($data['list'] as $k=>&$v){
-                $v['IsGoogle'] ='否';
-                if(!empty($v['google_verify'])){
-                    $v['IsGoogle'] ='是';
+            $db = new GameOCDB();
+            $field = 'Id,OperatorName,AddTime,LastLoginTime,google_verify';
+            $data = $db->getTableList('T_OperatorSubAccount', $where, $page, $limit, $field, 'addtime desc');
+            foreach ($data['list'] as $k => &$v) {
+                $v['IsGoogle'] = '否';
+                if (!empty($v['google_verify'])) {
+                    $v['IsGoogle'] = '是';
                 }
                 unset($v['google_verify']);
             }
@@ -207,101 +217,98 @@ class My extends Main
     }
 
 
-    public function addSubaccount(){
-        $id= input('Id');
-        $db=new GameOCDB();
+    public function addSubaccount()
+    {
+        $id = input('Id');
+        $db = new GameOCDB();
         $operatorId = session('merchant_OperatorId');
-        if($this->request->isAjax())
-        {
-            $operatorname = input('OperatorName','');
-            $password =input('txtpassword','');
-            $repassword =input('repassword','');
+        if ($this->request->isAjax()) {
+            $operatorname = input('OperatorName', '');
+            $password = input('txtpassword', '');
+            $repassword = input('repassword', '');
 
-            if(empty($password)){
+            if (empty($password)) {
                 return $this->failJSON(lang('请输入需修改的密码'));
             }
-            if($password!='' && $password!=$repassword){
+            if ($password != '' && $password != $repassword) {
                 return $this->failJSON(lang('两次输入密码不一致'));
             }
 
-            if($id>0){
-                $save_data=[
+            if ($id > 0) {
+                $save_data = [
                     'PassWord' => md5($password)
                 ];
-                $db->updateTable('T_OperatorSubAccount',$save_data,'Id='.$id);
-                return $this->successJSON([],lang('密码修改成功'));
-            }
-            else {
-                $count = $db->getTableRow('T_OperatorSubAccount',"OperatorName='$operatorname'",'*');
-                if(!empty($count)){
+                $db->updateTable('T_OperatorSubAccount', $save_data, 'Id=' . $id);
+                return $this->successJSON([], lang('密码修改成功'));
+            } else {
+                $count = $db->getTableRow('T_OperatorSubAccount', "OperatorName='$operatorname'", '*');
+                if (!empty($count)) {
                     return $this->failJSON(lang('账号名称已存在，请选择其他账号'));
                 }
-                $save_data=[
-                    'OperatorName'=>$operatorname,
+                $save_data = [
+                    'OperatorName' => $operatorname,
                     'PassWord' => md5($password),
-                    'AccountType' =>1,
+                    'AccountType' => 1,
                     'AddTime' => date('Y-m-d H:i:s'),
                     'LastLoginTime' => date('Y-m-d H:i:s'),
-                    'OperatorId' =>$operatorId
+                    'OperatorId' => $operatorId
                 ];
                 $db->setTable('T_OperatorSubAccount')->Insert($save_data);
-                return $this->successJSON([],lang('恭喜，账号添加成功'));
+                return $this->successJSON([], lang('恭喜，账号添加成功'));
             }
         }
-        $data=['Id'=>0,'OperatorName'=>''];
-        if($id>0){
-            $where=' AccountType=1 and OperatorId='.$operatorId.' and Id='.$id;
-            $data= $db->getTableRow('T_OperatorSubAccount',$where,'Id,OperatorName,OperatorId,AccountType');
+        $data = ['Id' => 0, 'OperatorName' => ''];
+        if ($id > 0) {
+            $where = ' AccountType=1 and OperatorId=' . $operatorId . ' and Id=' . $id;
+            $data = $db->getTableRow('T_OperatorSubAccount', $where, 'Id,OperatorName,OperatorId,AccountType');
         }
-        $this->assign('info',$data);
+        $this->assign('info', $data);
         return $this->fetch();
     }
 
 
-    public function delSubaccount(){
-        $id= input('Id');
-        if(empty($id) || $id==0){
+    public function delSubaccount()
+    {
+        $id = input('Id');
+        if (empty($id) || $id == 0) {
             return $this->failJSON(lang('参数错误'));
         }
-        $db=new GameOCDB();
+        $db = new GameOCDB();
         $operatorId = session('merchant_OperatorId');
-        $where=' AccountType=1 and OperatorId='.$operatorId.' and Id='.$id;
-        $status = $db->delTableRow('T_OperatorSubAccount',$where);
-        if($status){
-            return $this->successJSON([],lang('账号已删除'));
-        }
-        else{
+        $where = ' AccountType=1 and OperatorId=' . $operatorId . ' and Id=' . $id;
+        $status = $db->delTableRow('T_OperatorSubAccount', $where);
+        if ($status) {
+            return $this->successJSON([], lang('账号已删除'));
+        } else {
             return $this->failJSON(lang('账号删除失败，请确认'));
         }
     }
 
 
-    public function UbindSubaccount(){
-        $id= input('Id');
-        if(empty($id) || $id==0){
+    public function UbindSubaccount()
+    {
+        $id = input('Id');
+        if (empty($id) || $id == 0) {
             return $this->failJSON(lang('参数错误'));
         }
-        $db=new GameOCDB();
+        $db = new GameOCDB();
         $operatorId = session('merchant_OperatorId');
-        $where=' AccountType=1 and OperatorId='.$operatorId.' and Id='.$id;
-        $status = $db->updateTable('T_OperatorSubAccount',['google_verify'=>''],$where);
-        if($status){
-            return $this->successJSON([],lang('Google验证码已解绑'));
-        }
-        else{
+        $where = ' AccountType=1 and OperatorId=' . $operatorId . ' and Id=' . $id;
+        $status = $db->updateTable('T_OperatorSubAccount', ['google_verify' => ''], $where);
+        if ($status) {
+            return $this->successJSON([], lang('Google验证码已解绑'));
+        } else {
             return $this->failJSON(lang('Google验证码解绑失败，请确认'));
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
+    //额度管理
+    public function quotaManage(){
+        if (input('action') == 'list') {
+            $data = (new \app\model\GameOCDB())->quotaManage();
+            return $this->apiReturn(0, $data['data'], 'success', $data['total']);
+        } else {
+            return $this->fetch();
+        }
+    }
 }

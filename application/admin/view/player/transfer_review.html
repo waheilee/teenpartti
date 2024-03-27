@@ -4,22 +4,6 @@
 {block name="css"}{/block}
 {block name="content"}
 <div class="layui-card">
-    <div class="layui-card-header layuiadmin-card-header-auto">
-        <form class="layui-form" lay-filter="component-form-group">
-            <div class="layui-form-item">
-                <div class="layui-input-inline" style="width: 355px">
-
-                    <input type="text" id="roleid" name="roleid" placeholder="{:lang('玩家ID')}" autocomplete="off"
-                           class="layui-input">
-                </div>
-                <div class="layui-inline">
-                    <a class="layui-btn" id="search" data-type="reload">{:lang('搜索')}</a>
-                    <button type="reset" class="layui-btn layui-btn-primary">{:lang('重置')}</button>
-                </div>
-            </div>
-        </form>
-    </div>
-
     <div class="layui-card-body">
 
         <div id="alllist">
@@ -28,13 +12,7 @@
     </div>
 </div>
 
-<script type="text/html" id="toolbarDemo">
-    <div class="layui-btn-container">
-        <button class="layui-btn layui-btn-sm " style="margin-right:20px;" lay-event="onekeyPass">{:lang('一键审核通过')}</button>
-        <button class="layui-btn layui-btn-sm layui-btn-danger"  lay-event="onekeyRefuse">{:lang('批量拒绝')}</button>
-    </div>
 
-</script>
 {/block}
 {block name="script"}
 <script id="msg-bar" type="text/html">
@@ -55,7 +33,6 @@
 		var main = {
 			renderData: function () {
 				var cols = [ //表头
-                    {type: 'checkbox', fixed: 'left'},
 					{field: 'ID', align: 'center', title: 'ID', width: 100, templet: function (d) {
                             return " <a class=\"layui-bg-green\" lay-event=\"detail\">" + d.RoleId + "</a>";
                         }},
@@ -67,9 +44,13 @@
                                 case 0:
                                     return str += "red'></span>"
                                 case 1:
-                                    return str += "green'>{:lang('上分')}" + "</span>"
+                                    return str += "green'>{:lang('游戏上分')}" + "</span>"
                                 case 2:
-                                    return str += "red'>{:lang('下分')}" + "</span>"
+                                    return str += "red'>{:lang('游戏下分')}" + "</span>"
+                                case 3:
+                                    return str += "green'>{:lang('佣金上分')}" + "</span>"
+                                case 4:
+                                    return str += "red'>{:lang('佣金下分')}" + "</span>"
                             }
 
                         }
@@ -94,10 +75,7 @@
 
 				];
 				table.render({
-                    elem: '#proxylist',
-                    limit: 15,
-                    toolbar: '#toolbarDemo',
-                    defaultToolbar:[],
+					elem: '#proxylist',
 					url: url,
 					where: {Action: 'list'},
 					page: true, cols: [cols],
@@ -116,17 +94,7 @@
 				}
 
 				//执行重载
-                table.reload('proxylist', {
-                    page: {curr: 1},
-                    where: {
-                        RoleId: $.trim($('#roleid').val()),
-                    },
-                    done: function () {
-                        getOnline()
-                        tzTbale()
-                    }
-
-                });
+				table.reload('proxylist', {page: {curr: 1}, where: {}});
 			},
 
 
@@ -140,6 +108,10 @@
 					    if(data.OperateType==1){
                             OperateType = "{:lang('增加金币')}";
                         }else if(data.OperateType==2){
+                            OperateType = "{:lang('扣款金币')}";
+                        }else if(data.OperateType==3){
+                            OperateType = "{:lang('增加金币')}";
+                        }else if(data.OperateType==4){
                             OperateType = "{:lang('扣款金币')}";
                         }
 
@@ -164,7 +136,7 @@
 
 					}
 					if (layEvent === 'deny') {
-						tips = "{:lang('接收人')}  " + data.RoleId + "<br> {:lang('扣款金币')} <span style='color: red'> " + data.Money + " </span> <br>{:lang('确认要拒绝吗?')}";
+						tips = "{:lang('接收人')}  " + data.RoleId + "<br> "+OperateType+" <span style='color: red'> " + data.Money + " </span> <br>{:lang('确认要拒绝吗?')}";
 						layer.confirm(tips, {btn: ['{:lang("确认")}', '{:lang("取消")}']}, function () {
 							$.ajax({
 								type: 'post',
@@ -190,89 +162,6 @@
                         }
 
 				});
-
-
-                //触发表格复选框选择
-                table.on('checkbox(proxylist)', function(obj){
-                    console.log(obj)
-                });
-                table.on('toolbar(proxylist)', function(obj){
-                    var checkStatus = table.checkStatus(obj.config.id);
-                    var da = checkStatus.data;
-                    if (da.length == 0) {
-                        layer.msg('{:lang("未选择记录")}');
-                        return;
-                    }
-                    var Ids = [];
-                    if (obj.event == 'onekeyPass') {
-
-                        for (var i = da.length - 1; i >= 0; i--) {
-                            Ids.push(da[i].ID)
-                        }
-                        layer.confirm("{:lang('确认审核？')}", {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
-                            console.log(Ids)
-                            $.ajax({
-                                type: 'post',
-                                url: "{:url('Player/transferManager')}",
-                                beforeSend: function () {
-                                    var layindex = layer.msg("{:lang('稍等片刻,马上就好')}", {
-                                        icon:16,
-                                        shade:[0.1, '#fff'],
-                                        time:false //不自动关闭
-                                    });
-                                },
-                                data: {Action: 'send', Ids: Ids+''},
-                                dataType: 'json',
-                                success: function (res) {
-                                    if (res.code === 1) {
-                                        layer.msg(res.msg, {icon: 6, time: 1000}, function () {
-                                            layer.closeAll();
-                                            window.location.reload();
-                                        });
-                                    } else {
-                                        layer.msg(res.msg, {icon: 5});
-                                    }
-                                }
-                            });
-                        });
-                    }
-                    if (obj.event == 'onekeyRefuse') {
-
-                        for (var i = da.length - 1; i >= 0; i--) {
-                            Ids.push(da[i].ID)
-                        }
-                        layer.confirm("{:lang('确认拒绝？')}", {btn: ['{:lang("确定")}','{:lang("取消")}']}, function () {
-                            console.log(Ids)
-                            $.ajax({
-                                type: 'post',
-                                url: "{:url('Player/transferManager')}",
-                                beforeSend: function () {
-                                    var layindex = layer.msg("{:lang('稍等片刻,马上就好')}", {
-                                        icon:16,
-                                        shade:[0.1, '#fff'],
-                                        time:false //不自动关闭
-                                    });
-                                },
-                                data: {Action: 'deny', Ids: Ids+''},
-                                dataType: 'json',
-                                success: function (res) {
-                                    if (res.code === 1) {
-                                        layer.msg(res.msg, {icon: 6, time: 1000}, function () {
-                                            layer.closeAll();
-                                            window.location.reload();
-                                        });
-                                    } else {
-                                        layer.msg(res.msg, {icon: 5});
-                                    }
-                                }
-                            });
-                        });
-                        // alert(value); //得到value
-                        // layer.closeAll();
-                        // });
-                    }
-                });
-
 			},
 			init: function () {
 				main.renderData();

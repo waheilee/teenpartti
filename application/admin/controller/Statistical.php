@@ -1027,10 +1027,9 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                 $data = $db->getTableObject("[OM_GameOC].[dbo].[$table](NOLOCK)")->alias("a")
                     ->join("[OM_GameOC].[dbo].[View_TotalDayScore](NOLOCK) b", "b.RoleId=a.AccountID and  a.Adddate=b.addDate", 'left')
                     ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) c', 'c.AccountID=a.AccountID')
-                    ->join('[CD_DataChangelogsDB].[dbo].[T_UserTransactionLogs](NOLOCK) d', 'd.RoleID=a.AccountID and IfFirstCharge=1')
                     ->where($where)
                     ->order($order)
-                    ->field("a.*,c.LastLoginTime,b.TotalWater TotalRunning,b.Tax TotalTax,-b.SGD TotalWin,d.TransMoney as FirstMoney")
+                    ->field("a.*,c.LastLoginTime,b.TotalWater TotalRunning,b.Tax TotalTax,-b.SGD TotalWin")
                     ->paginate($limit)
                     ->toArray();
             } else if ($type == 3) {
@@ -1057,20 +1056,19 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                     $val['TotalBet'] = FormatMoney($val['TotalBet']);
                     $val['TotalWage'] = FormatMoney($val['TotalWage']);
                     $val['TodayWage'] = FormatMoney($val['TodayWage'] ?? 0);
-                    $val['proxyId'] = $val['OperatorId'] ?? 0;
-//                    $ParentIds = array_filter(explode(',', $val['ParentIds'] ?? ''));
-//                    $proxy = [];
-//                    if (!empty($ParentIds)) {
-//                        $proxy = $ProxyChannelConfig[$ParentIds[0]] ?? [];
-//                        if ($proxy) {
-//                            $val['proxyId'] = $proxy['ProxyId'];
-//                        } else {
-//                            $val['proxyId'] = $val['ParentID'];
-//                        }
-//                    } else {
-//                        //默认系统代理
-//                        $val['proxyId'] = $default_ProxyId;
-//                    }
+                    $ParentIds = array_filter(explode(',', $val['ParentIds'] ?? ''));
+                    $proxy = [];
+                    if (!empty($ParentIds)) {
+                        $proxy = $ProxyChannelConfig[$ParentIds[0]] ?? [];
+                        if ($proxy) {
+                            $val['proxyId'] = $proxy['ProxyId'];
+                        } else {
+                            $val['proxyId'] = $val['ParentID'];
+                        }
+                    } else {
+                        //默认系统代理
+                        $val['proxyId'] = $default_ProxyId;
+                    }
                 }
                 return $this->apiJson($data);
             }
@@ -1131,7 +1129,6 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                                 lang('玩家盈亏') => "string",
                                 lang('最后登陆时间') => "string",
                                 lang('注册时间') => "string",
-                                lang('首充金额') => "string",
                             ];
                             break;
                         case '3':
@@ -1208,7 +1205,7 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                                 break;
                             case '2':
                                 $item = [
-                                    $row['AccountID'], $row['ParentID'], $row['proxyId'], $row['adddate'], $row['PayMoney'], $row['PayTimes'], $row['PayOut'], $row['PayOutTimes'], $row['TotalRunning'], $row['TotalBet'], $row['TotalWage'], $row['TotalTax'], $row['PlatformProfit'], $row['LastLoginTime'], $row['RegisterTime'],$row['FirstMoney']
+                                    $row['AccountID'], $row['ParentID'], $row['proxyId'], $row['adddate'], $row['PayMoney'], $row['PayTimes'], $row['PayOut'], $row['PayOutTimes'], $row['TotalRunning'], $row['TotalBet'], $row['TotalWage'], $row['TotalTax'], $row['PlatformProfit'], $row['LastLoginTime'], $row['RegisterTime']
                                 ];
                                 break;
                             case '3':
@@ -1637,6 +1634,10 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
             $total['ppgamewin'] = FormatMoney($total['ppgamewin'] ?? 0);
             $total['pggamewin'] = FormatMoney($total['pggamewin'] ?? 0);
             $total['evolivewin'] = FormatMoney($total['evolivewin'] ?? 0);
+
+
+
+
             if(config('app_type')==3){
                 $total['jiliwin'] = FormatMoney($total['jiliwin'] ?? 0);
             }
@@ -1664,10 +1665,9 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                         sum(convert(bigint,jiliwin)) as jiliwin ,
                         sum(convert(bigint,fcgame)) as fcgame,
                         sum(convert(bigint,tadagame)) as tadagame,
-                        sum(convert(bigint,pplive)) as pplive ';
-                if(config('app_type')==3){
-                    $field.=',sum(jiliwin) as jiliwin';
-                }
+                        sum(convert(bigint,pplive)) as pplive,
+                         sum(convert(bigint,fakepggame)) as fakepggame';
+
                 $api_data = $db->getTableObject('T_Operator_GameStatisticTotal')->alias('a')
                     ->where($strwhere)->field($field)->find();
                 if (strpos($val['APIFee'], ',') !== false) {
@@ -1675,14 +1675,15 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                     $APIFee[0] = $APIFee[0] ?? 0; //pp
                     $APIFee[1] = $APIFee[1] ?? 0; //pg
                     $APIFee[2] = $APIFee[2] ?? 0; //evo
-                    $APIFee[3] = $APIFee[3] ?? 0; //JDB
-                    $APIFee[4] = $APIFee[4] ?? 0; //habawin
-                    $APIFee[5] = $APIFee[5] ?? 0; //hacksaw
+                    $APIFee[3] = $APIFee[3] ?? 0; //jdb
+                    $APIFee[4] = $APIFee[4] ?? 0; //haba
+                    $APIFee[5] = $APIFee[5] ?? 0; //HackSaw
                     $APIFee[6] = $APIFee[6] ?? 0; //JILI
                     $APIFee[7] = $APIFee[7] ?? 0; //YES!BINGO
                     $APIFee[8] = $APIFee[8] ?? 0; //tadagame
                     $APIFee[9] = $APIFee[9] ?? 0; //fcgame
                     $APIFee[10] = $APIFee[10] ?? 0; //pplive
+                    $APIFee[11] = $APIFee[11] ?? 0; //fakepggame
 
                     $totalpp = bcmul($APIFee[0], $api_data['ppgamewin'], 4);
                     $totalpg = bcmul($APIFee[1], $api_data['pggamewin'], 4);
@@ -1695,8 +1696,9 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                     $tadagame = bcmul($APIFee[8], $api_data['tadagame'], 4);
                     $fcgame = bcmul($APIFee[9], $api_data['fcgame'], 4);
                     $pplive = bcmul($APIFee[10], $api_data['pplive'], 4);
+                    $fakepggame = bcmul($APIFee[11], $api_data['fakepggame'], 4);
 
-                    $TotalAPICost = 0;
+
                     if ($totalpp < 0) {//系统赢算费用
                         $TotalAPICost += abs($totalpp);
                     }
@@ -1714,11 +1716,12 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                         $TotalAPICost += abs($habawin);
                     }
 
-                    if ($hacksaw < 0) {//系统赢算费用
-                        $TotalAPICost += abs($hacksaw);
-                    }
                     if ($totaljili < 0) {//系统赢算费用
                         $TotalAPICost += abs($totaljili);
+                    }
+
+                    if ($hacksaw < 0) {//系统赢算费用
+                        $TotalAPICost += abs($hacksaw);
                     }
 
                     if ($yesbingo < 0) {//系统赢算费用
@@ -1736,10 +1739,13 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                     if ($pplive < 0) {//系统赢算费用
                         $TotalAPICost += abs($pplive);
                     }
+                    if ($fakepggame < 0) {//系统赢算费用
+                        $TotalAPICost += abs($fakepggame);
+                    }
 
                 }
             }
-            $data['TotalAPICost'] = bcdiv($TotalAPICost, 1000, 3);
+            $data['TotalAPICost'] = bcdiv($TotalAPICost, 1000, 4);
             $data['totalprofit'] = round(($data['total_recharge']) - ($data['totalpayout'] + $data['recharge_fee'] + $data['payout_fee'] + $data['TotalAPICost']), 3);
 
             if ($this->request->isAjax()) {
@@ -1813,8 +1819,9 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
         }
         $where .=' and b.AccountType=0';
 
-        $field ='a.OperatorId as OperatorId,sum(convert(bigint,totalpay)) AS totalpayorder,sum(convert(bigint,totalpayout)) AS totalpayout,b.OperatorName, Sum(convert(bigint,totalpay-totalpayout)) AS totalprofit
-            ,sum(convert(bigint,ppgamewin)) as ppgamewin
+        $field ='a.OperatorId as OperatorId,sum(convert(bigint,totalpay)) AS totalpayorder,sum(convert(bigint,totalpayout)) AS totalpayout,b.OperatorName 
+             ,Sum(convert(bigint,totalpay-totalpayout)) AS totalprofit
+             ,sum(convert(bigint,ppgamewin)) as ppgamewin
              ,sum(convert(bigint,pggamewin)) as pggamewin
              ,sum(convert(bigint,evolivewin)) as evolivewin
              ,sum(convert(bigint,spribe)) as spribe
@@ -1823,7 +1830,9 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
              ,sum(convert(bigint,jiliwin)) as jiliwin             
              ,sum(convert(bigint,hacksaw)) as hacksaw
              ,sum(convert(bigint,tadagame)) as tadagame
-             ,sum(convert(bigint,yesbingo)) as yesbingo';
+             ,sum(convert(bigint,yesbingo)) as yesbingo
+             ,sum(convert(bigint,pplive)) as pplive
+             ,sum(convert(bigint,fakepggame)) as fakepggame';
 
         $db = new UserDB();
         $data = $db->getTableObject('View_Operator_Index')->alias('a')
@@ -1854,6 +1863,8 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
             ConVerMoney($v['tadagame']);
             ConVerMoney($v['jiliwin']);
             ConVerMoney($v['yesbingo']);
+            ConVerMoney($v['pplive']);
+            ConVerMoney($v['fakepggame']);
 
             $TotalAPICost =0;
             if (strpos($info['APIFee'], ',') !== false) {
@@ -1868,6 +1879,8 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                 $APIFee[7] = $APIFee[7] ?? 0; //YES!BINGO
                 $APIFee[8] = $APIFee[8] ?? 0; //tadagame
                 $APIFee[9] = $APIFee[9] ?? 0; //fcgame
+                $APIFee[10] = $APIFee[10] ?? 0; //pplive
+                $APIFee[11] = $APIFee[11] ?? 0; //fakepggame
 
                 $totalpp = bcmul($APIFee[0], $v['ppgamewin'], 4);
                 $totalpg = bcmul($APIFee[1], $v['pggamewin'], 4);
@@ -1879,6 +1892,8 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                 $yesbingo = bcmul($APIFee[7], $v['yesbingo'], 4);
                 $tadagame = bcmul($APIFee[8], $v['tadagame'], 4);
                 $fcgame = bcmul($APIFee[9], $v['fcgame'], 4);
+                $pplive = bcmul($APIFee[10], $v['pplive'], 4);
+                $fakepggame = bcmul($APIFee[11], $v['fakepggame'], 4);
 
 
                 if ($totalpp < 0) {//系统赢算费用
@@ -1915,6 +1930,14 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
 
                 if ($fcgame < 0) {//系统赢算费用
                     $TotalAPICost += abs($fcgame);
+                }
+
+                if ($pplive < 0) {//系统赢算费用
+                    $TotalAPICost += abs($pplive);
+                }
+
+                if ($fakepggame < 0) {//系统赢算费用
+                    $TotalAPICost += abs($fakepggame);
                 }
             }
 
@@ -2196,7 +2219,7 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
         if ($action == 'list') {
             $limit = $this->request->param('limit')?:15;
 
-
+            
             $startdate = $this->request->param('startdate');
             $enddate = $this->request->param('enddate');
 
@@ -2243,19 +2266,19 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                     $startdate   = $enddate;
                     break;
                 default:
-
+                    
                     break;
             }
             $regwhere=' 1=1 ';
             if ($startdate != '') {
-                $where .= ' and AddTime>=\''.$startdate.' 00:00:00\'';
+               $where .= ' and AddTime>=\''.$startdate.' 00:00:00\'';
                 $regwhere .= ' and RegisterTime>=\''.$startdate.'\'';
             }
             if ($enddate != '') {
                 $where .= ' and AddTime<=\''.$enddate.'\'';
                 $regwhere .= ' and RegisterTime<=\''.$enddate.' 23:59:59\'';
             }
-            $order = "AddTime desc";
+           $order = "AddTime desc";
             $gameOCDB = new GameOCDB();
             $field = "sum(RunningBonus) RunningBonus,count(case when RunningBonus>0 then RunningBonus else NULL end) RunningBonus_count,
             sum(InviteBonus) InviteBonus,count(case when InviteBonus>0 then InviteBonus else NULL end) InviteBonus_count,sum(FirstChargeBonus) FirstChargeBonus,
@@ -2338,7 +2361,7 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
     //     if ($action == 'list') {
     //         $limit = $this->request->param('limit')?:15;
 
-
+            
     //         $start_date = $this->request->param('strartdate');
     //         $end_date = $this->request->param('enddate');
 

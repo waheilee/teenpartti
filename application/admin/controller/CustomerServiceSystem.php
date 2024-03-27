@@ -135,11 +135,16 @@ class CustomerServiceSystem extends Main
 //        if($countrycode=='-1')
 //            $countrycode ='';
         $data = ["CustomName" => input('CustomName'), "Phone" => str_replace('\r\n', '', input('Phone')), 'VipLabel' => input('VipLabel'),
-            "FaceId" => input('FaceID'), 'FaceUrl' => input('FaceUrl', ''), "Id" => input('ID'), 'CountryCode' => '', 'CustomTitle' => input('CustomTitle', ''), 'ExternalLink' => input('ExternalLink')
+            "FaceId" => input('FaceID'),'FaceUrl' => input('FaceUrl', ''), "Id" => input('ID'), 'CountryCode' => '', 'CustomTitle' => input('CustomTitle', ''), 'ExternalLink' => input('ExternalLink')
         ];
+        if (config('is_usa') == 1) {
+            $data['UrlLink'] = input('UrlLink','');
+            $data['SORTID'] = input('SORTID','');
+        }
         switch ($action) {
             case "list":
-                $result = $db->TCustomServiceCfg()->GetPage();
+                $where = ' and PackageId=0';
+                $result = $db->TCustomServiceCfg()->GetPage($where);
                 return $this->apiJson($result);
                 break;
             case  "add": //添加页面
@@ -345,7 +350,7 @@ class CustomerServiceSystem extends Main
                             } else {
                                 $VerifyState = 0;  //需要审核0 1不需要审核
                             }
-
+                            
                         }
                         $delaytime = 0;
                         if ($sendtype == 1) $delaytime = strtotime($sendtime) - sysTime();
@@ -354,9 +359,9 @@ class CustomerServiceSystem extends Main
                         $res = unpack('Lint', $res)['int'];
                     }
                     if ($res == 0) {
-
+                        
                         return $this->apiReturn(1, '', '邮件发送成功');
-
+                        
                     } elseif ($res > 0) {
                         return $this->apiReturn(1, '', '邮件发送失败');
                     }
@@ -548,7 +553,7 @@ class CustomerServiceSystem extends Main
                 }
                 //导出表格
                 if ((int)input('exec', 0) == 1 && $outAll = true) {
-                    //权限验证
+                    //权限验证 
                     $auth_ids = $this->getAuthIds();
                     if (!in_array(10008, $auth_ids)) {
                         return $this->apiReturn(1, '', '没有权限');
@@ -939,11 +944,11 @@ class CustomerServiceSystem extends Main
                 $val['InviteCommi'] = $val['InviteCommi']/bl;
                 $val['HistoryInviteAmount'] = $val['HistoryInviteAmount']/bl;
                 if ($val['LV1FirstChargeCount'] == 0) {
-                    $val['avg'] = 0.00;
+                     $val['avg'] = 0.00;
                 } else {
-                    $val['avg'] = round($val['LV1FirstChargeAmount']/$val['LV1FirstChargeCount'],2);
+                    $val['avg'] = round($val['LV1FirstChargeAmount']/$val['LV1FirstChargeCount'],2); 
                 }
-
+                
             }
             return $this->apiReturn(0, $data['data'], 'success', $data['total']);
         }
@@ -1025,8 +1030,8 @@ class CustomerServiceSystem extends Main
         } else {
             return ['code' => 1,'msg'=>'操作失败'];
         }
-    }
-
+    } 
+    
     //掉绑白名单
     public function disableBindWhiteList(){
         if (input('action') == 'list') {
@@ -1037,9 +1042,40 @@ class CustomerServiceSystem extends Main
         }
     }
 
-    //增删抽税白名单
+    //增删掉绑白名单
     public function editDisableBindWhiteList()
     {
         return (new \app\model\MasterDB())->editDisableBindWhiteList();
     }
+
+    //控码白名单
+    public function wageFreeWhiteList(){
+        if (input('action') == 'list') {
+            $data = (new \app\model\MasterDB())->wageFreeWhiteList();
+            return $this->apiReturn(0, $data['data'], 'success', $data['total']);
+        } else {
+            return $this->fetch();
+        }
+    }
+
+    //增删控码白名单
+    public function editWageFreeWhiteList(){
+        return (new \app\model\MasterDB())->editWageFreeWhiteList();
+    }
+
+    //自动出款白名单
+    public function autoWithdrawalUser(){
+        if (input('action') == 'list') {
+            $data = (new \app\model\GameOCDB())->autoWithdrawalUser();
+            return $this->apiReturn(0, $data['data'], 'success', $data['total']);
+        } else {
+            return $this->fetch();
+        }
+    }
+
+    //增删自动出款白名单
+    public function editAutoWithdrawalUser()
+    {
+        return (new \app\model\GameOCDB())->editAutoWithdrawalUser();
+    } 
 }

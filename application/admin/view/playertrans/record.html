@@ -126,6 +126,16 @@
                             </div>
                         </div>
                         <div class="layui-inline">
+                            <label class="layui-form-label">{:lang('出款来源')}</label>
+                            <div class="layui-input-inline"  style="width: 100px">
+                                <select name="DrawBackWay" id="DrawBackWay" name="DrawBackWay">
+                                    <option value="" selected>{:lang('全部')}</option>
+                                    <option value="1">余额提款</option>
+                                    <option value="2">佣金提款</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
                             <div class="layui-input-inline">
                                 <select name="payChannel" id="payChannel">
                                     <option value="-1">=={:lang('支付通道')}==</option>
@@ -142,15 +152,6 @@
                                     <option value="0">=={:lang('充值类型')}==</option>
                                     <option value="1">{:lang('充值玩家')}</option>
                                     <option value="2">{:lang('未充值玩家')}</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="layui-inline">
-                            <div class="layui-input-inline">
-                                <select name="drawBackWay" id="drawBackWay">
-                                    <option value="0">=={:lang('提现类型')}==</option>
-                                    <option value="1">{:lang('余额提现')}</option>
-                                    <option value="2">{:lang('活动奖励提现')}</option>
                                 </select>
                             </div>
                         </div>
@@ -273,11 +274,21 @@
 						}
 					},
                     {
+                        field: 'DrawBackWay', align: 'center', title: "{:lang('出款来源')}", width: 100, templet: function (d) {
+                            if (d.DrawBackWay == 1) {
+                                return "余额提款";
+                            }
+                            else {
+                                return "佣金提款";
+                            }
+                        }
+                    },
+                    {
                         field: 'PayWay', align: 'center', title: "{:lang('出款方式')}", minWidth: 100, templet: function (d) {
                             if (d.PayWay == 1) {
                                 return '<span style="color: #e60000">UPI</span>';
                             }
-                            else if (d.PayWay == 2 || d.PayWay == 5 || d.PayWay == 6|| d.PayWay == 7) {
+                            else if (d.PayWay == 2) {
                                 return '<span style="color: #e60000">PIX</span>';
                             }
                             else if (d.PayWay == 3) {
@@ -297,27 +308,12 @@
                                 html += "{:lang('银行')}：" + d.Province + '<br/>';
                                 return html;
                             }
-                            else if (d.PayWay == 2 || d.PayWay == 5) {
+                            else if (d.PayWay == 2) {
                                 var html = "";
                                 html += "{:lang('PIX类型')}：CPF<br/>";
                                 html += 'Chave CPF:' + d.CardNo + '<br/>';
-                                // html += 'CPF：' + d.Province + '<br/>';
-                                // html += 'EMAIL：' + d.City + '<br/>';
-                                return html;
-                            }
-                            else if (d.PayWay == 6) {
-                                var html = "";
-                                html += "{:lang('PIX类型')}：PHONE<br/>";
-                                html += 'PHONE:' + d.CardNo + '<br/>';
-                                // html += 'CPF：' + d.Province + '<br/>';
-                                // html += 'EMAIL：' + d.City + '<br/>';
-                                return html;
-                            }
-                            else if (d.PayWay == 7) {
-                                var html = "";
-                                html += "{:lang('PIX类型')}：EMAIL<br/>";
-                                html += 'EMAIL:' + d.CardNo + '<br/>';
-                                // html += 'CPF：' + d.Province + '<br/>';
+                                html += 'CPF：' + d.Province + '<br/>';
+                                html += 'EMAIL：' + d.City + '<br/>';
                                 return html;
                             }
                         }
@@ -328,7 +324,6 @@
 					{field: 'checkUser', align: 'center', title: "{:lang('操作人员')}", minWidth: 80},
 					{field: 'AddTime', align: 'center', title: "{:lang('申请时间')}", minWidth: 150,sort:true},
 					{field: 'checkTime', align: 'center', title: "{:lang('审核时间')}", minWidth: 150,sort:true},
-					{field: 'UpdateTime', align: 'center', title: "{:lang('更新时间')}", minWidth: 150,sort:true},
 
 					// {field: 'CardNo', align: 'center', title: "{:lang('银行卡号')}", minWidth: 200},
 					// {
@@ -425,9 +420,9 @@
 						tranNO: $.trim($('#tranNO').val()),
 						payChannel: $.trim($('#payChannel').val()),
 						payWay: $.trim($('#payWay').val()),
+                        DrawBackWay: $.trim($('#DrawBackWay').val()),
 						checkUser:$.trim($('#checkUser').val()),
-                        cpf:$.trim($('#cpf').val()),
-                        drawBackWay:$.trim($('#drawBackWay').val()),
+                        cpf:$.trim($('#cpf').val())
 					}
 				});
 			},

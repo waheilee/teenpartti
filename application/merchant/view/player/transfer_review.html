@@ -44,9 +44,13 @@
                                 case 0:
                                     return str += "red'></span>"
                                 case 1:
-                                    return str += "green'>{:lang('上分')}" + "</span>"
+                                    return str += "green'>{:lang('游戏上分')}" + "</span>"
                                 case 2:
-                                    return str += "red'>{:lang('下分')}" + "</span>"
+                                    return str += "red'>{:lang('游戏下分')}" + "</span>"
+                                case 3:
+                                    return str += "green'>{:lang('佣金上分')}" + "</span>"
+                                case 4:
+                                    return str += "red'>{:lang('佣金下分')}" + "</span>"
                             }
 
                         }
@@ -99,14 +103,17 @@
 				//编辑&&删除
 				table.on('tool(proxylist)', function (obj) {
 					var data = obj.data, layEvent = obj.event, tips = "";
-					if (layEvent === 'send') {
-					    var OperateType ='';
+					var OperateType ='';
 					    if(data.OperateType==1){
                             OperateType = "{:lang('增加金币')}";
                         }else if(data.OperateType==2){
                             OperateType = "{:lang('扣款金币')}";
+                        }else if(data.OperateType==3){
+                            OperateType = "{:lang('增加金币')}";
+                        }else if(data.OperateType==4){
+                            OperateType = "{:lang('扣款金币')}";
                         }
-
+					if (layEvent === 'send') {
 						tips = "{:lang('接收人')}  " + data.RoleId + "<br> "+OperateType+" <span style='color: red'> " + data.Money + " </span> <br>{:lang('确认要通过审核吗?')}";
 						layer.confirm(tips, {btn: ['{:lang("确认")}', '{:lang("取消")}']}, function () {
 							$.ajax({
@@ -128,7 +135,7 @@
 
 					}
 					if (layEvent === 'deny') {
-						tips = "{:lang('接收人')}  " + data.RoleId + "<br> {:lang('扣款金币')} <span style='color: red'> " + data.Money + " </span> <br>{:lang('确认要拒绝吗?')}";
+						tips = "{:lang('接收人')}  " + data.RoleId + "<br> "+OperateType+" <span style='color: red'> " + data.Money + " </span> <br>{:lang('确认要拒绝吗?')}";
 						layer.confirm(tips, {btn: ['{:lang("确认")}', '{:lang("取消")}']}, function () {
 							$.ajax({
 								type: 'post',
@@ -149,7 +156,7 @@
 
 					}
 					if (layEvent === 'detail') {
-                            var url = '/admin/player/playerDetail?roleid=' + data.RoleId;
+                            var url = '/merchant/player/playerDetail?roleid=' + data.RoleId;
                             x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.6);
                         }
 

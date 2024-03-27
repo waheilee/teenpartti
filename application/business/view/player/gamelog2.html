@@ -406,7 +406,7 @@
 
 						} else { layer.msg('{:lang("暂无数据")}', {icon: 5});}
 					} else  if (layEvent === 'detail') {
-                        var url = '/admin/player/playerDetail?roleid=' + data.RoleID;
+                        var url = '/business/player/playerDetail?roleid=' + data.RoleID;
                         x_admin_show("{:lang('玩家详情')}", url, $(window).width() * 0.9, $(window).height() * 0.6);
                     }
 				});

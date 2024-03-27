@@ -3,6 +3,55 @@
 {block name="css"}{/block}
 {block name="content"}
 
+
+<div class="layui-row layui-col-space20">
+    <div class="layui-col-md3">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('邀请奖励')}</span>
+                <a class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="invitebonus" style="color: #009688">0</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md3">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('邮件佣金')}</span>
+                <a class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="CommiMailAmount" style="color: #009688">0</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md3">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue ">{:lang('全平台有效用户数')}</span>
+                <a class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="validateinvite" style="color: #009688">0</p>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md3">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <span class="layui-badge layui-bg-blue "> {:lang('平均邀请奖励支出')}</span>
+                <a class="layui-icon layui-icon-refresh-3 layuiadmin-badge"></a>
+            </div>
+            <div class="layui-card-body layuiadmin-card-list">
+                <p class="layuiadmin-big-font" id="avarage" style="color: #009688">0</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
 <div class="layui-card" style="margin-top: 20px">
     <div class="layui-card-header layuiadmin-card-header-auto">
         <form class="layui-form" lay-filter="component-form-group">
@@ -34,7 +83,7 @@
             <table id="proxylist" lay-filter="proxylist"></table>
         </div>
     </div>
-    
+
 </div>
 
 {/block}
@@ -48,69 +97,89 @@
         index: 'lib/index' //主入口模块
     }).use(['index', 'table', 'layer', 'element', 'laydate', 'form', 'jquery'], function () {
         var table = layui.table;
-        var form  = layui.form;
+        var form = layui.form;
         var laydate = layui.laydate;
         var $ = layui.$;
-        var element  = layui.element;
-          table.render({
+        var element = layui.element;
+        table.render({
             elem: '#proxylist'
-            ,height: 'full-180'
-            ,url: url+'?action=list'//数据接口
-            ,limit:20
-            ,page: true //开启分页
-            ,id:'proxylist'
-            ,autoSort:false
-            ,cols: [[ //表头
-                {field:'AddTime', title: "{:lang('时间')}",align:'center', minWidth: 100},
-                {field:'RunningBonus', title: "{:lang('代理佣金')}",align:'center', minWidth: 200},
-                {field:'InviteBonus', title: "{:lang('成就奖励')}",align:'center', minWidth: 200},
-                {field:'FirstChargeBonus', title: "{:lang('邀请奖励')}",align:'center', minWidth: 200},
-                {field:'total', title: "{:lang('统计')}",align:'center', minWidth: 200},
+            , height: 'full-180'
+            , url: url + '?action=list'//数据接口
+            , limit: 20
+            , page: true //开启分页
+            , id: 'proxylist'
+            , autoSort: false
+            , cols: [[ //表头
+                {field: 'AddTime', title: "{:lang('时间')}", align: 'center', minWidth: 100},
+                {field: 'RunningBonus', title: "{:lang('代理佣金')}", align: 'center', minWidth: 200},
+                {field: 'InviteBonus', title: "{:lang('邀请梯度奖励')}", align: 'center', minWidth: 200},
+                {field: 'FirstChargeBonus', title: "{:lang('代理邀请奖励')}", align: 'center', minWidth: 200},
+                {field: 'CommiMailAmount', title: "{:lang('邮件佣金')}", align: 'center', minWidth: 200},
+                {field: 'validateuser', title: "{:lang('全平台有效用户数')}", align: 'center', minWidth: 200,templet: function (d) {
+                            if(d.validateuser==null)
+                            {
+                                d.validateuser=   0;
+                            }
+                            return  d.validateuser;
+                    }},
+                {field: '', title: "{:lang('平均邀请奖励支出')}", align: 'center', minWidth: 200,templet: function (d) {
+                        if(d.validateuser>0){
+                            return parseFloat(d.FirstChargeBonus/d.validateuser*1.0).toFixed(2);
+                        }
+                        else{
+                            return 0;
+                        }
+                    }},
+                {field: 'total', title: "{:lang('统计')}", align: 'center', minWidth: 200},
                 // {title:'操作', toolbar: '#toolbar'}
             ]],
             done: function (res) {
-                        tzTbale();
-                    }
-          });
-          // 搜索 
-          $("#search").on('click', function(){
-             table.reload('proxylist', {
-              page:{
-                  curr:1 
-              },
-              where: {
+                $('#invitebonus').html(res.other.FirstChargeBonus);
+                $('#validateinvite').html(res.other.validateuser);
+                $('#CommiMailAmount').html(res.other.CommiMailAmount);
+                $('#avarage').html(res.other.avarge);
+                tzTbale();
+            }
+        });
+        // 搜索
+        $("#search").on('click', function () {
+            table.reload('proxylist', {
+                page: {
+                    curr: 1
+                },
+                where: {
                     roleid: $('#roleid').val(),
                     parentid: $('#parentid').val(),
-                    start_date:$.trim($('#LAY-component-form-group-date').val()),
-                    end_date:$.trim($('#LAY-component-form-group-date2').val())
-              }
+                    start_date: $.trim($('#LAY-component-form-group-date').val()),
+                    end_date: $.trim($('#LAY-component-form-group-date2').val())
+                }
             })
-          });
+        });
 
-          laydate.render({
-              elem: '#LAY-component-form-group-date'
-              , format: 'yyyy-MM-dd'
-              , max: 0
-              , lang:'{$datelang ?: "cn"}'
-              , btns: ['clear', 'confirm']
-            });
-            laydate.render({
-              elem: '#LAY-component-form-group-date2'
-              , format: 'yyyy-MM-dd'
-              , max: 0
-              , lang:'{$datelang ?: "cn"}'
-              , btns: ['clear', 'confirm']
-            });
+        laydate.render({
+            elem: '#LAY-component-form-group-date'
+            , format: 'yyyy-MM-dd'
+            , max: 0
+            , lang: '{$datelang ?: "cn"}'
+            , btns: ['clear', 'confirm']
+        });
+        laydate.render({
+            elem: '#LAY-component-form-group-date2'
+            , format: 'yyyy-MM-dd'
+            , max: 0
+            , lang: '{$datelang ?: "cn"}'
+            , btns: ['clear', 'confirm']
+        });
 
-          $('#output').click(function () {
+        $('#output').click(function () {
             where = {
-               roleid: $('#roleid').val(),
+                roleid: $('#roleid').val(),
                 parentid: $('#parentid').val(),
-                start_date:$.trim($('#LAY-component-form-group-date').val()),
-                end_date:$.trim($('#LAY-component-form-group-date2').val()),
+                start_date: $.trim($('#LAY-component-form-group-date').val()),
+                end_date: $.trim($('#LAY-component-form-group-date2').val()),
                 limit: 10000000,
                 output: 'exec',
-                action:'list',
+                action: 'list',
             }
 
             download();

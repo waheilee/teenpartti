@@ -399,6 +399,28 @@
                         </tbody>
                     </table>
                 </div>
+
+                <div class="layui-col-md4">
+                    <table class="layui-table">
+                        <colgroup>
+                            <col width="200">
+                            <col width="200">
+                            <col width="200">
+                        </colgroup>
+                        <thead>
+                        <tr>
+                            <th colspan="3" style="text-align: center;">{:lang('APP下载赠送/ 人数 / 百分比')}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td id="AppLoginBonusAmount">0</td>
+                            <td id="AppLoginBonusAmount_count">0</td>
+                            <td id="AppLoginBonusAmount_avr">0</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
         </div>
@@ -503,6 +525,11 @@
                             $("#GiftCardBonus").html(ret.data.GiftCardBonus);
                             $("#GiftCardBonus_count").html(ret.data.GiftCardBonus_count);
                             $("#GiftCardBonus_avr").html(ret.data.GiftCardBonus_avr);
+
+
+                            $("#AppLoginBonusAmount").html(ret.data.AppLoginBonusAmount);
+                            $("#AppLoginBonusAmount_count").html(ret.data.AppLoginBonusAmount_count);
+                            $("#AppLoginBonusAmount_avr").html(ret.data.AppLoginBonusAmount_avr+'%');
                         } else {
                             
                         }

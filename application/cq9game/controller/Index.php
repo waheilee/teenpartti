@@ -15,7 +15,7 @@ class Index extends Base
     public function __construct()
     {
         parent::__construct();
-
+        
         header('Access-Control-Allow-Origin:*');
 //允许的请求头信息
         header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authorization");
@@ -82,7 +82,7 @@ class Index extends Base
         try {
             $params     = request()->param() ?: json_decode(file_get_contents('php://input'),1);
             $user_id    = $params['check']??'';
-
+            
             $wtoken     = request()->header('wtoken');
             if ($wtoken != $this->config['Operator_Token']) {
                 $respons = [
@@ -96,7 +96,7 @@ class Index extends Base
                 save_log('cq9game', '==='.request()->url().'===响应成功数据===' . json_encode($respons));
                 return json($respons);
             }
-
+            
             $respons = [
                 "data"=>true,
                 "status"=>[
@@ -149,7 +149,7 @@ class Index extends Base
                 if ($params['game'] == 'rollin') {
                     return $this->settle($params);
                 }
-
+                
             }
         } catch (Exception $ex) {
             save_log('cq9game_error', '==='.$ex->getMessage() . $ex->getTraceAsString() . $ex->getLine());
@@ -169,7 +169,7 @@ class Index extends Base
         try {
 
             $user_id    = $AccountID;
-            $balance = $this->getSocketBalance($user_id);
+            $balance = $this->getSocketBalance($user_id); 
             $respons = [
                 "data"=>[
                     "balance"=>round($balance,4),
@@ -229,7 +229,7 @@ class Index extends Base
                 return json($respons);
             }
             $balance = $this->getSocketBalance($user_id);
-
+ 
             if ($balance < $bet_amount) {
                 $respons = [
                     "data"=>false,
@@ -321,7 +321,7 @@ class Index extends Base
                 save_log('cq9game', '==='.request()->url().'===响应成功数据===' . json_encode($respons));
                 return json($respons);
             }
-
+ 
             $socket = new QuerySocket();
             if ($win_amount >= 0) {
                 $gamemoney = bcmul($win_amount,bl,0);
@@ -415,7 +415,7 @@ class Index extends Base
                 } else {
                     $md5str = $key.'='.$val;
                 }
-
+                
             }
         }
         $str = $md5str.$Md5key;

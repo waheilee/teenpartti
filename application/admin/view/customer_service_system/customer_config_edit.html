@@ -25,6 +25,14 @@
             <input VALUE="{$info.CustomTitle}" autocomplete="off" lay-verify="required"  class="layui-input" id="CustomTitle" type="text">
         </div>
     </div>
+    
+        <div class="layui-form-item" style="{if(config('is_usa')!='1')}display:none{/if}">
+            <label class="layui-form-label"> {:lang("客服手机号码")}</label>
+            <div class="layui-input-block">
+                <input VALUE="{$info.UrlLink ?? ''}" autocomplete="off" class="layui-input" id="UrlLink" type="text">
+            </div>
+        </div>
+    
     <div class="layui-form-item">
         <label class="layui-form-label">  {:lang("客服链接")}</label>
         <div class="layui-input-block">
@@ -48,6 +56,10 @@
                 <option value="3" {if $info.VipLabel==3}selected="selected"{/if}>{:lang("商务客服")}</option>
                 <option value="4" {if $info.VipLabel==4}selected="selected"{/if}>{:lang("Livechat客服")}</option>
                 <option value="5" {if $info.VipLabel==4}selected="selected"{/if}>{:lang("代理邀请奖励客服")}</option>
+                {if(config('is_usa')=='1')}
+                <option value="6" {if $info.VipLabel==4}selected="selected"{/if}>{:lang("充值客服")}</option>
+                {/if}
+
             </select>
         </div>
     </div>
@@ -63,6 +75,14 @@
         </div>
     </div>
 
+    {if(config('is_usa') == 1)}
+    <div class="layui-form-item">
+        <label class="layui-form-label"> 排序ID</label>
+        <div class="layui-input-block">
+            <input VALUE="{$info.SORTID}" autocomplete="off" placeholder="排序ID" class="layui-input" id="SORTID" type="text">
+        </div>
+    </div>
+    {/if}
 
     <div class="layui-form-item">
         <label class="layui-form-label">{:lang('上传头像')}：</label>
@@ -152,6 +172,10 @@
 						'CountryCode': $.trim($("#CountryCode").val()),
                         'FaceUrl' : $.trim($('#FaceUrl').val()),
                         'ExternalLink':$.trim($('#ExternalLink').val())
+                {if(config('is_usa') == 1)}
+                        ,'UrlLink':$.trim($('#UrlLink').val())
+                        ,'SORTID':$.trim($('#SORTID').val())
+                {/if}
 					},
 					dataType: 'json',
 					success: function (res) {

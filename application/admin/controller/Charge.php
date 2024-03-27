@@ -973,8 +973,7 @@ class Charge extends Main
                     'PayTime' => date('Y-m-d H:i:s', time()),
                     'Status' =>1,
                     'isReturn' => 1,
-                    'TransactionNo' => $transactionId,
-                    'checkUser' => session('username')
+                    'TransactionNo' => $transactionId
                 ];
                 $user = new UserDB();
                 $ret = $user->updateTable('T_UserChannelPayOrder', $data, ['OrderId' => $orderid]);

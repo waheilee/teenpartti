@@ -15,7 +15,7 @@ class Index extends Base
     public function __construct()
     {
         parent::__construct();
-
+        
         header('Access-Control-Allow-Origin:*');
 //允许的请求头信息
         header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authorization");
@@ -51,8 +51,8 @@ class Index extends Base
 
             $test_uidarr = config('test_uidarr') ?: [];
             if ((strlen($roleid)==7) || in_array($roleid, $test_uidarr)) {
-                $this->config = config('jiligame_test');
-                config('trans_url_other',config('test_trans_url'));
+                 $this->config = config('jiligame_test');
+                 config('trans_url_other',config('test_trans_url'));
             }
             $language = $param['language'] ?: $this->config['language'];
             if (strtoupper($language) == 'BR') {
@@ -62,11 +62,11 @@ class Index extends Base
             $gameid = $param['gameid'];
 
             $token = $this->encry(config('platform_name').'_'.$roleid);
-
+            
             $header = [
                 'content-type:application/x-www-form-urlencoded'
             ];
-            date_default_timezone_set('America/Sao_Paulo');
+            date_default_timezone_set('America/Caracas');
             $KeyG = MD5(date('ymj').$this->config['Merchant_ID'].$this->config['Secret_Key']);
 
             $key = rand(100000,999999).md5('Token='.$token.'&GameId='.$gameid.'&Lang='.$language.'&AgentId='.$this->config['Merchant_ID'].$KeyG).rand(100000,999999);
@@ -85,7 +85,7 @@ class Index extends Base
             } else {
                 return $this->failjson('create player faild');
             }
-
+            
         } catch (Exception $ex) {
             save_log('jiligame_error', '==='.$ex->getMessage() . $ex->getTraceAsString() . $ex->getLine());
             return $this->failjson('api error');
@@ -98,14 +98,14 @@ class Index extends Base
             save_log('jiligame', '==='.request()->url().'===接口请求数据===' . json_encode($params));
             $token = $params['token']??'';
             if(empty($token)){
-                $respons = [
+                 $respons = [
                     "errorCode"   =>5,
                     "message"   =>'Other error',
                 ];
                 save_log('jiligame', '==='.request()->url().'===响应成功数据===' . json_encode($params));
                 return json($respons);
             }
-
+            
             $userId = explode('_',$this->decry($token))[1];
             if (empty($userId)) {
                 $respons = [
@@ -159,7 +159,7 @@ class Index extends Base
 
 
             $balance = $this->getBalance($user_id);
-
+ 
             if ($balance < $bet_amount) {
                 $respons = [
                     "errorCode"   =>2,
@@ -197,7 +197,7 @@ class Index extends Base
             } else {
                 Redis::set('jiligame_game_id_'.$user_id,$clear_data);
             }
-
+            
             if (config('need_third_rank') == 1) {
                 Redis::lpush('third_game_rank_list',json_encode([
                     'PlatformId'=>39000,
@@ -235,8 +235,8 @@ class Index extends Base
             $bet_amount     = $params['betAmount'];
             $win_amount     = $params['winloseAmount'];
             $user_id = explode('_',$this->decry($token))[1];
-
-
+            
+            
             if (Redis::get('jiligame_is_exec_cancelBet_'.$transaction_id)) {
                 $respons = [
                     "errorCode" =>1,
@@ -246,7 +246,7 @@ class Index extends Base
                 return json($respons);
             }
             if ($win_amount > 0) {
-                $respons = [
+                 $respons = [
                     "errorCode" =>6,
                     "message"   =>'Already accepted and cannot be canceled',
                 ];
@@ -340,7 +340,7 @@ class Index extends Base
                 } else {
                     $md5str = $key.'='.$val;
                 }
-
+                
             }
         }
         $str = $md5str.$Md5key;

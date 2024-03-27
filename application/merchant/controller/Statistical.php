@@ -1024,10 +1024,9 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                 $data = $db->getTableObject("[OM_GameOC].[dbo].[$table](NOLOCK)")->alias("a")
                         ->join("[OM_GameOC].[dbo].[View_TotalDayScore](NOLOCK) b","b.RoleId=a.AccountID and  a.Adddate=b.addDate",'left')
                         ->join('[CD_Account].[dbo].[T_Accounts](NOLOCK) c', 'c.AccountID=a.AccountID')
-                        ->join('[CD_DataChangelogsDB].[dbo].[T_UserTransactionLogs](NOLOCK) d', 'd.RoleID=a.AccountID and IfFirstCharge=1')
                         ->where($where)
                         ->order($order)
-                        ->field("a.*,c.Mobile,c.LastLoginTime,b.TotalWater TotalRunning,b.Tax TotalTax,-b.SGD TotalWin,d.TransMoney as FirstMoney")
+                        ->field("a.*,c.Mobile,c.LastLoginTime,b.TotalWater TotalRunning,b.Tax TotalTax,-b.SGD TotalWin")
                         ->paginate($limit)
                         ->toArray();
             } else if ($type == 3) {
@@ -1123,7 +1122,6 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                                 lang('玩家盈亏') => "string",
                                 lang('最后登陆时间') => "string",
                                 lang('注册时间') => "string",
-                                lang('首充金额') => "string",
                             ];
                             break;
                         case '3':
@@ -1196,7 +1194,7 @@ datediff(d,AddTime,'" . $date . "')=0 and [VerifyState] = 1 AND RoleId>0  GROUP 
                                 break;
                             case '2':
                                 $item = [
-                                    $row['AccountID'],$row['ParentID'],$row['proxyId'],$row['adddate'], $row['PayMoney'], $row['PayTimes'], $row['Mobile'], $row['PayOut'], $row['PayOutTimes'], $row['TotalRunning'],$row['TotalTax'],$row['PlatformProfit'],$row['LastLoginTime'],$row['RegisterTime'],$row['FirstMoney']
+                                    $row['AccountID'],$row['ParentID'],$row['proxyId'],$row['adddate'], $row['PayMoney'], $row['PayTimes'], $row['Mobile'], $row['PayOut'], $row['PayOutTimes'], $row['TotalRunning'],$row['TotalTax'],$row['PlatformProfit'],$row['LastLoginTime'],$row['RegisterTime']
                                 ];
                                 break;
                             case '3':

@@ -243,9 +243,9 @@ class Playertrans extends Main
                 if ((int)input('exec', 0) == 1 && $outAll = true) {
                     $header_types = [
                         lang('玩家ID') => 'string',
-                        lang('代理流水返利') => "string",
+                        lang('代理投注返佣') => "string",
+                        lang('邀请梯度奖励') => "string",
                         lang('代理邀请奖励') => "string",
-                        lang('代理首充奖励') => "string",
                         lang('总收益') => 'string',
                     ];
                     $filename = lang('代理奖励列表') . '-' . date('YmdHis');

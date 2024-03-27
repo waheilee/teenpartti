@@ -15,7 +15,7 @@ class Index extends Base
     public function __construct()
     {
         parent::__construct();
-
+        
         header('Access-Control-Allow-Origin:*');
 //允许的请求头信息
         header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authorization");
@@ -25,7 +25,7 @@ class Index extends Base
         header('Access-Control-Allow-Credentials:true');
         // $params = request()->param() ?: json_decode(file_get_contents('php://input'),1);
         // save_log('jdbspr', '==='.request()->url().'===接口请求数据===' . json_encode($params));
-
+        
     }
 
 
@@ -45,8 +45,8 @@ class Index extends Base
             $roleid = $param['roleid'];
             $test_uidarr = config('test_uidarr') ?: [];
             if ((strlen($roleid)==7) || in_array($roleid, $test_uidarr)) {
-                $this->config = config('jdbspr_test');
-                config('trans_url_other',config('test_trans_url'));
+                 $this->config = config('jdbspr_test');
+                 config('trans_url_other',config('test_trans_url'));
             }
             $language = $param['language'] ?: $this->config['language'];
             if (strtoupper($language) == 'BR') {
@@ -63,9 +63,9 @@ class Index extends Base
                 'uid'=>config('platform_name').'abc'.$roleid,
                 'balance'=>$balance,
                 'lang'=>$language,
-                'gType'=>$param['gType'] ?: "22",
+                'gType'=>$param['gType'] ?? "22",
                 'mType'=>$gameid ?: "22001",
-            ];
+            ]; 
             $params = $this->encrypt(json_encode($params),$this->config['Secret_Key'],$this->config['Operator_Token']);
             $gameURL = $this->config['GAME_URL'].$params;
 
@@ -75,7 +75,7 @@ class Index extends Base
             } else {
                 $res = $this->curl($gameURL);
             }
-
+            
             $res = json_decode($res,true);
             if($res['status'] == '0000'){
                 $gameURL = $res['path'];
@@ -83,7 +83,7 @@ class Index extends Base
                 $gameURL = '';
             }
             return $this->succjson($gameURL);
-
+            
         } catch (Exception $ex) {
             save_log('jdbspr_error', '==='.$ex->getMessage() . $ex->getTraceAsString() . $ex->getLine());
             return $this->failjson('api error');
@@ -121,8 +121,8 @@ class Index extends Base
                 return json($respons);
             }
             if ($action == 8) {
-                $bet_amount = $params['bet'];
-                $win_amount = $params['win'];
+                $bet_amount = abs($params['bet']);
+                $win_amount = abs($params['win']);
                 $gameId = $params['mType'];
                 $transaction_id = $reference = $params['transferId'];
 
@@ -137,7 +137,7 @@ class Index extends Base
                 } else {
                     Redis::set('jdbspr_is_exec_result_'.$user_id.$reference,1,3600);
                 }
-
+                
                 $socket = new QuerySocket();
                 $bet_amount = bcmul($bet_amount,bl,0);
 
@@ -154,7 +154,7 @@ class Index extends Base
 
                 $win_amount  = bcmul($win_amount,bl,0);
                 $state = $socket->UpScore2($user_id, $win_amount, $transaction_id,39400,$bet_amount);
-
+                
                 $clear_data = Redis::get('jdbspr_game_id_'.$user_id) ?: [];
                 if (empty($clear_data)) {
                     $state = $socket->ClearLablel($user_id,39400);
@@ -168,7 +168,7 @@ class Index extends Base
                         'GameId'=>$gameId,
                     ]));
                 }
-
+                
                 $left_balance = $this->getSocketBalance($user_id);
                 $respons = [
                     "status"=>"0000",
@@ -200,7 +200,7 @@ class Index extends Base
                         'err_text'=>'Insufficient Balance'
                     ];
                     save_log('jdbspr', '==='.request()->url().'===响应成功数据===' . json_encode($respons));
-                    return json($respons);exit();
+                    return json($respons);exit(); 
                 }
 
                 if (Redis::get('jdbspr_is_exec_bet_'.$user_id.$reference)) {
@@ -212,9 +212,9 @@ class Index extends Base
                     save_log('jdbspr', '==='.request()->url().'===响应成功数据===' . json_encode($respons));
                     return json($respons);exit();
                 } else {
-
+                    
                 }
-
+                
                 $clear_data = Redis::get('jdbspr_game_id_'.$user_id) ?: [];
                 $clear_data[$reference] = 1;
                 Redis::set('jdbspr_game_id_'.$user_id,$clear_data);
@@ -244,7 +244,7 @@ class Index extends Base
             }
 
             if ($action == 10) {
-                $bet_amount = $params['bet'];
+                $bet_amount = abs($params['bet']);
                 $win_amount = $params['win'] - $params['tax'];
                 $gameId = $params['mType'];
                 $transaction_id = $reference = $params['transferId'];
@@ -261,7 +261,7 @@ class Index extends Base
                 } else {
                     Redis::set('jdbspr_is_exec_result_'.$user_id.$reference,1,86400);
                 }
-
+                
                 foreach ($refTransferIds as $key => $val) {
                     //不存在这个下注
                     if (!Redis::get('jdbspr_is_exec_bet_'.$user_id.$val)) {
@@ -289,7 +289,7 @@ class Index extends Base
                     $clear_data[$val] = 1;
                     unset($clear_data[$val]);
                 }
-
+                
                 if (empty($clear_data)) {
                     $state = $socket->ClearLablel($user_id,39400);
                     Redis::rm('jdbspr_game_id_'.$user_id);
@@ -303,7 +303,7 @@ class Index extends Base
                         'GameId'=>$gameId,
                     ]));
                 }
-
+                
                 $left_balance = $this->getSocketBalance($user_id);
                 $respons = [
                     "status"=>"0000",
@@ -348,7 +348,7 @@ class Index extends Base
                         return json($respons);
                     }
                 }
-
+                
                 $socket = new QuerySocket();
                 if ($win_amount >= 0) {
                     $gamemoney  = bcmul($win_amount,bl,0);
@@ -362,7 +362,7 @@ class Index extends Base
                         $clear_data[$val] = 1;
                         unset($clear_data[$val]);
                     }
-
+                    
                     if (empty($clear_data)) {
                         $state = $socket->ClearLablel($user_id,39400);
                         Redis::rm('jdbspr_game_id_'.$user_id);
@@ -438,24 +438,24 @@ class Index extends Base
 
     private  function encrypt($data, $key, $iv)
     {
-        $data = $this->padString($data);
-        $encrypted = openssl_encrypt($data, 'AES-128-CBC', $key, OPENSSL_NO_PADDING, $iv);
-        $encrypted = base64_encode($encrypted);
-        $encrypted = str_replace(array('+','/','=') , array('-','_','') , $encrypted);
-        return $encrypted;
+          $data = $this->padString($data);
+          $encrypted = openssl_encrypt($data, 'AES-128-CBC', $key, OPENSSL_NO_PADDING, $iv);
+          $encrypted = base64_encode($encrypted);
+          $encrypted = str_replace(array('+','/','=') , array('-','_','') , $encrypted);
+          return $encrypted;
     }
 
     private  function padString($source)
     {
-        $paddingChar = ' ';
-        $size = 16;
-        $x = strlen($source) % $size;
-        $padLength = $size - $x;
-        for ($i = 0;$i < $padLength;$i++)
-        {
-            $source .= $paddingChar;
-        }
-        return $source;
+          $paddingChar = ' ';
+          $size = 16;
+          $x = strlen($source) % $size;
+          $padLength = $size - $x;
+          for ($i = 0;$i < $padLength;$i++)
+          {
+              $source .= $paddingChar;
+          }
+          return $source;
     }
     private function decrypt($data, $key, $iv)
     {
@@ -480,7 +480,7 @@ class Index extends Base
                 } else {
                     $md5str = $key.'='.$val;
                 }
-
+                
             }
         }
         $str = $md5str.$Md5key;

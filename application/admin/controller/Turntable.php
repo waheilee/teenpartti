@@ -1,268 +1,150 @@
 <?php
 
 namespace app\admin\controller;
-
-use app\common\GameLog;
-use app\model\BankDB;
-use app\model\GameOCDB;
-use app\model\MasterDB;
-use app\model\UserDB;
 use think\Db;
+use app\model\MasterDB;
 
 class Turntable extends Main
 {
 
-    /**
-     * 分享统计
-     * @return mixed|\think\response\Json
-     */
-    public function sharingStatistics()
-    {
-        //按照降序排序，可以看到该分享人分享的次数/注册人数 Lv1PersonCount /充值人数 Lv1FirstDepositPlayers /充值金额DailyDeposit/取款金额/存提差
-        //后面有两个功能 一个是增加第三点的附带金额。
-        //如果对方有提交领取申请，则有一个领取审核通过按钮用于发放奖金。
-        //具体样式参考代理明细页面，包含筛选。
-        //充值金额： [OM_GameOC].[dbo].[T_BankWeathChangeLog_所有日表
-        // ChangeType = (47)，为这个用户的个人充值金额
-        //个人取款金额   [OM_BankDB].[dbo].[UserDrawBack]  ，玩家id       ,[AccountID]
-        //     金额  ,[iMoney]
-        $roleid = input('roleid');
-        $parentid = input('parentid', 0);
-        $startdate = input('startdate', '');
-        $enddate = input('enddate', '');
-        $page = input('page');
-        $limit = input('limit');
-        $orderField = input('orderfield', 'DailyDeposit');
-        $orderType = input('ordertype', 'desc');
-        if ($orderField == 'Lv1PersonCount') {
-            $order = "$orderField $orderType";
-        } else {
-            $order = "depo.$orderField $orderType";
-        }
-
-        $where = '1=1';
-        if ($roleid) {
-            $where .= ' and Parent.AccountID=' . $roleid;
-            $offset = "";
-        } else {
-            $offset = "OFFSET $page ROWS FETCH NEXT $limit ROWS ONLY";
-        }
-
-        switch (input('Action')) {
-            case 'list':
-                $userDB = new UserDB();
-                $count = $userDB->getTableObject('View_Accountinfo')->count();
-                $sql = "SELECT
-                            Parent.AccountID AS AccountID,
-                            COUNT(DISTINCT Child.AccountID) AS Lv1PersonCount,
-                            depo.DailyDeposit,
-                            depo.Lv1FirstDepositPlayers
-                        FROM
-                            View_Accountinfo Parent
-                        LEFT JOIN
-                            View_Accountinfo Child ON Parent.AccountID = Child.ParentID
-                        LEFT JOIN (
-                            SELECT
-                                p.ParentID,
-                                COALESCE(SUM(Child.TransMoney), 0) AS DailyDeposit,
-                                COALESCE(COUNT(*), 0) AS Lv1FirstDepositPlayers
-                            FROM
-                                View_Accountinfo p
-                            LEFT JOIN
-                                [CD_DataChangelogsDB].[dbo].[T_UserTransactionLogs] Child ON p.AccountID = Child.RoleID
-                            WHERE
-                                Child.IfFirstCharge = 1
-                            GROUP BY
-                                p.ParentID
-                        ) AS depo ON depo.ParentID = Parent.AccountID
-                        WHERE $where
-                        GROUP BY
-                            Parent.AccountID,
-                            depo.DailyDeposit,
-                            depo.Lv1FirstDepositPlayers
-                        ORDER BY $order $offset ;";
-                $users = $userDB->getTableQuery($sql);
-//                dump($users);die();
-//
-//                $users = $userDB->getTableObject('View_Accountinfo')
-//                    ->where(function ($q) use($roleid){
-//                        if ($roleid){
-//                            $q->where('AccountID',$roleid);
-//                        }
-//                    })
-//                    ->page($page,$limit)
-//                    ->select();
-                $data = [];
-                foreach ($users as $user) {
-                    $item = [];
-
-
-                    $item['Lv1PersonCount'] = $user['Lv1PersonCount'];
-                    $item['DailyDeposit'] = $user['DailyDeposit'] ?? 0;
-                    $item['Lv1FirstDepositPlayers'] = $user['Lv1FirstDepositPlayers'] ?? 0;
-                    $userBankDB = new BankDB();
-                    $takeMoney = $userBankDB->getTableObject('UserDrawBack')
-                        ->where('AccountID', $user['AccountID'])
-                        ->sum('iMoney') ?? 0;
-                    $item['takeMoney'] = $takeMoney / bl;
-                    if ($item['DailyDeposit'] == 0 && $item['takeMoney'] > 0) {
-                        $item['difference'] = '-' . $item['takeMoney'];
-                    } else {
-                        $item['difference'] = bcsub($item['DailyDeposit'], $item['takeMoney'], 2);
-                    }
-                    $turntableMoney = $userDB->getTableObject('T_Job_UserInfo')
-                        ->where('RoleID', $user['AccountID'])
-                        ->where('job_key', 10014)
-                        ->sum('value') ?? 0;
-                    $item['Money'] = $turntableMoney / bl;
-                    $addMoney = $userDB->getTableObject('T_Job_UserInfo')
-                        ->where('RoleID', $user['AccountID'])
-                        ->where('job_key', 10015)
-                        ->sum('value') ?? 0;
-                    $item['addMoney'] = FormatMoney($addMoney);
-                    $item['ProxyId'] = $user['AccountID'];
-                    $data[] = $item;
-                }
-                $result['count'] = $count;
-                $result['list'] = $data;
-
-                return $this->apiJson($result);
-
-        }
-
-        $this->assign('parentid', $parentid);
-        $this->assign('roleid', $roleid);
-        $this->assign('startdate', $startdate);
-        $this->assign('enddate', $enddate);
-        return $this->fetch();
-
-    }
-
-    /**
-     * 转盘审核记录
-     * @return mixed|\think\response\Json
-     * @throws \think\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\ModelNotFoundException
-     * @throws \think\exception\DbException
-     */
     public function checkRecord()
     {
-        //$checkName = session('username');//审核人员
+        if (input('action') == 'list') {
+            $limit          = request()->param('limit') ?: 15;
+            $RoleID         = request()->param('RoleID');
+            $start_date     = request()->param('start_date');
+            $end_date       = request()->param('end_date');
+            $check_user     = request()->param('check_user');
+            $status         = request()->param('status');
+            $ishistory      = request()->param('ishistory');
+            $orderby = input('orderby', 'AddTime');
+            $orderType = input('ordertype', 'desc');
 
-        if ($this->request->isAjax()) {
-            $roleId = input('roleid');
-            $commitStartTime = input('commit_start_time');
-            $commitEndTime = input('commit_end_time');
-            $passStartTime = input('pass_start_time');
-            $passEndTime = input('pass_end_time');
-            $checkUser = input('check_user');
-            $page = input('page');
-            $limit = input('limit');
-            $historyList = input('history', 0);
-            if (input('Action') == 'list') {
-                $userDB = new UserDB();
-                $checkRecordData = [];
-                if (empty($historyList)) {
-                    $count = $userDB->getTableObject('T_PDDCommi')
-                        ->where(function ($q) use ($roleId) {
-                            if (!empty($roleId)) {
-                                $q->where('RoleId', $roleId);
-                            }
-                        })
-                        ->where('GetType', 0)
-                        ->count();
-                    $checkRecord = $userDB->getTableObject('T_PDDCommi')
-                        ->where(function ($q) use ($roleId) {
-                            if (!empty($roleId)) {
-                                $q->where('RoleId', $roleId);
-                            }
-                        })
-                        ->where('GetType', 0)
-                        ->page($page, $limit)
-                        ->select();
-                } else {
-                    $count = $userDB->getTableObject('T_PDDCommi')
-                        ->where(function ($q) use ($roleId) {
-                            if (!empty($roleId)) {
-                                $q->where('RoleId', $roleId);
-                            }
-                        })
-                        ->where(function ($q) use ($checkUser) {
-                            if (!empty($checkUser)) {
-                                $q->where('Commi', 'like', '%' . $checkUser . '%');
-                            }
-                        })
-                        ->where(function ($q) use ($commitStartTime, $commitEndTime) {
-                            if (!empty($commitStartTime)) {
-                                $q->where('CommiTime', '>', $commitStartTime);
-                            }
-                            if (!empty($commitEndTime)) {
-                                $q->where('CommiTime', '<', $commitEndTime);
-                            }
-                            if (!empty($commitStartTime) && !empty($commitEndTime)) {
-                                $q->where('CommiTime', 'between time', [$commitStartTime, $commitEndTime]);
-                            }
-                        })
-                        ->whereIn('GetType', [1, 2])
-                        ->count();
-                    $checkRecord = $userDB->getTableObject('T_PDDCommi')
-                        ->where(function ($q) use ($roleId) {
-                            if (!empty($roleId)) {
-                                $q->where('RoleId', $roleId);
-                            }
-                        })
-                        ->where(function ($q) use ($checkUser) {
-                            if (!empty($checkUser)) {
-                                $q->where('Commi', 'like', '%' . $checkUser . '%');
-                            }
-                        })
-                        ->where(function ($q) use ($commitStartTime, $commitEndTime) {
-                            if (!empty($commitStartTime)) {
-                                $q->where('CommiTime', '>', $commitStartTime);
-                            }
-                            if (!empty($commitEndTime)) {
-                                $q->where('CommiTime', '<', $commitEndTime);
-                            }
-                            if (!empty($commitStartTime) && !empty($commitEndTime)) {
-                                $q->where('CommiTime', 'between time', [$commitStartTime, $commitEndTime]);
-                            }
-                        })
-                        ->whereIn('GetType', [1, 2])
-                        ->page($page, $limit)
-                        ->select();
-                }
-                foreach ($checkRecord as $record) {
-                    $item['id'] = $record['id'];
-                    $item['RoleId'] = $record['RoleId'];
-                    $item['CommiTime'] = $record['CommiTime'];
-                    $item['PassTime'] = $record['PassTime'];
-                    $item['Commi'] = $record['Commi'];
-                    $item['GetType'] = $this->getTypeCheck($record['GetType']);
-                    $item['GetAfter'] = FormatMoney($record['GetAfter']);
-                    $turntableMoney = $userDB->getTableObject('T_PDDDrawHistory')
-                        ->where('RoleId', $record['RoleId'])
-                        ->where('ChangeType', 1)
-                        ->whereIn('Item', [1, 2])
-                        ->sum('ItemVal') ?? 0;
-                    $item['Money'] = $turntableMoney / bl;
-
-                    $addMoney = $userDB->getTableObject('T_Job_UserInfo')
-                        ->where('RoleID', $record['RoleId'])
-                        ->where('job_key', 10015)
-                        ->sum('value') ?? 0;
-                    $item['addMoney'] = FormatMoney($addMoney);
-                    $checkRecordData[] = $item;
-                }
-//                var_dump($checkRecord);die();
-                $data['count'] = $count;
-                $data['list'] = $checkRecordData;
-                return $this->apiJson($data);
+            $where = '1=1';
+            if ($RoleID != '') {
+                $where .= ' and a.RoleID=' . $RoleID;
             }
+            if ($start_date != '') {
+                $where .= ' and a.AddTime>=\'' . $start_date . '\'';
+            }
+            if ($end_date != '') {
+                $where .= ' and a.AddTime<\'' . $end_date . '\'';
+            }
+            if ($check_user != '') {
+                $where .= ' and a.CheckUser like \'%' . $check_user . '%\'';
+            }
+            if ($status != '') {
+                $where .= ' and a.Status='.$status;
+            }
+            if ($ishistory != '') {
+                $where .= ' and a.Status<>0';
+            }
+
+            $data = (new \app\model\DataChangelogsDB())->getTableObject('T_AyllaWithdrawHistory')->alias('a')
+                ->join('[CD_UserDB].[dbo].[T_ProxyCollectData](nolock) as b','b.ProxyId=a.RoleID')
+                ->where($where)
+                ->field('a.*,ISNULL(b.Lv1PersonCount,0) Lv1PersonCount,ISNULL(b.Lv1DepositPlayers,0) Lv1DepositPlayers')
+                ->order("$orderby $orderType")
+                ->paginate($limit)
+                ->toArray();
+            foreach ($data['data'] as $key => &$val) {
+                $val['PreDrawMoney'] = FormatMoney($val['PreDrawMoney']);
+                $val['LastDrawMoney'] = FormatMoney($val['LastDrawMoney']);
+                $val['PGBonus'] = FormatMoney($val['PGBonus']);
+            }
+            return $this->apiReturn(0, $data['data'], 'success', $data['total']);
+        } else {
+            $pddconfig = (new \app\model\MasterDB())->getTableObject('T_GameConfig')->where('CfgType',291)->value('CfgValue');
+            $this->assign('pddconfig',$pddconfig);
+            return $this->fetch();
+        }
+    }
+
+    /**
+     * 转盘开关
+     */
+    public function turntableSwitch()
+    {
+        $pddconfig = (new \app\model\MasterDB())->getTableObject('T_GameConfig')->where('CfgType',291)->value('CfgValue');
+        if ($pddconfig == 1) {
+            $switch = 0;
+        } else {
+            $switch = 1;
+        }
+        $res = (new \app\model\MasterDB())->getTableObject('T_GameConfig')
+            ->where('CfgType', 291)
+            ->data(['CfgValue'=>$switch])
+            ->update();
+        if ($res) {
+            return $this->apiReturn(0, '', '操作成功');
+        } else {
+            return $this->apiReturn(1, '', '操作失败');
         }
 
-        return $this->fetch();
     }
+
+
+    /**
+     * 全网一键退款
+     */
+    public function onekeyBack()
+    {
+        $data = $this->sendGameMessage('CMD_MD_AYLLA_GM_FEFUND_ALL', [], "DC", 'returnComm');
+        if ($data['iResult'] == 0) {
+            return $this->apiReturn(0, '', '操作成功');
+        } else {
+            return $this->apiReturn(1, '', '操作失败');
+        }
+    }
+
+    /**
+     * 审核
+
+     */
+    public function check()
+    {
+        $ID = input('ID');
+        $RoleID = input('RoleID');
+        $Status = input('Status');
+
+        $record = (new \app\model\DataChangelogsDB())->getTableObject('T_AyllaWithdrawHistory')->where('ID',$ID)->find();
+        if (empty($record)) {
+            return $this->apiReturn(1, '', '记录不存在');
+        }
+        if ($record['Status'] != 0) {
+            return $this->apiReturn(1, '', '记录已审核');
+        }
+        (new \app\model\DataChangelogsDB())
+                ->getTableObject('T_AyllaWithdrawHistory')
+                ->where('ID',$ID)
+                ->data([
+                    'Status'=>$Status,
+                    'CheckTime'=>date('Y-m-d H:i:s'),
+                    'CheckUser'=>session('username')
+                ])
+                ->update();
+        if ($Status == 2) {
+            $data['iResult'] = 0;
+        } else {
+            $data = $this->sendGameMessage('CMD_MD_AYLLA_BONUS_TO_GAME', [$RoleID,$ID,$Status], "DC", 'returnComm');
+        }
+        
+        if ($data['iResult'] == 0) {
+            return $this->apiReturn(0, '', '操作成功');
+        } else {
+            (new \app\model\DataChangelogsDB())
+                ->getTableObject('T_AyllaWithdrawHistory')
+                ->where('ID',$ID)
+                ->data([
+                    'Status'=>0,
+                    'CheckTime'=>date('Y-m-d H:i:s'),
+                    'CheckUser'=>session('username')
+                ])
+                ->update();
+            return $this->apiReturn(1, '', '操作失败');
+        }
+    }
+
 
     /**
      * 审核历史记录
@@ -270,132 +152,105 @@ class Turntable extends Main
      */
     public function historyCheckRecord()
     {
-        //操作人员
-        $db = new UserDB();
-        $checkUser = $db->getTableObject('View_UserDrawBack')
-            ->group('checkUser')
-            ->column('checkUser');
-        $checkUser = array_keys($checkUser);
-        if (!in_array(session('username'), $checkUser)) {
-            $checkUser[] = session('username');
-        }
-        $this->assign('checkUser', $checkUser);
-        $this->assign('adminuser', session('username'));
         return $this->fetch();
     }
 
-    /**
-     * 奖励增加详情
-     * @return mixed|\think\response\Json
-     * @throws \think\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\ModelNotFoundException
-     * @throws \think\exception\DbException
-     */
-    public function detailsOfRewardIncrease()
-    {
-        //11.	后台有一个用户每笔奖励增加的明细表，对应第一点的功能，每增加一个金额 都有一个明细，以及时间。
-        //可筛选用户ID 增加类型 时间区间。T_PDDDrawHistory
-
-        if ($this->request->isAjax()) {
-            $roleId = input('roleid');
-            $tranType = input('tranType');
-            $startTime = input('start');
-            $endTime = input('end');
-            $page = input('page');
-            $limit = input('limit');
-            if (input('Action') == 'list') {
-//                $map['RoleId'] = $roleId ?? '';
-//                $map['Item'] = $tranType ?? '';
-                $start = strtotime($startTime) ?? '';
-                $end = strtotime($endTime) ?? '';
-
-                $userDB = new UserDB();
-                $count = $userDB->getTableObject('T_PDDDrawHistory')
-                    ->where(function ($q) use ($roleId) {
-                        if (!empty($roleId)) {
-                            $q->where('RoleId', $roleId);
-                        }
-                    })
-                    ->where(function ($q) use ($tranType) {
-                        if (!empty($tranType)) {
-                            $q->where('Item', $tranType);
-                        }
-                    })
-                    ->where(function ($q) use ($startTime, $endTime) {
-                        if (!empty($startTime)) {
-                            $q->where('ChangeTime', '>', strtotime($startTime));
-                        }
-                        if (!empty($endTime)) {
-                            $q->where('ChangeTime', '<', strtotime($endTime));
-                        }
-                        if (!empty($startTime) && !empty($endTime)) {
-                            $q->where('ChangeTime', 'between time', [strtotime($startTime), strtotime($endTime)]);
-                        }
-                    })
-                    ->where('ChangeType', 1)
-                    ->whereIn('Item', [1, 2, 6])
-                    ->count();
-                $checkRecord = $userDB->getTableObject('T_PDDDrawHistory')
-                    ->where(function ($q) use ($roleId) {
-                        if (!empty($roleId)) {
-                            $q->where('RoleId', $roleId);
-                        }
-                    })
-                    ->where(function ($q) use ($tranType) {
-                        if (!empty($tranType)) {
-                            $q->where('Item', $tranType);
-                        }
-                    })
-                    ->where(function ($q) use ($startTime, $endTime) {
-                        if (!empty($startTime)) {
-                            $q->where('ChangeTime', '>', strtotime($startTime));
-                        }
-                        if (!empty($endTime)) {
-                            $q->where('ChangeTime', '<', strtotime($endTime));
-                        }
-                        if (!empty($startTime) && !empty($endTime)) {
-                            $q->where('ChangeTime', 'between time', [strtotime($startTime), strtotime($endTime)]);
-                        }
-                    })
-                    ->where('ChangeType', 1)
-                    ->whereIn('Item', [1, 2, 6])
-//                    ->whereTime('ChangeTime', 'between', [$start, $end])
-                    ->limit($limit)
-                    ->page($page)
-                    ->select();
-                $temp = [];
-                foreach ($checkRecord as $record) {
-                    $item = [];
-                    $item['RoleId'] = $record['RoleId'];
-                    $item['ChangeTime'] = date('Y-m-d H:i:s', $record['ChangeTime']);
-                    $recordItem = '';
-                    $recordItemVal = '';
-                    switch ($record['Item']) {
-                        case 1:
-                            $recordItem = '大随机金额';
-                            $recordItemVal = $record['ItemVal'] / bl;
-                            break;
-                        case 2:
-                            $recordItem = '小随机金额';
-                            $recordItemVal = $record['ItemVal'] / bl;
-                            break;
-                        case 6:
-                            $recordItem = '获得随机次数';
-                            $recordItemVal = $record['ItemVal'];
-                            break;
-                    }
-                    $item['Item'] = $recordItem;
-                    $item['ItemVal'] = $recordItemVal;
-                    $temp[] = $item;
-                }
-                $data['count'] = $count;
-                $data['list'] = $temp;
-                return $this->apiJson($data);
-            }
+    public function detailsOfRewardIncrease(){
+        $config = (new \app\model\MasterDB())->getTableObject('T_AyllaCfg')->group('AyllaType,Description')->field('AyllaType,Description')->select();
+        $pddconfig = [];
+        foreach ($config as $key => &$val) {
+            $pddconfig[$val['AyllaType']] = $val['Description'];
         }
 
-        return $this->fetch();
+        if (input('action') == 'list') {
+            $limit          = request()->param('limit') ?: 15;
+            $RoleID         = request()->param('RoleID');
+            $start_date     = request()->param('start_date');
+            $end_date       = request()->param('end_date');
+            $type           = request()->param('type');
+            $Description    = request()->param('Description');
+
+            $orderby = input('orderby', 'AddTime');
+            $orderType = input('ordertype', 'desc');
+
+            $where = '1=1';
+            if ($RoleID != '') {
+                $where .= ' and a.RoleID=' . $RoleID;
+            }
+            if ($start_date != '') {
+                $where .= ' and a.AddTime>=\'' . $start_date . '\'';
+            }
+            if ($end_date != '') {
+                $where .= ' and a.AddTime<\'' . $end_date . '\'';
+            }
+
+            if ($type != '') {
+                $where .= ' and a.ItemType='.$type;
+            }
+
+            if ($Description != '') {
+                $where .= ' and a.ItemType='.$Description;
+            }
+            $data = (new \app\model\DataChangelogsDB())->getTableObject('T_AyllaBetBonusRecord')->alias('a')
+                ->where($where)
+                ->order("$orderby $orderType")
+                ->paginate($limit)
+                ->toArray();
+            foreach ($data['data'] as $key => &$val) {
+                if ($val['ItemType'] != 4) {
+                    $val['ItemValue'] = FormatMoney($val['ItemValue']).'(金额)';
+                } else {
+                    $val['ItemValue'] = $val['ItemValue'].'(次数)';
+                }
+                $val['Description'] = $pddconfig[$val['ItemType']];
+            }
+            return $this->apiReturn(0, $data['data'], 'success', $data['total']);
+        } else {
+
+            $this->assign('pddconfig',$pddconfig);
+            return $this->fetch();
+        }
+    }
+
+
+    /**
+     * 分享统计
+     */
+    public function sharingStatistics()
+    {
+        if (input('action') == 'list') {
+            $limit          = request()->param('limit') ?: 15;
+            $RoleID         = request()->param('RoleID');
+
+            $orderby = input('orderby', 'ProxyId');
+            $orderType = input('ordertype', 'desc');
+
+            $where = '1=1';
+            if ($RoleID != '') {
+                $where .= ' and b.ProxyId=' . $RoleID;
+            }
+            if ($orderby == 'PreDrawMoney') {
+                $orderby = 'RotaryBonus';
+            }
+            $data = (new \app\model\UserDB())->getTableObject('T_ProxyCollectData')->alias('b')
+                    ->join('[T_UserAyllaBet](nolock) a','b.ProxyId=a.RoleId','LEFT')
+                    ->where($where)
+                    ->field('a.RotaryBonus,a.PGBonus,a.AyllaBetTimes,a.TotalCompleteBonus,b.ProxyId,b.Lv1PersonCount,b.Lv1Deposit,b.Lv1DepositPlayers,b.Lv1WithdrawAmount,(b.Lv1Deposit*1000-b.Lv1WithdrawAmount) as retowi')
+                    ->order("$orderby $orderType")
+                    ->paginate($limit)
+                    ->toArray();
+            
+            foreach ($data['data'] as $key => &$val) {
+                $val['PreDrawMoney'] = FormatMoney($val['RotaryBonus']);
+                $val['PGBonus'] = FormatMoney($val['PGBonus']);
+                $val['TotalCompleteBonus'] = FormatMoney($val['TotalCompleteBonus']);
+                $val['Lv1WithdrawAmount'] = FormatMoney($val['Lv1WithdrawAmount']);
+                $val['retowi'] = FormatMoney($val['retowi']);
+            }
+            return $this->apiReturn(0, $data['data'], 'success', $data['total']);
+        } else {
+            return $this->fetch();
+        }
 
     }
 
@@ -408,239 +263,22 @@ class Turntable extends Main
         $roleid = $this->request->param('roleid');
         $amount = $this->request->param('amount');
         $type = $this->request->param('type');
+        $addorsub = $this->request->param('addorsub');
 
-        $send_dm = $amount * bl;
-        $data = $this->sendGameMessage('CMD_MD_GM_PDD_ADD_MONEY', [$roleid, $type, $send_dm], "DC", 'returnComm');
-        if ($data['iResult'] == 1) {
-            if ($type == 1) {
-                $comment = '增加玩家转盘奖励金：' . $amount;
-            } else {
-                $comment = '扣减玩家转盘奖励金:' . $amount;
-            }
-            $db = new GameOCDB();
-            $db->setTable('T_PlayerComment')->Insert([
-                'roleid' => $roleid,
-                'adminid' => session('userid'),
-                'type' => 2,
-                'opt_time' => date('Y-m-d H:i:s'),
-                'comment' => $comment
-            ]);
-
-            GameLog::logData(__METHOD__, [$roleid, $amount, $type], 1, $comment);
+        if ($type == 0) {
+            $amount = $amount * bl;
+        }
+        if ($addorsub == 1) {
+            $amount = -$amount;
+        }
+        $data = $this->sendGameMessage('CMD_MD_PG_ADD_AYLLA_BONUS', [$roleid, $type, $amount], "DC", 'returnComm');
+        if ($data['iResult'] == 0) {
             return $this->apiReturn(0, '', '操作成功');
         } else {
-            GameLog::logData(__METHOD__, [$roleid, $amount, $type], 0, '操作失败');
             return $this->apiReturn(1, '', '操作失败');
         }
     }
 
-
-    /**
-     * 审核
-     * @return mixed
-     * @throws \think\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\ModelNotFoundException
-     * @throws \think\exception\DbException
-     * @throws \think\exception\PDOException
-     */
-    public function check()
-    {
-        $id = input('id');
-        $roleId = input('role_id');
-        $isPass = input('is_pass');
-        $checkName = session('username');//审核人员
-        $userDB = new UserDB();
-        $isCheck = $userDB->getTableObject('T_PDDCommi')
-            ->where('RoleId', $roleId)->find();
-        $checkMoney = $userDB->getTableObject('T_Job_UserInfo')
-            ->where('RoleID', $roleId)
-            ->whereIn('job_key', [10014, 10015])
-            ->sum('value') ?? 0;
-        if ($isPass == 1) {
-            $data = $this->sendGameMessage('CMD_MD_GM_PDD_COMMI_SUC', [$roleId, 1], "DC", 'returnComm');
-            if ($data['iResult'] == 1) {
-
-                $db = new GameOCDB();
-                $db->setTable('T_PlayerComment')->Insert([
-                    'roleid' => $roleId,
-                    'adminid' => session('userid'),
-                    'type' => 2,
-                    'opt_time' => date('Y-m-d H:i:s'),
-                    'comment' => '玩家转盘审核通过'
-                ]);
-
-                $update = $userDB->getTableObject('T_PDDCommi')
-                    ->where('id', $id)
-                    ->where('RoleId', $roleId)
-                    ->data([
-                        'GetType' => $isPass,
-                        'PassTime' => date('Y-m-d H:i:s'),
-                        'Commi' => $checkName,
-                        'GetAfter' => $checkMoney
-                    ])
-                    ->update();
-                if ($update) {
-                    GameLog::logData(__METHOD__, [$roleId], 1, '玩家转盘审核成功');
-                    return $this->apiReturn(0, '', '操作成功');
-
-                } else {
-                    return $this->apiReturn(1, '', '更新操作失败');
-                }
-
-            } else {
-                GameLog::logData(__METHOD__, [$roleId], 0, '操作失败');
-                return $this->apiReturn(1, '', '操作失败');
-            }
-        } else {
-            $data = $this->sendGameMessage('CMD_MD_GM_PDD_COMMI_SUC', [$roleId, 0], "DC", 'returnComm');
-            if ($data['iResult'] == 1) {
-                $db = new GameOCDB();
-                $db->setTable('T_PlayerComment')->Insert([
-                    'roleid' => $roleId,
-                    'adminid' => session('userid'),
-                    'type' => 2,
-                    'opt_time' => date('Y-m-d H:i:s'),
-                    'comment' => '玩家转盘审核拒绝'
-                ]);
-
-                $update = $userDB->getTableObject('T_PDDCommi')
-                    ->where('id', $id)
-                    ->where('RoleId', $roleId)
-                    ->data([
-                        'GetType' => $isPass,
-                        'PassTime' => date('Y-m-d H:i:s'),
-                        'Commi' => $checkName,
-                        'GetAfter' => $checkMoney
-                    ])
-                    ->update();
-                if ($update) {
-                    GameLog::logData(__METHOD__, [$roleId], 1, '玩家转盘审核拒绝成功');
-                    return $this->apiReturn(0, '', '操作成功');
-
-                } else {
-                    return $this->apiReturn(1, '', '更新操作失败');
-                }
-            } else {
-                GameLog::logData(__METHOD__, [$roleId], 0, '操作失败');
-                return $this->apiReturn(1, '', '操作失败');
-            }
-
-        }
-
-
-    }
-
-    /**
-     * 转盘开关
-     * @return mixed
-     * @throws \think\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\ModelNotFoundException
-     * @throws \think\exception\DbException
-     * @throws \think\exception\PDOException
-     */
-    public function turntableSwitch()
-    {
-        $switch = input('switch', '');
-        $masterBD = new MasterDB();
-        $updateSwitch = $masterBD->getTableObject('T_GameConfig')
-            ->where('CfgType', 10140)
-            ->find();
-        if ($updateSwitch['CfgValue'] == $switch) {
-            if ($updateSwitch['CfgValue'] == 10001) {
-                return $this->apiReturn(1, '', '转盘已是开启状态');
-            } else {
-                return $this->apiReturn(1, '', '转盘已是关闭状态');
-            }
-        }
-
-        $update = $masterBD->getTableObject('T_GameConfig')
-            ->where('CfgType', 10140)
-            ->update(['CfgValue' => $switch]);
-        if ($update) {
-            $data = $this->sendGameMessage('CMD_MD_RELOAD_GAME_DATA', [0], "DC", 'returnComm');
-            if ($data['iResult'] == 0) {
-
-                $db = new GameOCDB();
-                $db->setTable('T_PlayerComment')->Insert([
-                    'roleid' => 0,
-                    'adminid' => session('userid'),
-                    'type' => 2,
-                    'opt_time' => date('Y-m-d H:i:s'),
-                    'comment' => '玩家转盘审核'
-                ]);
-
-                return $this->apiReturn(0, '', '操作成功');
-            } else {
-
-                return $this->apiReturn(1, '', '操作失败');
-            }
-        } else {
-            return $this->apiReturn(1, '', '更新操作失败');
-        }
-
-    }
-
-
-    /**
-     * 全网一键退款
-     * @return mixed
-     */
-    public function onekeyBack()
-    {
-        $this->sendGameMessage('CMD_MD_GM_PDD_REFUND', [], "DC", 'returnComm');
-        return $this->apiReturn(0, '', '操作成功');
-    }
-
-    /**
-     * 修改玩家转盘次数
-     * @return mixed
-     */
-    public function editTurntableNumber()
-    {
-        $roleId = input('roleid');
-        $value = input('value');
-        $data = $this->sendGameMessage('CMD_MD_GM_ADD_JOB', [$roleId, 10019, $value], "DC", 'returnComm');
-        if ($data['iResult'] == 1) {
-
-            $db = new GameOCDB();
-            $db->setTable('T_PlayerComment')->Insert([
-                'roleid' => 0,
-                'adminid' => session('userid'),
-                'type' => 2,
-                'opt_time' => date('Y-m-d H:i:s'),
-                'comment' => '玩家转盘增加次数'
-            ]);
-
-            return $this->apiReturn(0, '', '操作成功');
-        } else {
-
-            return $this->apiReturn(1, '', '操作失败');
-        }
-    }
-
-    /**
-     * 获取审核类型
-     * @param $type
-     * @return string
-     */
-    public function getTypeCheck($type): string
-    {
-        $str = '';
-        switch ($type) {
-            case 0:
-                $str = '未审核';
-                break;
-            case 1:
-                $str = '已审核领取';
-                break;
-            case 2:
-                $str = '已拒绝';
-                break;
-        }
-        return $str;
-    }
 
     /**
      * 转盘手机号码列表
@@ -733,7 +371,7 @@ class Turntable extends Main
             } else {
                 return $this->apiReturn(1, '', '操作失败');
             }
-        } elseif($type == 2) {
+        } else {
             //批量删除
             $ids = explode(',', $id);
             try {
@@ -753,155 +391,7 @@ class Turntable extends Main
                 return $this->apiReturn(1, '', '操作失败');
             }
 
-        }else{
-
-            $masterDB->getTableObject('T_PDDCode')->where('1=1')->delete();
-            return $this->apiReturn(0, '', '操作成功');
         }
 
     }
-
-    /**
-     * 周亏损奖励领取列表
-     * @return mixed|\think\response\Json
-     * @throws \think\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\ModelNotFoundException
-     * @throws \think\exception\DbException
-     */
-    public function cashLostBack()
-    {
-        if ($this->request->isAjax()) {
-            $page = input('page');
-            $limit = input('limit');
-            $date = input('begin_time');
-//            $endTime = input('end_time');
-            $roleId = input('roleid');
-            $takeStatus = input('take_status');
-            $orderBy = input('orderby');
-            $orderType = input('ordertype');
-            $masterDB = new UserDB();
-
-            $count = $masterDB->getTableObject('T_UserCashLoseBack')
-                ->where(function ($q) use ($roleId) {
-                    if ($roleId) {
-                        $q->where('RoleId', $roleId);
-                    }
-                })
-                ->where(function ($q) use ($date) {
-                    if (!empty($date)) {
-                        $beginTime = strtotime($date);
-                        $q->where('BeginTime', '<=', $beginTime)
-                            ->where('EndTime', '>=', $beginTime);
-
-                    }
-                })
-                ->where(function ($q) use ($takeStatus) {
-                    if ($takeStatus == 1) {
-                        $q->where('GetTime', '>', 0);
-                    }
-                    if ($takeStatus == 2) {
-                        $q->where('GetTime', 0);
-                    }
-                })
-                ->count();
-            if (empty($orderBy)) {
-                $orderBy = "WeekLoseMoney asc";
-            } else {
-                $orderBy = "$orderBy $orderType";
-            }
-
-            $lists = $masterDB->getTableObject('T_UserCashLoseBack')
-                ->order($orderBy)
-                ->where(function ($q) use ($roleId) {
-                    if ($roleId) {
-                        $q->where('RoleId', $roleId);
-                    }
-                })
-                ->where(function ($q) use ($date) {
-                    if (!empty($date)) {
-                        $beginTime = strtotime($date);
-                        $q->where('BeginTime', '<=', $beginTime)
-                            ->where('EndTime', '>=', $beginTime);
-
-                    }
-                })
-                ->where(function ($q) use ($takeStatus) {
-                    if ($takeStatus == 1) {
-                        $q->where('GetTime', '>', 0);
-                    }
-                    if ($takeStatus == 2) {
-                        $q->where('GetTime', 0);
-                    }
-                })
-                ->page($page, $limit)
-                ->select();
-
-            $temp = [];
-            foreach ($lists as &$list) {
-                if ($list['GetTime']) {
-                    $list['GetTime'] = date('Y-m-d', $list['GetTime']);
-                } else {
-                    $list['GetTime'] = '未领取';
-                }
-                $list['cycle'] = date('Y-m-d', $list['BeginTime']) . '--' . date('Y-m-d', $list['EndTime']);
-                $list['WeekLoseMoney'] = FormatMoney($list['WeekLoseMoney']);
-                $list['CashBackMoney'] = FormatMoney($list['CashBackMoney']);
-                $list['CashBackRate'] = bcdiv($list['CashBackRate'], 100) . '%';
-                $temp[] = $list;
-
-            }
-            $data['count'] = $count;
-            $data['list'] = $temp;
-            return $this->apiJson($data);
-        }
-        return $this->fetch();
-    }
-
-    public function getTotal()
-    {
-        $date = input('begin_time');
-//        $endTime = input('end_time');
-        $takeStatus = input('take_status');
-        $userDB = new UserDB();
-        $data = $userDB->getTableObject('T_UserCashLoseBack')
-            ->where(function ($q) use ($date) {
-                if (!empty($date)) {
-                    $beginTime = strtotime($date);
-                    $q->where('BeginTime', '<=', $beginTime)
-                        ->where('EndTime', '>=', $beginTime);
-
-                }
-            })
-            ->where(function ($q) use ($takeStatus) {
-                if ($takeStatus == 1) {
-                    $q->where('GetTime', '>', 0);
-                }
-                if ($takeStatus == 2) {
-                    $q->where('GetTime', 0);
-                }
-            })
-            ->select();
-
-        $resultArray = array_filter($data, function ($item) {
-            return $item['GetTime'] > 0;
-        });
-
-        $cashBackMoneyTotal = $this->getArraySum($data, 'CashBackMoney');//总金额
-
-        $cashMoneyTotal = $this->getArraySum($resultArray, 'CashBackMoney');
-
-        return $this->apiReturn(200, [
-            'cashBackMoneyTotal' => FormatMoney($cashBackMoneyTotal),
-            'cashMoneyTotal' => FormatMoney($cashMoneyTotal),
-        ]);
-    }
-
-    public function getArraySum($data, $key)
-    {
-        $amounts = array_column($data, $key);
-        return array_sum($amounts);
-    }
-
-
 }

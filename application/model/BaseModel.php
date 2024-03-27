@@ -181,7 +181,7 @@ class BaseModel extends Model
         else                         $pageSize = $this->pageSize;
         $page = ((int)input('page', 1) - 1) * $pageSize;
 
-
+        
         $table = $this->table;
         if (IsNullOrEmpty($field)) $field = '*';
         if (!IsNullOrEmpty($where)) $where = $where;

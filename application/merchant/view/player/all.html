@@ -211,16 +211,16 @@
         {field: 'RegIP', align: 'center', title: "{:lang('注册IP')}", minWidth: 180},
         {field: 'LastLoginIP', align: 'center', title: "{:lang('最后IP')}", minWidth: 180},
         {field: 'LastLoginTime', align: 'center', title: "{:lang('最后登录时间')}", width: 180, sort: true},
-        {
-            field: 'Locked', width: 120, title: "{:lang('禁/启用')}", align: "center", templet: function (d) {
-                var normal ="{:lang('正常|封号')}"
-                if (d.Locked == 0) {
-                    return "<input type='checkbox' ctrlID = '" + d.ID + "' lay-filter='Disable' lay-skin='switch' lay-text='"+normal+"' checked>"
-                } else {
-                    return "<input type='checkbox' ctrlID = '" + d.ID + "'  lay-filter='Disable' lay-skin='switch' lay-text='"+normal+"'>"
-                }
-            }
-        },
+        // {
+        //     field: 'Locked', width: 120, title: "{:lang('禁/启用')}", align: "center", templet: function (d) {
+        //         var normal ="{:lang('正常|封号')}"
+        //         if (d.Locked == 0) {
+        //             return "<input type='checkbox' ctrlID = '" + d.ID + "' lay-filter='Disable' lay-skin='switch' lay-text='"+normal+"' checked>"
+        //         } else {
+        //             return "<input type='checkbox' ctrlID = '" + d.ID + "'  lay-filter='Disable' lay-skin='switch' lay-text='"+normal+"'>"
+        //         }
+        //     }
+        // },
         {
             field: "", width: 120, title: "{:lang('强退')}", align: "center", templet: function (d) {
                 

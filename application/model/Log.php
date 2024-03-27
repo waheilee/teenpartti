@@ -73,6 +73,21 @@ class Log extends CommonModel
                 case 'setTigerProfit':
                     $v['controller'] = '老虎机单款设置';
                     break;
+                case 'setDm':
+                    $v['controller'] = '设置打码';
+                    break;
+                case 'relation':
+                    $v['controller'] = '修改上级ID';
+                    break;
+                case 'ResetPwd':
+                    $v['controller'] = '修改密码';
+                    break;
+                case 'forceQuit':
+                    $v['controller'] = '玩家强退';
+                    break;
+                case 'addCommnet':
+                    $v['controller'] = '添加玩家备注';
+                    break;
                 default:
                     # code...
                     break;

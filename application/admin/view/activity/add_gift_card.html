@@ -39,6 +39,14 @@
         </div>
     </div>
 
+
+    <div class="layui-form-item" >
+        <label class="layui-form-label">{:lang('最低充值')}：</label>
+        <div class="layui-input-block">
+            <input type="number" id="MinRecharge" name='MinRecharge' value="{if(isset($info))}{$info.MinRecharge}{/if}"  placeholder="{:lang('请输入最低充值')}" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
     <div class="layui-form-item">
         <label class="layui-form-label">{:lang('充值玩家领取')}：</label>
         <div class="layui-input-block">
@@ -46,15 +54,7 @@
           <input type="radio" name="NeedCharge" value="1" title="开启" {php} if($NeedCharge==1){echo 'checked';} {/php}>
         </div>
     </div>
-    {if(config('TodayNeedCharge')==1)}
-    <div class="layui-form-item">
-        <label class="layui-form-label">{:lang('当日充值领取')}：</label>
-        <div class="layui-input-block">
-            <input type="radio" name="TodayNeedCharge" value="0" title="关闭" {php} if($TodayNeedCharge==0){echo 'checked';} {/php}>
-            <input type="radio" name="TodayNeedCharge" value="1" title="开启" {php} if($TodayNeedCharge==1){echo 'checked';} {/php}>
-        </div>
-    </div>
-    {/if}
+
     <div class="layui-form-item" style="display: none">
         <label class="layui-form-label">{:lang('url链接')}：</label>
         <div class="layui-input-block">
