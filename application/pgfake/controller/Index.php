@@ -59,6 +59,7 @@ class Index extends Base
             $header = [
                 'Content-Type: application/json;charset=utf-8',
             ];
+            save_log('pgfake', '===玩家ID'.$roleid);
             //创建游戏账号
             $tokenn = Redis::get('fakepggame_token_'.$roleid);
             if (empty($tokenn)) {
