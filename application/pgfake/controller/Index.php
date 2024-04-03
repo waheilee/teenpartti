@@ -118,6 +118,7 @@ class Index extends Base
                 'language'=>$language,
                 'ts'=>time()*1000,
             ];
+             save_log('pgfake', '==='.request()->url().'===接口请求数据===' . json_encode($post_params));
             $post_params['sign'] = $this->createSign($post_params,$this->Secret_Key);
             // $post_param['url'] = $this->API_Host.'api/web/game_url/';
             
