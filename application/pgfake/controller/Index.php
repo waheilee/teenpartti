@@ -63,7 +63,7 @@ class Index extends Base
             //创建游戏账号
             $tokenn = Redis::get('fakepggame_token_'.$roleid);
             if (empty($tokenn)) {
-                save_log('pgfake', '===token'.$tokenn);
+                save_log('pgfake', '===无token'.$tokenn);
                 $post_params = [
                     'operator_token'=>$this->Operator_Token,
                     'user_id'=>config('platform_name').'_'.$roleid,
@@ -81,7 +81,7 @@ class Index extends Base
                 $token  = $data['data']['token'];
                 Redis::set('fakepggame_token_'.$roleid,json_encode(['token'=>$token,'user_id'=>$userid]));
             } else {
-                save_log('pgfake', '===token'.$tokenn);
+                save_log('pgfake', '===有token'.$tokenn);
                 $tokenn = json_decode($tokenn,true);
                 $userid = $tokenn['user_id'];
                 $token  = $tokenn['token'];
