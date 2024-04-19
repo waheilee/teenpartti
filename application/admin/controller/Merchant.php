@@ -2,6 +2,7 @@
 
 namespace app\admin\controller;
 
+use app\common\GameLog;
 use app\model\BankDB;
 use app\model\GameOCDB;
 use app\model\MasterDB;
@@ -506,8 +507,12 @@ class Merchant extends Main
         if ($this->request->method() == 'POST') {
             $OperatorId = request()->param('OperatorId');
             $data = request()->param();
+            if ($data['BalanceQuota'] > 100000 || $data['CommissionQuota'] >100000){
+                return $this->apiReturn(1, '', '玩家上分额度或佣金上分额度不能超过100000');
+            }
             $res = (new GameOCDB())->getTableObject('T_OperatorQuotaManage')->where('OperatorId',$OperatorId)->data($data)->update();
             if ($res) {
+                GameLog::logData(__METHOD__, [$OperatorId, $data], 1, '修改渠道额度');
                 return $this->apiReturn(0, '', '操作成功');
             } else {
                 return $this->apiReturn(1, '', '操作失败');
