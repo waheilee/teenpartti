@@ -41,7 +41,7 @@ class Index extends Base
     {
         try {
             $params = request()->param() ?: json_decode(file_get_contents('php://input'),1);
-            // save_log('pggame', '==='.request()->url().'===接口请求数据===' . json_encode($params));
+             save_log('pggame', '==='.request()->url().'===接口请求数据===' . json_encode($params));
             $roleid   = $params['roleid'];
             $gameid   = $params['gameid'];
             $language = $params['language'];
@@ -96,6 +96,7 @@ class Index extends Base
                     'url'=> $this->API_Host
                 ];
                 $gameURL = $this->curl(config('trans_url').'/pggame/index/index',$post_param);
+                save_log('pggame', '=====接口返回数据===' . json_encode($gameURL));
                 if(file_put_contents('./pggame/'.$this->encry($roleid).'_pg.html',$gameURL) != false){
                     $gameURL = config('pg_api_url').'/pggame/'.$this->encry($roleid).'_pg.html?pggame=true';
                     return  $this->succjson($gameURL);
