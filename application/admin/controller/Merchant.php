@@ -507,8 +507,10 @@ class Merchant extends Main
         if ($this->request->method() == 'POST') {
             $OperatorId = request()->param('OperatorId');
             $data = request()->param();
-            if ($data['BalanceQuota'] > 100000 || $data['CommissionQuota'] >100000){
-                return $this->apiReturn(1, '', '玩家上分额度或佣金上分额度不能超过100000');
+            if (config('quota') != 1){
+                if ($data['BalanceQuota'] > 100000 || $data['CommissionQuota'] >100000){
+                    return $this->apiReturn(1, '', '玩家上分额度或佣金上分额度不能超过100000');
+                }
             }
             $res = (new GameOCDB())->getTableObject('T_OperatorQuotaManage')->where('OperatorId',$OperatorId)->data($data)->update();
             if ($res) {
