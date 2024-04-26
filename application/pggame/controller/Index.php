@@ -41,7 +41,7 @@ class Index extends Base
     {
         try {
             $params = request()->param() ?: json_decode(file_get_contents('php://input'),1);
-             save_log('pggame', '==='.request()->url().'===接口请求数据===' . json_encode($params));
+            // save_log('pggame', '==='.request()->url().'===接口请求数据===' . json_encode($params));
             $roleid   = $params['roleid'];
             $gameid   = $params['gameid'];
             $language = $params['language'];
@@ -58,10 +58,18 @@ class Index extends Base
             if ($key != strtolower($sign)) {
                 return $this->failjson('sign is error');
             }
+            $pgfake_whiteip_data = Redis::get('pgfake_whiteip_data');
+            $is_tofake = 1;
+            if (!empty($pgfake_whiteip_data)) {
+                $pgfake_whiteip_data = json_decode($pgfake_whiteip_data,1);
+                if (isset($pgfake_whiteip_data[$roleid])) {
+                    $is_tofake = 0;
+                }
+            }
 
             //是否走假pg
             $fake_pg_data = Redis::get('pgfake_data');
-            if (!empty($fake_pg_data)) {
+            if (!empty($fake_pg_data) && $is_tofake == 1) {
                 $fake_pg_data =json_decode($fake_pg_data,true);
                 if (isset($fake_pg_data[$gameid])) {
                     if ($fake_pg_data[$gameid]['status'] == 1 && strlen($roleid)==8) {
@@ -96,7 +104,6 @@ class Index extends Base
                     'url'=> $this->API_Host
                 ];
                 $gameURL = $this->curl(config('trans_url').'/pggame/index/index',$post_param);
-                save_log('pggame', '=====接口返回数据===' . json_encode($gameURL));
                 if(file_put_contents('./pggame/'.$this->encry($roleid).'_pg.html',$gameURL) != false){
                     $gameURL = config('pg_api_url').'/pggame/'.$this->encry($roleid).'_pg.html?pggame=true';
                     return  $this->succjson($gameURL);

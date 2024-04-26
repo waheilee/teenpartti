@@ -35,7 +35,7 @@ class Index extends Base
         $uuid   = substr($charid, 0,8).$hyphen.substr($charid, 8,4).$hyphen.substr($charid, 12,4).$hyphen.substr($charid, 16,4).$hyphen.substr($charid, 20,12);
         return $uuid;
     }
-    
+
     //游戏对外接口创建玩家
     public function createuser($params=[])
     {
@@ -45,7 +45,7 @@ class Index extends Base
             $language = $params['language'];
             $time     = $params['time'];
             $sign     = $params['sign'];
-           
+
             if (strtoupper($language) == 'BR') {
                 $language = 'pt';
             }
@@ -83,11 +83,16 @@ class Index extends Base
                 $userid = $tokenn['user_id'];
                 $token  = $tokenn['token'];
             }
-            
-            
+
+
             //设置玩家返奖率
-            if (Redis::has('pgfake_rtp_data')) {
-                $rtp = Redis::get('pgfake_rtp_data');
+            if (Redis::has('pgfake_rtp_data') || Redis::has('pgfake_rtp_data_'.$roleid)) {
+                if (Redis::has('pgfake_rtp_data_'.$roleid)) {
+                    $rtp = Redis::get('pgfake_rtp_data_'.$roleid);
+                } else {
+                    $rtp = Redis::get('pgfake_rtp_data');
+                }
+
                 if ($rtp >= 0) {
                     $post_params = [
                         'operator_token'=>$this->Operator_Token,
@@ -103,7 +108,7 @@ class Index extends Base
                     $data = $this->curl($this->API_Host.'api/web/set_rtp/',json_encode($post_params),$header);
                 }
             }
-            
+
             //生成游戏链接
             $post_params = [
                 'operator_token'=>$this->Operator_Token,
@@ -115,7 +120,7 @@ class Index extends Base
             ];
             $post_params['sign'] = $this->createSign($post_params,$this->Secret_Key);
             // $post_param['url'] = $this->API_Host.'api/web/game_url/';
-            
+
             $data = $this->curl($this->API_Host.'api/web/game_url/',json_encode($post_params),$header);
             $data = json_decode($data,true);
             $gameURL = $data['url'] ?? '';
@@ -150,7 +155,7 @@ class Index extends Base
                 } else {
                     $md5str = $key.'='.$val;
                 }
-                
+
             }
         }
         $str = $md5str.'&key='.$Md5key;
@@ -193,7 +198,7 @@ class Index extends Base
             $userId = explode('_',$params['UseID'])[1];
             $user_id = (int)$userId;
             $balance  = $this->getSocketBalance($user_id);;
-            
+
             if ($balance<$params['Bet']) {
                 return json(['data'=>null,'error'=>3202]);
             }
@@ -225,11 +230,11 @@ class Index extends Base
         } catch (Exception $ex) {
             save_log('pgfake_error', '==='.$ex->getMessage() . $ex->getTraceAsString() . $ex->getLine());
             return json(['data'=>null,'error'=>1200]);
-        }     
+        }
     }
 
-    
-    
+
+
     private function curl($url,$post_data='',$header=[],$type='get') {
         if ($post_data) {
             $type = 'post';
