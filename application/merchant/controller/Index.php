@@ -64,8 +64,18 @@ class Index extends Main
                 ->data(['PassWord'=>md5($password)])
                 ->update();
         if ($res) {
-            session('merchant_OperatorId',null);
+            session('merchant_OperatorName', null);
+            session('merchant_OperatorId', null);
+            cookie('merchant_OperatorName', null);
+            cookie('merchant_OperatorId', null);
+            // cookie('auth', null);
             $this->successJSON([],'修改成功');
+            $domain = $this->request->domain();
+            $domain .= "/merchant/user/index";
+            echo "<script>parent.location.href = '" . $domain . "'</script>";
+            die;
+//            session('merchant_OperatorId',null);
+//            $this->successJSON([],'修改成功');
         } else {
             $this->failJSON([],'修改失败'); 
         }
