@@ -320,7 +320,10 @@ index.html{extend name="common/base" /}
 							return "<span style='color:" + (d.totalyk > 0 ? "red'>+" : "green'>") + d.totalyk + "</span>";
 							// return  "<span style='color:green'>"+d.totalyk+"</span>"
 						}
-					}
+					},
+                    {field: 'rechargeWithdrawalMoney', align: 'center', title: "{:lang('未充提款')}", minWidth: 80},
+                    {field: 'totalMoney', align: 'center', title: "{:lang('玩家提款')}", minWidth: 80},
+                    {field: 'percent', align: 'center', title: "{:lang('玩家提充比')}", minWidth: 80},
 				];
 
 				table.render({
