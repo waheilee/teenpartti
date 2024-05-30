@@ -3,34 +3,41 @@
 {block name="css"}{/block}
 {block name="content"}
 <div class="layui-card" style="padding: 20px">
-    <form class="layui-form" id='edit_form' onsubmit="return false">
-         <div class="layui-form-item layui-form-pane">
-            <div class="layui-form-item">
-                <label class="layui-form-label">RTP设置</label>
-                <div class="layui-input-inline">
-                    <input type="text" name="rtp" autocomplete="off" class="layui-input" id='rtp' value="{$rtp ?? -1}">
+    <div class="layui-row">
+        <div class="layui-col-md6">
+            <form class="layui-form" id='edit_form' onsubmit="return false">
+                <div class="layui-form-item layui-form-pane">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">RTP设置</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="rtp" autocomplete="off" class="layui-input" id='rtp' value="{$rtp ?? -1}">
+                        </div>
+                        <div class="layui-form-mid layui-word-aux">(正整数，-1为未设置)</div>
+                    </div>
+                    <div class="layui-input-inline">
+                        <button class="layui-btn layui-btn-fluid"  lay-filter="formDemo"  id="sub">保存</button>
+                    </div>
                 </div>
-                <div class="layui-form-mid layui-word-aux">(正整数，-1为未设置)</div>
-            </div>
-            <div class="layui-input-inline">
-                <button class="layui-btn layui-btn-fluid"  lay-filter="formDemo"  id="sub">保存</button>
-            </div>
+            </form>
         </div>
-    </form>
-    <form class="layui-form" id='edit_fake_pg_form' onsubmit="return false">
-        <div class="layui-form-item layui-form-pane">
-            <div class="layui-form-item">
-                <label class="layui-form-label">是否进入假PG百分比设置</label>
-                <div class="layui-input-inline">
-                    <input type="text" name="rtp" autocomplete="off" class="layui-input" id='percent' value="{$percent ?? -1}">
+        <div class="layui-col-md6">
+            <form class="layui-form" id='edit_fake_pg_form' onsubmit="return false">
+                <div class="layui-form-item layui-form-pane">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">PG百分比设置</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="rtp" autocomplete="off" class="layui-input" id='percent' value="{$percent ?? -1}">
+                        </div>
+                        <div class="layui-form-mid layui-word-aux">(数值0-100)</div>
+                    </div>
+                    <div class="layui-input-inline">
+                        <button class="layui-btn layui-btn-fluid"  lay-filter="formDemo"  id="subInFakeGamePercentage">保存</button>
+                    </div>
                 </div>
-                <div class="layui-form-mid layui-word-aux">(数值0-100)</div>
-            </div>
-            <div class="layui-input-inline">
-                <button class="layui-btn layui-btn-fluid"  lay-filter="formDemo"  id="subInFakeGamePercentage">保存</button>
-            </div>
+            </form>
         </div>
-    </form>
+
+
 </div>
 <div class="layui-card">
     <div class="layui-card-header layuiadmin-card-header-auto">
