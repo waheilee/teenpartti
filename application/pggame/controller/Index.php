@@ -68,12 +68,16 @@ class Index extends Base
             }
             
             //是否走假pg
-            $fake_pg_data = Redis::get('pgfake_data');
-            if (!empty($fake_pg_data) && $is_tofake == 1) {
-                $fake_pg_data =json_decode($fake_pg_data,true);
-                if (isset($fake_pg_data[$gameid])) {
-                    if ($fake_pg_data[$gameid]['status'] == 1 && strlen($roleid)==8) {
-                        return (new \app\pgfake\controller\Index())->createuser($params);
+            $percentCache = Redis::get('in_pgfake_percent_data') ?? 0;
+            $percent = $this->getInFakePgPercent($percentCache);
+            if ($percent){
+                $fake_pg_data = Redis::get('pgfake_data');
+                if (!empty($fake_pg_data)) {
+                    $fake_pg_data =json_decode($fake_pg_data,true);
+                    if (isset($fake_pg_data[$gameid])) {
+                        if ($fake_pg_data[$gameid]['status'] == 1 && strlen($roleid)==8) {
+                            return (new \app\pgfake\controller\Index())->createuser($params);
+                        }
                     }
                 }
             }
@@ -505,4 +509,12 @@ class Index extends Base
         $data = openssl_decrypt($data, 'AES-128-ECB', $key, OPENSSL_RAW_DATA);
         return $data;
     }
+    public function getInFakePgPercent($point) {
+        $randomValue = mt_rand(0, 99);
+        if ($randomValue < $point) {
+            return true;
+        }
+        return false;
+    }
+
 }

@@ -17,7 +17,7 @@ class Pggame extends Main
             $limit = request()->param('limit') ?: 15;
             $pg_id    = request()->param('pg_id');
             $page  = request()->param('page');
-           
+
             $data = $redis->get('pgfake_data');
             if ($data == null || $data == 'null' || $data == '') {
                 $redis->del('pgfake_data');
@@ -39,17 +39,23 @@ class Pggame extends Main
                     return $this->apiReturn(0, [], 'success', 0);
                 }
             }
-            
+
             $ckunk_data = array_chunk($data, $limit);
             return $this->apiReturn(0, $ckunk_data[$page-1], 'success', count($data));
-            
+
         } else {
             if ($redis->EXISTS('pgfake_rtp_data')) {
                 $rtp = $redis->get('pgfake_rtp_data');
             } else {
                 $rtp = -1;
             }
+            if ($redis->EXISTS('in_pgfake_percent_data')) {
+                $percent = $redis->get('in_pgfake_percent_data');
+            } else {
+                $percent = 0;
+            }
             $this->assign('rtp',$rtp);
+            $this->assign('percent',$percent);
             return $this->fetch();
         }
     }
@@ -66,7 +72,23 @@ class Pggame extends Main
             if ($res) {
                 return json(['code'=>0,'msg'=>'操作成功']);
             }
-        } 
+        }
+        return json(['code'=>1,'msg'=>'操作失败']);
+    }
+
+    public function inFakeGamePercentage(){
+        $percent = (int)request()->param('percent');
+        $api_config_ip = (new MasterDB)->getTableObject('T_HttpUrlBase')->where('Id',2)->value('UrlBase');
+        $redis = new \Redis();
+        $redis->connect($api_config_ip, 6379);
+        $redis->auth('wf123520');
+
+        if ($percent>=0) {
+            $res = $redis->set('in_pgfake_percent_data',$percent);
+            if ($res) {
+                return json(['code'=>0,'msg'=>'操作成功']);
+            }
+        }
         return json(['code'=>1,'msg'=>'操作失败']);
     }
 
@@ -118,7 +140,7 @@ class Pggame extends Main
 
         if (isset($data[$pg_id])) {
             $data[$pg_id]['status']=$status;
-        } 
+        }
         $redis->set('pgfake_data',json_encode($data));
         return json(['code'=>0,'msg'=>'操作成功']);
     }
@@ -151,7 +173,7 @@ class Pggame extends Main
                     unset($data[$hidden_id]);
                 }
             }
-            $data[$pg_id] = 
+            $data[$pg_id] =
                 ['id'=>$id,'name'=>$name,'pg_id'=>$pg_id,'status'=>$status];
             $redis->set('pgfake_data',json_encode($data));
             return json(['code'=>0,'msg'=>'操作成功']);
@@ -182,7 +204,7 @@ class Pggame extends Main
         }
 
         $pg_id  = request()->param('pg_id');
-        
+
         if (isset($data[$pg_id])) {
             unset($data[$pg_id]);
             $redis->set('pgfake_data',json_encode($data));
@@ -203,7 +225,7 @@ class Pggame extends Main
             $limit = request()->param('limit') ?: 15;
             $uid    = request()->param('uid');
             $page  = request()->param('page');
-           
+
             $data = $redis->get('pgfake_whiteip_data');
             if (empty($data) || $data =='[]') {
                 return $this->apiReturn(0, [], 'success', 0);
@@ -217,10 +239,10 @@ class Pggame extends Main
                     return $this->apiReturn(0, [], 'success', 0);
                 }
             }
-            
+
             $ckunk_data = array_chunk($data, $limit);
             return $this->apiReturn(0, $ckunk_data[$page-1], 'success', count($data));
-            
+
         } else {
             return $this->fetch();
         }
@@ -228,10 +250,10 @@ class Pggame extends Main
 
     public function editUser()
     {
-        
+
         if ($this->request->method() == 'POST') {
             $uid      = request()->param('uid');
-            
+
             $api_config_ip = (new MasterDB)->getTableObject('T_HttpUrlBase')->where('Id',2)->value('UrlBase');
             $redis = new \Redis();
             $redis->connect($api_config_ip, 6379);
@@ -243,8 +265,8 @@ class Pggame extends Main
             } else {
                 $data = json_decode($data,1);
             }
-            
-            $data[$uid] = 
+
+            $data[$uid] =
                 ['uid'=>$uid,'date'=>date('Y-m-d H:i:s')];
             $redis->set('pgfake_whiteip_data',json_encode($data));
             return json(['code'=>0,'msg'=>'操作成功']);
@@ -265,7 +287,7 @@ class Pggame extends Main
         }
         $data = json_decode($data,1);
         $uid  = request()->param('uid');
-        
+
         if (isset($data[$uid])) {
             unset($data[$uid]);
             if (!empty($data)) {
@@ -273,7 +295,7 @@ class Pggame extends Main
             } else {
                 $redis->set('pgfake_whiteip_data','');
             }
-            
+
         }
         return json(['code'=>0,'msg'=>'操作成功']);
     }

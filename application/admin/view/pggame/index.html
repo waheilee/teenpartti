@@ -17,6 +17,20 @@
             </div>
         </div>
     </form>
+    <form class="layui-form" id='edit_fake_pg_form' onsubmit="return false">
+        <div class="layui-form-item layui-form-pane">
+            <div class="layui-form-item">
+                <label class="layui-form-label">RTP设置</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="rtp" autocomplete="off" class="layui-input" id='percent' value="{$percent ?? -1}">
+                </div>
+                <div class="layui-form-mid layui-word-aux">(正整数，-1为未设置)</div>
+            </div>
+            <div class="layui-input-inline">
+                <button class="layui-btn layui-btn-fluid"  lay-filter="formDemo"  id="subInFakeGamePercentage">保存</button>
+            </div>
+        </div>
+    </form>
 </div>
 <div class="layui-card">
     <div class="layui-card-header layuiadmin-card-header-auto">
@@ -265,5 +279,30 @@ $("#sub").on('click', function(){
             }
         });
 });
+    $("#subInFakeGamePercentage").on('click', function(){
+        var post_data = $('#edit_fake_pg_form').serialize();
+        var index = layer.msg('正在拼命处理...' , {
+            icon: 16 ,
+            shade: 0.6 ,
+            time: 0 ,
+        });
+        $.ajax({
+            url:"{:url('pggame/inFakeGamePercentage')}",
+            type:"POST",
+            data:post_data,
+            dataType:'json',
+            success:function(ret){
+                if (ret.code == 0) {
+                    layer.msg('操作成功');
+                    // parent.$(".layui-laypage-btn")[0].click();
+                    // setTimeout(function(){parent.layer.closeAll()},1500);
+                }
+                if (ret.code == 1) {
+                    layer.msg(ret.msg);
+                }
+            }
+        });
+    });
+
 </script>
 {/block}
