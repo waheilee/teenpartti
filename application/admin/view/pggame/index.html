@@ -4,7 +4,7 @@
 {block name="content"}
 <div class="layui-card" style="padding: 20px">
     <div class="layui-row">
-        <div class="layui-col-md6">
+        <div class="layui-col-md4">
             <form class="layui-form" id='edit_form' onsubmit="return false">
                 <div class="layui-form-item layui-form-pane">
                     <div class="layui-form-item">
@@ -20,15 +20,15 @@
                 </div>
             </form>
         </div>
-        <div class="layui-col-md6">
+        <div class="layui-col-md3">
             <form class="layui-form" id='edit_fake_pg_form' onsubmit="return false">
                 <div class="layui-form-item layui-form-pane">
                     <div class="layui-form-item">
-                        <label class="layui-form-label">PG百分比设置</label>
+                        <label class="layui-form-label">PG百分比</label>
                         <div class="layui-input-inline">
                             <input type="text" name="rtp" autocomplete="off" class="layui-input" id='percent' value="{$percent ?? -1}">
                         </div>
-                        <div class="layui-form-mid layui-word-aux">(数值0-100)</div>
+                        <div class="layui-form-mid layui-word-aux">(数值0-100，默认为0，全部进入PG游戏)</div>
                     </div>
                     <div class="layui-input-inline">
                         <button class="layui-btn layui-btn-fluid"  lay-filter="formDemo"  id="subInFakeGamePercentage">保存</button>
