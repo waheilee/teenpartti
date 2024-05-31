@@ -96,7 +96,6 @@ class UserDB extends BaseModel
 
 
         foreach ($result['list'] as &$v) {
-            $rechargeWithdrawal = $this->getRechargeWithdrawal($v['mydate']);
             $v['GameRate'] = sprintf("%.2f", $v['GameRate']) . "%";
             ConVerMoney($v['RoundBets']);
             ConVerMoney($v['DailyRunning']);
@@ -110,9 +109,16 @@ class UserDB extends BaseModel
             $v['first_chargenum'] = $recharge_num[$v['mydate']]['first_chargenum'] ?? 0;
             $v['bj_dm'] = $bjdm[$v['mydate']]['ChangeMoney'] ?? 0;
             ConVerMoney($v['bj_dm']);
-            $v['totalMoney'] = FormatMoney($rechargeWithdrawal['totalMoney']);
+            $rechargeWithdrawal = $this->getRechargeWithdrawal($v['mydate']);
+
+            $v['totalMoney'] = $v['totalpayout'] - FormatMoney($rechargeWithdrawal['rechargeWithdrawalMoney']);
+
             $v['rechargeWithdrawalMoney'] = FormatMoney($rechargeWithdrawal['rechargeWithdrawalMoney']);
-            $v['percent'] = $rechargeWithdrawal['percent'] * 100 .'%';
+            $v['percent'] = 0;
+            if ($v['totalMoney'] >0 && $v['totalpayuser'] > 0){
+                $v['percent'] = ($v['totalMoney'] / $v['totalpayuser']) * 100 .'%';
+            }
+
         }
         unset($v);
         //合计数据 TotalReg注册,TotalWater流水,TotalActive活跃,ToalPU充值营收,TotalPay总充值,TotolPayNumber充值人数,TotalOut总提现,TotalOutNum提现人数
