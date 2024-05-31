@@ -1384,7 +1384,7 @@ class UserDB extends BaseModel
             ->select();
         $totalMoney = 0;
         $rechargeWithdrawalMoney = 0;
-        $percent = 0;
+
         foreach ($userDrawBack as $k) {
             $totalMoney += $k['iMoney'];
             if ($k['TotalDeposit'] > 0) {
@@ -1392,13 +1392,11 @@ class UserDB extends BaseModel
             }
             $rechargeWithdrawalMoney += $k['iMoney'];
         }
-        if ($rechargeWithdrawalMoney > 0 && $totalMoney > 0) {
-            $percent = bcdiv($rechargeWithdrawalMoney, $totalMoney, 4);
-        }
+
         return [
             'totalMoney' => $totalMoney,
             'rechargeWithdrawalMoney' => $rechargeWithdrawalMoney,
-            'percent' => $percent
+
         ];
     }
 }
