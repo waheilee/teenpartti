@@ -116,7 +116,7 @@ class UserDB extends BaseModel
             $v['rechargeWithdrawalMoney'] = FormatMoney($rechargeWithdrawal['rechargeWithdrawalMoney']);
             $v['percent'] = 0;
             if ($v['totalMoney'] >0 && $v['totalpayuser'] > 0){
-                $v['percent'] = ($v['totalMoney'] / $v['totalpayuser']) * 100 .'%';
+                $v['percent'] = bcdiv($v['totalMoney'],$v['totalpayuser'],2) * 100 .'%';
             }
 
         }
